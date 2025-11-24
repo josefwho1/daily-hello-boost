@@ -1,17 +1,15 @@
 import { challenges } from "@/data/challenges";
+import { CompletedChallenge } from "@/types/challenge";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { useNavigate } from "react-router-dom";
-
-interface CompletedChallenge {
-  id: number;
-  completedAt: string;
-  note: string;
-}
+import logo from "@/assets/one-hello-logo.png";
 
 const Challenges = () => {
   const navigate = useNavigate();
   const [completedChallenges] = useLocalStorage<CompletedChallenge[]>("completedChallenges", []);
+  const [earlyReveals] = useLocalStorage<number[]>("earlyReveals", []);
+  const [lastCompletedDate] = useLocalStorage<string | null>("lastCompletedDate", null);
 
   const getNextIncompleteIndex = () => {
     return challenges.findIndex(
@@ -19,11 +17,45 @@ const Challenges = () => {
     );
   };
 
+  const isChallengAvailable = (challengeId: number) => {
+    if (completedChallenges.some(c => c.id === challengeId)) return true;
+    
+    const nextIncompleteIndex = challenges.findIndex(
+      c => !completedChallenges.some(cc => cc.id === c.id)
+    );
+    
+    if (nextIncompleteIndex === -1) return true;
+    
+    const nextIncompleteId = challenges[nextIncompleteIndex].id;
+    
+    if (challengeId !== nextIncompleteId) return false;
+    
+    if (earlyReveals.includes(challengeId)) return true;
+    
+    if (lastCompletedDate) {
+      const lastDate = new Date(lastCompletedDate);
+      const now = new Date();
+      lastDate.setHours(0, 0, 0, 0);
+      now.setHours(0, 0, 0, 0);
+      const daysDiff = Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff >= 1) return true;
+    } else {
+      return true;
+    }
+    
+    return false;
+  };
+
   const nextIncompleteIndex = getNextIncompleteIndex();
 
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-8">
+        <div className="text-center mb-6">
+          <img src={logo} alt="One Hello" className="w-64 mx-auto mb-4" />
+        </div>
+        
         <h1 className="text-3xl font-bold mb-2 text-foreground">All Challenges</h1>
         <p className="text-muted-foreground mb-6">
           Complete one challenge each day for 7 days
@@ -33,7 +65,8 @@ const Challenges = () => {
           {challenges.map((challenge, index) => {
             const isCompleted = completedChallenges.some(c => c.id === challenge.id);
             const isToday = index === nextIncompleteIndex;
-            const isLocked = index > nextIncompleteIndex && nextIncompleteIndex !== -1;
+            const isAvailable = isChallengAvailable(challenge.id);
+            const isLocked = !isAvailable;
 
             return (
               <ChallengeCard
