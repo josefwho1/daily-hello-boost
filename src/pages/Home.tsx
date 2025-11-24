@@ -194,8 +194,15 @@ const Home = () => {
             isCompleted={isTodayChallengeCompleted}
             isToday={true}
             isLocked={!isTodayChallengeAvailable}
-            onComplete={() => handleCompleteChallenge(todayChallenge.id)}
+            onComplete={isTodayChallengeCompleted ? undefined : () => handleCompleteChallenge(todayChallenge.id)}
           />
+          {isTodayChallengeCompleted && !earlyReveals.includes(todayChallenge.id + 1) && todayChallenge.id < 7 && (
+            <div className="mt-4 bg-primary/10 border border-primary/20 rounded-2xl p-6 text-center">
+              <p className="text-foreground font-medium">
+                Great work today! Come back tomorrow to reveal your next challenge
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Quick Actions */}
