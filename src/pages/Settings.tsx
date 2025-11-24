@@ -36,13 +36,15 @@ const Settings = () => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Sign out from Supabase (ignore session not found errors)
+      await supabase.auth.signOut({ scope: 'local' });
       
       toast.success("Signed out successfully");
       navigate('/auth');
     } catch (error) {
-      toast.error("Failed to sign out");
+      // Even if signout fails, still navigate to auth page
+      console.log("Sign out error (navigating anyway):", error);
+      navigate('/auth');
     }
   };
 
