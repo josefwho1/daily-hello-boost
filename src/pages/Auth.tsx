@@ -25,25 +25,56 @@ const Auth = () => {
       const validated = usernameSchema.parse({ name });
       setLoading(true);
 
-      // Sign in anonymously
-      const { data: authData, error: authError } = await supabase.auth.signInAnonymously();
+      // Create email and password from username
+      const email = `${validated.name.toLowerCase()}@onehello.app`;
+      const password = `onehello_${validated.name.toLowerCase()}_secure`;
 
-      if (authError) throw authError;
-
-      // Update profile with username
-      if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ name: validated.name })
-          .eq('id', authData.user.id);
-
-        if (profileError) throw profileError;
-      }
-
-      toast({
-        title: "Welcome!",
-        description: `Hi ${validated.name}, let's start your journey!`,
+      // Check if user exists by trying to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
+
+      if (signInError) {
+        // User doesn't exist, create new account
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name: validated.name
+            }
+          }
+        });
+
+        if (signUpError) throw signUpError;
+
+        // Create profile
+        if (signUpData.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({ 
+              id: signUpData.user.id,
+              name: validated.name 
+            });
+
+          if (profileError) {
+            // Profile might already exist from trigger
+            console.log('Profile creation note:', profileError);
+          }
+        }
+
+        toast({
+          title: "Welcome!",
+          description: `Hi ${validated.name}, let's start your journey!`,
+        });
+      } else {
+        // User exists, signed in successfully
+        toast({
+          title: "Welcome back!",
+          description: `Hi ${validated.name}, good to see you again!`,
+        });
+      }
       
       navigate('/');
     } catch (error) {
