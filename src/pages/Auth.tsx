@@ -72,21 +72,21 @@ const Auth = () => {
           <img 
             src="/src/assets/one-hello-logo.png" 
             alt="One Hello" 
-            className="h-48 w-auto mx-auto mb-4"
+            className="h-96 w-auto mx-auto mb-4"
           />
-          <CardTitle>Welcome to One Hello</CardTitle>
+          <CardTitle>Welcome to the 7-Day Challenge pilot</CardTitle>
           <CardDescription>
-            Enter your username to start building confidence today
+            Enter your instagram username to continue
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleContinue} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Username</Label>
+              <Label htmlFor="name">IG Handle (minus the @ - i.e. josefwho)</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Choose a username"
+                placeholder="username"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
