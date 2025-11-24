@@ -1,28 +1,30 @@
 import { useState, useEffect } from "react";
 import { challenges } from "@/data/challenges";
+import { CompletedChallenge } from "@/types/challenge";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { StreakDisplay } from "@/components/StreakDisplay";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import logo from "@/assets/one-hello-logo.png";
-
-interface CompletedChallenge {
-  id: number;
-  completedAt: string;
-  note: string;
-}
 
 const Home = () => {
   const navigate = useNavigate();
   const [completedChallenges, setCompletedChallenges] = useLocalStorage<CompletedChallenge[]>("completedChallenges", []);
   const [streak, setStreak] = useLocalStorage<number>("streak", 0);
   const [lastCompletedDate, setLastCompletedDate] = useLocalStorage<string | null>("lastCompletedDate", null);
+  const [earlyReveals, setEarlyReveals] = useLocalStorage<number[]>("earlyReveals", []);
   const [showNoteDialog, setShowNoteDialog] = useState(false);
+  const [showRevealDialog, setShowRevealDialog] = useState(false);
+  const [currentName, setCurrentName] = useState("");
   const [currentNote, setCurrentNote] = useState("");
+  const [currentRating, setCurrentRating] = useState<'positive' | 'neutral' | 'negative'>('positive');
   const [completingChallengeId, setCompletingChallengeId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -42,6 +44,42 @@ const Home = () => {
     }
   }, []);
 
+  const isChallengAvailable = (challengeId: number) => {
+    // If completed, always available
+    if (completedChallenges.some(c => c.id === challengeId)) return true;
+    
+    // Find the next incomplete challenge
+    const nextIncompleteIndex = challenges.findIndex(
+      c => !completedChallenges.some(cc => cc.id === c.id)
+    );
+    
+    if (nextIncompleteIndex === -1) return true; // All completed
+    
+    const nextIncompleteId = challenges[nextIncompleteIndex].id;
+    
+    // If this is not the next incomplete, it's not available
+    if (challengeId !== nextIncompleteId) return false;
+    
+    // Check if it's been revealed early
+    if (earlyReveals.includes(challengeId)) return true;
+    
+    // Check if it's past midnight since last completion
+    if (lastCompletedDate) {
+      const lastDate = new Date(lastCompletedDate);
+      const now = new Date();
+      lastDate.setHours(0, 0, 0, 0);
+      now.setHours(0, 0, 0, 0);
+      const daysDiff = Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff >= 1) return true;
+    } else {
+      // First challenge is always available
+      return true;
+    }
+    
+    return false;
+  };
+
   const getCurrentDayChallenge = () => {
     const nextIncompleteIndex = challenges.findIndex(
       c => !completedChallenges.some(cc => cc.id === c.id)
@@ -51,10 +89,13 @@ const Home = () => {
 
   const todayChallenge = getCurrentDayChallenge();
   const isTodayChallengeCompleted = completedChallenges.some(c => c.id === todayChallenge.id);
+  const isTodayChallengeAvailable = isChallengAvailable(todayChallenge.id);
 
   const handleCompleteChallenge = (challengeId: number) => {
     setCompletingChallengeId(challengeId);
+    setCurrentName("");
     setCurrentNote("");
+    setCurrentRating('positive');
     setShowNoteDialog(true);
   };
 
@@ -65,7 +106,9 @@ const Home = () => {
     const newCompleted: CompletedChallenge = {
       id: completingChallengeId,
       completedAt: today,
-      note: currentNote
+      name: currentName,
+      note: currentNote,
+      rating: currentRating
     };
 
     setCompletedChallenges([...completedChallenges, newCompleted]);
@@ -85,7 +128,6 @@ const Home = () => {
         setStreak(streak + 1);
         toast.success(`🔥 ${streak + 1} day streak! Keep going!`);
       } else if (daysDiff === 0) {
-        // Same day, don't increase streak
         toast.success("Challenge completed!");
       } else {
         setStreak(1);
@@ -95,6 +137,36 @@ const Home = () => {
     
     setLastCompletedDate(today);
     setShowNoteDialog(false);
+    
+    // Check if there's a next challenge to reveal
+    const nextChallenge = challenges.find(
+      c => !completedChallenges.some(cc => cc.id === c.id) && c.id !== completingChallengeId
+    );
+    
+    if (nextChallenge) {
+      setShowRevealDialog(true);
+    } else {
+      setCompletingChallengeId(null);
+    }
+  };
+
+  const handleRevealNext = () => {
+    if (!completingChallengeId) return;
+    
+    const nextChallenge = challenges.find(
+      c => !completedChallenges.some(cc => cc.id === c.id) && c.id !== completingChallengeId
+    );
+    
+    if (nextChallenge) {
+      setEarlyReveals([...earlyReveals, nextChallenge.id]);
+    }
+    
+    setShowRevealDialog(false);
+    setCompletingChallengeId(null);
+  };
+
+  const handleWaitUntilTomorrow = () => {
+    setShowRevealDialog(false);
     setCompletingChallengeId(null);
   };
 
@@ -103,9 +175,9 @@ const Home = () => {
       <div className="max-w-md mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <img src={logo} alt="One Hello" className="w-48 mx-auto mb-4" />
-          <p className="text-muted-foreground text-sm">
-            Build confidence through small daily connections
+          <img src={logo} alt="One Hello" className="w-72 mx-auto mb-4" />
+          <p className="text-foreground font-medium mb-2">
+            Welcome to the One Hello 7-Day Pilot. Thank you for your participation and good luck!
           </p>
         </div>
 
@@ -121,7 +193,7 @@ const Home = () => {
             challenge={todayChallenge}
             isCompleted={isTodayChallengeCompleted}
             isToday={true}
-            isLocked={false}
+            isLocked={!isTodayChallengeAvailable}
             onComplete={() => handleCompleteChallenge(todayChallenge.id)}
           />
         </div>
@@ -151,12 +223,45 @@ const Home = () => {
               <DialogTitle>How did it go?</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <Textarea
-                placeholder="Write about your experience... What did you learn? How did it feel?"
-                value={currentNote}
-                onChange={(e) => setCurrentNote(e.target.value)}
-                className="min-h-32"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="name">Name (Optional)</Label>
+                <Input
+                  id="name"
+                  placeholder="Who did you interact with?"
+                  value={currentName}
+                  onChange={(e) => setCurrentName(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes (Optional)</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Write about your experience... What did you learn? How did it feel?"
+                  value={currentNote}
+                  onChange={(e) => setCurrentNote(e.target.value)}
+                  className="min-h-24"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>How would you rate the interaction? *</Label>
+                <RadioGroup value={currentRating} onValueChange={(value) => setCurrentRating(value as 'positive' | 'neutral' | 'negative')}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="positive" id="positive" />
+                    <Label htmlFor="positive" className="font-normal cursor-pointer">Positive</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="neutral" id="neutral" />
+                    <Label htmlFor="neutral" className="font-normal cursor-pointer">Neutral</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="negative" id="negative" />
+                    <Label htmlFor="negative" className="font-normal cursor-pointer">Negative</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
               <div className="flex gap-2">
                 <Button 
                   variant="outline" 
@@ -167,6 +272,32 @@ const Home = () => {
                 </Button>
                 <Button onClick={handleSaveNote} className="flex-1">
                   Save & Complete
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Reveal Next Challenge Dialog */}
+        <Dialog open={showRevealDialog} onOpenChange={setShowRevealDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Challenge Complete! 🎉</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-muted-foreground">
+                Would you like to reveal the next challenge now, or wait until tomorrow?
+              </p>
+              <div className="flex flex-col gap-2">
+                <Button onClick={handleRevealNext} className="w-full">
+                  Reveal Next Challenge
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleWaitUntilTomorrow}
+                  className="w-full"
+                >
+                  Wait Until Tomorrow
                 </Button>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import { Challenge } from "@/data/challenges";
+import { Challenge } from "@/types/challenge";
 import { Button } from "./ui/button";
 import { Check, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -55,8 +55,18 @@ export const ChallengeCard = ({
             )}
           </div>
           
-          <h3 className="font-bold text-lg mb-2 text-foreground">{challenge.title}</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">{challenge.description}</p>
+          <h3 className={cn(
+            "font-bold text-lg mb-2",
+            isLocked ? "text-transparent bg-foreground/80 rounded select-none blur-sm" : "text-foreground"
+          )}>
+            {challenge.title}
+          </h3>
+          <p className={cn(
+            "text-sm leading-relaxed",
+            isLocked ? "text-transparent bg-muted-foreground/60 rounded select-none blur-sm" : "text-muted-foreground"
+          )}>
+            {challenge.description}
+          </p>
           
           {isToday && !isCompleted && onComplete && (
             <Button 

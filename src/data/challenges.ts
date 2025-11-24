@@ -1,10 +1,4 @@
-export interface Challenge {
-  id: number;
-  day: number;
-  title: string;
-  description: string;
-  icon: string;
-}
+import { Challenge } from "@/types/challenge";
 
 export const challenges: Challenge[] = [
   {
