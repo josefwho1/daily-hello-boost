@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      challenge_completions: {
+        Row: {
+          challenge_day: number
+          completed_at: string
+          created_at: string
+          id: string
+          interaction_name: string | null
+          notes: string | null
+          rating: Database["public"]["Enums"]["interaction_rating"]
+          user_id: string
+        }
+        Insert: {
+          challenge_day: number
+          completed_at?: string
+          created_at?: string
+          id?: string
+          interaction_name?: string | null
+          notes?: string | null
+          rating: Database["public"]["Enums"]["interaction_rating"]
+          user_id: string
+        }
+        Update: {
+          challenge_day?: number
+          completed_at?: string
+          created_at?: string
+          id?: string
+          interaction_name?: string | null
+          notes?: string | null
+          rating?: Database["public"]["Enums"]["interaction_rating"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_completions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -35,6 +76,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_progress: {
+        Row: {
+          created_at: string
+          current_day: number
+          current_streak: number
+          id: string
+          last_completed_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_day?: number
+          current_streak?: number
+          id?: string
+          last_completed_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_day?: number
+          current_streak?: number
+          id?: string
+          last_completed_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -43,7 +122,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      interaction_rating: "positive" | "neutral" | "negative"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -170,6 +249,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      interaction_rating: ["positive", "neutral", "negative"],
+    },
   },
 } as const
