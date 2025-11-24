@@ -8,90 +8,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 
-const signupSchema = z.object({
-  name: z.string().trim().min(1, { message: "Name is required" }).max(100, { message: "Name must be less than 100 characters" }),
-  email: z.string().trim().email({ message: "Invalid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-});
-
-const loginSchema = z.object({
-  email: z.string().trim().email({ message: "Invalid email address" }),
-  password: z.string().min(1, { message: "Password is required" }),
+const usernameSchema = z.object({
+  name: z.string().trim().min(1, { message: "Username is required" }).max(50, { message: "Username must be less than 50 characters" }),
 });
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleContinue = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      const validated = signupSchema.parse({ name, email, password });
+      const validated = usernameSchema.parse({ name });
       setLoading(true);
 
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
-        email: validated.email,
-        password: validated.password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            name: validated.name,
-          }
-        }
-      });
+      // Sign in anonymously
+      const { data: authData, error: authError } = await supabase.auth.signInAnonymously();
 
-      if (error) throw error;
+      if (authError) throw authError;
 
-      toast({
-        title: "Account created!",
-        description: "Welcome to One Hello!",
-      });
-      
-      navigate('/');
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation Error",
-          description: error.errors[0].message,
-          variant: "destructive",
-        });
-      } else if (error instanceof Error) {
-        toast({
-          title: "Sign up failed",
-          description: error.message,
-          variant: "destructive",
-        });
+      // Update profile with username
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ name: validated.name })
+          .eq('id', authData.user.id);
+
+        if (profileError) throw profileError;
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const validated = loginSchema.parse({ email, password });
-      setLoading(true);
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: validated.email,
-        password: validated.password,
-      });
-
-      if (error) throw error;
 
       toast({
-        title: "Welcome back!",
-        description: "Successfully logged in.",
+        title: "Welcome!",
+        description: `Hi ${validated.name}, let's start your journey!`,
       });
       
       navigate('/');
@@ -104,7 +55,7 @@ const Auth = () => {
         });
       } else if (error instanceof Error) {
         toast({
-          title: "Login failed",
+          title: "Error",
           description: error.message,
           variant: "destructive",
         });
@@ -123,52 +74,23 @@ const Auth = () => {
             alt="One Hello" 
             className="h-48 w-auto mx-auto mb-4"
           />
-          <CardTitle>{isLogin ? 'Welcome Back' : 'Create Account'}</CardTitle>
+          <CardTitle>Welcome to One Hello</CardTitle>
           <CardDescription>
-            {isLogin 
-              ? 'Sign in to continue your journey' 
-              : 'Start building confidence today'}
+            Enter your username to start building confidence today
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={isLogin ? handleLogin : handleSignUp} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required={!isLogin}
-                  maxLength={100}
-                />
-              </div>
-            )}
-            
+          <form onSubmit={handleContinue} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="name">Username</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="name"
+                type="text"
+                placeholder="Choose a username"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder={isLogin ? "Enter password" : "At least 6 characters"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={isLogin ? 1 : 6}
+                maxLength={50}
               />
             </div>
 
@@ -177,26 +99,9 @@ const Auth = () => {
               className="w-full"
               disabled={loading}
             >
-              {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
+              {loading ? 'Please wait...' : 'Continue'}
             </Button>
           </form>
-
-          <div className="mt-4 text-center text-sm">
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setName('');
-                setEmail('');
-                setPassword('');
-              }}
-              className="text-primary hover:underline"
-            >
-              {isLogin 
-                ? "Don't have an account? Sign up" 
-                : 'Already have an account? Sign in'}
-            </button>
-          </div>
         </CardContent>
       </Card>
     </div>
