@@ -21,12 +21,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Bell, RotateCcw, Trash2 } from "lucide-react";
+import { Bell, RotateCcw, Trash2, Globe } from "lucide-react";
 import { toast } from "sonner";
 
 const Settings = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage("notificationsEnabled", true);
   const [reminderTime, setReminderTime] = useLocalStorage("reminderTime", "09:00");
+  const [timezone, setTimezone] = useLocalStorage("timezone", Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
 
@@ -49,6 +50,25 @@ const Settings = () => {
     "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
     "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
     "18:00", "19:00", "20:00", "21:00"
+  ];
+
+  const timezones = [
+    { value: "America/New_York", label: "Eastern Time (ET)" },
+    { value: "America/Chicago", label: "Central Time (CT)" },
+    { value: "America/Denver", label: "Mountain Time (MT)" },
+    { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
+    { value: "America/Anchorage", label: "Alaska Time (AKT)" },
+    { value: "Pacific/Honolulu", label: "Hawaii Time (HT)" },
+    { value: "Europe/London", label: "London (GMT/BST)" },
+    { value: "Europe/Paris", label: "Paris (CET/CEST)" },
+    { value: "Europe/Berlin", label: "Berlin (CET/CEST)" },
+    { value: "Asia/Dubai", label: "Dubai (GST)" },
+    { value: "Asia/Kolkata", label: "India (IST)" },
+    { value: "Asia/Singapore", label: "Singapore (SGT)" },
+    { value: "Asia/Tokyo", label: "Tokyo (JST)" },
+    { value: "Asia/Shanghai", label: "Shanghai (CST)" },
+    { value: "Australia/Sydney", label: "Sydney (AEDT/AEST)" },
+    { value: "Pacific/Auckland", label: "Auckland (NZDT/NZST)" },
   ];
 
   return (
@@ -100,6 +120,35 @@ const Settings = () => {
                 </p>
               </div>
             )}
+          </div>
+        </Card>
+
+        {/* Timezone */}
+        <Card className="p-6 mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            <Globe className="text-primary" size={24} />
+            <h2 className="text-lg font-semibold text-foreground">Timezone</h2>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="timezone" className="text-sm">
+              Your Timezone
+            </Label>
+            <Select value={timezone} onValueChange={setTimezone}>
+              <SelectTrigger id="timezone">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {timezones.map((tz) => (
+                  <SelectItem key={tz.value} value={tz.value}>
+                    {tz.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Challenges unlock at midnight in your timezone
+            </p>
           </div>
         </Card>
 

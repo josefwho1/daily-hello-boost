@@ -4,6 +4,7 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/one-hello-logo.png";
+import { getDaysDifferenceInTimezone } from "@/lib/timezone";
 
 const Challenges = () => {
   const navigate = useNavigate();
@@ -30,12 +31,7 @@ const Challenges = () => {
     if (challengeId !== nextIncompleteId) return false;
     
     if (lastCompletedDate) {
-      const lastDate = new Date(lastCompletedDate);
-      const now = new Date();
-      lastDate.setHours(0, 0, 0, 0);
-      now.setHours(0, 0, 0, 0);
-      const daysDiff = Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-      
+      const daysDiff = getDaysDifferenceInTimezone(lastCompletedDate, new Date());
       if (daysDiff >= 1) return true;
     } else {
       return true;
