@@ -72,7 +72,7 @@ const Auth = () => {
           <img 
             src="/src/assets/one-hello-logo.png" 
             alt="One Hello" 
-            className="h-96 w-auto mx-auto mb-4"
+            className="h-96 w-auto mx-auto mb-2"
           />
           <CardTitle>Welcome to the 7-Day Challenge pilot</CardTitle>
           <CardDescription>
