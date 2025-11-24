@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -21,15 +23,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Bell, RotateCcw, Trash2, Globe } from "lucide-react";
+import { Bell, RotateCcw, Trash2, Globe, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 const Settings = () => {
+  const navigate = useNavigate();
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage("notificationsEnabled", true);
   const [reminderTime, setReminderTime] = useLocalStorage("reminderTime", "09:00");
   const [timezone, setTimezone] = useLocalStorage("timezone", Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast.success("Signed out successfully");
+      navigate('/auth');
+    } catch (error) {
+      toast.error("Failed to sign out");
+    }
+  };
 
   const handleResetStreak = () => {
     localStorage.setItem("streak", "0");
@@ -177,6 +192,23 @@ const Settings = () => {
               Clear All Progress
             </Button>
           </div>
+        </Card>
+
+        {/* Account */}
+        <Card className="p-6 mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            <LogOut className="text-primary" size={24} />
+            <h2 className="text-lg font-semibold text-foreground">Account</h2>
+          </div>
+          
+          <Button
+            variant="outline"
+            className="w-full justify-start"
+            onClick={handleSignOut}
+          >
+            <LogOut size={16} className="mr-2" />
+            Sign Out
+          </Button>
         </Card>
 
         {/* About */}
