@@ -19,9 +19,7 @@ const Home = () => {
   const [completedChallenges, setCompletedChallenges] = useLocalStorage<CompletedChallenge[]>("completedChallenges", []);
   const [streak, setStreak] = useLocalStorage<number>("streak", 0);
   const [lastCompletedDate, setLastCompletedDate] = useLocalStorage<string | null>("lastCompletedDate", null);
-  const [earlyReveals, setEarlyReveals] = useLocalStorage<number[]>("earlyReveals", []);
   const [showNoteDialog, setShowNoteDialog] = useState(false);
-  const [showRevealDialog, setShowRevealDialog] = useState(false);
   const [currentName, setCurrentName] = useState("");
   const [currentNote, setCurrentNote] = useState("");
   const [currentRating, setCurrentRating] = useState<'positive' | 'neutral' | 'negative'>('positive');
@@ -59,9 +57,6 @@ const Home = () => {
     
     // If this is not the next incomplete, it's not available
     if (challengeId !== nextIncompleteId) return false;
-    
-    // Check if it's been revealed early
-    if (earlyReveals.includes(challengeId)) return true;
     
     // Check if it's past midnight since last completion
     if (lastCompletedDate) {
@@ -137,36 +132,6 @@ const Home = () => {
     
     setLastCompletedDate(today);
     setShowNoteDialog(false);
-    
-    // Check if there's a next challenge to reveal
-    const nextChallenge = challenges.find(
-      c => !completedChallenges.some(cc => cc.id === c.id) && c.id !== completingChallengeId
-    );
-    
-    if (nextChallenge) {
-      setShowRevealDialog(true);
-    } else {
-      setCompletingChallengeId(null);
-    }
-  };
-
-  const handleRevealNext = () => {
-    if (!completingChallengeId) return;
-    
-    const nextChallenge = challenges.find(
-      c => !completedChallenges.some(cc => cc.id === c.id) && c.id !== completingChallengeId
-    );
-    
-    if (nextChallenge) {
-      setEarlyReveals([...earlyReveals, nextChallenge.id]);
-    }
-    
-    setShowRevealDialog(false);
-    setCompletingChallengeId(null);
-  };
-
-  const handleWaitUntilTomorrow = () => {
-    setShowRevealDialog(false);
     setCompletingChallengeId(null);
   };
 
@@ -196,7 +161,7 @@ const Home = () => {
             isLocked={!isTodayChallengeAvailable}
             onComplete={isTodayChallengeCompleted ? undefined : () => handleCompleteChallenge(todayChallenge.id)}
           />
-          {isTodayChallengeCompleted && !earlyReveals.includes(todayChallenge.id + 1) && todayChallenge.id < 7 && (
+          {isTodayChallengeCompleted && todayChallenge.id < 7 && (
             <div className="mt-4 bg-primary/10 border border-primary/20 rounded-2xl p-6 text-center">
               <p className="text-foreground font-medium">
                 Great work today! Come back tomorrow to reveal your next challenge
@@ -279,32 +244,6 @@ const Home = () => {
                 </Button>
                 <Button onClick={handleSaveNote} className="flex-1">
                   Save & Complete
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Reveal Next Challenge Dialog */}
-        <Dialog open={showRevealDialog} onOpenChange={setShowRevealDialog}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Challenge Complete! 🎉</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-muted-foreground">
-                Would you like to reveal the next challenge now, or wait until tomorrow?
-              </p>
-              <div className="flex flex-col gap-2">
-                <Button onClick={handleRevealNext} className="w-full">
-                  Reveal Next Challenge
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={handleWaitUntilTomorrow}
-                  className="w-full"
-                >
-                  Wait Until Tomorrow
                 </Button>
               </div>
             </div>
