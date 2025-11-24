@@ -8,7 +8,6 @@ import logo from "@/assets/one-hello-logo.png";
 const Challenges = () => {
   const navigate = useNavigate();
   const [completedChallenges] = useLocalStorage<CompletedChallenge[]>("completedChallenges", []);
-  const [earlyReveals] = useLocalStorage<number[]>("earlyReveals", []);
   const [lastCompletedDate] = useLocalStorage<string | null>("lastCompletedDate", null);
 
   const getNextIncompleteIndex = () => {
@@ -29,8 +28,6 @@ const Challenges = () => {
     const nextIncompleteId = challenges[nextIncompleteIndex].id;
     
     if (challengeId !== nextIncompleteId) return false;
-    
-    if (earlyReveals.includes(challengeId)) return true;
     
     if (lastCompletedDate) {
       const lastDate = new Date(lastCompletedDate);
