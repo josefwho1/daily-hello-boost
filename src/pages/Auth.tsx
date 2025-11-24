@@ -121,7 +121,7 @@ const Auth = () => {
           <img 
             src="/src/assets/one-hello-logo.png" 
             alt="One Hello" 
-            className="h-16 w-auto mx-auto mb-4"
+            className="h-48 w-auto mx-auto mb-4"
           />
           <CardTitle>{isLogin ? 'Welcome Back' : 'Create Account'}</CardTitle>
           <CardDescription>
