@@ -1,37 +1,39 @@
 import { challenges } from "@/data/challenges";
-import { CompletedChallenge } from "@/types/challenge";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/one-hello-logo.png";
 import { getDaysDifferenceInTimezone } from "@/lib/timezone";
+import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
+import { useUserProgress } from "@/hooks/useUserProgress";
 
 const Challenges = () => {
   const navigate = useNavigate();
-  const [completedChallenges] = useLocalStorage<CompletedChallenge[]>("completedChallenges", []);
-  const [lastCompletedDate] = useLocalStorage<string | null>("lastCompletedDate", null);
+  const { completions, loading: completionsLoading } = useChallengeCompletions();
+  const { progress, loading: progressLoading } = useUserProgress();
+
+  const loading = completionsLoading || progressLoading;
 
   const getNextIncompleteIndex = () => {
     return challenges.findIndex(
-      c => !completedChallenges.some(cc => cc.id === c.id)
+      c => !completions.some(cc => cc.challenge_day === c.id)
     );
   };
 
-  const isChallengAvailable = (challengeId: number) => {
-    if (completedChallenges.some(c => c.id === challengeId)) return true;
+  const isChallengAvailable = (challengeDay: number) => {
+    if (completions.some(c => c.challenge_day === challengeDay)) return true;
     
     const nextIncompleteIndex = challenges.findIndex(
-      c => !completedChallenges.some(cc => cc.id === c.id)
+      c => !completions.some(cc => cc.challenge_day === c.id)
     );
     
     if (nextIncompleteIndex === -1) return true;
     
-    const nextIncompleteId = challenges[nextIncompleteIndex].id;
+    const nextIncompleteDay = challenges[nextIncompleteIndex].id;
     
-    if (challengeId !== nextIncompleteId) return false;
+    if (challengeDay !== nextIncompleteDay) return false;
     
-    if (lastCompletedDate) {
-      const daysDiff = getDaysDifferenceInTimezone(lastCompletedDate, new Date());
+    if (progress?.last_completed_date) {
+      const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date());
       if (daysDiff >= 1) return true;
     } else {
       return true;
@@ -41,6 +43,17 @@ const Challenges = () => {
   };
 
   const nextIncompleteIndex = getNextIncompleteIndex();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -56,7 +69,7 @@ const Challenges = () => {
 
         <div className="space-y-4">
           {challenges.map((challenge, index) => {
-            const isCompleted = completedChallenges.some(c => c.id === challenge.id);
+            const isCompleted = completions.some(c => c.challenge_day === challenge.id);
             const isToday = index === nextIncompleteIndex;
             const isAvailable = isChallengAvailable(challenge.id);
             const isLocked = !isAvailable;

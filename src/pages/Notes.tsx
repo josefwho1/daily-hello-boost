@@ -1,17 +1,23 @@
-import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { challenges } from "@/data/challenges";
-import { CompletedChallenge } from "@/types/challenge";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, SmilePlus, Meh, Frown } from "lucide-react";
 import { format } from "date-fns";
+import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
 
 const Notes = () => {
-  const [completedChallenges] = useLocalStorage<CompletedChallenge[]>("completedChallenges", []);
+  const { completions, loading } = useChallengeCompletions();
 
-  const sortedChallenges = [...completedChallenges].sort(
-    (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
-  );
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -21,7 +27,7 @@ const Notes = () => {
           Reflections from your journey
         </p>
 
-        {sortedChallenges.length === 0 ? (
+        {completions.length === 0 ? (
           <Card className="p-8 text-center">
             <p className="text-muted-foreground">
               Complete your first challenge to start writing notes about your experiences.
@@ -29,8 +35,8 @@ const Notes = () => {
           </Card>
         ) : (
           <div className="space-y-4">
-            {sortedChallenges.map((completed) => {
-              const challenge = challenges.find(c => c.id === completed.id);
+            {completions.map((completed) => {
+              const challenge = challenges.find(c => c.id === completed.challenge_day);
               if (!challenge) return null;
 
               const ratingConfig = {
@@ -52,7 +58,7 @@ const Notes = () => {
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                         <Calendar size={14} />
                         <span>
-                          {format(new Date(completed.completedAt), "MMM d, yyyy 'at' h:mm a")}
+                          {format(new Date(completed.completed_at), "MMM d, yyyy 'at' h:mm a")}
                         </span>
                       </div>
                       <Badge variant="outline" className={`${ratingColor} gap-1`}>
@@ -62,17 +68,17 @@ const Notes = () => {
                     </div>
                   </div>
                   
-                  {completed.name && (
+                  {completed.interaction_name && (
                     <div className="flex items-center gap-2 mb-3 text-sm">
                       <User size={14} className="text-muted-foreground" />
-                      <span className="text-foreground font-medium">{completed.name}</span>
+                      <span className="text-foreground font-medium">{completed.interaction_name}</span>
                     </div>
                   )}
                   
-                  {completed.note && (
+                  {completed.notes && (
                     <div className="bg-muted rounded-lg p-4 mt-3">
                       <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                        {completed.note}
+                        {completed.notes}
                       </p>
                     </div>
                   )}

@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { challenges } from "@/data/challenges";
-import { CompletedChallenge } from "@/types/challenge";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { StreakDisplay } from "@/components/StreakDisplay";
 import { Button } from "@/components/ui/button";
@@ -13,50 +11,57 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import logo from "@/assets/one-hello-logo.png";
-import { isSameDayInTimezone, getDaysDifferenceInTimezone, getDateInUserTimezone } from "@/lib/timezone";
+import { isSameDayInTimezone, getDaysDifferenceInTimezone } from "@/lib/timezone";
+import { useUserProgress } from "@/hooks/useUserProgress";
+import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [completedChallenges, setCompletedChallenges] = useLocalStorage<CompletedChallenge[]>("completedChallenges", []);
-  const [streak, setStreak] = useLocalStorage<number>("streak", 0);
-  const [lastCompletedDate, setLastCompletedDate] = useLocalStorage<string | null>("lastCompletedDate", null);
+  const { progress, loading: progressLoading, updateProgress } = useUserProgress();
+  const { completions, loading: completionsLoading, addCompletion } = useChallengeCompletions();
+  const [timezone] = useLocalStorage("timezone", Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [showNoteDialog, setShowNoteDialog] = useState(false);
   const [currentName, setCurrentName] = useState("");
   const [currentNote, setCurrentNote] = useState("");
   const [currentRating, setCurrentRating] = useState<'positive' | 'neutral' | 'negative'>('positive');
   const [completingChallengeId, setCompletingChallengeId] = useState<number | null>(null);
 
+  const loading = progressLoading || completionsLoading;
+
   useEffect(() => {
+    if (!progress) return;
+    
     // Check if streak should be reset
-    if (lastCompletedDate) {
-      const daysDiff = getDaysDifferenceInTimezone(lastCompletedDate, new Date());
+    if (progress.last_completed_date) {
+      const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date());
       
       if (daysDiff > 1) {
-        setStreak(0);
+        updateProgress({ current_streak: 0 });
         toast.error("Your streak was reset. Start fresh today!");
       }
     }
-  }, []);
+  }, [progress]);
 
-  const isChallengAvailable = (challengeId: number) => {
+  const isChallengAvailable = (challengeDay: number) => {
     // If completed, always available
-    if (completedChallenges.some(c => c.id === challengeId)) return true;
+    if (completions.some(c => c.challenge_day === challengeDay)) return true;
     
     // Find the next incomplete challenge
     const nextIncompleteIndex = challenges.findIndex(
-      c => !completedChallenges.some(cc => cc.id === c.id)
+      c => !completions.some(cc => cc.challenge_day === c.id)
     );
     
     if (nextIncompleteIndex === -1) return true; // All completed
     
-    const nextIncompleteId = challenges[nextIncompleteIndex].id;
+    const nextIncompleteDay = challenges[nextIncompleteIndex].id;
     
     // If this is not the next incomplete, it's not available
-    if (challengeId !== nextIncompleteId) return false;
+    if (challengeDay !== nextIncompleteDay) return false;
     
     // Check if it's past midnight since last completion
-    if (lastCompletedDate) {
-      const daysDiff = getDaysDifferenceInTimezone(lastCompletedDate, new Date());
+    if (progress?.last_completed_date) {
+      const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date());
       if (daysDiff >= 1) return true;
     } else {
       // First challenge is always available
@@ -68,7 +73,7 @@ const Home = () => {
 
   const getCurrentDayChallenge = () => {
     const nextIncompleteIndex = challenges.findIndex(
-      (c) => !completedChallenges.some((cc) => cc.id === c.id)
+      (c) => !completions.some((cc) => cc.challenge_day === c.id)
     );
     return nextIncompleteIndex !== -1
       ? challenges[nextIncompleteIndex]
@@ -76,8 +81,8 @@ const Home = () => {
   };
 
   const hasCompletedToday = (() => {
-    if (!lastCompletedDate) return false;
-    return isSameDayInTimezone(lastCompletedDate, new Date());
+    if (!progress?.last_completed_date) return false;
+    return isSameDayInTimezone(progress.last_completed_date, new Date());
   })();
 
   let todayChallenge = getCurrentDayChallenge();
@@ -85,17 +90,17 @@ const Home = () => {
   let isTodayChallengeAvailable = false;
 
   if (hasCompletedToday) {
-    const todayCompletion = [...completedChallenges]
+    const todayCompletion = [...completions]
       .sort(
         (a, b) =>
-          new Date(b.completedAt).getTime() -
-          new Date(a.completedAt).getTime()
+          new Date(b.completed_at).getTime() -
+          new Date(a.completed_at).getTime()
       )
-      .find((c) => isSameDayInTimezone(c.completedAt, new Date()));
+      .find((c) => isSameDayInTimezone(c.completed_at, new Date()));
 
     if (todayCompletion) {
       const completedChallenge = challenges.find(
-        (c) => c.id === todayCompletion.id
+        (c) => c.id === todayCompletion.challenge_day
       );
       if (completedChallenge) {
         todayChallenge = completedChallenge;
@@ -105,8 +110,8 @@ const Home = () => {
     }
   } else {
     todayChallenge = getCurrentDayChallenge();
-    isTodayChallengeCompleted = completedChallenges.some(
-      (c) => c.id === todayChallenge.id
+    isTodayChallengeCompleted = completions.some(
+      (c) => c.challenge_day === todayChallenge.id
     );
     isTodayChallengeAvailable = isChallengAvailable(todayChallenge.id);
   }
@@ -119,43 +124,68 @@ const Home = () => {
     setShowNoteDialog(true);
   };
 
-  const handleSaveNote = () => {
-    if (!completingChallengeId) return;
+  const handleSaveNote = async () => {
+    if (!completingChallengeId || !progress) return;
 
-    const today = new Date().toISOString();
-    const newCompleted: CompletedChallenge = {
-      id: completingChallengeId,
-      completedAt: today,
-      name: currentName,
-      note: currentNote,
-      rating: currentRating
-    };
+    try {
+      await addCompletion({
+        challenge_day: completingChallengeId,
+        interaction_name: currentName || null,
+        notes: currentNote || null,
+        rating: currentRating
+      });
 
-    setCompletedChallenges([...completedChallenges, newCompleted]);
-    
-    // Update streak
-    const lastDate = lastCompletedDate ? new Date(lastCompletedDate) : null;
-    
-    if (!lastDate) {
-      setStreak(1);
-    } else {
-      const daysDiff = getDaysDifferenceInTimezone(lastCompletedDate!, new Date());
+      const today = new Date().toISOString();
       
-      if (daysDiff === 1) {
-        setStreak(streak + 1);
-        toast.success(`🔥 ${streak + 1} day streak! Keep going!`);
-      } else if (daysDiff === 0) {
-        toast.success("Challenge completed!");
+      // Update streak
+      if (!progress.last_completed_date) {
+        await updateProgress({
+          current_streak: 1,
+          current_day: completingChallengeId + 1,
+          last_completed_date: today
+        });
       } else {
-        setStreak(1);
-        toast.success("Challenge completed! Starting a new streak!");
+        const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date());
+        
+        if (daysDiff === 1) {
+          const newStreak = progress.current_streak + 1;
+          await updateProgress({
+            current_streak: newStreak,
+            current_day: completingChallengeId + 1,
+            last_completed_date: today
+          });
+          toast.success(`🔥 ${newStreak} day streak! Keep going!`);
+        } else if (daysDiff === 0) {
+          toast.success("Challenge completed!");
+        } else {
+          await updateProgress({
+            current_streak: 1,
+            current_day: completingChallengeId + 1,
+            last_completed_date: today
+          });
+          toast.success("Challenge completed! Starting a new streak!");
+        }
       }
+      
+      setShowNoteDialog(false);
+      setCompletingChallengeId(null);
+    } catch (error) {
+      toast.error("Failed to save challenge completion");
     }
-    
-    setLastCompletedDate(today);
-    setShowNoteDialog(false);
-    setCompletingChallengeId(null);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!progress) return null;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -169,7 +199,7 @@ const Home = () => {
         </div>
 
         {/* Streak Display */}
-        <StreakDisplay streak={streak} className="mb-6" />
+        <StreakDisplay streak={progress.current_streak} className="mb-6" />
 
         {/* Today's Challenge */}
         <div className="mb-6">
