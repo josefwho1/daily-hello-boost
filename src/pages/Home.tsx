@@ -77,14 +77,58 @@ const Home = () => {
 
   const getCurrentDayChallenge = () => {
     const nextIncompleteIndex = challenges.findIndex(
-      c => !completedChallenges.some(cc => cc.id === c.id)
+      (c) => !completedChallenges.some((cc) => cc.id === c.id)
     );
-    return nextIncompleteIndex !== -1 ? challenges[nextIncompleteIndex] : challenges[challenges.length - 1];
+    return nextIncompleteIndex !== -1
+      ? challenges[nextIncompleteIndex]
+      : challenges[challenges.length - 1];
   };
 
-  const todayChallenge = getCurrentDayChallenge();
-  const isTodayChallengeCompleted = completedChallenges.some(c => c.id === todayChallenge.id);
-  const isTodayChallengeAvailable = isChallengAvailable(todayChallenge.id);
+  const hasCompletedToday = (() => {
+    if (!lastCompletedDate) return false;
+    const last = new Date(lastCompletedDate);
+    const today = new Date();
+    last.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return last.getTime() === today.getTime();
+  })();
+
+  let todayChallenge = getCurrentDayChallenge();
+  let isTodayChallengeCompleted = false;
+  let isTodayChallengeAvailable = false;
+
+  if (hasCompletedToday) {
+    const todayCompletion = [...completedChallenges]
+      .sort(
+        (a, b) =>
+          new Date(b.completedAt).getTime() -
+          new Date(a.completedAt).getTime()
+      )
+      .find((c) => {
+        const d = new Date(c.completedAt);
+        const t = new Date();
+        d.setHours(0, 0, 0, 0);
+        t.setHours(0, 0, 0, 0);
+        return d.getTime() === t.getTime();
+      });
+
+    if (todayCompletion) {
+      const completedChallenge = challenges.find(
+        (c) => c.id === todayCompletion.id
+      );
+      if (completedChallenge) {
+        todayChallenge = completedChallenge;
+        isTodayChallengeCompleted = true;
+        isTodayChallengeAvailable = false;
+      }
+    }
+  } else {
+    todayChallenge = getCurrentDayChallenge();
+    isTodayChallengeCompleted = completedChallenges.some(
+      (c) => c.id === todayChallenge.id
+    );
+    isTodayChallengeAvailable = isChallengAvailable(todayChallenge.id);
+  }
 
   const handleCompleteChallenge = (challengeId: number) => {
     setCompletingChallengeId(challengeId);
@@ -152,19 +196,26 @@ const Home = () => {
         {/* Today's Challenge */}
         <div className="mb-6">
           <h2 className="text-xl font-bold mb-4 text-foreground">
-            {isTodayChallengeCompleted ? "Today's Challenge - Complete!" : "Today's Challenge"}
+            {isTodayChallengeCompleted
+              ? "Today's Challenge - Complete!"
+              : "Today's Challenge"}
           </h2>
           <ChallengeCard
             challenge={todayChallenge}
             isCompleted={isTodayChallengeCompleted}
             isToday={true}
             isLocked={!isTodayChallengeAvailable}
-            onComplete={isTodayChallengeCompleted ? undefined : () => handleCompleteChallenge(todayChallenge.id)}
+            onComplete={
+              isTodayChallengeCompleted
+                ? undefined
+                : () => handleCompleteChallenge(todayChallenge.id)
+            }
           />
-          {isTodayChallengeCompleted && todayChallenge.id < 7 && (
+          {hasCompletedToday && todayChallenge.id < 7 && (
             <div className="mt-4 bg-primary/10 border border-primary/20 rounded-2xl p-6 text-center">
               <p className="text-foreground font-medium">
-                Great work today! Come back tomorrow to reveal your next challenge
+                Great work today! Come back tomorrow to reveal your next
+                challenge
               </p>
             </div>
           )}
