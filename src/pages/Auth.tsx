@@ -37,7 +37,7 @@ const Auth = () => {
 
       if (signInError) {
         // User doesn't exist, create new account
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -48,21 +48,6 @@ const Auth = () => {
         });
 
         if (signUpError) throw signUpError;
-
-        // Create profile
-        if (signUpData.user) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({ 
-              id: signUpData.user.id,
-              name: validated.name 
-            });
-
-          if (profileError) {
-            // Profile might already exist from trigger
-            console.log('Profile creation note:', profileError);
-          }
-        }
 
         toast({
           title: "Welcome!",
