@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserProgress } from "@/hooks/useUserProgress";
+import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -28,6 +30,8 @@ import { toast } from "sonner";
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { resetProgress } = useUserProgress();
+  const { clearCompletions } = useChallengeCompletions();
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage("notificationsEnabled", true);
   const [reminderTime, setReminderTime] = useLocalStorage("reminderTime", "09:00");
   const [timezone, setTimezone] = useLocalStorage("timezone", Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -48,17 +52,15 @@ const Settings = () => {
     }
   };
 
-  const handleResetStreak = () => {
-    localStorage.setItem("streak", "0");
-    localStorage.setItem("lastCompletedDate", "null");
+  const handleResetStreak = async () => {
+    await resetProgress();
     setShowResetDialog(false);
     toast.success("Streak reset successfully");
   };
 
-  const handleClearData = () => {
-    localStorage.setItem("completedChallenges", "[]");
-    localStorage.setItem("streak", "0");
-    localStorage.setItem("lastCompletedDate", "null");
+  const handleClearData = async () => {
+    await resetProgress();
+    await clearCompletions();
     setShowClearDialog(false);
     toast.success("All progress cleared");
   };
