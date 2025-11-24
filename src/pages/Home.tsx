@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import logo from "@/assets/one-hello-logo.png";
+import { isSameDayInTimezone, getDaysDifferenceInTimezone, getDateInUserTimezone } from "@/lib/timezone";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -28,12 +29,7 @@ const Home = () => {
   useEffect(() => {
     // Check if streak should be reset
     if (lastCompletedDate) {
-      const lastDate = new Date(lastCompletedDate);
-      const today = new Date();
-      lastDate.setHours(0, 0, 0, 0);
-      today.setHours(0, 0, 0, 0);
-      
-      const daysDiff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+      const daysDiff = getDaysDifferenceInTimezone(lastCompletedDate, new Date());
       
       if (daysDiff > 1) {
         setStreak(0);
@@ -60,12 +56,7 @@ const Home = () => {
     
     // Check if it's past midnight since last completion
     if (lastCompletedDate) {
-      const lastDate = new Date(lastCompletedDate);
-      const now = new Date();
-      lastDate.setHours(0, 0, 0, 0);
-      now.setHours(0, 0, 0, 0);
-      const daysDiff = Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-      
+      const daysDiff = getDaysDifferenceInTimezone(lastCompletedDate, new Date());
       if (daysDiff >= 1) return true;
     } else {
       // First challenge is always available
@@ -86,11 +77,7 @@ const Home = () => {
 
   const hasCompletedToday = (() => {
     if (!lastCompletedDate) return false;
-    const last = new Date(lastCompletedDate);
-    const today = new Date();
-    last.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
-    return last.getTime() === today.getTime();
+    return isSameDayInTimezone(lastCompletedDate, new Date());
   })();
 
   let todayChallenge = getCurrentDayChallenge();
@@ -104,13 +91,7 @@ const Home = () => {
           new Date(b.completedAt).getTime() -
           new Date(a.completedAt).getTime()
       )
-      .find((c) => {
-        const d = new Date(c.completedAt);
-        const t = new Date();
-        d.setHours(0, 0, 0, 0);
-        t.setHours(0, 0, 0, 0);
-        return d.getTime() === t.getTime();
-      });
+      .find((c) => isSameDayInTimezone(c.completedAt, new Date()));
 
     if (todayCompletion) {
       const completedChallenge = challenges.find(
@@ -154,14 +135,11 @@ const Home = () => {
     
     // Update streak
     const lastDate = lastCompletedDate ? new Date(lastCompletedDate) : null;
-    const currentDate = new Date();
     
     if (!lastDate) {
       setStreak(1);
     } else {
-      lastDate.setHours(0, 0, 0, 0);
-      currentDate.setHours(0, 0, 0, 0);
-      const daysDiff = Math.floor((currentDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+      const daysDiff = getDaysDifferenceInTimezone(lastCompletedDate!, new Date());
       
       if (daysDiff === 1) {
         setStreak(streak + 1);
