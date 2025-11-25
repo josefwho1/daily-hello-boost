@@ -11,7 +11,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import logo from "@/assets/one-hello-logo.png";
-import { isSameDayInTimezone, getDaysDifferenceInTimezone } from "@/lib/timezone";
+import { isSameDayInTimezone, getDaysDifferenceInTimezone, getDateInUserTimezone } from "@/lib/timezone";
+import { format } from "date-fns";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -30,8 +31,17 @@ const Home = () => {
   const [currentRating, setCurrentRating] = useState<'positive' | 'neutral' | 'negative'>('positive');
   const [completingChallengeId, setCompletingChallengeId] = useState<number | null>(null);
   const [username, setUsername] = useState<string>("");
+  const [currentDateTime, setCurrentDateTime] = useState<Date>(getDateInUserTimezone());
 
   const loading = progressLoading || completionsLoading;
+
+  // Update current date/time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentDateTime(getDateInUserTimezone());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -208,6 +218,9 @@ const Home = () => {
           <h1 className="text-lg font-bold text-foreground mb-2">
             Hello {username}
           </h1>
+          <p className="text-sm text-muted-foreground mb-2">
+            {format(currentDateTime, "EEEE, MMMM d, yyyy · h:mm a")}
+          </p>
           <p className="text-foreground font-medium mb-2">
             Welcome to the One Hello 7-Day Pilot. Thank you for your participation and good luck!
           </p>
