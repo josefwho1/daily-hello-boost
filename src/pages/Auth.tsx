@@ -89,7 +89,7 @@ const Auth = () => {
           <img 
             src={logo}
             alt="One Hello Logo" 
-            className="h-96 w-auto mx-auto mb-2"
+            className="w-full max-w-xs h-auto mx-auto mb-2 object-contain"
             loading="eager"
             fetchPriority="high"
           />
