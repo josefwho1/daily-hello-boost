@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Bell, RotateCcw, Trash2, Globe, LogOut } from "lucide-react";
+import { Bell, RotateCcw, Trash2, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 const Settings = () => {
@@ -36,7 +36,6 @@ const Settings = () => {
   const { clearCompletions } = useChallengeCompletions();
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage("notificationsEnabled", true);
   const [reminderTime, setReminderTime] = useLocalStorage("reminderTime", "09:00");
-  const [timezone, setTimezone] = useLocalStorage("timezone", "Europe/London");
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [username, setUsername] = useState<string>("");
@@ -80,34 +79,6 @@ const Settings = () => {
     "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
     "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
     "18:00", "19:00", "20:00", "21:00"
-  ];
-
-  const timezones = [
-    { value: "Etc/GMT+12", label: "Baker Island (GMT-12)" },
-    { value: "Pacific/Midway", label: "Midway Island (GMT-11)" },
-    { value: "Pacific/Honolulu", label: "Honolulu (GMT-10)" },
-    { value: "America/Anchorage", label: "Anchorage (GMT-9)" },
-    { value: "America/Los_Angeles", label: "Los Angeles (GMT-8)" },
-    { value: "America/Denver", label: "Denver (GMT-7)" },
-    { value: "America/Chicago", label: "Chicago (GMT-6)" },
-    { value: "America/New_York", label: "New York (GMT-5)" },
-    { value: "America/Halifax", label: "Halifax (GMT-4)" },
-    { value: "America/Argentina/Buenos_Aires", label: "Buenos Aires (GMT-3)" },
-    { value: "Atlantic/South_Georgia", label: "South Georgia (GMT-2)" },
-    { value: "Atlantic/Cape_Verde", label: "Cape Verde (GMT-1)" },
-    { value: "Europe/London", label: "London (GMT+0)" },
-    { value: "Europe/Paris", label: "Paris (GMT+1)" },
-    { value: "Europe/Athens", label: "Athens (GMT+2)" },
-    { value: "Europe/Moscow", label: "Moscow (GMT+3)" },
-    { value: "Asia/Dubai", label: "Dubai (GMT+4)" },
-    { value: "Asia/Karachi", label: "Karachi (GMT+5)" },
-    { value: "Asia/Dhaka", label: "Dhaka (GMT+6)" },
-    { value: "Asia/Bangkok", label: "Bangkok (GMT+7)" },
-    { value: "Asia/Singapore", label: "Singapore (GMT+8)" },
-    { value: "Asia/Tokyo", label: "Tokyo (GMT+9)" },
-    { value: "Australia/Sydney", label: "Sydney (GMT+10)" },
-    { value: "Pacific/Guadalcanal", label: "Solomon Islands (GMT+11)" },
-    { value: "Pacific/Auckland", label: "Auckland (GMT+12)" },
   ];
 
   return (
@@ -159,35 +130,6 @@ const Settings = () => {
                 </p>
               </div>
             )}
-          </div>
-        </Card>
-
-        {/* Timezone */}
-        <Card className="p-6 mb-4">
-          <div className="flex items-center gap-3 mb-4">
-            <Globe className="text-primary" size={24} />
-            <h2 className="text-lg font-semibold text-foreground">Timezone</h2>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="timezone" className="text-sm">
-              Your Timezone
-            </Label>
-            <Select value={timezone} onValueChange={setTimezone}>
-              <SelectTrigger id="timezone">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {timezones.map((tz) => (
-                  <SelectItem key={tz.value} value={tz.value}>
-                    {tz.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Challenges unlock at midnight in your timezone
-            </p>
           </div>
         </Card>
 
