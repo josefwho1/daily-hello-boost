@@ -84,6 +84,7 @@ export type Database = {
           created_at: string
           current_day: number
           current_streak: number
+          has_seen_welcome_messages: boolean | null
           id: string
           last_completed_date: string | null
           updated_at: string
@@ -93,6 +94,7 @@ export type Database = {
           created_at?: string
           current_day?: number
           current_streak?: number
+          has_seen_welcome_messages?: boolean | null
           id?: string
           last_completed_date?: string | null
           updated_at?: string
@@ -102,6 +104,7 @@ export type Database = {
           created_at?: string
           current_day?: number
           current_streak?: number
+          has_seen_welcome_messages?: boolean | null
           id?: string
           last_completed_date?: string | null
           updated_at?: string

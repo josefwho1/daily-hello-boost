@@ -6,6 +6,7 @@ export interface UserProgress {
   current_streak: number;
   current_day: number;
   last_completed_date: string | null;
+  has_seen_welcome_messages?: boolean;
 }
 
 export const useUserProgress = () => {
