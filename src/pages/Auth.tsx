@@ -102,7 +102,7 @@ const Auth = () => {
               <Input
                 id="name"
                 type="text"
-                placeholder="name"
+                placeholder="username"
                 value={name}
                 onChange={(e) => setName(e.target.value.toLowerCase())}
                 required
