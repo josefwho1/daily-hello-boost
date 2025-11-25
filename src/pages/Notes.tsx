@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, User, SmilePlus, Meh, Frown } from "lucide-react";
 import { format } from "date-fns";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
+import { getDateInUserTimezone } from "@/lib/timezone";
 
 const Notes = () => {
   const { completions, loading } = useChallengeCompletions();
@@ -58,7 +59,7 @@ const Notes = () => {
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                         <Calendar size={14} />
                         <span>
-                          {format(new Date(completed.completed_at), "MMM d, yyyy 'at' h:mm a")}
+                          {format(getDateInUserTimezone(completed.completed_at), "MMM d, yyyy 'at' h:mm a")}
                         </span>
                       </div>
                       <Badge variant="outline" className={`${ratingColor} gap-1`}>
