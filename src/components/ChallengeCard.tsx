@@ -68,6 +68,12 @@ export const ChallengeCard = ({
             {challenge.description}
           </p>
           
+          {!isLocked && challenge.tips && (
+            <p className="text-sm leading-relaxed mt-2 text-muted-foreground/70 italic">
+              {challenge.tips}
+            </p>
+          )}
+          
           {isToday && !isCompleted && onComplete && (
             <Button 
               onClick={(e) => {
