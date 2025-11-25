@@ -21,7 +21,7 @@ const Notes = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-center text-foreground">Reflections from your journey</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center text-foreground">Notes from your interactions</h1>
 
         {completions.length === 0 ? (
           <Card className="p-8 text-center">
