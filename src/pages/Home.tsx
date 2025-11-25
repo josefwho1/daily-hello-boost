@@ -302,18 +302,17 @@ const Home = () => {
             </DialogHeader>
             <div className="space-y-4">
               <div className="text-center space-y-3">
-                <p className="font-bold text-xl">Welcome Aboard!</p>
-                <p className="font-semibold text-base">Why One Hello exists</p>
-                <div className="text-sm leading-relaxed space-y-1">
-                  <p>We're the loneliest generation in history,</p>
-                  <p>even though we're more "connected" than ever.</p>
+                <p className="font-bold text-lg">Why One Hello exists</p>
+                <div className="space-y-2 text-sm leading-relaxed">
+                  <p>We're the loneliest generation in history, even though we're more "connected" than ever.</p>
                   <p>One 30-second hello a day is the smallest, most powerful antidote.</p>
                   <p>It's exposure therapy for social anxiety.</p>
                   <p>It's reps for the muscle we forgot we had.</p>
                   <p>It's the fastest way to make any city feel like home again.</p>
-                  <p>You're not just doing a challenge.</p>
-                  <p>You're part of the friendliest rebellion on earth.</p>
-                  <p>One Hello at a time.</p>
+                  <p className="font-semibold">You're not just doing a challenge.</p>
+                  <p className="font-semibold">You're part of the friendliest movement on earth.</p>
+                  <p className="font-semibold">One Hello at a time.</p>
+                  <p className="italic">Thank you for being a part of it.</p>
                 </div>
               </div>
               <Button onClick={() => {
