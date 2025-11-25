@@ -112,7 +112,7 @@ const Auth = () => {
                 maxLength={50}
               />
               <p className="text-xs text-muted-foreground">
-                IG Handle (minus the @ & all lowercase - i.e. josefwho)
+                Whatever you like, just make sure you remember it for tomorrow :-)
               </p>
             </div>
 
