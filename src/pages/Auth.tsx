@@ -102,15 +102,12 @@ const Auth = () => {
               <Input
                 id="name"
                 type="text"
-                placeholder="username"
+                placeholder="name"
                 value={name}
                 onChange={(e) => setName(e.target.value.toLowerCase())}
                 required
                 maxLength={50}
               />
-              <p className="text-xs text-muted-foreground">
-                Whatever you like, just make sure you remember it for tomorrow :-)
-              </p>
             </div>
 
             <Button 
