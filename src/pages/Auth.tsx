@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import logo from '@/assets/one-hello-logo.png';
 
 const usernameSchema = z.object({
   name: z.string().trim().min(1, { message: "Username is required" }).max(50, { message: "Username must be less than 50 characters" }),
@@ -86,9 +87,11 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <img 
-            src="/src/assets/one-hello-logo.png" 
-            alt="One Hello" 
+            src={logo}
+            alt="One Hello Logo" 
             className="h-96 w-auto mx-auto mb-2"
+            loading="eager"
+            fetchPriority="high"
           />
           <CardTitle>Welcome to the 7-Day Challenge pilot</CardTitle>
           <CardDescription>
