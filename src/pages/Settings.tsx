@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
@@ -8,14 +7,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Bell, RotateCcw, Trash2, LogOut } from "lucide-react";
+import { RotateCcw, Trash2, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 const Settings = () => {
@@ -34,8 +25,6 @@ const Settings = () => {
   const { user } = useAuth();
   const { resetProgress } = useUserProgress();
   const { clearCompletions } = useChallengeCompletions();
-  const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage("notificationsEnabled", true);
-  const [reminderTime, setReminderTime] = useLocalStorage("reminderTime", "09:00");
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [username, setUsername] = useState<string>("");
@@ -75,12 +64,6 @@ const Settings = () => {
     toast.success("All progress cleared");
   };
 
-  const timeOptions = [
-    "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
-    "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
-    "18:00", "19:00", "20:00", "21:00"
-  ];
-
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-8">
@@ -88,50 +71,6 @@ const Settings = () => {
         <p className="text-muted-foreground mb-6">
           Manage your One Hello experience
         </p>
-
-        {/* Notifications */}
-        <Card className="p-6 mb-4">
-          <div className="flex items-center gap-3 mb-4">
-            <Bell className="text-primary" size={24} />
-            <h2 className="text-lg font-semibold text-foreground">Notifications</h2>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="notifications" className="text-sm">
-                Daily Reminders
-              </Label>
-              <Switch
-                id="notifications"
-                checked={notificationsEnabled}
-                onCheckedChange={setNotificationsEnabled}
-              />
-            </div>
-
-            {notificationsEnabled && (
-              <div className="space-y-2">
-                <Label htmlFor="reminder-time" className="text-sm">
-                  Reminder Time
-                </Label>
-                <Select value={reminderTime} onValueChange={setReminderTime}>
-                  <SelectTrigger id="reminder-time">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {timeOptions.map((time) => (
-                      <SelectItem key={time} value={time}>
-                        {time}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  You'll receive a daily reminder at this time
-                </p>
-              </div>
-            )}
-          </div>
-        </Card>
 
         {/* Program Management */}
         <Card className="p-6 mb-4">
