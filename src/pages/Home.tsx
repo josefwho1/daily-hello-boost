@@ -15,9 +15,12 @@ import { isSameDayInTimezone, getDaysDifferenceInTimezone } from "@/lib/timezone
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { progress, loading: progressLoading, updateProgress } = useUserProgress();
   const { completions, loading: completionsLoading, addCompletion } = useChallengeCompletions();
   const [timezone] = useLocalStorage("timezone", Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -26,8 +29,27 @@ const Home = () => {
   const [currentNote, setCurrentNote] = useState("");
   const [currentRating, setCurrentRating] = useState<'positive' | 'neutral' | 'negative'>('positive');
   const [completingChallengeId, setCompletingChallengeId] = useState<number | null>(null);
+  const [username, setUsername] = useState<string>("");
 
   const loading = progressLoading || completionsLoading;
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', user.id)
+        .single();
+      
+      if (data) {
+        setUsername(data.name);
+      }
+    };
+    
+    fetchUsername();
+  }, [user]);
 
   useEffect(() => {
     if (!progress) return;
@@ -192,6 +214,9 @@ const Home = () => {
       <div className="max-w-md mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold text-foreground mb-6">
+            Hello {username}
+          </h1>
           <img src={logo} alt="One Hello" className="w-72 mx-auto mb-4" />
           <p className="text-foreground font-medium mb-2">
             Welcome to the One Hello 7-Day Pilot. Thank you for your participation and good luck!

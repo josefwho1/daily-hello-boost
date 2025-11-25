@@ -98,16 +98,19 @@ const Auth = () => {
         <CardContent>
           <form onSubmit={handleContinue} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">IG Handle (minus the @ - i.e. josefwho)</Label>
+              <Label htmlFor="name">Username</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="username"
+                placeholder="josefwho"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value.toLowerCase())}
                 required
                 maxLength={50}
               />
+              <p className="text-xs text-muted-foreground">
+                IG Handle (minus the @ & all lowercase - i.e. josefwho)
+              </p>
             </div>
 
             <Button 
