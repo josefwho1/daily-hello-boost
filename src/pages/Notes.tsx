@@ -1,10 +1,8 @@
 import { challenges } from "@/data/challenges";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User, SmilePlus, Meh, Frown } from "lucide-react";
-import { format } from "date-fns";
+import { User, SmilePlus, Meh, Frown } from "lucide-react";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
-import { getDateInUserTimezone } from "@/lib/timezone";
 
 const Notes = () => {
   const { completions, loading } = useChallengeCompletions();
@@ -50,15 +48,9 @@ const Notes = () => {
                   <div className="flex items-start gap-3 mb-3">
                     <span className="text-3xl">{challenge.icon}</span>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-1 text-foreground">
+                      <h3 className="font-bold text-lg mb-2 text-foreground">
                         {challenge.title}
                       </h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                        <Calendar size={14} />
-                        <span>
-                          {format(getDateInUserTimezone(completed.completed_at), "MMM d, yyyy 'at' h:mm a")}
-                        </span>
-                      </div>
                       <Badge variant="outline" className={`${ratingColor} gap-1`}>
                         <RatingIcon size={14} />
                         <span className="capitalize">{completed.rating}</span>
