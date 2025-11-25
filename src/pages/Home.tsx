@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import logo from "@/assets/one-hello-logo.png";
-import { isSameDayInTimezone, getDaysDifferenceInTimezone, getDateInUserTimezone } from "@/lib/timezone";
+import { isSameDayInTimezone, getDaysDifferenceInTimezone, getDateInUserTimezone, getUserTimezone } from "@/lib/timezone";
 import { format } from "date-fns";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
@@ -84,13 +84,20 @@ const Home = () => {
     // Check if it's past midnight since last completion
     if (progress?.last_completed_date) {
       const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date());
+      console.log('Challenge availability check:', {
+        challengeDay,
+        lastCompletedDate: progress.last_completed_date,
+        currentDate: new Date().toISOString(),
+        daysDiff,
+        timezone: getUserTimezone(),
+        isAvailable: daysDiff >= 1
+      });
       if (daysDiff >= 1) return true;
+      return false;
     } else {
       // First challenge is always available
       return true;
     }
-    
-    return false;
   };
 
   const getCurrentDayChallenge = () => {
