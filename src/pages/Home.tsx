@@ -24,7 +24,7 @@ const Home = () => {
   const { user } = useAuth();
   const { progress, loading: progressLoading, updateProgress } = useUserProgress();
   const { completions, loading: completionsLoading, addCompletion } = useChallengeCompletions();
-  const [timezone] = useLocalStorage("timezone", Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [timezone] = useLocalStorage("timezone", "Europe/London");
   const [showNoteDialog, setShowNoteDialog] = useState(false);
   const [currentName, setCurrentName] = useState("");
   const [currentNote, setCurrentNote] = useState("");
