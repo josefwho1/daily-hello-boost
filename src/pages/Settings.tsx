@@ -25,7 +25,6 @@ const Settings = () => {
   const { user } = useAuth();
   const { resetProgress } = useUserProgress();
   const { clearCompletions } = useChallengeCompletions();
-  const [showResetDialog, setShowResetDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [username, setUsername] = useState<string>("");
 
@@ -51,12 +50,6 @@ const Settings = () => {
     }
   };
 
-  const handleResetStreak = async () => {
-    await resetProgress();
-    setShowResetDialog(false);
-    toast.success("Streak reset successfully");
-  };
-
   const handleClearData = async () => {
     await resetProgress();
     await clearCompletions();
@@ -80,14 +73,6 @@ const Settings = () => {
           </div>
           
           <div className="space-y-3">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => setShowResetDialog(true)}
-            >
-              Reset Streak
-            </Button>
-            
             <Button
               variant="outline"
               className="w-full justify-start text-destructive hover:text-destructive"
@@ -134,24 +119,6 @@ const Settings = () => {
           </p>
           <p className="text-xs text-muted-foreground mt-4">Version 1.0.0</p>
         </Card>
-
-        {/* Reset Streak Dialog */}
-        <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Reset Streak?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will reset your streak counter to 0. Your completed challenges and notes will remain intact.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleResetStreak}>
-                Reset Streak
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
 
         {/* Clear Data Dialog */}
         <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
