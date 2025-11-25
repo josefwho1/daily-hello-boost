@@ -19,6 +19,7 @@ export type Database = {
           challenge_day: number
           completed_at: string
           created_at: string
+          difficulty_rating: number | null
           id: string
           interaction_name: string | null
           notes: string | null
@@ -29,6 +30,7 @@ export type Database = {
           challenge_day: number
           completed_at?: string
           created_at?: string
+          difficulty_rating?: number | null
           id?: string
           interaction_name?: string | null
           notes?: string | null
@@ -39,6 +41,7 @@ export type Database = {
           challenge_day?: number
           completed_at?: string
           created_at?: string
+          difficulty_rating?: number | null
           id?: string
           interaction_name?: string | null
           notes?: string | null

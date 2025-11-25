@@ -28,6 +28,7 @@ const Home = () => {
   const [currentName, setCurrentName] = useState("");
   const [currentNote, setCurrentNote] = useState("");
   const [currentRating, setCurrentRating] = useState<'positive' | 'neutral' | 'negative'>('positive');
+  const [currentDifficulty, setCurrentDifficulty] = useState<number>(3);
   const [completingChallengeId, setCompletingChallengeId] = useState<number | null>(null);
   const [username, setUsername] = useState<string>("");
   const [currentDateTime, setCurrentDateTime] = useState<Date>(getDateInUserTimezone());
@@ -141,6 +142,7 @@ const Home = () => {
     setCurrentName("");
     setCurrentNote("");
     setCurrentRating('positive');
+    setCurrentDifficulty(3);
     setShowNoteDialog(true);
   };
 
@@ -152,7 +154,8 @@ const Home = () => {
         challenge_day: completingChallengeId,
         interaction_name: currentName || null,
         notes: currentNote || null,
-        rating: currentRating
+        rating: currentRating,
+        difficulty_rating: currentDifficulty
       });
 
       const today = new Date().toISOString();
@@ -291,7 +294,7 @@ const Home = () => {
                 <Label htmlFor="notes">Notes (Optional)</Label>
                 <Textarea
                   id="notes"
-                  placeholder="Write about your experience... What did you learn? How did it feel?"
+                  placeholder="Write about your experience, what was it like, any descriptions to remember them by"
                   value={currentNote}
                   onChange={(e) => setCurrentNote(e.target.value)}
                   className="min-h-24"
@@ -312,6 +315,32 @@ const Home = () => {
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="negative" id="negative" />
                     <Label htmlFor="negative" className="font-normal cursor-pointer">Negative</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Challenge Difficulty *</Label>
+                <RadioGroup value={currentDifficulty.toString()} onValueChange={(value) => setCurrentDifficulty(parseInt(value))}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="1" id="diff-1" />
+                    <Label htmlFor="diff-1" className="font-normal cursor-pointer">1 – Very easy</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="2" id="diff-2" />
+                    <Label htmlFor="diff-2" className="font-normal cursor-pointer">2 – Easy</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="3" id="diff-3" />
+                    <Label htmlFor="diff-3" className="font-normal cursor-pointer">3 – Just right</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="4" id="diff-4" />
+                    <Label htmlFor="diff-4" className="font-normal cursor-pointer">4 – A bit challenging</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="5" id="diff-5" />
+                    <Label htmlFor="diff-5" className="font-normal cursor-pointer">5 – Very challenging</Label>
                   </div>
                 </RadioGroup>
               </div>

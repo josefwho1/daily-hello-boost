@@ -9,6 +9,7 @@ export interface ChallengeCompletion {
   interaction_name: string | null;
   notes: string | null;
   rating: 'positive' | 'neutral' | 'negative';
+  difficulty_rating: number | null;
 }
 
 export const useChallengeCompletions = () => {
@@ -49,6 +50,7 @@ export const useChallengeCompletions = () => {
     interaction_name: string | null;
     notes: string | null;
     rating: 'positive' | 'neutral' | 'negative';
+    difficulty_rating: number | null;
   }) => {
     if (!user) return;
 
