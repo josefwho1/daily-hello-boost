@@ -34,21 +34,11 @@ const Home = () => {
   const loading = progressLoading || completionsLoading;
 
   useEffect(() => {
-    const fetchUsername = async () => {
-      if (!user) return;
-      
-      const { data } = await supabase
-        .from('profiles')
-        .select('name')
-        .eq('id', user.id)
-        .single();
-      
-      if (data) {
-        setUsername(data.name);
-      }
-    };
+    if (!user) return;
     
-    fetchUsername();
+    // Get username directly from user metadata
+    const name = user.user_metadata?.name || 'User';
+    setUsername(name);
   }, [user]);
 
   useEffect(() => {
@@ -214,10 +204,10 @@ const Home = () => {
       <div className="max-w-md mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-foreground mb-6">
+          <img src={logo} alt="One Hello" className="w-72 mx-auto mb-4" />
+          <h1 className="text-lg font-bold text-foreground mb-2">
             Hello {username}
           </h1>
-          <img src={logo} alt="One Hello" className="w-72 mx-auto mb-4" />
           <p className="text-foreground font-medium mb-2">
             Welcome to the One Hello 7-Day Pilot. Thank you for your participation and good luck!
           </p>
