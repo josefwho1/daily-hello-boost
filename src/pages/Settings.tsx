@@ -42,21 +42,11 @@ const Settings = () => {
   const [username, setUsername] = useState<string>("");
 
   useEffect(() => {
-    const fetchUsername = async () => {
-      if (!user) return;
-      
-      const { data } = await supabase
-        .from('profiles')
-        .select('name')
-        .eq('id', user.id)
-        .single();
-      
-      if (data) {
-        setUsername(data.name);
-      }
-    };
+    if (!user) return;
     
-    fetchUsername();
+    // Get username directly from user metadata
+    const name = user.user_metadata?.name || 'User';
+    setUsername(name);
   }, [user]);
 
   const handleSignOut = async () => {
