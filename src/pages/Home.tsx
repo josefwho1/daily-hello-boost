@@ -305,7 +305,7 @@ const Home = () => {
                 <p className="font-bold text-lg">Why One Hello exists</p>
                 <div className="space-y-2 text-sm leading-relaxed">
                   <p>We're the loneliest generation in history, even though we're more "connected" than ever.</p>
-                  <p>One 30-second hello a day is the smallest, most powerful antidote.</p>
+                  <p>One Hello a day is the smallest, most powerful antidote.</p>
                   <p>It's exposure therapy for social anxiety.</p>
                   <p>It's reps for the muscle we forgot we had.</p>
                   <p>It's the fastest way to make any city feel like home again.</p>
