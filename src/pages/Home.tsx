@@ -276,7 +276,7 @@ const Home = () => {
           <h3 className="text-lg font-bold mb-3 text-foreground">Instructions</h3>
           <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
             <p>Each day you will receive a new challenge.</p>
-            <p>Once you complete a challenge, come straight back here. Tap "Complete Challenge" & add any details you remember.</p>
+            <p>Once you complete a challenge, come straight back here (<em>onehello.io</em>). Tap "Complete Challenge" & add any details you remember.</p>
             <p>Names are magic if you can get them. Write it down here so you don't forget. Instantly turns a stranger into a friend.</p>
           </div>
         </div>
