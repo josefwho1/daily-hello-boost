@@ -31,16 +31,16 @@ export const ChallengeCard = ({
         isLocked && "border-border opacity-60"
       )}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex flex-col items-center text-center">
         <div className={cn(
-          "text-4xl flex-shrink-0",
+          "text-4xl mb-4",
           isLocked && "grayscale opacity-50"
         )}>
           {challenge.icon}
         </div>
         
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="w-full">
+          <div className="flex items-center justify-center gap-2 mb-2">
             <span className="text-xs font-semibold text-muted-foreground">DAY {challenge.day}</span>
             {isCompleted && (
               <div className="flex items-center gap-1 text-success">
