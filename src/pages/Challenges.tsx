@@ -19,27 +19,6 @@ const Challenges = () => {
     );
   };
 
-  const isChallengAvailable = (challengeDay: number) => {
-    if (completions.some(c => c.challenge_day === challengeDay)) return true;
-    
-    const nextIncompleteIndex = challenges.findIndex(
-      c => !completions.some(cc => cc.challenge_day === c.id)
-    );
-    
-    if (nextIncompleteIndex === -1) return true;
-    
-    const nextIncompleteDay = challenges[nextIncompleteIndex].id;
-    
-    if (challengeDay !== nextIncompleteDay) return false;
-    
-    if (progress?.last_completed_date) {
-      const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date());
-      if (daysDiff >= 1) return true;
-      return false;
-    } else {
-      return true;
-    }
-  };
 
   const nextIncompleteIndex = getNextIncompleteIndex();
 
@@ -70,8 +49,6 @@ const Challenges = () => {
           {challenges.map((challenge, index) => {
             const isCompleted = completions.some(c => c.challenge_day === challenge.id);
             const isToday = index === nextIncompleteIndex;
-            const isAvailable = isChallengAvailable(challenge.id);
-            const isLocked = !isAvailable;
 
             return (
               <ChallengeCard
@@ -79,8 +56,8 @@ const Challenges = () => {
                 challenge={challenge}
                 isCompleted={isCompleted}
                 isToday={isToday}
-                isLocked={isLocked}
-                onClick={() => !isLocked && navigate("/")}
+                isLocked={false}
+                onClick={() => navigate("/")}
               />
             );
           })}
