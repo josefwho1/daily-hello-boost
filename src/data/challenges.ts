@@ -5,7 +5,7 @@ export const challenges: Challenge[] = [
     id: 1,
     day: 1,
     title: "First Hello",
-    description: "Let's start nice a easy. Smile & say Hello to one stranger today.",
+    description: "Let's start nice a easy.\nSmile & say Hello to one stranger today.",
     icon: "👋",
     tips: "\"Hello\" \"Hi\" \"Hey\""
   },
@@ -30,7 +30,7 @@ export const challenges: Challenge[] = [
     day: 4,
     title: "Nice shoes",
     description: "Give a stranger a compliment.",
-    icon: "☕",
+    icon: "👟",
     tips: "\"I really like you shirt, where did you get it from?\" or \"nice shoes\""
   },
   {
