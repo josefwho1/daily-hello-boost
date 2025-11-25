@@ -6,10 +6,10 @@ export const getUserTimezone = (): string => {
     try {
       return JSON.parse(stored);
     } catch {
-      return Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return "Europe/London";
     }
   }
-  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return "Europe/London";
 };
 
 export const getDateInUserTimezone = (date: Date | string = new Date()): Date => {

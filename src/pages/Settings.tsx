@@ -36,7 +36,7 @@ const Settings = () => {
   const { clearCompletions } = useChallengeCompletions();
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage("notificationsEnabled", true);
   const [reminderTime, setReminderTime] = useLocalStorage("reminderTime", "09:00");
-  const [timezone, setTimezone] = useLocalStorage("timezone", Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [timezone, setTimezone] = useLocalStorage("timezone", "Europe/London");
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [username, setUsername] = useState<string>("");
