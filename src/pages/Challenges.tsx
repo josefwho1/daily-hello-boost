@@ -2,7 +2,7 @@ import { challenges } from "@/data/challenges";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/one-hello-logo.png";
-import { getDaysDifferenceInTimezone, getUserTimezone } from "@/lib/timezone";
+import { getDaysDifferenceInTimezone } from "@/lib/timezone";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
 import { useUserProgress } from "@/hooks/useUserProgress";
 
@@ -34,14 +34,6 @@ const Challenges = () => {
     
     if (progress?.last_completed_date) {
       const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date());
-      console.log('Challenge availability check (Challenges page):', {
-        challengeDay,
-        lastCompletedDate: progress.last_completed_date,
-        currentDate: new Date().toISOString(),
-        daysDiff,
-        timezone: getUserTimezone(),
-        isAvailable: daysDiff >= 1
-      });
       if (daysDiff >= 1) return true;
       return false;
     } else {

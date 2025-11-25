@@ -1,15 +1,7 @@
 import { toZonedTime } from 'date-fns-tz';
 
 export const getUserTimezone = (): string => {
-  const stored = localStorage.getItem("timezone");
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return "Europe/London";
-    }
-  }
-  return "Europe/London";
+  return "Europe/London"; // Always use GMT+0
 };
 
 export const getDateInUserTimezone = (date: Date | string = new Date()): Date => {
