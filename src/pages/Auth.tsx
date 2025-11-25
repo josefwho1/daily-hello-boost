@@ -94,9 +94,6 @@ const Auth = () => {
             fetchPriority="high"
           />
           <CardTitle>Welcome to the 7-Day Challenge pilot</CardTitle>
-          <CardDescription>
-            Enter your instagram username to continue
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleContinue} className="space-y-4">
