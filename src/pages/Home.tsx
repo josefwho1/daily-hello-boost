@@ -25,6 +25,8 @@ const Home = () => {
   const { progress, loading: progressLoading, updateProgress } = useUserProgress();
   const { completions, loading: completionsLoading, addCompletion } = useChallengeCompletions();
   const [showNoteDialog, setShowNoteDialog] = useState(false);
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [showSecondWelcomeDialog, setShowSecondWelcomeDialog] = useState(false);
   const [currentName, setCurrentName] = useState("");
   const [currentNote, setCurrentNote] = useState("");
   const [currentRating, setCurrentRating] = useState<'positive' | 'neutral' | 'negative'>('positive');
@@ -50,6 +52,20 @@ const Home = () => {
     const name = user.user_metadata?.name || 'User';
     setUsername(name);
   }, [user]);
+
+  // Check if user should see welcome dialogs
+  useEffect(() => {
+    const checkWelcomeStatus = async () => {
+      if (!progress || loading) return;
+      
+      // Check if user has seen welcome messages
+      if (!progress.has_seen_welcome_messages) {
+        setShowWelcomeDialog(true);
+      }
+    };
+    
+    checkWelcomeStatus();
+  }, [progress, loading]);
 
   useEffect(() => {
     if (!progress) return;
@@ -272,6 +288,84 @@ const Home = () => {
             Read My Notes
           </Button>
         </div>
+
+        {/* Welcome Dialog 1 */}
+        <Dialog open={showWelcomeDialog} onOpenChange={(open) => {
+          if (!open) {
+            setShowWelcomeDialog(false);
+            setShowSecondWelcomeDialog(true);
+          }
+        }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center text-2xl">Welcome Aboard!</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="text-center space-y-3">
+                <p className="font-bold text-lg">Why One Hello exists</p>
+                <div className="space-y-2 text-sm leading-relaxed">
+                  <p>We're the loneliest generation in history, even though we're more "connected" than ever.</p>
+                  <p>One 30-second hello a day is the smallest, most powerful antidote.</p>
+                  <p>It's exposure therapy for social anxiety.</p>
+                  <p>It's reps for the muscle we forgot we had.</p>
+                  <p>It's the fastest way to make any city feel like home again.</p>
+                  <p className="font-semibold">You're not just doing a challenge.</p>
+                  <p className="font-semibold">You're part of the friendliest movement on earth.</p>
+                  <p className="font-semibold">One Hello at a time.</p>
+                  <p className="italic">Thank you for being a part of it.</p>
+                </div>
+              </div>
+              <Button onClick={() => {
+                setShowWelcomeDialog(false);
+                setShowSecondWelcomeDialog(true);
+              }} className="w-full">
+                Continue
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Welcome Dialog 2 */}
+        <Dialog open={showSecondWelcomeDialog} onOpenChange={async (open) => {
+          if (!open) {
+            setShowSecondWelcomeDialog(false);
+            // Mark as seen in database
+            if (progress && !progress.has_seen_welcome_messages) {
+              await supabase
+                .from('user_progress')
+                .update({ has_seen_welcome_messages: true })
+                .eq('user_id', user?.id);
+            }
+          }
+        }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center text-2xl">A quick note before we start</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="text-center space-y-3 text-sm leading-relaxed">
+                <p>99% of people light up when a stranger is kind.</p>
+                <p>Some are having a bad day - that's okay.</p>
+                <p className="font-semibold">Smile, keep it light, and never take it personally.</p>
+                <p>Your job isn't to win every interaction.</p>
+                <p>Your job is to put more good energy into the world than you take out.</p>
+                <p className="font-bold text-lg mt-4">Now go say hello.</p>
+              </div>
+              <Button onClick={async () => {
+                setShowSecondWelcomeDialog(false);
+                // Mark as seen in database
+                if (progress && !progress.has_seen_welcome_messages) {
+                  await supabase
+                    .from('user_progress')
+                    .update({ has_seen_welcome_messages: true })
+                    .eq('user_id', user?.id);
+                }
+              }} className="w-full">
+                Let's Go!
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Note Dialog */}
         <Dialog open={showNoteDialog} onOpenChange={setShowNoteDialog}>
