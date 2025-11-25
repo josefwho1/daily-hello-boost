@@ -349,7 +349,7 @@ const Home = () => {
                 <p className="font-semibold">Smile, keep it light, and never take it personally.</p>
                 <p>Your job isn't to win every interaction.</p>
                 <p>Your job is to put more good energy into the world than you take out.</p>
-                <p className="font-bold text-lg mt-4">Now go say hello.</p>
+                <p className="font-bold text-lg mt-4">Now go say Hello.</p>
               </div>
               <Button onClick={async () => {
                 setShowSecondWelcomeDialog(false);
