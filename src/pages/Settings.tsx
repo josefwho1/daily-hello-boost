@@ -83,22 +83,22 @@ const Settings = () => {
   ];
 
   const timezones = [
-    { value: "America/New_York", label: "Eastern Time (ET)" },
-    { value: "America/Chicago", label: "Central Time (CT)" },
-    { value: "America/Denver", label: "Mountain Time (MT)" },
-    { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
-    { value: "America/Anchorage", label: "Alaska Time (AKT)" },
-    { value: "Pacific/Honolulu", label: "Hawaii Time (HT)" },
-    { value: "Europe/London", label: "London (GMT/BST)" },
-    { value: "Europe/Paris", label: "Paris (CET/CEST)" },
-    { value: "Europe/Berlin", label: "Berlin (CET/CEST)" },
-    { value: "Asia/Dubai", label: "Dubai (GST)" },
-    { value: "Asia/Kolkata", label: "India (IST)" },
-    { value: "Asia/Singapore", label: "Singapore (SGT)" },
-    { value: "Asia/Tokyo", label: "Tokyo (JST)" },
-    { value: "Asia/Shanghai", label: "Shanghai (CST)" },
-    { value: "Australia/Sydney", label: "Sydney (AEDT/AEST)" },
-    { value: "Pacific/Auckland", label: "Auckland (NZDT/NZST)" },
+    { value: "America/New_York", label: "Eastern Time (GMT-5)" },
+    { value: "America/Chicago", label: "Central Time (GMT-6)" },
+    { value: "America/Denver", label: "Mountain Time (GMT-7)" },
+    { value: "America/Los_Angeles", label: "Pacific Time (GMT-8)" },
+    { value: "America/Anchorage", label: "Alaska Time (GMT-9)" },
+    { value: "Pacific/Honolulu", label: "Hawaii Time (GMT-10)" },
+    { value: "Europe/London", label: "London (GMT+0)" },
+    { value: "Europe/Paris", label: "Paris (GMT+1)" },
+    { value: "Europe/Berlin", label: "Berlin (GMT+1)" },
+    { value: "Asia/Dubai", label: "Dubai (GMT+4)" },
+    { value: "Asia/Kolkata", label: "India (GMT+5:30)" },
+    { value: "Asia/Singapore", label: "Singapore (GMT+8)" },
+    { value: "Asia/Tokyo", label: "Tokyo (GMT+9)" },
+    { value: "Asia/Shanghai", label: "Shanghai (GMT+8)" },
+    { value: "Australia/Sydney", label: "Sydney (GMT+10)" },
+    { value: "Pacific/Auckland", label: "Auckland (GMT+12)" },
   ];
 
   return (
