@@ -216,9 +216,6 @@ const Home = () => {
           <h1 className="text-lg font-bold text-foreground mb-2">
             Hello {username}
           </h1>
-          <p className="text-sm text-muted-foreground mb-2">
-            {format(currentDateTime, "EEEE, MMMM d, yyyy · h:mm a")}
-          </p>
           <p className="text-foreground font-medium mb-2">
             Welcome to the One Hello 7-Day Pilot. Thank you for your participation and good luck!
           </p>
