@@ -215,7 +215,7 @@ const Home = () => {
       <div className="max-w-md mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <img src={logo} alt="One Hello" className="w-72 mx-auto mb-4" />
+          <img src={logo} alt="One Hello" className="w-72 mx-auto mb-2" />
           <h1 className="text-lg font-bold text-foreground mb-2">
             Hello {username}
           </h1>
