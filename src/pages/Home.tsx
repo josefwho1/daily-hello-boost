@@ -302,7 +302,7 @@ const Home = () => {
             </DialogHeader>
             <div className="space-y-4">
               <div className="text-center space-y-3">
-                <p className="font-bold text-lg">Why One Hello exists</p>
+                <p className="font-bold text-lg">One Hello a day is the smallest, most powerful antidote.</p>
                 <div className="space-y-2 text-sm leading-relaxed">
                   <p>We're the loneliest generation in history, even though we're more "connected" than ever.</p>
                   <p>One 30-second hello a day is the smallest, most powerful antidote.</p>
