@@ -24,37 +24,73 @@ export const useUserProgress = () => {
   }, [user]);
 
   const fetchProgress = async () => {
-    if (!user) return;
+    if (!user) {
+      setProgress(null);
+      setLoading(false);
+      return;
+    }
 
     try {
+      // Try to load existing progress first
       const { data, error } = await supabase
         .from('user_progress')
         .select('*')
         .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setProgress(data);
+        return;
+      }
+
+      // No progress found – ensure a profile exists for this user
+      const profileName = (user.user_metadata as { name?: string } | null)?.name || 'User';
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert(
+          { id: user.id, name: profileName },
+          { onConflict: 'id' }
+        );
+
+      if (profileError && profileError.code !== '23505') {
+        // Log but don't block progress creation if profile already exists or conflicts
+        console.error('Error ensuring profile exists:', profileError);
+      }
+
+      // Check again in case database trigger created progress when profile was inserted
+      const { data: progressAfterProfile, error: progressError2 } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (progressError2) throw progressError2;
+
+      if (progressAfterProfile) {
+        setProgress(progressAfterProfile);
+        return;
+      }
+
+      // Still no progress – create initial progress directly
+      const { data: newData, error: insertError } = await supabase
+        .from('user_progress')
+        .insert({
+          user_id: user.id,
+          current_streak: 0,
+          current_day: 1,
+          last_completed_date: null
+        })
+        .select()
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
-
-      if (!data) {
-        // Create initial progress
-        const { data: newData, error: insertError } = await supabase
-          .from('user_progress')
-          .insert({
-            user_id: user.id,
-            current_streak: 0,
-            current_day: 1,
-            last_completed_date: null
-          })
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-        setProgress(newData);
-      } else {
-        setProgress(data);
-      }
+      if (insertError) throw insertError;
+      setProgress(newData);
     } catch (error) {
       console.error('Error fetching progress:', error);
+      setProgress(null);
     } finally {
       setLoading(false);
     }
