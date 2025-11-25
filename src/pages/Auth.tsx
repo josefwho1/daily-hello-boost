@@ -93,7 +93,7 @@ const Auth = () => {
             loading="eager"
             fetchPriority="high"
           />
-          <CardTitle>Welcome to the 7-Day Challenge pilot</CardTitle>
+          <CardTitle>Welcome to the 7-Day Challenge Pilot</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleContinue} className="space-y-4">
