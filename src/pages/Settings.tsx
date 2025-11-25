@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,7 @@ import { toast } from "sonner";
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { resetProgress } = useUserProgress();
   const { clearCompletions } = useChallengeCompletions();
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage("notificationsEnabled", true);
@@ -37,6 +39,25 @@ const Settings = () => {
   const [timezone, setTimezone] = useLocalStorage("timezone", Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
+  const [username, setUsername] = useState<string>("");
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', user.id)
+        .single();
+      
+      if (data) {
+        setUsername(data.name);
+      }
+    };
+    
+    fetchUsername();
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
@@ -205,14 +226,23 @@ const Settings = () => {
             <h2 className="text-lg font-semibold text-foreground">Account</h2>
           </div>
           
-          <Button
-            variant="outline"
-            className="w-full justify-start"
-            onClick={handleSignOut}
-          >
-            <LogOut size={16} className="mr-2" />
-            Sign Out
-          </Button>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">Username</Label>
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="font-medium text-foreground">{username}</p>
+              </div>
+            </div>
+            
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={handleSignOut}
+            >
+              <LogOut size={16} className="mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </Card>
 
         {/* About */}
