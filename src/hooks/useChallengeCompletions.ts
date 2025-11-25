@@ -73,6 +73,36 @@ export const useChallengeCompletions = () => {
     }
   };
 
+  const updateCompletion = async (
+    id: string,
+    updates: {
+      interaction_name?: string | null;
+      notes?: string | null;
+      rating?: 'positive' | 'neutral' | 'negative';
+      difficulty_rating?: number | null;
+    }
+  ) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('challenge_completions')
+        .update(updates)
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setCompletions(completions.map(c => c.id === id ? data : c));
+      return data;
+    } catch (error) {
+      console.error('Error updating completion:', error);
+      throw error;
+    }
+  };
+
   const clearCompletions = async () => {
     if (!user) return;
 
@@ -93,6 +123,7 @@ export const useChallengeCompletions = () => {
     completions,
     loading,
     addCompletion,
+    updateCompletion,
     clearCompletions,
     refetch: fetchCompletions
   };
