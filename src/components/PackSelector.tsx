@@ -12,8 +12,7 @@ interface PackSelectorProps {
 export const PackSelector = ({ packs, selectedPackId, onSelectPack }: PackSelectorProps) => {
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Select Your Challenge Pack</h2>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {packs.map((pack) => (
           <Card
             key={pack.id}

@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Challenges from "./pages/Challenges";
 import Notes from "./pages/Notes";
 import Settings from "./pages/Settings";
+import Packs from "./pages/Packs";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -72,6 +73,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/packs" 
+            element={
+              <ProtectedRoute>
+                <Packs />
               </ProtectedRoute>
             } 
           />

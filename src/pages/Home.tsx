@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { packs, getPackById } from "@/data/packs";
+import { getPackById } from "@/data/packs";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { StreakDisplay } from "@/components/StreakDisplay";
-import { PackSelector } from "@/components/PackSelector";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,7 +28,6 @@ const Home = () => {
   const [showNoteDialog, setShowNoteDialog] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showSecondWelcomeDialog, setShowSecondWelcomeDialog] = useState(false);
-  const [showPackSelector, setShowPackSelector] = useState(false);
   const [currentName, setCurrentName] = useState("");
   const [currentNote, setCurrentNote] = useState("");
   const [currentRating, setCurrentRating] = useState<'positive' | 'neutral' | 'negative'>('positive');
@@ -51,11 +49,6 @@ const Home = () => {
     }, 60000);
     return () => clearInterval(interval);
   }, []);
-
-  const handleSelectPack = async (packId: string) => {
-    await updateProgress({ selected_pack_id: packId });
-    setShowPackSelector(false);
-  };
 
   useEffect(() => {
     if (!user) return;
@@ -252,27 +245,14 @@ const Home = () => {
               Welcome to the One Hello App!
             </p>
           </div>
-          <div className="flex justify-center mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowPackSelector(!showPackSelector)}
-              className="text-sm"
-            >
-              {currentPack?.icon} {currentPack?.name}
-            </Button>
-          </div>
+          <button 
+            onClick={() => navigate("/packs")}
+            className="w-full mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span className="text-base">{currentPack?.icon}</span>
+            <span>{currentPack?.name}</span>
+          </button>
         </div>
-
-        {/* Pack Selector */}
-        {showPackSelector && (
-          <div className="mb-8">
-            <PackSelector
-              packs={packs}
-              selectedPackId={selectedPackId}
-              onSelectPack={handleSelectPack}
-            />
-          </div>
-        )}
 
         {/* Instructions Carousel */}
         <InstructionsCarousel />
