@@ -9,58 +9,46 @@ import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import logo from '@/assets/one-hello-logo.png';
 
-const usernameSchema = z.object({
-  name: z.string().trim().min(1, { message: "Username is required" }).max(50, { message: "Username must be less than 50 characters" }),
+const signupSchema = z.object({
+  name: z.string().trim().min(1, { message: "Name is required" }).max(50, { message: "Name must be less than 50 characters" }),
+  email: z.string().trim().email({ message: "Invalid email address" }).max(255, { message: "Email must be less than 255 characters" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }).max(50, { message: "Password must be less than 50 characters" }),
 });
 
 const Auth = () => {
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleContinue = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      const validated = usernameSchema.parse({ name });
+      const validated = signupSchema.parse({ name, email, password });
       setLoading(true);
 
-      // Create email and password from username
-      const email = `${validated.name.toLowerCase()}@onehello.app`;
-      const password = `onehello_${validated.name.toLowerCase()}_secure`;
+      const redirectUrl = `${window.location.origin}/`;
 
-      // Check if user exists by trying to sign in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: validated.email,
+        password: validated.password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            name: validated.name
+          }
+        }
       });
 
-      if (signInError) {
-        // User doesn't exist, create new account
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              name: validated.name
-            }
-          }
-        });
+      if (signUpError) throw signUpError;
 
-        if (signUpError) throw signUpError;
-
-        toast({
-          title: "Welcome!",
-          description: `Hi ${validated.name}, let's start your journey!`,
-        });
-      } else {
-        // User exists, signed in successfully
-        toast({
-          title: "Welcome back!",
-          description: `Hi ${validated.name}, good to see you again!`,
-        });
-      }
+      toast({
+        title: "Welcome!",
+        description: `Hi ${validated.name}, let's start your journey!`,
+      });
       
       navigate('/');
     } catch (error) {
@@ -89,25 +77,61 @@ const Auth = () => {
           <img 
             src={logo}
             alt="One Hello Logo" 
-            className="w-full max-w-xs h-auto mx-auto mb-2 object-contain"
+            className="w-full max-w-xs h-auto mx-auto mb-4 object-contain"
             loading="eager"
             fetchPriority="high"
           />
-          <CardTitle>Welcome to the 7-Day Challenge Pilot</CardTitle>
+          <CardTitle className="text-2xl">Welcome to One Hello!</CardTitle>
+          <CardDescription className="text-base">
+            The social app that actually helps you socialise
+          </CardDescription>
+          <p className="text-sm text-muted-foreground mt-4">
+            To get started please fill in the details below to sign up!
+          </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleContinue} className="space-y-4">
+          <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Username</Label>
+              <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="username"
+                placeholder="Enter your name"
                 value={name}
-                onChange={(e) => setName(e.target.value.toLowerCase())}
+                onChange={(e) => setName(e.target.value)}
                 required
                 maxLength={50}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                maxLength={255}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Simple letters & numbers"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                maxLength={50}
+              />
+              <p className="text-xs text-muted-foreground">
+                Use simple letters & numbers (minimum 6 characters)
+              </p>
             </div>
 
             <Button 
@@ -115,7 +139,7 @@ const Auth = () => {
               className="w-full"
               disabled={loading}
             >
-              {loading ? 'Please wait...' : 'Continue'}
+              {loading ? 'Signing up...' : 'Sign Up'}
             </Button>
           </form>
         </CardContent>
