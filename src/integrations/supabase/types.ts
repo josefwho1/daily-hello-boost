@@ -25,6 +25,7 @@ export type Database = {
           notes: string | null
           rating: Database["public"]["Enums"]["interaction_rating"]
           user_id: string
+          username: string | null
         }
         Insert: {
           challenge_day: number
@@ -36,6 +37,7 @@ export type Database = {
           notes?: string | null
           rating: Database["public"]["Enums"]["interaction_rating"]
           user_id: string
+          username?: string | null
         }
         Update: {
           challenge_day?: number
@@ -47,6 +49,7 @@ export type Database = {
           notes?: string | null
           rating?: Database["public"]["Enums"]["interaction_rating"]
           user_id?: string
+          username?: string | null
         }
         Relationships: [
           {
