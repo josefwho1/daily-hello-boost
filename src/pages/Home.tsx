@@ -3,6 +3,7 @@ import { getPackById } from "@/data/packs";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { StreakDisplay } from "@/components/StreakDisplay";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,8 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { InstructionsCarousel } from "@/components/InstructionsCarousel";
+import { AddPersonDialog } from "@/components/AddPersonDialog";
+import { UserPlus } from "lucide-react";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -35,6 +38,7 @@ const Home = () => {
   const [completingChallengeId, setCompletingChallengeId] = useState<number | null>(null);
   const [username, setUsername] = useState<string>("");
   const [currentDateTime, setCurrentDateTime] = useState<Date>(getDateInUserTimezone());
+  const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
 
   const selectedPackId = progress?.selected_pack_id || 'starter-pack';
   const currentPack = getPackById(selectedPackId);
@@ -258,6 +262,22 @@ const Home = () => {
         {/* Instructions Carousel */}
         <InstructionsCarousel />
 
+        {/* Add New Person Section */}
+        <Card className="p-6 mt-6">
+          <h2 className="text-xl font-bold mb-2 text-foreground">Add New Person</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            So you've met someone new, log their details here so you don't forget
+          </p>
+          <Button 
+            onClick={() => setIsAddPersonOpen(true)}
+            className="w-full"
+            variant="outline"
+          >
+            <UserPlus className="mr-2" size={18} />
+            Log New Person
+          </Button>
+        </Card>
+
         {/* Streak Display */}
         <StreakDisplay streak={progress.current_streak} className="my-6" />
 
@@ -474,6 +494,11 @@ const Home = () => {
           </DialogContent>
         </Dialog>
       </div>
+      
+      <AddPersonDialog 
+        open={isAddPersonOpen} 
+        onOpenChange={setIsAddPersonOpen}
+      />
     </div>
   );
 };

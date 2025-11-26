@@ -24,6 +24,7 @@ export type Database = {
           interaction_name: string | null
           notes: string | null
           rating: Database["public"]["Enums"]["interaction_rating"]
+          timezone_offset: string | null
           user_id: string
           username: string | null
         }
@@ -36,6 +37,7 @@ export type Database = {
           interaction_name?: string | null
           notes?: string | null
           rating: Database["public"]["Enums"]["interaction_rating"]
+          timezone_offset?: string | null
           user_id: string
           username?: string | null
         }
@@ -48,6 +50,7 @@ export type Database = {
           interaction_name?: string | null
           notes?: string | null
           rating?: Database["public"]["Enums"]["interaction_rating"]
+          timezone_offset?: string | null
           user_id?: string
           username?: string | null
         }
@@ -61,22 +64,55 @@ export type Database = {
           },
         ]
       }
+      person_logs: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          tags: string[] | null
+          timezone_offset: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          tags?: string[] | null
+          timezone_offset?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          tags?: string[] | null
+          timezone_offset?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
           id: string
+          timezone_preference: string | null
           updated_at: string
           username: string
         }
         Insert: {
           created_at?: string
           id: string
+          timezone_preference?: string | null
           updated_at?: string
           username: string
         }
         Update: {
           created_at?: string
           id?: string
+          timezone_preference?: string | null
           updated_at?: string
           username?: string
         }

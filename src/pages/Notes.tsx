@@ -10,10 +10,14 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { User, SmilePlus, Meh, Frown, Pencil } from "lucide-react";
 import { useChallengeCompletions, ChallengeCompletion } from "@/hooks/useChallengeCompletions";
+import { usePersonLogs } from "@/hooks/usePersonLogs";
+import { useTimezone } from "@/hooks/useTimezone";
 import { useToast } from "@/hooks/use-toast";
 
 const Notes = () => {
   const { completions, loading, updateCompletion } = useChallengeCompletions();
+  const { personLogs, loading: logsLoading } = usePersonLogs();
+  const { formatTimestamp } = useTimezone();
   const { toast } = useToast();
   const [editingCompletion, setEditingCompletion] = useState<ChallengeCompletion | null>(null);
   const [editForm, setEditForm] = useState({
@@ -23,6 +27,16 @@ const Notes = () => {
     difficulty_rating: 3
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Combine and sort all entries by date
+  const allEntries = [
+    ...completions.map(c => ({ ...c, type: 'challenge' as const })),
+    ...personLogs.map(p => ({ ...p, type: 'person' as const })),
+  ].sort((a, b) => {
+    const dateA = 'completed_at' in a ? new Date(a.completed_at) : new Date(a.created_at);
+    const dateB = 'completed_at' in b ? new Date(b.completed_at) : new Date(b.created_at);
+    return dateB.getTime() - dateA.getTime();
+  });
 
   const handleEditClick = (completion: ChallengeCompletion) => {
     setEditingCompletion(completion);
@@ -63,7 +77,7 @@ const Notes = () => {
     }
   };
 
-  if (loading) {
+  if (loading || logsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -79,16 +93,56 @@ const Notes = () => {
       <div className="max-w-md mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-center text-foreground">Notes from your interactions</h1>
 
-        {completions.length === 0 ? (
+        {allEntries.length === 0 ? (
           <Card className="p-8 text-center">
             <p className="text-muted-foreground">
-              Complete your first challenge to start writing notes about your experiences.
+              Complete challenges or log new people to start writing notes about your experiences.
             </p>
           </Card>
         ) : (
           <div className="space-y-4">
-            {completions.map((completed) => {
-              const challenge = challenges.find(c => c.id === completed.challenge_day);
+            {allEntries.map((entry) => {
+              if (entry.type === 'person') {
+                return (
+                  <Card key={entry.id} className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="text-primary" size={24} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg text-foreground">
+                            {entry.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            {formatTimestamp(entry.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {entry.description && (
+                      <div className="mb-3">
+                        <p className="text-sm text-muted-foreground font-medium mb-1">Description:</p>
+                        <p className="text-sm text-foreground">{entry.description}</p>
+                      </div>
+                    )}
+
+                    {entry.tags && entry.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {entry.tags.map((tag, idx) => (
+                          <Badge key={idx} variant="secondary">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </Card>
+                );
+              }
+
+              const completion = entry;
+              const challenge = challenges.find(c => c.id === completion.challenge_day);
               if (!challenge) return null;
 
               const ratingConfig = {
@@ -97,27 +151,30 @@ const Notes = () => {
                 negative: { icon: Frown, color: "bg-red-500/10 text-red-600 border-red-500/20" }
               };
 
-              const { icon: RatingIcon, color: ratingColor } = ratingConfig[completed.rating];
+              const { icon: RatingIcon, color: ratingColor } = ratingConfig[completion.rating];
 
               return (
-                <Card key={completed.id} className="p-6">
+                <Card key={completion.id} className="p-6">
                   <div className="flex items-start gap-3 mb-3">
                     <span className="text-3xl">{challenge.icon}</span>
                     <div className="flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <h3 className="font-bold text-lg mb-2 text-foreground">
+                          <h3 className="font-bold text-lg mb-1 text-foreground">
                             {challenge.title}
                           </h3>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {formatTimestamp(completion.completed_at)}
+                          </p>
                           <Badge variant="outline" className={`${ratingColor} gap-1`}>
                             <RatingIcon size={14} />
-                            <span className="capitalize">{completed.rating}</span>
+                            <span className="capitalize">{completion.rating}</span>
                           </Badge>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEditClick(completed)}
+                          onClick={() => handleEditClick(completion)}
                           className="h-8 w-8 p-0"
                         >
                           <Pencil size={16} />
@@ -126,17 +183,17 @@ const Notes = () => {
                     </div>
                   </div>
                   
-                  {completed.interaction_name && (
+                  {completion.interaction_name && (
                     <div className="flex items-center gap-2 mb-3 text-sm">
                       <User size={14} className="text-muted-foreground" />
-                      <span className="text-foreground font-medium">{completed.interaction_name}</span>
+                      <span className="text-foreground font-medium">{completion.interaction_name}</span>
                     </div>
                   )}
                   
-                  {completed.notes && (
+                  {completion.notes && (
                     <div className="bg-muted rounded-lg p-4 mt-3">
                       <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                        {completed.notes}
+                        {completion.notes}
                       </p>
                     </div>
                   )}
