@@ -1,4 +1,4 @@
-import { Home, ListTodo, BookOpen, Settings } from "lucide-react";
+import { Home, ListTodo, BookOpen, Settings, Package } from "lucide-react";
 import { NavLink } from "./NavLink";
 
 export const BottomNav = () => {
@@ -21,6 +21,15 @@ export const BottomNav = () => {
         >
           <ListTodo size={24} />
           <span className="text-xs font-medium">Challenges</span>
+        </NavLink>
+        
+        <NavLink
+          to="/packs"
+          className="flex flex-col items-center gap-1 py-2 px-4 text-muted-foreground transition-colors"
+          activeClassName="text-primary"
+        >
+          <Package size={24} />
+          <span className="text-xs font-medium">Packs</span>
         </NavLink>
         
         <NavLink

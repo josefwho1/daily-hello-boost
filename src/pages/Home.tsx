@@ -245,13 +245,14 @@ const Home = () => {
               Welcome to the One Hello App!
             </p>
           </div>
-          <button 
+          <Button 
             onClick={() => navigate("/packs")}
-            className="w-full mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            variant="outline"
+            className="w-full mt-4"
           >
-            <span className="text-base">{currentPack?.icon}</span>
+            <span className="mr-2">{currentPack?.icon}</span>
             <span>{currentPack?.name}</span>
-          </button>
+          </Button>
         </div>
 
         {/* Instructions Carousel */}
