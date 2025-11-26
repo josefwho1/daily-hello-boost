@@ -51,7 +51,7 @@ export const useUserProgress = () => {
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert(
-          { id: user.id, name: profileName },
+          { id: user.id, username: profileName },
           { onConflict: 'id' }
         );
 
