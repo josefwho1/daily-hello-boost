@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { challenges } from "@/data/challenges";
+import { packs, getPackById } from "@/data/packs";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { StreakDisplay } from "@/components/StreakDisplay";
+import { PackSelector } from "@/components/PackSelector";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +29,7 @@ const Home = () => {
   const [showNoteDialog, setShowNoteDialog] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showSecondWelcomeDialog, setShowSecondWelcomeDialog] = useState(false);
+  const [showPackSelector, setShowPackSelector] = useState(false);
   const [currentName, setCurrentName] = useState("");
   const [currentNote, setCurrentNote] = useState("");
   const [currentRating, setCurrentRating] = useState<'positive' | 'neutral' | 'negative'>('positive');
@@ -35,6 +37,10 @@ const Home = () => {
   const [completingChallengeId, setCompletingChallengeId] = useState<number | null>(null);
   const [username, setUsername] = useState<string>("");
   const [currentDateTime, setCurrentDateTime] = useState<Date>(getDateInUserTimezone());
+
+  const selectedPackId = progress?.selected_pack_id || 'starter-pack';
+  const currentPack = getPackById(selectedPackId);
+  const challenges = currentPack?.challenges || [];
 
   const loading = progressLoading || completionsLoading;
 
@@ -45,6 +51,11 @@ const Home = () => {
     }, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleSelectPack = async (packId: string) => {
+    await updateProgress({ selected_pack_id: packId });
+    setShowPackSelector(false);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -231,15 +242,37 @@ const Home = () => {
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <img src={logo} alt="One Hello" className="w-72 mx-auto" />
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            Hello <span className="text-primary">{username}</span>
-          </h1>
-          <p className="text-lg text-foreground font-medium mb-2">
-            Welcome to the One Hello App!
-          </p>
+        <div className="mb-8">
+          <div className="text-center">
+            <img src={logo} alt="One Hello" className="w-72 mx-auto" />
+            <h1 className="text-2xl font-bold text-foreground mb-2">
+              Hello <span className="text-primary">{username}</span>
+            </h1>
+            <p className="text-lg text-foreground font-medium mb-2">
+              Welcome to the One Hello App!
+            </p>
+          </div>
+          <div className="flex justify-center mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowPackSelector(!showPackSelector)}
+              className="text-sm"
+            >
+              {currentPack?.icon} {currentPack?.name}
+            </Button>
+          </div>
         </div>
+
+        {/* Pack Selector */}
+        {showPackSelector && (
+          <div className="mb-8">
+            <PackSelector
+              packs={packs}
+              selectedPackId={selectedPackId}
+              onSelectPack={handleSelectPack}
+            />
+          </div>
+        )}
 
         {/* Instructions Carousel */}
         <InstructionsCarousel />

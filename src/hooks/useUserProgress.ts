@@ -7,6 +7,7 @@ export interface UserProgress {
   current_day: number;
   last_completed_date: string | null;
   has_seen_welcome_messages?: boolean;
+  selected_pack_id?: string;
 }
 
 export const useUserProgress = () => {
