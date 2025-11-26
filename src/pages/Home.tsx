@@ -18,6 +18,7 @@ import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { InstructionsCarousel } from "@/components/InstructionsCarousel";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -232,16 +233,19 @@ const Home = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <img src={logo} alt="One Hello" className="w-72 mx-auto" />
-          <h1 className="text-lg font-bold text-foreground mb-2">
-            Hello {username}
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            Hello <span className="text-primary">{username}</span>
           </h1>
-          <p className="text-foreground font-medium mb-2">
-            Welcome to the One Hello 7-Day Pilot. Thank you for your participation and good luck!
+          <p className="text-lg text-foreground font-medium mb-2">
+            Welcome to the One Hello App!
           </p>
         </div>
 
+        {/* Instructions Carousel */}
+        <InstructionsCarousel />
+
         {/* Streak Display */}
-        <StreakDisplay streak={progress.current_streak} className="mb-6" />
+        <StreakDisplay streak={progress.current_streak} className="my-6" />
 
         {/* Today's Challenge */}
         <div className="mb-6">
@@ -271,15 +275,6 @@ const Home = () => {
           )}
         </div>
 
-        {/* Instructions */}
-        <div className="mb-6 bg-card border-2 border-border rounded-2xl p-6">
-          <h3 className="text-lg font-bold mb-3 text-foreground">Instructions</h3>
-          <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
-            <p>Each day you will receive a new challenge.</p>
-            <p>Once you complete a challenge, come straight back here (<em>onehello.io</em>). Tap "Complete Challenge" & add any details you remember.</p>
-            <p>Names are magic if you can get them. Write it down here so you don't forget. Instantly turns a stranger into a friend.</p>
-          </div>
-        </div>
 
         {/* Quick Actions */}
         <div className="space-y-3">
