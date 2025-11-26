@@ -1,7 +1,9 @@
 import { toZonedTime } from 'date-fns-tz';
 
-export const getUserTimezone = (): string => {
-  return "Europe/London"; // Always use GMT+0
+export const getUserTimezone = (timezoneOffset: string = '+00:00'): string => {
+  // Convert offset format (+05:30) to timezone
+  // For simplicity, we'll use the offset directly
+  return timezoneOffset;
 };
 
 export const getDateInUserTimezone = (date: Date | string = new Date()): Date => {

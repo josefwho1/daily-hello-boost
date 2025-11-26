@@ -2,16 +2,35 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTimezone } from "@/hooks/useTimezone";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { LogOut } from "lucide-react";
+import { LogOut, Clock } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Settings = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { timezoneOffset, updateTimezone } = useTimezone();
   const [username, setUsername] = useState<string>("");
+
+  // Generate timezone options from GMT-12 to GMT+12
+  const timezoneOptions = [];
+  for (let i = -12; i <= 12; i++) {
+    const sign = i >= 0 ? '+' : '';
+    const hours = Math.abs(i).toString().padStart(2, '0');
+    const value = `${sign}${hours}:00`;
+    const label = `GMT${sign}${i}`;
+    timezoneOptions.push({ value, label });
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -35,6 +54,15 @@ const Settings = () => {
     }
   };
 
+  const handleTimezoneChange = async (value: string) => {
+    try {
+      await updateTimezone(value);
+      toast.success("Timezone updated successfully");
+    } catch (error) {
+      console.error("Error updating timezone:", error);
+      toast.error("Failed to update timezone");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -44,6 +72,29 @@ const Settings = () => {
           Manage your One Hello experience
         </p>
 
+        {/* Timezone */}
+        <Card className="p-6 mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            <Clock className="text-primary" size={24} />
+            <h2 className="text-lg font-semibold text-foreground">Timezone</h2>
+          </div>
+          
+          <div className="space-y-2">
+            <Label className="text-sm text-muted-foreground">Select your timezone</Label>
+            <Select value={timezoneOffset} onValueChange={handleTimezoneChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select timezone" />
+              </SelectTrigger>
+              <SelectContent>
+                {timezoneOptions.map((tz) => (
+                  <SelectItem key={tz.value} value={tz.value}>
+                    {tz.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </Card>
 
         {/* Account */}
         <Card className="p-6 mb-4">
