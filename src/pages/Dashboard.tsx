@@ -10,12 +10,14 @@ import { WeeklyStreakCard } from "@/components/WeeklyStreakCard";
 import { InspirationCard } from "@/components/InspirationCard";
 import { LogHelloDialog } from "@/components/LogHelloDialog";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
+import { OnboardingCompleteDialog } from "@/components/OnboardingCompleteDialog";
+import { WeeklyChallengeIntroDialog } from "@/components/WeeklyChallengeIntroDialog";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { toast } from "sonner";
 import { format, startOfWeek, isBefore } from "date-fns";
 import logoSticker from "@/assets/one-hello-logo-sticker.png";
 import remiMascot from "@/assets/remi-mascot.png";
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, Sparkles, Trophy } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -25,6 +27,9 @@ export default function Dashboard() {
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
   const [username, setUsername] = useState("");
+  const [showOnboardingComplete, setShowOnboardingComplete] = useState(false);
+  const [showWeeklyChallengeIntro, setShowWeeklyChallengeIntro] = useState(false);
+  const [hasShownCompletionPopup, setHasShownCompletionPopup] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -130,7 +135,22 @@ export default function Dashboard() {
   };
 
   const completedTypes = getCompletedOnboardingChallenges();
+  const allOnboardingComplete = completedTypes.length >= 7;
 
+  // Check if all 7 onboarding challenges are complete and show popup
+  useEffect(() => {
+    if (allOnboardingComplete && progress?.is_onboarding_week && !hasShownCompletionPopup) {
+      setShowOnboardingComplete(true);
+      setHasShownCompletionPopup(true);
+    }
+  }, [allOnboardingComplete, progress?.is_onboarding_week, hasShownCompletionPopup]);
+
+  const handleOnboardingCompleteContinue = () => {
+    setShowOnboardingComplete(false);
+    setShowWeeklyChallengeIntro(true);
+    // Mark onboarding as complete
+    updateProgress({ has_completed_onboarding: true });
+  };
   if (progressLoading || logsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -199,8 +219,8 @@ export default function Dashboard() {
           totalHellos={logs.length}
         />
 
-        {/* Onboarding Week Challenges */}
-        {progress.is_onboarding_week && (
+        {/* Onboarding Week Challenges or Weekly Challenge */}
+        {progress.is_onboarding_week && !allOnboardingComplete ? (
           <div className="mt-6">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-5 h-5 text-primary" />
@@ -224,6 +244,24 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
+        ) : (
+          <div className="mt-6">
+            <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+              <div className="flex items-center gap-3 mb-3">
+                <Trophy className="w-6 h-6 text-primary" />
+                <h2 className="text-lg font-semibold text-foreground">Weekly Challenge</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Every week you'll get a new bonus challenge. Complete it to earn a streak saver!
+              </p>
+              <div className="bg-background/50 rounded-lg p-4">
+                <p className="text-sm font-medium text-foreground mb-1">This Week's Challenge:</p>
+                <p className="text-muted-foreground text-sm">
+                  Ask someone what the best part of their day was!
+                </p>
+              </div>
+            </Card>
+          </div>
         )}
 
         {/* Inspiration Section */}
@@ -241,6 +279,18 @@ export default function Dashboard() {
         }}
         onLog={handleLogHello}
         challengeTitle={selectedChallenge}
+      />
+
+      <OnboardingCompleteDialog
+        open={showOnboardingComplete}
+        onOpenChange={setShowOnboardingComplete}
+        targetHellos={targetHellos}
+        onContinue={handleOnboardingCompleteContinue}
+      />
+
+      <WeeklyChallengeIntroDialog
+        open={showWeeklyChallengeIntro}
+        onOpenChange={setShowWeeklyChallengeIntro}
       />
     </div>
   );
