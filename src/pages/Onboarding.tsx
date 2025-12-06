@@ -10,7 +10,7 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
-import logo from "@/assets/one-hello-logo-sticker.png";
+import logoText from "@/assets/one-hello-logo-text.png";
 import remiMascot from "@/assets/remi-mascot.png";
 
 const signupSchema = z.object({
@@ -139,17 +139,23 @@ export default function Onboarding() {
           {/* Step 1: Welcome */}
           {step === 1 && (
             <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <img src={logo} alt="One Hello" className="w-64 mx-auto" />
-              <img src={remiMascot} alt="Remi" className="w-32 h-32 mx-auto" />
+              <img src={logoText} alt="One Hello" className="w-80 mx-auto" />
+              <img src={remiMascot} alt="Remi" className="w-64 h-64 mx-auto" />
               <div className="space-y-3">
-                <h1 className="text-2xl font-bold text-foreground">Welcome!</h1>
+                <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
                 <p className="text-muted-foreground">
-                  The app that helps you say hello to strangers and build real-world social connections.
+                  The app that helps you get out of your comfort zone and meet new people.
                 </p>
               </div>
               <Button onClick={() => setStep(2)} className="w-full" size="lg">
                 Let's Get Started! 👋
               </Button>
+              <button 
+                onClick={() => navigate('/signin')}
+                className="text-sm text-muted-foreground hover:text-primary underline"
+              >
+                I already have an account
+              </button>
             </div>
           )}
 

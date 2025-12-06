@@ -13,7 +13,7 @@ const Auth = () => {
         <img 
           src={logo}
           alt="One Hello - Reconnecting the world, One Hello at a time" 
-          className="w-full max-w-sm mx-auto"
+          className="w-full max-w-2xl mx-auto"
         />
 
         {/* Mascot */}
