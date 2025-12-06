@@ -12,10 +12,10 @@ import { LogHelloDialog } from "@/components/LogHelloDialog";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { toast } from "sonner";
-import { format, startOfWeek, endOfWeek, isAfter, isBefore } from "date-fns";
+import { format, startOfWeek, isBefore } from "date-fns";
 import logoSticker from "@/assets/one-hello-logo-sticker.png";
 import remiMascot from "@/assets/remi-mascot.png";
-import { Hand, Plus, Sparkles } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -146,7 +146,7 @@ export default function Dashboard() {
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src={logoSticker} alt="One Hello" className="h-48" />
+          <img src={logoSticker} alt="One Hello" className="h-32" />
         </div>
 
         {/* Greeting with Remi */}
@@ -224,46 +224,6 @@ export default function Dashboard() {
           <InspirationCard />
         </div>
 
-        {/* Recent Hellos */}
-        {logs.length > 0 && (
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Recent Hellos</h2>
-            <div className="space-y-3">
-              {logs.slice(0, 5).map((log) => (
-                <Card key={log.id} className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Hand className="w-4 h-4 text-primary" />
-                        {log.hello_type && (
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                            {log.hello_type}
-                          </span>
-                        )}
-                      </div>
-                      {log.name && (
-                        <p className="font-medium text-foreground mt-1">{log.name}</p>
-                      )}
-                      {log.notes && (
-                        <p className="text-sm text-muted-foreground mt-1">{log.notes}</p>
-                      )}
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(log.created_at), 'MMM d')}
-                    </span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-            <Button 
-              variant="outline" 
-              className="w-full mt-4"
-              onClick={() => navigate('/notes')}
-            >
-              View All Notes
-            </Button>
-          </div>
-        )}
       </div>
 
       <LogHelloDialog 

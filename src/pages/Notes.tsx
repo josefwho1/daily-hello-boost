@@ -8,15 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { User, SmilePlus, Meh, Frown, Pencil } from "lucide-react";
+import { User, SmilePlus, Meh, Frown, Pencil, Hand } from "lucide-react";
 import { useChallengeCompletions, ChallengeCompletion } from "@/hooks/useChallengeCompletions";
 import { usePersonLogs } from "@/hooks/usePersonLogs";
+import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useToast } from "@/hooks/use-toast";
 
 const Notes = () => {
   const { completions, loading, updateCompletion } = useChallengeCompletions();
   const { personLogs, loading: logsLoading } = usePersonLogs();
+  const { logs: helloLogs, loading: helloLogsLoading } = useHelloLogs();
   const { formatTimestamp } = useTimezone();
   const { toast } = useToast();
   const [editingCompletion, setEditingCompletion] = useState<ChallengeCompletion | null>(null);
@@ -32,6 +34,7 @@ const Notes = () => {
   const allEntries = [
     ...completions.map(c => ({ ...c, type: 'challenge' as const })),
     ...personLogs.map(p => ({ ...p, type: 'person' as const })),
+    ...helloLogs.map(h => ({ ...h, type: 'hello' as const })),
   ].sort((a, b) => {
     const dateA = 'completed_at' in a ? new Date(a.completed_at) : new Date(a.created_at);
     const dateB = 'completed_at' in b ? new Date(b.completed_at) : new Date(b.created_at);
@@ -77,7 +80,17 @@ const Notes = () => {
     }
   };
 
-  if (loading || logsLoading) {
+  const getRatingDisplay = (rating: 'positive' | 'neutral' | 'negative' | null) => {
+    if (!rating) return null;
+    const config = {
+      positive: { icon: SmilePlus, color: "bg-green-500/10 text-green-600 border-green-500/20", label: "Positive" },
+      neutral: { icon: Meh, color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20", label: "Neutral" },
+      negative: { icon: Frown, color: "bg-red-500/10 text-red-600 border-red-500/20", label: "Negative" }
+    };
+    return config[rating];
+  };
+
+  if (loading || logsLoading || helloLogsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -91,17 +104,56 @@ const Notes = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-center text-foreground">Notes from your interactions</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center text-foreground">Notes</h1>
 
         {allEntries.length === 0 ? (
           <Card className="p-8 text-center">
             <p className="text-muted-foreground">
-              Complete challenges or log new people to start writing notes about your experiences.
+              Log hellos to start tracking your interactions.
             </p>
           </Card>
         ) : (
           <div className="space-y-4">
             {allEntries.map((entry) => {
+              // Hello Log Entry
+              if (entry.type === 'hello') {
+                const ratingDisplay = getRatingDisplay(entry.rating);
+                return (
+                  <Card key={entry.id} className="p-6">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Hand className="text-primary" size={20} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-foreground">
+                            {entry.name || "Hello"}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            {formatTimestamp(entry.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                      {ratingDisplay && (
+                        <Badge variant="outline" className={`${ratingDisplay.color} gap-1`}>
+                          <ratingDisplay.icon size={14} />
+                          <span>{ratingDisplay.label}</span>
+                        </Badge>
+                      )}
+                    </div>
+
+                    {entry.notes && (
+                      <div className="bg-muted rounded-lg p-4">
+                        <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                          {entry.notes}
+                        </p>
+                      </div>
+                    )}
+                  </Card>
+                );
+              }
+
+              // Person Log Entry
               if (entry.type === 'person') {
                 return (
                   <Card key={entry.id} className="p-6">
@@ -141,6 +193,7 @@ const Notes = () => {
                 );
               }
 
+              // Challenge Completion Entry
               const completion = entry;
               const challenge = challenges.find(c => c.id === completion.challenge_day);
               if (!challenge) return null;
