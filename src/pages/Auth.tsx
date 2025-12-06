@@ -20,7 +20,7 @@ const Auth = () => {
         <img 
           src={remiMascot} 
           alt="Remi" 
-          className="w-32 h-32 mx-auto"
+          className="w-96 h-96 mx-auto"
         />
 
         {/* Buttons */}
