@@ -146,7 +146,7 @@ export default function Dashboard() {
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src={logoSticker} alt="One Hello" className="h-24" />
+          <img src={logoSticker} alt="One Hello" className="h-48" />
         </div>
 
         {/* Greeting with Remi */}

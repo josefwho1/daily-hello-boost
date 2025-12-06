@@ -42,11 +42,21 @@ export const OnboardingChallengeCard = ({
         </div>
         
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-foreground">{challenge.title}</h3>
+          <h3 className={cn(
+            "font-semibold text-foreground",
+            isCompleted && "line-through text-muted-foreground"
+          )}>
+            {challenge.title}
+          </h3>
         </div>
 
         <div className="flex items-center gap-2">
-          {!isCompleted && (
+          {isCompleted ? (
+            <span className="text-sm font-medium text-success flex items-center gap-1">
+              <Check className="w-4 h-4" />
+              Done!
+            </span>
+          ) : (
             <Button
               size="sm"
               disabled={!isAvailable}

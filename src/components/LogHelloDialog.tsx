@@ -4,20 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { sevenWaysToSayHello } from "@/data/onboardingChallenges";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import remiMascot from "@/assets/remi-mascot.png";
 
 interface LogHelloDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onLog: (data: { name?: string; notes?: string; hello_type?: string }) => Promise<void>;
+  onLog: (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative' }) => Promise<void>;
 }
 
 export const LogHelloDialog = ({ open, onOpenChange, onLog }: LogHelloDialogProps) => {
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
-  const [helloType, setHelloType] = useState("");
+  const [rating, setRating] = useState<'positive' | 'neutral' | 'negative' | ''>("");
   const [isLogging, setIsLogging] = useState(false);
 
   const handleSubmit = async () => {
@@ -26,11 +25,11 @@ export const LogHelloDialog = ({ open, onOpenChange, onLog }: LogHelloDialogProp
       await onLog({
         name: name || undefined,
         notes: notes || undefined,
-        hello_type: helloType || undefined
+        rating: rating || undefined
       });
       setName("");
       setNotes("");
-      setHelloType("");
+      setRating("");
       onOpenChange(false);
     } finally {
       setIsLogging(false);
@@ -48,22 +47,6 @@ export const LogHelloDialog = ({ open, onOpenChange, onLog }: LogHelloDialogProp
         </DialogHeader>
         
         <div className="space-y-4 pt-2">
-          <div className="space-y-2">
-            <Label htmlFor="hello-type">Type of Hello</Label>
-            <Select value={helloType} onValueChange={setHelloType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select type (optional)" />
-              </SelectTrigger>
-              <SelectContent>
-                {sevenWaysToSayHello.map((way) => (
-                  <SelectItem key={way.category} value={way.category}>
-                    {way.category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="name">Name (optional)</Label>
             <Input
@@ -83,6 +66,28 @@ export const LogHelloDialog = ({ open, onOpenChange, onLog }: LogHelloDialogProp
               onChange={(e) => setNotes(e.target.value)}
               className="min-h-24"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>How did it feel? (optional)</Label>
+            <RadioGroup 
+              value={rating} 
+              onValueChange={(value) => setRating(value as 'positive' | 'neutral' | 'negative')}
+              className="flex gap-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="positive" id="positive" />
+                <Label htmlFor="positive" className="cursor-pointer">😊 Positive</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="neutral" id="neutral" />
+                <Label htmlFor="neutral" className="cursor-pointer">😐 Neutral</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="negative" id="negative" />
+                <Label htmlFor="negative" className="cursor-pointer">😔 Negative</Label>
+              </div>
+            </RadioGroup>
           </div>
 
           <Button 
