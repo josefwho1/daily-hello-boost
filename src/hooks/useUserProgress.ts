@@ -20,6 +20,8 @@ export interface UserProgress {
   has_completed_onboarding?: boolean;
   why_here?: string;
   streak_savers?: number;
+  last_weekly_challenge_date?: string;
+  save_offered_for_date?: string;
 }
 
 export const useUserProgress = () => {

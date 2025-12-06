@@ -14,9 +14,10 @@ import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { OnboardingCompleteDialog } from "@/components/OnboardingCompleteDialog";
 import { WeeklyChallengeIntroDialog } from "@/components/WeeklyChallengeIntroDialog";
 import { DailyStreakIntroDialog } from "@/components/DailyStreakIntroDialog";
+import { UseSaveDialog } from "@/components/UseSaveDialog";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { toast } from "sonner";
-import { format, startOfWeek, isBefore } from "date-fns";
+import { format, startOfWeek, isBefore, isYesterday, parseISO } from "date-fns";
 import logoSticker from "@/assets/one-hello-logo-sticker.png";
 import remiMascot from "@/assets/remi-mascot.png";
 import { Plus, Sparkles, Trophy } from "lucide-react";
@@ -35,6 +36,8 @@ export default function Dashboard() {
   const [showWeeklyChallengeIntro, setShowWeeklyChallengeIntro] = useState(false);
   const [hasShownCompletionPopup, setHasShownCompletionPopup] = useState(false);
   const [showDailyStreakIntro, setShowDailyStreakIntro] = useState(false);
+  const [showDailySaveDialog, setShowDailySaveDialog] = useState(false);
+  const [showWeeklySaveDialog, setShowWeeklySaveDialog] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -42,7 +45,7 @@ export default function Dashboard() {
     }
   }, [user]);
 
-  // Weekly reset logic
+  // Weekly reset logic - check for missed weekly goal
   useEffect(() => {
     if (!progress || progressLoading) return;
 
@@ -54,28 +57,114 @@ export default function Dashboard() {
       
       // Check if we're in a new week
       if (isBefore(storedWeekStart, weekStart)) {
-        // Week has ended - calculate if streak should continue or reset
+        // Week has ended - check if goal was met
         const targetMet = (progress.hellos_this_week || 0) >= (progress.target_hellos_per_week || 5);
         
-        const newWeeklyStreak = targetMet ? (progress.weekly_streak || 0) + 1 : 0;
-        const newLongestStreak = Math.max(newWeeklyStreak, progress.longest_streak || 0);
+        if (!targetMet && (progress.weekly_streak || 0) > 0) {
+          // Missed weekly goal with an active streak - offer save
+          setShowWeeklySaveDialog(true);
+        } else {
+          // Either target met or no streak to protect - proceed normally
+          const newWeeklyStreak = targetMet ? (progress.weekly_streak || 0) + 1 : 0;
+          const newLongestStreak = Math.max(newWeeklyStreak, progress.longest_streak || 0);
 
-        updateProgress({
-          hellos_this_week: 0,
-          week_start_date: weekStart.toISOString().split('T')[0],
-          weekly_streak: newWeeklyStreak,
-          longest_streak: newLongestStreak,
-          is_onboarding_week: false
-        });
+          updateProgress({
+            hellos_this_week: 0,
+            week_start_date: weekStart.toISOString().split('T')[0],
+            weekly_streak: newWeeklyStreak,
+            longest_streak: newLongestStreak,
+            is_onboarding_week: false
+          });
 
-        if (targetMet) {
-          toast.success(`🎉 Week completed! Your streak is now ${newWeeklyStreak} weeks!`);
-        } else if ((progress.weekly_streak || 0) > 0) {
-          toast.error("Your weekly streak was reset. Let's start fresh!");
+          if (targetMet) {
+            toast.success(`🎉 Week completed! Your streak is now ${newWeeklyStreak} weeks!`);
+          }
         }
       }
     }
   }, [progress, progressLoading]);
+
+  // Check for missed daily streak
+  useEffect(() => {
+    if (!progress || progressLoading || logsLoading) return;
+    
+    const dailyStreak = progress.daily_streak || 0;
+    const lastCompletedDate = progress.last_completed_date;
+    const saveOfferedForDate = progress.save_offered_for_date;
+    const today = format(new Date(), 'yyyy-MM-dd');
+    
+    // Only check if user has a streak to protect
+    if (dailyStreak > 0 && lastCompletedDate) {
+      const lastDate = parseISO(lastCompletedDate);
+      const todayCount = getLogsTodayCount();
+      
+      // If they haven't logged today and missed yesterday (gap > 1 day)
+      if (todayCount === 0) {
+        const daysSinceLastHello = Math.floor(
+          (new Date().getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        // If more than 1 day gap and we haven't offered save today
+        if (daysSinceLastHello > 1 && saveOfferedForDate !== today) {
+          setShowDailySaveDialog(true);
+          updateProgress({ save_offered_for_date: today });
+        }
+      }
+    }
+  }, [progress, progressLoading, logsLoading, logs]);
+
+  // Handle using save for daily streak
+  const handleUseDailySave = async () => {
+    const currentSaves = progress?.streak_savers || 0;
+    if (currentSaves > 0) {
+      await updateProgress({
+        streak_savers: currentSaves - 1,
+        last_completed_date: format(new Date(), 'yyyy-MM-dd')
+      });
+      toast.success("🛡️ Save used! Your daily streak is protected.");
+    }
+    setShowDailySaveDialog(false);
+  };
+
+  // Handle declining save for daily streak
+  const handleDeclineDailySave = async () => {
+    await updateProgress({ daily_streak: 0 });
+    toast.info("Your daily streak has been reset to 0.");
+    setShowDailySaveDialog(false);
+  };
+
+  // Handle using save for weekly streak
+  const handleUseWeeklySave = async () => {
+    const currentSaves = progress?.streak_savers || 0;
+    const now = new Date();
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+    
+    if (currentSaves > 0) {
+      await updateProgress({
+        streak_savers: currentSaves - 1,
+        hellos_this_week: 0,
+        week_start_date: weekStart.toISOString().split('T')[0],
+        is_onboarding_week: false
+      });
+      toast.success("🛡️ Save used! Your weekly streak is protected.");
+    }
+    setShowWeeklySaveDialog(false);
+  };
+
+  // Handle declining save for weekly streak
+  const handleDeclineWeeklySave = async () => {
+    const now = new Date();
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+    
+    await updateProgress({
+      weekly_streak: 0,
+      hellos_this_week: 0,
+      week_start_date: weekStart.toISOString().split('T')[0],
+      is_onboarding_week: false
+    });
+    toast.info("Your weekly streak has been reset to 0.");
+    setShowWeeklySaveDialog(false);
+  };
 
   // Update daily streak based on logs
   useEffect(() => {
@@ -113,17 +202,26 @@ export default function Dashboard() {
       const newHellosThisWeek = (progress?.hellos_this_week || 0) + 1;
       const targetMet = newHellosThisWeek >= (progress?.target_hellos_per_week || 5);
 
-      // Check if this is a weekly challenge completion - award streak saver
+      // Check if this is a weekly challenge completion - award streak saver (max 3)
       const isWeeklyChallenge = selectedChallenge === "Weekly Challenge";
+      const currentSaves = progress?.streak_savers || 0;
+      const lastChallengeDate = progress?.last_weekly_challenge_date;
+      const thisWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+      const alreadyEarnedThisWeek = lastChallengeDate && new Date(lastChallengeDate) >= thisWeekStart;
+      
       const updates: Record<string, unknown> = {
         hellos_this_week: newHellosThisWeek,
         last_completed_date: new Date().toISOString(),
-        daily_streak: Math.max(progress?.daily_streak || 0, 1) // Ensure at least 1 on any hello
+        daily_streak: Math.max(progress?.daily_streak || 0, 1)
       };
 
-      if (isWeeklyChallenge && !isWeeklyChallengeComplete) {
-        updates.streak_savers = (progress?.streak_savers || 0) + 1;
+      // Award streak saver for weekly challenge (max 3, once per week)
+      if (isWeeklyChallenge && !alreadyEarnedThisWeek && currentSaves < 3) {
+        updates.streak_savers = currentSaves + 1;
+        updates.last_weekly_challenge_date = format(new Date(), 'yyyy-MM-dd');
         toast.success("🛡️ Streak saver earned!");
+      } else if (isWeeklyChallenge && currentSaves >= 3) {
+        toast.info("Saves are full (3/3). Challenge completed!");
       }
 
       await updateProgress(updates);
@@ -142,6 +240,7 @@ export default function Dashboard() {
     
     setSelectedChallenge(null);
   };
+
 
   // Get completed onboarding challenges from logs this week
   const getCompletedOnboardingChallenges = () => {
@@ -363,6 +462,22 @@ export default function Dashboard() {
       <DailyStreakIntroDialog
         open={showDailyStreakIntro}
         onContinue={() => setShowDailyStreakIntro(false)}
+      />
+
+      <UseSaveDialog
+        open={showDailySaveDialog}
+        onUseSave={handleUseDailySave}
+        onDecline={handleDeclineDailySave}
+        type="daily"
+        savesAvailable={progress?.streak_savers || 0}
+      />
+
+      <UseSaveDialog
+        open={showWeeklySaveDialog}
+        onUseSave={handleUseWeeklySave}
+        onDecline={handleDeclineWeeklySave}
+        type="weekly"
+        savesAvailable={progress?.streak_savers || 0}
       />
     </div>
   );
