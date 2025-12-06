@@ -22,7 +22,7 @@ const Settings = () => {
   const { user } = useAuth();
   const { timezoneOffset, updateTimezone } = useTimezone();
   const { progress, updateProgress } = useUserProgress();
-  const [username, setUsername] = useState<string>("");
+  
 
   // Generate timezone options from GMT-12 to GMT+12
   const timezoneOptions = [];
@@ -48,13 +48,6 @@ const Settings = () => {
     }
   };
 
-  useEffect(() => {
-    if (!user) return;
-    
-    // Get username directly from user metadata
-    const name = user.user_metadata?.name || 'User';
-    setUsername(name);
-  }, [user]);
 
   const handleSignOut = async () => {
     try {
@@ -159,9 +152,16 @@ const Settings = () => {
           
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Username</Label>
+              <Label className="text-sm text-muted-foreground">Name</Label>
               <div className="p-3 bg-muted rounded-lg">
-                <p className="font-medium text-foreground">{username}</p>
+                <p className="font-medium text-foreground">{user?.user_metadata?.name || 'User'}</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">Email</Label>
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="font-medium text-foreground">{user?.email || 'Not set'}</p>
               </div>
             </div>
             
