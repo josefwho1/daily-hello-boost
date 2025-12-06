@@ -89,7 +89,7 @@ export default function Dashboard() {
     }
   }, [logs]);
 
-  const handleLogHello = async (data: { name?: string; notes?: string; hello_type?: string }) => {
+  const handleLogHello = async (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative' }) => {
     const result = await addLog(data);
     
     if (result) {

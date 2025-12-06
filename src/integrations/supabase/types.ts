@@ -71,6 +71,7 @@ export type Database = {
           id: string
           name: string | null
           notes: string | null
+          rating: string | null
           timezone_offset: string | null
           user_id: string
         }
@@ -80,6 +81,7 @@ export type Database = {
           id?: string
           name?: string | null
           notes?: string | null
+          rating?: string | null
           timezone_offset?: string | null
           user_id: string
         }
@@ -89,6 +91,7 @@ export type Database = {
           id?: string
           name?: string | null
           notes?: string | null
+          rating?: string | null
           timezone_offset?: string | null
           user_id?: string
         }
