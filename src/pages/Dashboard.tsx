@@ -144,15 +144,17 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <img src={logoText} alt="One Hello" className="h-40" />
-            <p className="text-lg font-medium text-foreground mt-1">
-              Hello, <span className="text-primary">{username}</span>! 👋
-            </p>
-          </div>
-          <img src={remiMascot} alt="Remi" className="w-16 h-16" />
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <img src={logoText} alt="One Hello" className="h-24" />
+        </div>
+
+        {/* Greeting with Remi */}
+        <div className="flex items-center gap-3 mb-6">
+          <img src={remiMascot} alt="Remi" className="w-12 h-12" />
+          <p className="text-lg font-medium text-foreground">
+            Hello, <span className="text-primary">{username}</span>! 👋
+          </p>
         </div>
 
         {/* Progress Ring Card */}
