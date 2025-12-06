@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,7 +7,8 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { LogOut, Clock, Target } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { LogOut, Clock, Target, User, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -23,6 +24,9 @@ const Settings = () => {
   const { timezoneOffset, updateTimezone } = useTimezone();
   const { progress, updateProgress } = useUserProgress();
   
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [isSavingName, setIsSavingName] = useState(false);
 
   // Generate timezone options from GMT-12 to GMT+12
   const timezoneOptions = [];
@@ -48,16 +52,57 @@ const Settings = () => {
     }
   };
 
+  const handleStartEditName = () => {
+    setEditName(user?.user_metadata?.name || '');
+    setIsEditingName(true);
+  };
+
+  const handleCancelEditName = () => {
+    setIsEditingName(false);
+    setEditName("");
+  };
+
+  const handleSaveName = async () => {
+    if (!editName.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+
+    if (editName.trim().length > 50) {
+      toast.error("Name must be less than 50 characters");
+      return;
+    }
+
+    setIsSavingName(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { name: editName.trim() }
+      });
+
+      if (error) throw error;
+
+      // Also update the profiles table
+      await supabase
+        .from('profiles')
+        .update({ username: editName.trim() })
+        .eq('id', user?.id);
+
+      toast.success("Name updated successfully");
+      setIsEditingName(false);
+    } catch (error) {
+      console.error("Error updating name:", error);
+      toast.error("Failed to update name");
+    } finally {
+      setIsSavingName(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
-      // Sign out from Supabase (ignore session not found errors)
       await supabase.auth.signOut({ scope: 'local' });
-      
       toast.success("Signed out successfully");
       navigate('/auth');
     } catch (error) {
-      // Even if signout fails, still navigate to auth page
       console.log("Sign out error (navigating anyway):", error);
       navigate('/auth');
     }
@@ -93,6 +138,67 @@ const Settings = () => {
         <p className="text-muted-foreground mb-6">
           Manage your One Hello experience
         </p>
+
+        {/* Account */}
+        <Card className="p-6 mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            <User className="text-primary" size={24} />
+            <h2 className="text-lg font-semibold text-foreground">Account</h2>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">Name</Label>
+              {isEditingName ? (
+                <div className="flex gap-2">
+                  <Input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Enter your name"
+                    maxLength={50}
+                    disabled={isSavingName}
+                  />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={handleSaveName}
+                    disabled={isSavingName}
+                  >
+                    <Check className="h-4 w-4 text-green-600" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={handleCancelEditName}
+                    disabled={isSavingName}
+                  >
+                    <X className="h-4 w-4 text-red-600" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="p-3 bg-muted rounded-lg flex-1">
+                    <p className="font-medium text-foreground">{user?.user_metadata?.name || 'User'}</p>
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={handleStartEditName}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">Email</Label>
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="font-medium text-foreground">{user?.email || 'Not set'}</p>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         {/* Challenge Mode */}
         <Card className="p-6 mb-4">
@@ -143,37 +249,16 @@ const Settings = () => {
           </div>
         </Card>
 
-        {/* Account */}
+        {/* Sign Out */}
         <Card className="p-6 mb-4">
-          <div className="flex items-center gap-3 mb-4">
-            <LogOut className="text-primary" size={24} />
-            <h2 className="text-lg font-semibold text-foreground">Account</h2>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Name</Label>
-              <div className="p-3 bg-muted rounded-lg">
-                <p className="font-medium text-foreground">{user?.user_metadata?.name || 'User'}</p>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Email</Label>
-              <div className="p-3 bg-muted rounded-lg">
-                <p className="font-medium text-foreground">{user?.email || 'Not set'}</p>
-              </div>
-            </div>
-            
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={handleSignOut}
-            >
-              <LogOut size={16} className="mr-2" />
-              Sign Out
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            className="w-full justify-start"
+            onClick={handleSignOut}
+          >
+            <LogOut size={16} className="mr-2" />
+            Sign Out
+          </Button>
         </Card>
 
         {/* About */}
