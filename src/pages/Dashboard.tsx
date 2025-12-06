@@ -243,6 +243,11 @@ export default function Dashboard() {
               strokeWidth={14}
             />
           </div>
+          <div className="mt-4 pt-4 border-t border-border">
+            <p className="text-sm text-muted-foreground text-center">
+              Mode: <span className="font-medium text-foreground capitalize">{progress.mode || 'normal'}</span>
+            </p>
+          </div>
         </Card>
 
         {/* Streak Card */}
