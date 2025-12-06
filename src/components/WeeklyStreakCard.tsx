@@ -1,28 +1,18 @@
 import { Card } from "@/components/ui/card";
-import { Trophy, Flame, Calendar } from "lucide-react";
+import { Trophy, Flame, Hand } from "lucide-react";
 import remiMascot from "@/assets/remi-mascot.png";
 
 interface WeeklyStreakCardProps {
   weeklyStreak: number;
   dailyStreak: number;
-  longestStreak: number;
-  mode: string;
+  totalHellos: number;
 }
 
 export const WeeklyStreakCard = ({ 
   weeklyStreak, 
   dailyStreak, 
-  longestStreak,
-  mode 
+  totalHellos
 }: WeeklyStreakCardProps) => {
-  const getModeLabel = () => {
-    switch (mode) {
-      case 'easy': return '3 hellos/week';
-      case 'hard': return '7 hellos/week';
-      default: return '5 hellos/week';
-    }
-  };
-
   return (
     <Card className="p-6 bg-gradient-to-br from-primary to-accent text-primary-foreground overflow-hidden relative">
       <img 
@@ -52,17 +42,10 @@ export const WeeklyStreakCard = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5" />
+            <Hand className="w-5 h-5" />
             <div>
-              <p className="text-xs opacity-75">Best</p>
-              <p className="font-semibold">{longestStreak} weeks</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            <div>
-              <p className="text-xs opacity-75">Mode</p>
-              <p className="font-semibold capitalize">{mode}</p>
+              <p className="text-xs opacity-75">Lifetime Hellos</p>
+              <p className="font-semibold">{totalHellos}</p>
             </div>
           </div>
         </div>
