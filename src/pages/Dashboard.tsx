@@ -13,7 +13,7 @@ import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek, isAfter, isBefore } from "date-fns";
-import logoText from "@/assets/one-hello-logo-text.png";
+import logoSticker from "@/assets/one-hello-logo-sticker.png";
 import remiMascot from "@/assets/remi-mascot.png";
 import { Hand, Plus, Sparkles } from "lucide-react";
 
@@ -146,7 +146,7 @@ export default function Dashboard() {
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src={logoText} alt="One Hello" className="h-24" />
+          <img src={logoSticker} alt="One Hello" className="h-24" />
         </div>
 
         {/* Greeting with Remi */}
