@@ -5,9 +5,19 @@ import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { useUserProgress } from "@/hooks/useUserProgress";
-import logoText from "@/assets/one-hello-logo-text.png";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+import logo from "@/assets/one-hello-logo-sticker.png";
 import remiMascot from "@/assets/remi-mascot.png";
+
+const signupSchema = z.object({
+  name: z.string().trim().min(1, { message: "First name is required" }).max(50, { message: "Name must be less than 50 characters" }),
+  email: z.string().trim().email({ message: "Invalid email address" }).max(255, { message: "Email must be less than 255 characters" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }).max(50, { message: "Password must be less than 50 characters" }),
+});
 
 const whyHereOptions = [
   { id: "social-anxiety", label: "I want to reduce my social anxiety" },
@@ -27,10 +37,16 @@ const modeOptions = [
 export default function Onboarding() {
   const navigate = useNavigate();
   const { updateProgress } = useUserProgress();
+  const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [selectedMode, setSelectedMode] = useState("normal");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Signup form fields
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleReasonToggle = (id: string) => {
     setSelectedReasons(prev => 
@@ -48,20 +64,61 @@ export default function Onboarding() {
     }
   };
 
-  const handleComplete = async () => {
-    setIsSubmitting(true);
+  const handleSignupAndComplete = async () => {
     try {
-      await updateProgress({
-        mode: selectedMode,
-        target_hellos_per_week: getTargetHellos(selectedMode),
-        why_here: selectedReasons.join(','),
-        has_completed_onboarding: true,
-        is_onboarding_week: true,
-        onboarding_week_start: new Date().toISOString().split('T')[0]
+      const validated = signupSchema.parse({ name, email, password });
+      setIsSubmitting(true);
+
+      const redirectUrl = `${window.location.origin}/`;
+
+      const { error: signUpError, data } = await supabase.auth.signUp({
+        email: validated.email,
+        password: validated.password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            name: validated.name
+          }
+        }
       });
+
+      if (signUpError) throw signUpError;
+
+      // Wait for user to be set, then update progress
+      if (data.user) {
+        // Small delay to ensure profile is created
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        await updateProgress({
+          mode: selectedMode,
+          target_hellos_per_week: getTargetHellos(selectedMode),
+          why_here: selectedReasons.join(','),
+          has_completed_onboarding: true,
+          is_onboarding_week: true,
+          onboarding_week_start: new Date().toISOString().split('T')[0]
+        });
+      }
+
+      toast({
+        title: "Welcome!",
+        description: `Hi ${validated.name}, let's start your journey!`,
+      });
+      
       navigate('/');
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else if (error instanceof Error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -73,7 +130,7 @@ export default function Onboarding() {
       <div className="fixed top-0 left-0 right-0 h-1 bg-muted z-50">
         <div 
           className="h-full bg-primary transition-all duration-300"
-          style={{ width: `${(step / 5) * 100}%` }}
+          style={{ width: `${(step / 6) * 100}%` }}
         />
       </div>
 
@@ -82,10 +139,10 @@ export default function Onboarding() {
           {/* Step 1: Welcome */}
           {step === 1 && (
             <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <img src={logoText} alt="One Hello" className="w-48 mx-auto" />
+              <img src={logo} alt="One Hello" className="w-64 mx-auto" />
               <img src={remiMascot} alt="Remi" className="w-32 h-32 mx-auto" />
               <div className="space-y-3">
-                <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
+                <h1 className="text-2xl font-bold text-foreground">Welcome!</h1>
                 <p className="text-muted-foreground">
                   The app that helps you say hello to strangers and build real-world social connections.
                 </p>
@@ -223,12 +280,12 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 5: Final */}
+          {/* Step 5: Motivation */}
           {step === 5 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <div className="text-6xl mb-4">🎉</div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">You're All Set!</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-2">You're Almost There!</h2>
                 <p className="text-muted-foreground">
                   Remember: 99% of people light up when a stranger is kind. 
                   Your job is to put more good energy into the world than you take out.
@@ -237,18 +294,88 @@ export default function Onboarding() {
 
               <Card className="p-6 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
                 <p className="text-center text-lg font-medium text-foreground">
-                  Now go say Hello! 👋
+                  Now let's create your account! 👋
                 </p>
               </Card>
 
-              <Button 
-                onClick={handleComplete} 
-                className="w-full" 
-                size="lg"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Setting up..." : "Start My Journey"}
-              </Button>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep(4)} className="flex-1">
+                  Back
+                </Button>
+                <Button onClick={() => setStep(6)} className="flex-1">
+                  Create Account
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 6: Signup Form */}
+          {step === 6 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-foreground mb-2">Create Your Account</h2>
+                <p className="text-muted-foreground">
+                  Just a few details and you're ready to go!
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">First Name *</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Enter your first name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    maxLength={50}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    maxLength={255}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Simple letters & numbers"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    maxLength={50}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Minimum 6 characters
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep(5)} className="flex-1">
+                  Back
+                </Button>
+                <Button 
+                  onClick={handleSignupAndComplete} 
+                  className="flex-1"
+                  disabled={isSubmitting || !name || !email || !password}
+                >
+                  {isSubmitting ? "Creating..." : "Start My Journey"}
+                </Button>
+              </div>
             </div>
           )}
         </div>
