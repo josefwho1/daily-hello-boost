@@ -139,16 +139,15 @@ export default function Onboarding() {
           {/* Step 1: Welcome */}
           {step === 1 && (
             <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <img src={logoText} alt="One Hello" className="w-80 mx-auto" />
               <img src={remiMascot} alt="Remi" className="w-64 h-64 mx-auto" />
               <div className="space-y-3">
-                <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
+                <h1 className="text-2xl font-bold text-foreground">Hello there, I'm Remi!</h1>
                 <p className="text-muted-foreground">
-                  The app that helps you get out of your comfort zone and meet new people.
+                  Just a quick 5 questions before your First Hello
                 </p>
               </div>
               <Button onClick={() => setStep(2)} className="w-full" size="lg">
-                Let's Get Started! 👋
+                Continue
               </Button>
               <button 
                 onClick={() => navigate('/signin')}
