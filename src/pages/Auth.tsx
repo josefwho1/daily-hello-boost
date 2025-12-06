@@ -71,13 +71,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#ffeeee' }}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <img 
             src={logo}
             alt="One Hello Logo" 
-            className="w-full max-w-xs h-auto mx-auto mb-4 object-contain"
+            className="w-full max-w-md h-auto mx-auto mb-6 object-contain"
             loading="eager"
             fetchPriority="high"
           />
