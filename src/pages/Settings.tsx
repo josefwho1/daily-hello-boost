@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTimezone } from "@/hooks/useTimezone";
+import { useUserProgress } from "@/hooks/useUserProgress";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { LogOut, Clock } from "lucide-react";
+import { LogOut, Clock, Target } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -20,6 +21,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { timezoneOffset, updateTimezone } = useTimezone();
+  const { progress, updateProgress } = useUserProgress();
   const [username, setUsername] = useState<string>("");
 
   // Generate timezone options from GMT-12 to GMT+12
@@ -31,6 +33,20 @@ const Settings = () => {
     const label = `GMT${sign}${i}`;
     timezoneOptions.push({ value, label });
   }
+
+  const modeOptions = [
+    { value: 'easy', label: 'Easy', description: '3 hellos per week' },
+    { value: 'normal', label: 'Normal', description: '5 hellos per week' },
+    { value: 'hard', label: 'Hard', description: '7 hellos per week' },
+  ];
+
+  const getTargetFromMode = (mode: string) => {
+    switch (mode) {
+      case 'easy': return 3;
+      case 'hard': return 7;
+      default: return 5;
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -64,6 +80,19 @@ const Settings = () => {
     }
   };
 
+  const handleModeChange = async (value: string) => {
+    try {
+      await updateProgress({
+        mode: value,
+        target_hellos_per_week: getTargetFromMode(value)
+      });
+      toast.success("Challenge mode updated successfully");
+    } catch (error) {
+      console.error("Error updating mode:", error);
+      toast.error("Failed to update mode");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-8">
@@ -71,6 +100,31 @@ const Settings = () => {
         <p className="text-muted-foreground mb-6">
           Manage your One Hello experience
         </p>
+
+        {/* Challenge Mode */}
+        <Card className="p-6 mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            <Target className="text-primary" size={24} />
+            <h2 className="text-lg font-semibold text-foreground">Challenge Mode</h2>
+          </div>
+          
+          <div className="space-y-2">
+            <Label className="text-sm text-muted-foreground">How many hellos per week?</Label>
+            <Select value={progress?.mode || 'normal'} onValueChange={handleModeChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select mode" />
+              </SelectTrigger>
+              <SelectContent>
+                {modeOptions.map((mode) => (
+                  <SelectItem key={mode.value} value={mode.value}>
+                    <span className="font-medium">{mode.label}</span>
+                    <span className="text-muted-foreground ml-2">({mode.description})</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </Card>
 
         {/* Timezone */}
         <Card className="p-6 mb-4">
