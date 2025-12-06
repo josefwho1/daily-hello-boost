@@ -39,6 +39,7 @@ export default function Onboarding() {
   const { updateProgress } = useUserProgress();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
+  const [comfortRating, setComfortRating] = useState(5);
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [selectedMode, setSelectedMode] = useState("normal");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -130,7 +131,7 @@ export default function Onboarding() {
       <div className="fixed top-0 left-0 right-0 h-1 bg-muted z-50">
         <div 
           className="h-full bg-primary transition-all duration-300"
-          style={{ width: `${(step / 6) * 100}%` }}
+          style={{ width: `${(step / 7) * 100}%` }}
         />
       </div>
 
@@ -141,9 +142,9 @@ export default function Onboarding() {
             <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <img src={remiMascot} alt="Remi" className="w-64 h-64 mx-auto" />
               <div className="space-y-3">
-                <h1 className="text-2xl font-bold text-foreground">Hello there, I'm Remi!</h1>
+                <h1 className="text-2xl font-bold text-foreground">Hello, I'm Remi!</h1>
                 <p className="text-muted-foreground">
-                  Just a quick 5 questions before your First Hello
+                  Just a quick 3 questions before your first hello.
                 </p>
               </div>
               <Button onClick={() => setStep(2)} className="w-full" size="lg">
@@ -203,8 +204,59 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 3: Mode selection */}
+          {/* Step 3: Comfort Rating */}
           {step === 3 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-foreground mb-2">How comfortable do you feel?</h2>
+                <p className="text-muted-foreground">
+                  Starting a conversation with a stranger...
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between text-sm text-muted-foreground px-1">
+                  <span>1 ← Terrified</span>
+                  <span>Totally natural → 10</span>
+                </div>
+                
+                <div className="grid grid-cols-10 gap-1">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                    <button
+                      key={num}
+                      onClick={() => setComfortRating(num)}
+                      className={`aspect-square rounded-lg font-semibold text-sm transition-all ${
+                        comfortRating === num
+                          ? 'bg-primary text-primary-foreground scale-110'
+                          : 'bg-muted hover:bg-muted/80 text-foreground'
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+
+                <p className="text-center text-sm text-muted-foreground">
+                  {comfortRating <= 3 && "(heart races, I avoid it)"}
+                  {comfortRating >= 4 && comfortRating <= 6 && "(a bit nervous but manageable)"}
+                  {comfortRating >= 7 && comfortRating <= 9 && "(pretty comfortable)"}
+                  {comfortRating === 10 && "(easy and fun)"}
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+                  Back
+                </Button>
+                <Button onClick={() => setStep(4)} className="flex-1">
+                  Continue
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Mode selection */}
+          {step === 4 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-foreground mb-2">Choose Your Challenge</h2>
@@ -238,18 +290,18 @@ export default function Onboarding() {
               </RadioGroup>
 
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+                <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
                   Back
                 </Button>
-                <Button onClick={() => setStep(4)} className="flex-1">
+                <Button onClick={() => setStep(5)} className="flex-1">
                   Continue
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 4: Onboarding Week Intro */}
-          {step === 4 && (
+          {/* Step 5: Onboarding Week Intro */}
+          {step === 5 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img src={remiMascot} alt="Remi" className="w-24 h-24 mx-auto mb-4" />
@@ -275,18 +327,18 @@ export default function Onboarding() {
               </div>
 
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
+                <Button variant="outline" onClick={() => setStep(4)} className="flex-1">
                   Back
                 </Button>
-                <Button onClick={() => setStep(5)} className="flex-1">
+                <Button onClick={() => setStep(6)} className="flex-1">
                   I'm Ready!
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 5: Motivation */}
-          {step === 5 && (
+          {/* Step 6: Motivation */}
+          {step === 6 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <div className="text-6xl mb-4">🎉</div>
@@ -304,18 +356,18 @@ export default function Onboarding() {
               </Card>
 
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(4)} className="flex-1">
+                <Button variant="outline" onClick={() => setStep(6)} className="flex-1">
                   Back
                 </Button>
-                <Button onClick={() => setStep(6)} className="flex-1">
+                <Button onClick={() => setStep(7)} className="flex-1">
                   Create Account
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 6: Signup Form */}
-          {step === 6 && (
+          {/* Step 7: Signup Form */}
+          {step === 7 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-foreground mb-2">Create Your Account</h2>
