@@ -138,13 +138,13 @@ export default function Dashboard() {
   const completedTypes = getCompletedOnboardingChallenges();
   const allOnboardingComplete = completedTypes.length >= 7;
 
-  // Check if all 7 onboarding challenges are complete and show popup
+  // Check if all 7 onboarding challenges are complete and show popup (only once ever)
   useEffect(() => {
-    if (allOnboardingComplete && progress?.is_onboarding_week && !hasShownCompletionPopup) {
+    if (allOnboardingComplete && progress?.is_onboarding_week && !progress?.has_completed_onboarding && !hasShownCompletionPopup) {
       setShowOnboardingComplete(true);
       setHasShownCompletionPopup(true);
     }
-  }, [allOnboardingComplete, progress?.is_onboarding_week, hasShownCompletionPopup]);
+  }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding, hasShownCompletionPopup]);
 
   const handleOnboardingCompleteContinue = () => {
     setShowOnboardingComplete(false);
