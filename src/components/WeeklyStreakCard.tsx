@@ -61,7 +61,7 @@ export const WeeklyStreakCard = ({
             <Shield className="w-5 h-5 flex-shrink-0" />
             <div>
               <p className="text-xs opacity-75">Saves</p>
-              <p className="font-semibold">{streakSavers}</p>
+              <p className="font-semibold">{streakSavers} / 3</p>
             </div>
           </div>
         </div>

@@ -171,9 +171,11 @@ export type Database = {
           id: string
           is_onboarding_week: boolean | null
           last_completed_date: string | null
+          last_weekly_challenge_date: string | null
           longest_streak: number | null
           mode: string | null
           onboarding_week_start: string | null
+          save_offered_for_date: string | null
           selected_pack_id: string
           streak_savers: number | null
           target_hellos_per_week: number | null
@@ -195,9 +197,11 @@ export type Database = {
           id?: string
           is_onboarding_week?: boolean | null
           last_completed_date?: string | null
+          last_weekly_challenge_date?: string | null
           longest_streak?: number | null
           mode?: string | null
           onboarding_week_start?: string | null
+          save_offered_for_date?: string | null
           selected_pack_id?: string
           streak_savers?: number | null
           target_hellos_per_week?: number | null
@@ -219,9 +223,11 @@ export type Database = {
           id?: string
           is_onboarding_week?: boolean | null
           last_completed_date?: string | null
+          last_weekly_challenge_date?: string | null
           longest_streak?: number | null
           mode?: string | null
           onboarding_week_start?: string | null
+          save_offered_for_date?: string | null
           selected_pack_id?: string
           streak_savers?: number | null
           target_hellos_per_week?: number | null
