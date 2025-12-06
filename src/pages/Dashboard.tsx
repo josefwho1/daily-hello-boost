@@ -18,6 +18,7 @@ import { format, startOfWeek, isBefore } from "date-fns";
 import logoSticker from "@/assets/one-hello-logo-sticker.png";
 import remiMascot from "@/assets/remi-mascot.png";
 import { Plus, Sparkles, Trophy } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -151,6 +152,14 @@ export default function Dashboard() {
     // Mark onboarding as complete
     updateProgress({ has_completed_onboarding: true });
   };
+
+  // Check if weekly challenge is completed this week
+  const isWeeklyChallengeComplete = logs.some(log => {
+    if (log.hello_type !== "Weekly Challenge") return false;
+    const logDate = new Date(log.created_at);
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    return logDate >= weekStart;
+  });
   if (progressLoading || logsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -246,20 +255,42 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="mt-6">
-            <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-              <div className="flex items-center gap-3 mb-3">
-                <Trophy className="w-6 h-6 text-primary" />
-                <h2 className="text-lg font-semibold text-foreground">Weekly Challenge</h2>
+            <Card className={`p-6 border-primary/20 ${isWeeklyChallengeComplete ? 'bg-muted/50' : 'bg-gradient-to-br from-primary/10 to-primary/5'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <Trophy className={`w-6 h-6 ${isWeeklyChallengeComplete ? 'text-muted-foreground' : 'text-primary'}`} />
+                  <h2 className={`text-lg font-semibold ${isWeeklyChallengeComplete ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                    Weekly Challenge
+                  </h2>
+                </div>
+                {isWeeklyChallengeComplete && (
+                  <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+                    Done!
+                  </Badge>
+                )}
               </div>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className={`text-sm mb-4 ${isWeeklyChallengeComplete ? 'text-muted-foreground/70' : 'text-muted-foreground'}`}>
                 Every week you'll get a new bonus challenge. Complete it to earn a streak saver!
               </p>
-              <div className="bg-background/50 rounded-lg p-4">
-                <p className="text-sm font-medium text-foreground mb-1">This Week's Challenge:</p>
-                <p className="text-muted-foreground text-sm">
+              <div className={`rounded-lg p-4 ${isWeeklyChallengeComplete ? 'bg-muted' : 'bg-background/50'}`}>
+                <p className={`text-sm font-medium mb-1 ${isWeeklyChallengeComplete ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                  This Week's Challenge:
+                </p>
+                <p className={`text-sm ${isWeeklyChallengeComplete ? 'text-muted-foreground/70 line-through' : 'text-muted-foreground'}`}>
                   Ask someone what the best part of their day was!
                 </p>
               </div>
+              {!isWeeklyChallengeComplete && (
+                <Button 
+                  className="w-full mt-4"
+                  onClick={() => {
+                    setSelectedChallenge("Weekly Challenge");
+                    setShowLogDialog(true);
+                  }}
+                >
+                  Complete Challenge
+                </Button>
+              )}
             </Card>
           </div>
         )}
