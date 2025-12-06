@@ -5,12 +5,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserProgress } from "@/hooks/useUserProgress";
 import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
 import Challenges from "./pages/Challenges";
 import Notes from "./pages/Notes";
 import Settings from "./pages/Settings";
 import Packs from "./pages/Packs";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +39,27 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
+  const { progress, loading } = useUserProgress();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#ffeeee' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (progress && !progress.has_completed_onboarding) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -45,10 +69,30 @@ const App = () => (
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route 
+            path="/onboarding" 
+            element={
+              <ProtectedRoute>
+                <Onboarding />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/" 
             element={
               <ProtectedRoute>
-                <Home />
+                <OnboardingCheck>
+                  <Dashboard />
+                </OnboardingCheck>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/legacy" 
+            element={
+              <ProtectedRoute>
+                <OnboardingCheck>
+                  <Home />
+                </OnboardingCheck>
               </ProtectedRoute>
             } 
           />
@@ -56,7 +100,9 @@ const App = () => (
             path="/challenges" 
             element={
               <ProtectedRoute>
-                <Challenges />
+                <OnboardingCheck>
+                  <Challenges />
+                </OnboardingCheck>
               </ProtectedRoute>
             } 
           />
@@ -64,7 +110,9 @@ const App = () => (
             path="/notes" 
             element={
               <ProtectedRoute>
-                <Notes />
+                <OnboardingCheck>
+                  <Notes />
+                </OnboardingCheck>
               </ProtectedRoute>
             } 
           />
@@ -72,7 +120,9 @@ const App = () => (
             path="/settings" 
             element={
               <ProtectedRoute>
-                <Settings />
+                <OnboardingCheck>
+                  <Settings />
+                </OnboardingCheck>
               </ProtectedRoute>
             } 
           />
@@ -80,7 +130,9 @@ const App = () => (
             path="/packs" 
             element={
               <ProtectedRoute>
-                <Packs />
+                <OnboardingCheck>
+                  <Packs />
+                </OnboardingCheck>
               </ProtectedRoute>
             } 
           />

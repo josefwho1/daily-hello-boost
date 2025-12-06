@@ -1,93 +1,81 @@
-import { challenges } from "@/data/challenges";
-import { ChallengeCard } from "@/components/ChallengeCard";
-import { useNavigate } from "react-router-dom";
-import logo from "@/assets/one-hello-logo.png";
-import { getDaysDifferenceInTimezone } from "@/lib/timezone";
-import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
-import { useUserProgress } from "@/hooks/useUserProgress";
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { InspirationCard } from "@/components/InspirationCard";
+import { sevenWaysToSayHello, onboardingChallenges } from "@/data/onboardingChallenges";
+import { Lightbulb, ChevronDown, ChevronUp } from "lucide-react";
+import remiMascot from "@/assets/remi-mascot.png";
 
-const Challenges = () => {
-  const navigate = useNavigate();
-  const { completions, loading: completionsLoading } = useChallengeCompletions();
-  const { progress, loading: progressLoading } = useUserProgress();
-
-  const loading = completionsLoading || progressLoading;
-
-  const getNextIncompleteIndex = () => {
-    return challenges.findIndex(
-      c => !completions.some(cc => cc.challenge_day === c.id)
-    );
-  };
-
-  const isChallengAvailable = (challengeDay: number) => {
-    if (completions.some(c => c.challenge_day === challengeDay)) return true;
-    
-    const nextIncompleteIndex = challenges.findIndex(
-      c => !completions.some(cc => cc.challenge_day === c.id)
-    );
-    
-    if (nextIncompleteIndex === -1) return true;
-    
-    const nextIncompleteDay = challenges[nextIncompleteIndex].id;
-    
-    if (challengeDay !== nextIncompleteDay) return false;
-    
-    if (progress?.last_completed_date) {
-      const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date());
-      if (daysDiff >= 1) return true;
-      return false;
-    } else {
-      return true;
-    }
-  };
-
-  const nextIncompleteIndex = getNextIncompleteIndex();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+export default function Challenges() {
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="max-w-md mx-auto px-4 py-8">
-        <div className="text-center mb-6">
-          <img src={logo} alt="One Hello" className="w-64 mx-auto mb-4" />
+      <div className="max-w-md mx-auto px-4 py-6">
+        <div className="flex items-center gap-3 mb-6">
+          <img src={remiMascot} alt="Remi" className="w-12 h-12" />
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Inspiration</h1>
+            <p className="text-sm text-muted-foreground">Ideas to help you say hello</p>
+          </div>
         </div>
-        
-        <h1 className="text-3xl font-bold mb-2 text-foreground">All Challenges</h1>
-        <p className="text-muted-foreground mb-6">
-          Complete one challenge each day for 7 days
-        </p>
 
-        <div className="space-y-4">
-          {challenges.map((challenge, index) => {
-            const isCompleted = completions.some(c => c.challenge_day === challenge.id);
-            const isToday = index === nextIncompleteIndex;
-            const isAvailable = isChallengAvailable(challenge.id);
-            const isLocked = !isAvailable;
+        <InspirationCard />
 
-            return (
-              <ChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                isCompleted={isCompleted}
-                isToday={isToday}
-                isLocked={isLocked}
-                onClick={() => !isLocked && navigate("/")}
-              />
-            );
-          })}
+        <div className="mt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Lightbulb className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">7 Ways to Say Hello</h2>
+          </div>
+          
+          <div className="space-y-3">
+            {sevenWaysToSayHello.map((category) => (
+              <Card key={category.category} className="overflow-hidden">
+                <button
+                  className="w-full p-4 flex items-center justify-between text-left"
+                  onClick={() => setExpandedCategory(
+                    expandedCategory === category.category ? null : category.category
+                  )}
+                >
+                  <span className="font-medium text-foreground">{category.category}</span>
+                  {expandedCategory === category.category 
+                    ? <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                    : <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                  }
+                </button>
+                
+                {expandedCategory === category.category && (
+                  <div className="px-4 pb-4 space-y-2">
+                    {category.scripts.map((script, index) => (
+                      <div key={index} className="p-3 bg-muted rounded-lg text-sm text-foreground">
+                        "{script}"
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold text-foreground mb-4">The 7 First Week Challenges</h2>
+          <div className="space-y-3">
+            {onboardingChallenges.map((challenge) => (
+              <Card key={challenge.id} className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
+                    {challenge.id}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">{challenge.title}</h3>
+                    <p className="text-sm text-muted-foreground">{challenge.description}</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default Challenges;
+}
