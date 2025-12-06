@@ -13,6 +13,7 @@ import Notes from "./pages/Notes";
 import Settings from "./pages/Settings";
 import Packs from "./pages/Packs";
 import Auth from "./pages/Auth";
+import SignIn from "./pages/SignIn";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
@@ -60,6 +61,28 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#ffeeee' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is already logged in, redirect to home
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -67,15 +90,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/auth" element={<Auth />} />
-          <Route 
-            path="/onboarding" 
-            element={
-              <ProtectedRoute>
-                <Onboarding />
-              </ProtectedRoute>
-            } 
-          />
+          <Route path="/auth" element={<AuthRedirect><Auth /></AuthRedirect>} />
+          <Route path="/signin" element={<AuthRedirect><SignIn /></AuthRedirect>} />
+          <Route path="/onboarding" element={<AuthRedirect><Onboarding /></AuthRedirect>} />
           <Route 
             path="/" 
             element={

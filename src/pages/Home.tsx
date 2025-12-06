@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import logo from "@/assets/one-hello-logo.png";
+import logo from "@/assets/one-hello-logo-sticker.png";
 import { isSameDayInTimezone, getDaysDifferenceInTimezone, getDateInUserTimezone } from "@/lib/timezone";
 import { format } from "date-fns";
 import { useUserProgress } from "@/hooks/useUserProgress";
