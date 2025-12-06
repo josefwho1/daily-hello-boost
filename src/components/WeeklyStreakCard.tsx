@@ -1,17 +1,19 @@
 import { Card } from "@/components/ui/card";
-import { Trophy, Flame, Hand } from "lucide-react";
+import { Trophy, Flame, Hand, Shield } from "lucide-react";
 import remiMascot from "@/assets/remi-mascot.png";
 
 interface WeeklyStreakCardProps {
   weeklyStreak: number;
   dailyStreak: number;
   totalHellos: number;
+  streakSavers: number;
 }
 
 export const WeeklyStreakCard = ({ 
   weeklyStreak, 
   dailyStreak, 
-  totalHellos
+  totalHellos,
+  streakSavers
 }: WeeklyStreakCardProps) => {
   return (
     <Card className="p-6 bg-gradient-to-br from-primary to-accent text-primary-foreground overflow-hidden relative">
@@ -33,19 +35,26 @@ export const WeeklyStreakCard = ({
           <Trophy className="w-12 h-12 opacity-90" />
         </div>
 
-        <div className="flex gap-4 pt-4 border-t border-primary-foreground/20">
+        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-primary-foreground/20">
           <div className="flex items-center gap-2">
-            <Flame className="w-5 h-5" />
+            <Flame className="w-5 h-5 flex-shrink-0" />
             <div>
               <p className="text-xs opacity-75">Daily</p>
               <p className="font-semibold">{dailyStreak} days</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Hand className="w-5 h-5" />
+            <Hand className="w-5 h-5 flex-shrink-0" />
             <div>
-              <p className="text-xs opacity-75">Lifetime Hellos</p>
+              <p className="text-xs opacity-75">Lifetime</p>
               <p className="font-semibold">{totalHellos}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Shield className="w-5 h-5 flex-shrink-0" />
+            <div>
+              <p className="text-xs opacity-75">Savers</p>
+              <p className="font-semibold">{streakSavers}</p>
             </div>
           </div>
         </div>

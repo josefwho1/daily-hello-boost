@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
+import { useWeeklyChallenges } from "@/hooks/useWeeklyChallenges";
 import { ProgressRing } from "@/components/ProgressRing";
 import { WeeklyStreakCard } from "@/components/WeeklyStreakCard";
 import { InspirationCard } from "@/components/InspirationCard";
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { progress, loading: progressLoading, updateProgress } = useUserProgress();
   const { logs, loading: logsLoading, addLog, hellosThisWeek, getLogsTodayCount } = useHelloLogs();
+  const { challenges: weeklyChallenges, loading: challengesLoading, getCurrentChallenge } = useWeeklyChallenges();
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
   const [username, setUsername] = useState("");
@@ -107,10 +109,19 @@ export default function Dashboard() {
       const newHellosThisWeek = (progress?.hellos_this_week || 0) + 1;
       const targetMet = newHellosThisWeek >= (progress?.target_hellos_per_week || 5);
 
-      await updateProgress({
+      // Check if this is a weekly challenge completion - award streak saver
+      const isWeeklyChallenge = selectedChallenge === "Weekly Challenge";
+      const updates: Record<string, unknown> = {
         hellos_this_week: newHellosThisWeek,
         last_completed_date: new Date().toISOString()
-      });
+      };
+
+      if (isWeeklyChallenge && !isWeeklyChallengeComplete) {
+        updates.streak_savers = (progress?.streak_savers || 0) + 1;
+        toast.success("🛡️ Streak saver earned!");
+      }
+
+      await updateProgress(updates);
 
       toast.success("Hello logged! 🎉");
 
@@ -160,7 +171,20 @@ export default function Dashboard() {
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     return logDate >= weekStart;
   });
-  if (progressLoading || logsLoading) {
+
+  // Calculate weeks since user started to get rotating challenge
+  const getWeeksSinceStart = () => {
+    if (!progress?.onboarding_week_start) return 0;
+    const start = new Date(progress.onboarding_week_start);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - start.getTime());
+    const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+    return diffWeeks;
+  };
+
+  const currentWeeklyChallenge = getCurrentChallenge(getWeeksSinceStart());
+
+  if (progressLoading || logsLoading || challengesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -226,6 +250,7 @@ export default function Dashboard() {
           weeklyStreak={progress.weekly_streak || 0}
           dailyStreak={progress.daily_streak || 0}
           totalHellos={logs.length}
+          streakSavers={progress.streak_savers || 0}
         />
 
         {/* Onboarding Week Challenges or Weekly Challenge */}
@@ -274,10 +299,10 @@ export default function Dashboard() {
               </p>
               <div className={`rounded-lg p-4 ${isWeeklyChallengeComplete ? 'bg-muted' : 'bg-background/50'}`}>
                 <p className={`text-sm font-medium mb-1 ${isWeeklyChallengeComplete ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                  This Week's Challenge:
+                  {currentWeeklyChallenge?.title || "This Week's Challenge"}:
                 </p>
                 <p className={`text-sm ${isWeeklyChallengeComplete ? 'text-muted-foreground/70 line-through' : 'text-muted-foreground'}`}>
-                  Ask someone what the best part of their day was!
+                  {currentWeeklyChallenge?.description || "Complete a special hello challenge!"}
                 </p>
               </div>
               {!isWeeklyChallengeComplete && (

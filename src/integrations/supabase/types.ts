@@ -175,6 +175,7 @@ export type Database = {
           mode: string | null
           onboarding_week_start: string | null
           selected_pack_id: string
+          streak_savers: number | null
           target_hellos_per_week: number | null
           updated_at: string
           user_id: string
@@ -198,6 +199,7 @@ export type Database = {
           mode?: string | null
           onboarding_week_start?: string | null
           selected_pack_id?: string
+          streak_savers?: number | null
           target_hellos_per_week?: number | null
           updated_at?: string
           user_id: string
@@ -221,6 +223,7 @@ export type Database = {
           mode?: string | null
           onboarding_week_start?: string | null
           selected_pack_id?: string
+          streak_savers?: number | null
           target_hellos_per_week?: number | null
           updated_at?: string
           user_id?: string
