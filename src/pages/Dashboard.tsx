@@ -147,7 +147,7 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <img src={logoText} alt="One Hello" className="h-8" />
+            <img src={logoText} alt="One Hello" className="h-40" />
             <p className="text-lg font-medium text-foreground mt-1">
               Hello, <span className="text-primary">{username}</span>! 👋
             </p>
@@ -188,8 +188,7 @@ export default function Dashboard() {
         <WeeklyStreakCard 
           weeklyStreak={progress.weekly_streak || 0}
           dailyStreak={progress.daily_streak || 0}
-          longestStreak={progress.longest_streak || 0}
-          mode={progress.mode || 'normal'}
+          totalHellos={logs.length}
         />
 
         {/* Onboarding Week Challenges */}
