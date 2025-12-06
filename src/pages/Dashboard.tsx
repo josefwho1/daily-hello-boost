@@ -13,6 +13,7 @@ import { LogHelloDialog } from "@/components/LogHelloDialog";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { OnboardingCompleteDialog } from "@/components/OnboardingCompleteDialog";
 import { WeeklyChallengeIntroDialog } from "@/components/WeeklyChallengeIntroDialog";
+import { DailyStreakIntroDialog } from "@/components/DailyStreakIntroDialog";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { toast } from "sonner";
 import { format, startOfWeek, isBefore } from "date-fns";
@@ -33,6 +34,7 @@ export default function Dashboard() {
   const [showOnboardingComplete, setShowOnboardingComplete] = useState(false);
   const [showWeeklyChallengeIntro, setShowWeeklyChallengeIntro] = useState(false);
   const [hasShownCompletionPopup, setHasShownCompletionPopup] = useState(false);
+  const [showDailyStreakIntro, setShowDailyStreakIntro] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -99,6 +101,8 @@ export default function Dashboard() {
   }, [logs]);
 
   const handleLogHello = async (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative' }) => {
+    const isFirstHelloEver = logs.length === 0;
+    
     const result = await addLog({
       ...data,
       hello_type: selectedChallenge || undefined
@@ -113,7 +117,8 @@ export default function Dashboard() {
       const isWeeklyChallenge = selectedChallenge === "Weekly Challenge";
       const updates: Record<string, unknown> = {
         hellos_this_week: newHellosThisWeek,
-        last_completed_date: new Date().toISOString()
+        last_completed_date: new Date().toISOString(),
+        daily_streak: Math.max(progress?.daily_streak || 0, 1) // Ensure at least 1 on any hello
       };
 
       if (isWeeklyChallenge && !isWeeklyChallengeComplete) {
@@ -124,6 +129,11 @@ export default function Dashboard() {
       await updateProgress(updates);
 
       toast.success("Hello logged! 🎉");
+
+      // Show first hello popup
+      if (isFirstHelloEver) {
+        setShowDailyStreakIntro(true);
+      }
 
       if (targetMet && !((progress?.hellos_this_week || 0) >= (progress?.target_hellos_per_week || 5))) {
         toast.success("🏆 You've hit your weekly target! Amazing!");
@@ -243,11 +253,6 @@ export default function Dashboard() {
               strokeWidth={14}
             />
           </div>
-          <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-sm text-muted-foreground text-center">
-              Mode: <span className="font-medium text-foreground capitalize">{progress.mode || 'normal'}</span>
-            </p>
-          </div>
         </Card>
 
         {/* Streak Card */}
@@ -256,6 +261,7 @@ export default function Dashboard() {
           dailyStreak={progress.daily_streak || 0}
           totalHellos={logs.length}
           streakSavers={progress.streak_savers || 0}
+          mode={progress.mode || 'normal'}
         />
 
         {/* Onboarding Week Challenges or Weekly Challenge */}
@@ -352,6 +358,11 @@ export default function Dashboard() {
       <WeeklyChallengeIntroDialog
         open={showWeeklyChallengeIntro}
         onOpenChange={setShowWeeklyChallengeIntro}
+      />
+
+      <DailyStreakIntroDialog
+        open={showDailyStreakIntro}
+        onContinue={() => setShowDailyStreakIntro(false)}
       />
     </div>
   );
