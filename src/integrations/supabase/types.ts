@@ -64,6 +64,44 @@ export type Database = {
           },
         ]
       }
+      hello_logs: {
+        Row: {
+          created_at: string
+          hello_type: string | null
+          id: string
+          name: string | null
+          notes: string | null
+          timezone_offset: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hello_type?: string | null
+          id?: string
+          name?: string | null
+          notes?: string | null
+          timezone_offset?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hello_type?: string | null
+          id?: string
+          name?: string | null
+          notes?: string | null
+          timezone_offset?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hello_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       person_logs: {
         Row: {
           created_at: string
@@ -123,37 +161,70 @@ export type Database = {
           created_at: string
           current_day: number
           current_streak: number
+          daily_streak: number | null
+          has_completed_onboarding: boolean | null
           has_seen_welcome_messages: boolean | null
+          hellos_this_week: number | null
           id: string
+          is_onboarding_week: boolean | null
           last_completed_date: string | null
+          longest_streak: number | null
+          mode: string | null
+          onboarding_week_start: string | null
           selected_pack_id: string
+          target_hellos_per_week: number | null
           updated_at: string
           user_id: string
           username: string | null
+          week_start_date: string | null
+          weekly_streak: number | null
+          why_here: string | null
         }
         Insert: {
           created_at?: string
           current_day?: number
           current_streak?: number
+          daily_streak?: number | null
+          has_completed_onboarding?: boolean | null
           has_seen_welcome_messages?: boolean | null
+          hellos_this_week?: number | null
           id?: string
+          is_onboarding_week?: boolean | null
           last_completed_date?: string | null
+          longest_streak?: number | null
+          mode?: string | null
+          onboarding_week_start?: string | null
           selected_pack_id?: string
+          target_hellos_per_week?: number | null
           updated_at?: string
           user_id: string
           username?: string | null
+          week_start_date?: string | null
+          weekly_streak?: number | null
+          why_here?: string | null
         }
         Update: {
           created_at?: string
           current_day?: number
           current_streak?: number
+          daily_streak?: number | null
+          has_completed_onboarding?: boolean | null
           has_seen_welcome_messages?: boolean | null
+          hellos_this_week?: number | null
           id?: string
+          is_onboarding_week?: boolean | null
           last_completed_date?: string | null
+          longest_streak?: number | null
+          mode?: string | null
+          onboarding_week_start?: string | null
           selected_pack_id?: string
+          target_hellos_per_week?: number | null
           updated_at?: string
           user_id?: string
           username?: string | null
+          week_start_date?: string | null
+          weekly_streak?: number | null
+          why_here?: string | null
         }
         Relationships: [
           {
@@ -164,6 +235,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      weekly_challenges: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          title: string
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          title: string
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          title?: string
+          week_number?: number
+        }
+        Relationships: []
       }
     }
     Views: {

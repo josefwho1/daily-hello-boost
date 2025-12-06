@@ -8,6 +8,17 @@ export interface UserProgress {
   last_completed_date: string | null;
   has_seen_welcome_messages?: boolean;
   selected_pack_id?: string;
+  mode?: string;
+  target_hellos_per_week?: number;
+  hellos_this_week?: number;
+  weekly_streak?: number;
+  daily_streak?: number;
+  longest_streak?: number;
+  is_onboarding_week?: boolean;
+  onboarding_week_start?: string;
+  week_start_date?: string;
+  has_completed_onboarding?: boolean;
+  why_here?: string;
 }
 
 export const useUserProgress = () => {
