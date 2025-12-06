@@ -19,6 +19,7 @@ export interface UserProgress {
   week_start_date?: string;
   has_completed_onboarding?: boolean;
   why_here?: string;
+  streak_savers?: number;
 }
 
 export const useUserProgress = () => {
