@@ -90,6 +90,13 @@ const Notes = () => {
     return config[rating];
   };
 
+  const getHelloTypeTag = (helloType: string | null) => {
+    if (!helloType) return { label: "Standard Hello", color: "bg-muted text-muted-foreground" };
+    if (helloType === "Weekly Challenge") return { label: "Weekly Challenge", color: "bg-primary/10 text-primary border-primary/20" };
+    // If it matches one of the 7 onboarding challenges
+    return { label: "Intro Series", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" };
+  };
+
   if (loading || logsLoading || helloLogsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -118,6 +125,7 @@ const Notes = () => {
               // Hello Log Entry
               if (entry.type === 'hello') {
                 const ratingDisplay = getRatingDisplay(entry.rating);
+                const typeTag = getHelloTypeTag(entry.hello_type);
                 return (
                   <Card key={entry.id} className="p-6">
                     <div className="flex items-start justify-between mb-3">
@@ -134,12 +142,17 @@ const Notes = () => {
                           </p>
                         </div>
                       </div>
-                      {ratingDisplay && (
-                        <Badge variant="outline" className={`${ratingDisplay.color} gap-1`}>
-                          <ratingDisplay.icon size={14} />
-                          <span>{ratingDisplay.label}</span>
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge variant="outline" className={typeTag.color}>
+                          {typeTag.label}
                         </Badge>
-                      )}
+                        {ratingDisplay && (
+                          <Badge variant="outline" className={`${ratingDisplay.color} gap-1`}>
+                            <ratingDisplay.icon size={14} />
+                            <span>{ratingDisplay.label}</span>
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     {entry.notes && (
