@@ -11,13 +11,18 @@ interface LogHelloDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onLog: (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative' }) => Promise<void>;
+  challengeTitle?: string | null;
 }
 
-export const LogHelloDialog = ({ open, onOpenChange, onLog }: LogHelloDialogProps) => {
+export const LogHelloDialog = ({ open, onOpenChange, onLog, challengeTitle }: LogHelloDialogProps) => {
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
   const [rating, setRating] = useState<'positive' | 'neutral' | 'negative' | ''>("");
   const [isLogging, setIsLogging] = useState(false);
+
+  const dialogTitle = challengeTitle 
+    ? `Complete: ${challengeTitle}` 
+    : "Log Your Hello!";
 
   const handleSubmit = async () => {
     setIsLogging(true);
@@ -42,7 +47,7 @@ export const LogHelloDialog = ({ open, onOpenChange, onLog }: LogHelloDialogProp
         <DialogHeader>
           <div className="flex items-center gap-3">
             <img src={remiMascot} alt="Remi" className="w-12 h-12" />
-            <DialogTitle className="text-xl">Log Your Hello!</DialogTitle>
+            <DialogTitle className="text-xl">{dialogTitle}</DialogTitle>
           </div>
         </DialogHeader>
         

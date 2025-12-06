@@ -23,6 +23,7 @@ export default function Dashboard() {
   const { progress, loading: progressLoading, updateProgress } = useUserProgress();
   const { logs, loading: logsLoading, addLog, hellosThisWeek, getLogsTodayCount } = useHelloLogs();
   const [showLogDialog, setShowLogDialog] = useState(false);
+  const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
   const [username, setUsername] = useState("");
 
   useEffect(() => {
@@ -90,7 +91,10 @@ export default function Dashboard() {
   }, [logs]);
 
   const handleLogHello = async (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative' }) => {
-    const result = await addLog(data);
+    const result = await addLog({
+      ...data,
+      hello_type: selectedChallenge || undefined
+    });
     
     if (result) {
       // Update hellos this week count
@@ -108,6 +112,8 @@ export default function Dashboard() {
         toast.success("🏆 You've hit your weekly target! Amazing!");
       }
     }
+    
+    setSelectedChallenge(null);
   };
 
   // Get completed onboarding challenges from logs this week
@@ -211,6 +217,7 @@ export default function Dashboard() {
                   isCompleted={completedTypes.includes(challenge.title)}
                   isAvailable={true}
                   onComplete={() => {
+                    setSelectedChallenge(challenge.title);
                     setShowLogDialog(true);
                   }}
                 />
@@ -228,8 +235,12 @@ export default function Dashboard() {
 
       <LogHelloDialog 
         open={showLogDialog}
-        onOpenChange={setShowLogDialog}
+        onOpenChange={(open) => {
+          setShowLogDialog(open);
+          if (!open) setSelectedChallenge(null);
+        }}
         onLog={handleLogHello}
+        challengeTitle={selectedChallenge}
       />
     </div>
   );
