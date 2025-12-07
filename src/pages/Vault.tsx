@@ -62,16 +62,16 @@ const helloLanguages = [
 
 // Remi's Top Tips
 const remiTips = [
-  "A smile is the universal hello — it works everywhere! 😊",
-  "If you're nervous, take a deep breath and start small.",
-  "Eye contact shows you're genuinely interested.",
-  "Remember their name — it's the sweetest sound to anyone.",
-  "Ask open-ended questions to keep conversations flowing.",
-  "It's okay if it feels awkward — everyone feels that way sometimes!",
-  "Compliments are great conversation starters.",
-  "Listen more than you talk — people love to be heard.",
-  "Don't overthink it — just say hi and see what happens!",
-  "Every hello is practice. The more you do it, the easier it gets.",
+  { title: "A smile is the universal hello — it works in every language.", subtitle: "Simple. Friendly. Always welcome." },
+  { title: "99% of people light up when a stranger is simply kind.", subtitle: "Pretty good odds if you ask me 🦝" },
+  { title: "Some people are having a bad day, don't hear you, or don't speak your language — that's okay. Don't take it personally.", subtitle: "Can't win them all 🦝" },
+  { title: "Most people want connection — they're just waiting for someone to go first.", subtitle: "Be the one who opens the door. If no one does, who will? 🦝" },
+  { title: "Listen more than you talk — people love being heard.", subtitle: "Ask questions, be curious. Humans are pretty cool. (nearly as cool as raccoons) 🦝" },
+  { title: "You don't need the perfect line — \"Hey, how's your day?\" is always enough.", subtitle: "Don't overthink it. 🦝" },
+  { title: "Remember their name — it's the sweetest sound to anyone.", subtitle: "People feel seen when you say their name back. Write them down in here so you don't forget. 🦝" },
+  { title: "Everyone feels awkward sometimes — even the confident ones.", subtitle: "Being social takes time & energy, it's okay to feel a little off sometimes (just make sure to use an Orb to save your streak) 🦝" },
+  { title: "Courage comes before confidence. Every hello is practice. The more you do it, the braver you get.", subtitle: "Get those reps in. Trust me, it gets easier (and really fun) 🦝" },
+  { title: "A hello costs nothing, but can change everything.", subtitle: "It could be the beginning of a new friendship, relationship, business opportunity, or maybe just a spark of brightness in someone's day." },
 ];
 
 const Vault = () => {
@@ -101,7 +101,86 @@ const Vault = () => {
 
         {/* Sections */}
         <div className="space-y-3">
-          {/* The Original 7-Day Challenge - ONLY show if onboarding is complete */}
+          {/* Remi's Top Tips - FIRST */}
+          <Card 
+            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
+            onClick={() => toggleSection('tips')}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
+                  <Lightbulb className="w-5 h-5 text-yellow-500" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Remi's Top Tips</h3>
+                  <p className="text-xs text-muted-foreground">10 golden rules</p>
+                </div>
+              </div>
+              <ChevronRight 
+                className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
+                  expandedSection === 'tips' ? 'rotate-90' : ''
+                }`} 
+              />
+            </div>
+            
+            {expandedSection === 'tips' && (
+              <div className="mt-4 space-y-3 animate-fade-in">
+                {remiTips.map((tip, index) => (
+                  <div 
+                    key={index}
+                    className="p-3 bg-muted/50 rounded-xl"
+                  >
+                    <p className="text-sm font-semibold text-foreground mb-1">
+                      {index + 1}. {tip.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{tip.subtitle}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* Hello in 50 Languages - SECOND */}
+          <Card 
+            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
+            onClick={() => toggleSection('languages')}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                  <Globe className="w-5 h-5 text-blue-500" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Hello in 50 Languages</h3>
+                  <p className="text-xs text-muted-foreground">Say hello worldwide</p>
+                </div>
+              </div>
+              <ChevronRight 
+                className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
+                  expandedSection === 'languages' ? 'rotate-90' : ''
+                }`} 
+              />
+            </div>
+            
+            {expandedSection === 'languages' && (
+              <div className="mt-4 max-h-64 overflow-y-auto space-y-1 animate-fade-in">
+                {helloLanguages.map((item, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded-lg"
+                  >
+                    <span className="text-xl">{item.flag}</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">{item.language}</p>
+                    </div>
+                    <p className="text-sm text-primary font-medium">{item.hello}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* The Original 7-Day Challenge - THIRD */}
           {hasCompletedOnboarding ? (
             <Card 
               className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
@@ -162,109 +241,16 @@ const Vault = () => {
             </Card>
           )}
 
-          {/* Hello in 50 Languages */}
-          <Card 
-            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
-            onClick={() => toggleSection('languages')}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                  <Globe className="w-5 h-5 text-blue-500" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Hello in 50 Languages</h3>
-                  <p className="text-xs text-muted-foreground">Say hello worldwide</p>
-                </div>
-              </div>
-              <ChevronRight 
-                className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
-                  expandedSection === 'languages' ? 'rotate-90' : ''
-                }`} 
-              />
-            </div>
-            
-            {expandedSection === 'languages' && (
-              <div className="mt-4 max-h-64 overflow-y-auto space-y-1 animate-fade-in">
-                {helloLanguages.map((item, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded-lg"
-                  >
-                    <span className="text-xl">{item.flag}</span>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">{item.language}</p>
-                    </div>
-                    <p className="text-sm text-primary font-medium">{item.hello}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          {/* Remi's Top Tips */}
-          <Card 
-            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
-            onClick={() => toggleSection('tips')}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-                  <Lightbulb className="w-5 h-5 text-yellow-500" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Remi's Top Tips</h3>
-                  <p className="text-xs text-muted-foreground">10 golden rules</p>
-                </div>
-              </div>
-              <ChevronRight 
-                className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
-                  expandedSection === 'tips' ? 'rotate-90' : ''
-                }`} 
-              />
-            </div>
-            
-            {expandedSection === 'tips' && (
-              <div className="mt-4 space-y-2 animate-fade-in">
-                {remiTips.map((tip, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl"
-                  >
-                    <span className="text-primary font-bold text-sm">{index + 1}.</span>
-                    <p className="text-sm text-foreground">{tip}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          {/* Coming Soon - Dating */}
+          {/* More Packs Coming Soon - FOURTH */}
           <Card className="p-4 rounded-2xl opacity-60">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
-                  <Heart className="w-5 h-5 text-pink-500" />
+                <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Dating Pack</h3>
-                  <p className="text-xs text-muted-foreground">Romantic conversation starters</p>
-                </div>
-              </div>
-              <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
-            </div>
-          </Card>
-
-          {/* Coming Soon - Networking */}
-          <Card className="p-4 rounded-2xl opacity-60">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-                  <Briefcase className="w-5 h-5 text-green-500" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Networking Pack</h3>
-                  <p className="text-xs text-muted-foreground">Professional connection tips</p>
+                  <h3 className="font-semibold text-foreground">More Packs</h3>
+                  <p className="text-xs text-muted-foreground">Dating, Networking & more</p>
                 </div>
               </div>
               <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
