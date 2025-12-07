@@ -9,44 +9,44 @@ export const onboardingChallenges: OnboardingChallenge[] = [
   {
     id: 1,
     title: "First Hello",
-    description: "Smile & say Hello to a stranger",
-    tip: "A simple smile and 'Hello!' is all it takes. Make eye contact and be genuine."
+    description: "Smile + say \"Hello / Hey / Good morning\" to one stranger",
+    tip: "\"Hello\" \"Hey\" \"Good morning\""
   },
   {
     id: 2,
     title: "Well Wishes",
-    description: "Wish a stranger a good day / good morning / good evening",
-    tip: "Try 'Have a great day!' or 'Good morning!' as you pass someone."
+    description: "Wish one stranger a great day / evening / weekend (\"Hope you have a great day\" \"Enjoy your evening\")",
+    tip: "\"Hope you have a great day\" \"Enjoy your evening\""
   },
   {
     id: 3,
-    title: "How Are You?",
-    description: "Ask someone you haven't met how their day is going",
-    tip: "A simple 'How's your day going?' can open up wonderful conversations."
+    title: "Observation",
+    description: "Make a neutral observation to one stranger (\"Nice/terrible/strange weather today\" \"This line always takes ages\")",
+    tip: "\"Nice weather today\" \"This line always takes ages\""
   },
   {
     id: 4,
-    title: "Nice Shoes!",
-    description: "Give a stranger a genuine compliment",
-    tip: "Notice something specific - their style, their energy, anything genuine."
+    title: "Nice Shoes",
+    description: "Give one stranger a genuine compliment (\"Love your jacket\" \"Nice shoes\")",
+    tip: "\"Love your jacket\" \"Nice shoes\""
   },
   {
     id: 5,
-    title: "What's the Time?",
-    description: "Ask a stranger for the time: 'Excuse me, do you know what the time is?'",
-    tip: "A classic conversation starter. Even if you know the time, it's a great way to break the ice."
+    title: "How Are You?",
+    description: "Ask one stranger \"How's your day going?\"",
+    tip: "\"How's your day going?\" \"How are you?\""
   },
   {
     id: 6,
-    title: "Stranger Danger",
-    description: "Learn the name of someone new. Turn a stranger into someone familiar.",
-    tip: "Ask their name and remember to write it down so you don't forget!"
+    title: "Name to the Face",
+    description: "Ask one stranger their name (& remember it) \"Hi, I'm Remi, nice to meet you - what's your name?\" PS: log it in here straight away so you don't forget 🦝",
+    tip: "\"Hi, I'm [name], nice to meet you - what's your name?\""
   },
   {
     id: 7,
     title: "Getting Personal",
-    description: "Ask someone a personal question to get to know them better",
-    tip: "Where are they from? What are they up to today? What's their favourite restaurant?"
+    description: "Ask one stranger one follow-up question (where they're from / what they do for fun / what they are up to today)",
+    tip: "\"Where are you from?\" \"What do you do for fun?\" \"What are you up to today?\""
   }
 ];
 
