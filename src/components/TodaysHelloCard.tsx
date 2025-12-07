@@ -25,7 +25,7 @@ export const TodaysHelloCard = ({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <Sparkles className={`w-6 h-6 ${isCompleted ? 'text-muted-foreground' : 'text-primary'}`} />
-          <h2 className={`text-lg font-semibold ${isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+          <h2 className={`text-lg font-semibold ${isCompleted ? 'text-muted-foreground' : 'text-foreground'}`}>
             Today's Hello
           </h2>
         </div>
@@ -37,7 +37,7 @@ export const TodaysHelloCard = ({
         )}
       </div>
       
-      <div className={`rounded-lg p-4 ${isCompleted ? 'bg-muted' : 'bg-background/50'}`}>
+      <div className={`rounded-xl p-4 ${isCompleted ? 'bg-muted' : 'bg-background/50'}`}>
         <p className={`text-sm font-medium mb-1 ${isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
           {title}
         </p>

@@ -27,7 +27,7 @@ export const RemisWeeklyChallengeCard = ({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <Trophy className={`w-6 h-6 ${isCompleted ? 'text-muted-foreground' : 'text-accent'}`} />
-          <h2 className={`text-lg font-semibold ${isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+          <h2 className={`text-lg font-semibold ${isCompleted ? 'text-muted-foreground' : 'text-foreground'}`}>
             Remi's Weekly Challenge
           </h2>
         </div>
@@ -39,17 +39,22 @@ export const RemisWeeklyChallengeCard = ({
         )}
       </div>
       
-      {!isCompleted && (
+      {!isCompleted && !orbsFull && (
         <p className="text-sm text-muted-foreground mb-3">
           Complete this challenge to earn{' '}
           <span className="inline-flex items-center gap-1 text-primary font-medium">
             <Sparkles className="w-4 h-4" /> +1 Orb
           </span>
-          {orbsFull && <span className="text-xs ml-1">(max reached)</span>}
         </p>
       )}
       
-      <div className={`rounded-lg p-4 ${isCompleted ? 'bg-muted' : 'bg-background/50'}`}>
+      {!isCompleted && orbsFull && (
+        <p className="text-sm text-muted-foreground mb-3">
+          Complete this challenge for fun! <span className="text-xs">(Orbs maxed at 3/3)</span>
+        </p>
+      )}
+      
+      <div className={`rounded-xl p-4 ${isCompleted ? 'bg-muted' : 'bg-background/50'}`}>
         <p className={`text-sm font-medium mb-1 ${isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
           {title}
         </p>
@@ -64,6 +69,7 @@ export const RemisWeeklyChallengeCard = ({
           variant="secondary"
           onClick={onComplete}
         >
+          <Sparkles className="w-4 h-4 mr-2" />
           Complete Challenge
         </Button>
       )}

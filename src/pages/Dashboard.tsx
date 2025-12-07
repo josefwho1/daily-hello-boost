@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
-import { useWeeklyChallenges } from "@/hooks/useWeeklyChallenges";
-import { useDailyChallenges } from "@/hooks/useDailyChallenges";
-import { ProgressRing } from "@/components/ProgressRing";
-import { StreakCard } from "@/components/StreakCard";
 import { LogHelloDialog } from "@/components/LogHelloDialog";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
@@ -16,9 +9,12 @@ import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
 import { ModeSelectionDialog } from "@/components/ModeSelectionDialog";
 import { UseOrbDialog } from "@/components/UseOrbDialog";
 import { TodaysHelloCard } from "@/components/TodaysHelloCard";
-import { AnyHelloCard } from "@/components/AnyHelloCard";
 import { RemisWeeklyChallengeCard } from "@/components/RemisWeeklyChallengeCard";
+import { StatsBar } from "@/components/StatsBar";
+import { LogHelloButton } from "@/components/LogHelloButton";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
+import { getTodaysHello } from "@/data/dailyHellos";
+import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
 import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
 import logoSticker from "@/assets/one-hello-logo-sticker.png";
@@ -26,12 +22,9 @@ import remiMascot from "@/assets/remi-mascot.png";
 import { Sparkles } from "lucide-react";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { progress, loading: progressLoading, updateProgress, refetch } = useUserProgress();
   const { logs, loading: logsLoading, addLog, getLogsTodayCount } = useHelloLogs();
-  const { challenges: weeklyChallenges, getCurrentChallenge } = useWeeklyChallenges();
-  const { getTodaysChallenge, loading: dailyChallengesLoading } = useDailyChallenges();
   
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
@@ -53,25 +46,22 @@ export default function Dashboard() {
   // Weekly reset logic - check for missed weekly goal (Connect Mode)
   useEffect(() => {
     if (!progress || progressLoading) return;
-    if (progress.is_onboarding_week) return; // Skip during onboarding
+    if (progress.is_onboarding_week) return;
 
     const now = new Date();
-    const weekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
 
     if (progress.week_start_date) {
       const storedWeekStart = new Date(progress.week_start_date);
       
-      // Check if we're in a new week
       if (isBefore(storedWeekStart, weekStart)) {
         const mode = progress.mode || 'daily';
-        const target = mode === 'connect' ? 5 : (progress.target_hellos_per_week || 7);
+        const target = mode === 'connect' ? 5 : 7;
         const targetMet = (progress.hellos_this_week || 0) >= target;
         
         if (mode === 'connect' && !targetMet && (progress.weekly_streak || 0) > 0) {
-          // Connect mode: missed weekly goal with active streak - offer orb
           setShowWeeklyOrbDialog(true);
         } else {
-          // Target met or no streak to protect - proceed normally
           const newWeeklyStreak = targetMet ? (progress.weekly_streak || 0) + 1 : 0;
           const newLongestStreak = Math.max(newWeeklyStreak, progress.longest_streak || 0);
 
@@ -93,24 +83,21 @@ export default function Dashboard() {
   // Check for missed daily streak (Daily Mode)
   useEffect(() => {
     if (!progress || progressLoading || logsLoading) return;
-    if (progress.is_onboarding_week) return; // Skip during onboarding
-    if (progress.mode !== 'daily') return; // Only for daily mode
+    if (progress.is_onboarding_week) return;
+    if (progress.mode !== 'daily') return;
     
     const dailyStreak = progress.daily_streak || 0;
     const lastCompletedDate = progress.last_completed_date;
     const saveOfferedForDate = progress.save_offered_for_date;
     const today = format(new Date(), 'yyyy-MM-dd');
     
-    // Only check if user has a streak to protect
     if (dailyStreak > 0 && lastCompletedDate) {
       const lastDate = parseISO(lastCompletedDate);
       const todayCount = getLogsTodayCount();
       
-      // If they haven't logged today
       if (todayCount === 0) {
         const daysSinceLastHello = differenceInDays(new Date(), lastDate);
         
-        // If more than 1 day gap and we haven't offered orb today
         if (daysSinceLastHello > 1 && saveOfferedForDate !== today) {
           setShowDailyOrbDialog(true);
           updateProgress({ save_offered_for_date: today });
@@ -119,7 +106,6 @@ export default function Dashboard() {
     }
   }, [progress, progressLoading, logsLoading, logs]);
 
-  // Handle using orb for daily streak
   const handleUseDailyOrb = async () => {
     const currentOrbs = progress?.orbs || 0;
     if (currentOrbs > 0) {
@@ -132,14 +118,12 @@ export default function Dashboard() {
     setShowDailyOrbDialog(false);
   };
 
-  // Handle declining orb for daily streak
   const handleDeclineDailyOrb = async () => {
     await updateProgress({ daily_streak: 0 });
     toast.info("Your daily streak has been reset to 0.");
     setShowDailyOrbDialog(false);
   };
 
-  // Handle using orb for weekly streak
   const handleUseWeeklyOrb = async () => {
     const currentOrbs = progress?.orbs || 0;
     const now = new Date();
@@ -156,7 +140,6 @@ export default function Dashboard() {
     setShowWeeklyOrbDialog(false);
   };
 
-  // Handle declining orb for weekly streak
   const handleDeclineWeeklyOrb = async () => {
     const now = new Date();
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
@@ -186,14 +169,12 @@ export default function Dashboard() {
       const diffDays = differenceInDays(todayDate, lastDate);
       
       if (diffDays === 1) {
-        // Consecutive day - increment streak
         const newDailyStreak = (progress.daily_streak || 0) + 1;
         updateProgress({ 
           daily_streak: newDailyStreak,
           last_completed_date: today
         });
       } else if (diffDays > 1) {
-        // Streak broken (unless orb was used)
         updateProgress({ 
           daily_streak: 1,
           last_completed_date: today
@@ -233,16 +214,18 @@ export default function Dashboard() {
       if (isWeeklyChallenge && !alreadyEarnedThisWeek && currentOrbs < 3) {
         updates.orbs = currentOrbs + 1;
         updates.last_weekly_challenge_date = today;
-        toast.success("✨ Orb earned!");
+        toast.success("✨ +1 Orb earned!");
       } else if (isWeeklyChallenge && currentOrbs >= 3) {
         toast.info("Orbs are full (3/3). Challenge completed!");
+        updates.last_weekly_challenge_date = today;
+      } else if (isWeeklyChallenge) {
+        updates.last_weekly_challenge_date = today;
       }
 
       await updateProgress(updates);
 
       toast.success("Hello logged! 🎉");
 
-      // Show first orb gift dialog for very first hello
       if (isFirstHelloEver) {
         setShowFirstOrbGift(true);
       }
@@ -251,7 +234,6 @@ export default function Dashboard() {
     setSelectedChallenge(null);
   };
 
-  // Handle claiming first orb
   const handleClaimFirstOrb = async () => {
     const currentOrbs = progress?.orbs || 0;
     await updateProgress({ 
@@ -296,7 +278,6 @@ export default function Dashboard() {
     }
   }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding]);
 
-  // Handle mode selection after completing 7-day challenge
   const handleModeSelect = async (mode: 'daily' | 'connect') => {
     const target = mode === 'daily' ? 7 : 5;
     await updateProgress({ 
@@ -313,41 +294,31 @@ export default function Dashboard() {
 
   // Check if today's hello is completed
   const isTodaysHelloComplete = () => {
-    const todaysChallenge = getTodaysChallenge();
-    if (!todaysChallenge) return false;
-    
+    const todaysHello = getTodaysHello();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     return logs.some(log => {
       const logDate = new Date(log.created_at);
       logDate.setHours(0, 0, 0, 0);
-      return logDate.getTime() === today.getTime() && log.hello_type === todaysChallenge.title;
+      return logDate.getTime() === today.getTime() && log.hello_type === todaysHello.title;
     });
   };
 
   // Check if weekly challenge is completed this week
-  const isWeeklyChallengeComplete = logs.some(log => {
-    if (log.hello_type !== "Weekly Challenge") return false;
-    const logDate = new Date(log.created_at);
-    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-    return logDate >= weekStart;
-  });
-
-  // Calculate weeks since user started to get rotating challenge
-  const getWeeksSinceStart = () => {
-    if (!progress?.onboarding_week_start) return 0;
-    const start = new Date(progress.onboarding_week_start);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - start.getTime());
-    const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
-    return diffWeeks;
+  const isWeeklyChallengeComplete = () => {
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 }); // Sunday
+    return logs.some(log => {
+      if (log.hello_type !== "Weekly Challenge") return false;
+      const logDate = new Date(log.created_at);
+      return logDate >= weekStart;
+    });
   };
 
-  const currentWeeklyChallenge = getCurrentChallenge(getWeeksSinceStart());
-  const todaysChallenge = getTodaysChallenge();
+  const todaysHello = getTodaysHello();
+  const thisWeeksChallenge = getThisWeeksChallenge();
 
-  if (progressLoading || logsLoading || dailyChallengesLoading) {
+  if (progressLoading || logsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -362,7 +333,6 @@ export default function Dashboard() {
 
   const mode = (progress.mode || 'daily') as 'daily' | 'connect';
   const targetHellos = mode === 'connect' ? 5 : 7;
-  const currentHellos = progress.hellos_this_week || 0;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -380,41 +350,28 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Progress Ring Card */}
-        <Card className="p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground mb-1">
-                {progress.is_onboarding_week ? 'Your 7-Day Challenge' : 'This Week'}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {progress.is_onboarding_week 
-                  ? `Day ${currentOnboardingDay} of 7`
-                  : currentHellos >= targetHellos 
-                    ? "🎉 Target reached!" 
-                    : `${targetHellos - currentHellos} more to go`
-                }
-              </p>
-            </div>
-            <ProgressRing 
-              progress={progress.is_onboarding_week ? completedTypes.length : currentHellos} 
-              max={progress.is_onboarding_week ? 7 : targetHellos}
-              size={140}
-              strokeWidth={14}
-            />
-          </div>
-        </Card>
+        {/* Stats Bar - ALWAYS visible */}
+        <StatsBar
+          hellosThisWeek={progress.hellos_this_week || 0}
+          targetHellos={targetHellos}
+          dailyStreak={progress.daily_streak || 0}
+          weeklyStreak={progress.weekly_streak || 0}
+          lifetimeHellos={progress.total_hellos || logs.length}
+          orbs={progress.orbs || 0}
+          mode={mode}
+          isOnboardingWeek={progress.is_onboarding_week || false}
+          onboardingCompleted={completedTypes.length}
+        />
 
-        {/* Streak Card - only show after onboarding */}
-        {!progress.is_onboarding_week && (
-          <StreakCard 
-            weeklyStreak={progress.weekly_streak || 0}
-            dailyStreak={progress.daily_streak || 0}
-            totalHellos={progress.total_hellos || logs.length}
-            orbs={progress.orbs || 0}
-            mode={mode}
+        {/* Log a Hello Button - ALWAYS visible */}
+        <div className="mt-6">
+          <LogHelloButton 
+            onClick={() => {
+              setSelectedChallenge('Standard Hello');
+              setShowLogDialog(true);
+            }}
           />
-        )}
+        </div>
 
         {/* Onboarding Week Challenges */}
         {progress.is_onboarding_week ? (
@@ -450,39 +407,27 @@ export default function Dashboard() {
         ) : (
           <div className="mt-6 space-y-4">
             {/* Today's Hello */}
-            {todaysChallenge && (
-              <TodaysHelloCard
-                title={todaysChallenge.title}
-                description={todaysChallenge.description}
-                isCompleted={isTodaysHelloComplete()}
-                onComplete={() => {
-                  setSelectedChallenge(todaysChallenge.title);
-                  setShowLogDialog(true);
-                }}
-              />
-            )}
-
-            {/* Any Hello */}
-            <AnyHelloCard 
-              onLog={() => {
-                setSelectedChallenge('Standard Hello');
+            <TodaysHelloCard
+              title={todaysHello.title}
+              description={todaysHello.description}
+              isCompleted={isTodaysHelloComplete()}
+              onComplete={() => {
+                setSelectedChallenge(todaysHello.title);
                 setShowLogDialog(true);
               }}
             />
 
             {/* Remi's Weekly Challenge */}
-            {currentWeeklyChallenge && (
-              <RemisWeeklyChallengeCard
-                title={currentWeeklyChallenge.title}
-                description={currentWeeklyChallenge.description}
-                isCompleted={isWeeklyChallengeComplete}
-                orbsFull={(progress.orbs || 0) >= 3}
-                onComplete={() => {
-                  setSelectedChallenge("Weekly Challenge");
-                  setShowLogDialog(true);
-                }}
-              />
-            )}
+            <RemisWeeklyChallengeCard
+              title={thisWeeksChallenge.title}
+              description={thisWeeksChallenge.description}
+              isCompleted={isWeeklyChallengeComplete()}
+              orbsFull={(progress.orbs || 0) >= 3}
+              onComplete={() => {
+                setSelectedChallenge("Weekly Challenge");
+                setShowLogDialog(true);
+              }}
+            />
           </div>
         )}
 
