@@ -448,7 +448,7 @@ export default function Dashboard() {
             </div>
             {/* Dynamic messaging based on today's challenge completion */}
             {completedTypes.includes(onboardingChallenges[currentOnboardingDay - 1]?.title) ? (
-              <p className="text-sm text-success mb-4 font-medium">
+              <p className="text-sm text-foreground mb-4 font-medium">
                 Nice work today! Come back tomorrow to reveal tomorrow's challenge!
               </p>
             ) : (

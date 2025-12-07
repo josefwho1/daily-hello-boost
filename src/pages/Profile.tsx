@@ -55,22 +55,19 @@ const Profile = () => {
       value: '7-day-starter', 
       label: '7-Day Starter', 
       description: 'Complete 7-day challenge',
-      icon: Sparkles,
-      isDefault: true
+      icon: Sparkles
     },
     { 
       value: 'daily', 
       label: 'Daily Mode', 
       description: '1 hello per day',
-      icon: Flame,
-      isDefault: false
+      icon: Flame
     },
     { 
       value: 'connect', 
       label: 'Connect Mode', 
       description: '5 hellos per week',
-      icon: Calendar,
-      isDefault: false
+      icon: Calendar
     },
   ];
 
@@ -179,7 +176,10 @@ const Profile = () => {
     setPendingMode(null);
   };
 
-  const currentMode = progress?.mode || '7-day-starter';
+  // Determine current mode - if still in onboarding week with 'normal' default, show as 7-day-starter
+  const currentMode = (progress?.is_onboarding_week && !progress?.has_completed_onboarding) 
+    ? '7-day-starter' 
+    : (progress?.mode === 'normal' ? 'connect' : (progress?.mode || '7-day-starter'));
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -284,11 +284,6 @@ const Profile = () => {
                       )}>
                         {mode.label}
                       </span>
-                      {mode.isDefault && (
-                        <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
-                          Default
-                        </span>
-                      )}
                     </div>
                     <span className="text-sm text-muted-foreground">{mode.description}</span>
                   </div>
