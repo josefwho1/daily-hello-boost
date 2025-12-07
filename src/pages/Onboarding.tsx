@@ -167,7 +167,7 @@ export default function Onboarding() {
     }
   };
 
-  const totalSteps = 6;
+  const totalSteps = 11; // 5 original + 6 new intro screens
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -420,46 +420,156 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 6: Introduce 7-Day Challenge */}
+          {/* Step 6: Welcome to One Hello */}
           {step === 6 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
+                <img 
+                  src={remiMascot} 
+                  alt="Remi waving" 
+                  className="w-48 h-48 mx-auto mb-4 animate-bounce-soft" 
+                />
+                <h2 className="text-2xl font-bold text-foreground mb-3">You're in. 🦝</h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  This is a place to build confidence, meet new people, and make real connections — one simple hello at a time.
+                </p>
+              </div>
+
+              <Button onClick={() => setStep(7)} className="w-full" size="lg">
+                Continue
+              </Button>
+            </div>
+          )}
+
+          {/* Step 7: Why we start with 7 days */}
+          {step === 7 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
                 <img src={remiMascot} alt="Remi" className="w-24 h-24 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-foreground mb-2">Your 7-Day Challenge</h2>
-                <p className="text-muted-foreground">
-                  You'll start with a 7-day series to build momentum and confidence.
+                <h2 className="text-2xl font-bold text-foreground mb-3">
+                  Your journey starts with a 7-day challenge.
+                </h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  For your first week, I'll guide you through one small action each day.
+                </p>
+                <p className="text-muted-foreground leading-relaxed mt-3">
+                  Nothing crazy. Nothing awkward. Just simple, realistic moments to open up confidence and connection. With each day getting progressively more challenging.
                 </p>
               </div>
 
-              <Card className="p-4 bg-primary/5 border-primary/20">
-                <p className="text-center text-foreground">
-                  Each day you'll unlock a new type of "hello" to try. 
-                  Complete all 7 to unlock your personalized journey!
-                </p>
-              </Card>
+              <Button onClick={() => setStep(8)} className="w-full" size="lg">
+                Okay, tell me more
+              </Button>
+            </div>
+          )}
 
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>✅ Day 1: First Hello</p>
-                <p>✅ Day 2: Well Wishes</p>
-                <p>✅ Day 3: How Are You?</p>
-                <p>✅ Day 4: Give a Compliment</p>
-                <p>✅ Day 5: Ask a Question</p>
-                <p>✅ Day 6: Learn a Name</p>
-                <p>✅ Day 7: Getting Personal</p>
+          {/* Step 8: What to expect */}
+          {step === 8 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-foreground mb-3">
+                  One small challenge. Every day. Seven days.
+                </h2>
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
+                  <p>
+                    Each morning, I'll reveal a new challenge. (Or at midnight to be exact)
+                  </p>
+                  <p>
+                    You'll complete it anytime that day — and log your hello inside the app.
+                  </p>
+                  <p>
+                    Most challenges take less than 10 seconds.
+                  </p>
+                  <p className="font-medium text-foreground">
+                    But their impact? Much bigger.
+                  </p>
+                </div>
               </div>
 
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(5)} className="flex-1">
-                  Back
-                </Button>
-                <Button 
-                  onClick={handleSignupAndComplete} 
-                  className="flex-1"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Creating..." : "Start Day 1!"}
-                </Button>
+              <Button onClick={() => setStep(9)} className="w-full" size="lg">
+                I'm in
+              </Button>
+            </div>
+          )}
+
+          {/* Step 9: What you can achieve */}
+          {step === 9 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-foreground mb-6">
+                  What others achieved in just 7 days
+                </h2>
+                <div className="space-y-4">
+                  <Card className="p-4 bg-primary/5 border-primary/20">
+                    <p className="text-3xl font-bold text-primary">100%</p>
+                    <p className="text-muted-foreground">said their week felt better</p>
+                  </Card>
+                  <Card className="p-4 bg-primary/5 border-primary/20">
+                    <p className="text-3xl font-bold text-primary">93%</p>
+                    <p className="text-muted-foreground">felt more confident</p>
+                  </Card>
+                  <Card className="p-4 bg-primary/5 border-primary/20">
+                    <p className="text-3xl font-bold text-primary">86%</p>
+                    <p className="text-muted-foreground">felt more connected to their community</p>
+                  </Card>
+                </div>
               </div>
+
+              <Button onClick={() => setStep(10)} className="w-full" size="lg">
+                Let's do it
+              </Button>
+            </div>
+          )}
+
+          {/* Step 10: Your first reward (Orbs) */}
+          {step === 10 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <div className="text-5xl mb-4">🔮</div>
+                <h2 className="text-2xl font-bold text-foreground mb-3">
+                  Complete Day 1 to earn your first Orb.
+                </h2>
+                <div className="space-y-3 text-muted-foreground leading-relaxed">
+                  <p>
+                    Orbs are your streak savers — little boosts of courage for days when life gets busy.
+                  </p>
+                  <p>
+                    You'll get your first Orb after finishing your First Hello.
+                  </p>
+                </div>
+              </div>
+
+              <Button onClick={() => setStep(11)} className="w-full" size="lg">
+                Sounds good
+              </Button>
+            </div>
+          )}
+
+          {/* Step 11: Your first challenge */}
+          {step === 11 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <img src={remiMascot} alt="Remi" className="w-24 h-24 mx-auto mb-4" />
+                <p className="text-sm text-primary font-medium mb-2">Day 1</p>
+                <h2 className="text-2xl font-bold text-foreground mb-4">First Hello</h2>
+                <Card className="p-6 bg-primary/5 border-primary/20">
+                  <p className="text-lg text-foreground leading-relaxed">
+                    "Smile and say hello to a stranger today."
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-3">
+                    Log it in the app once you're done to receive your reward.
+                  </p>
+                </Card>
+              </div>
+
+              <Button 
+                onClick={handleSignupAndComplete} 
+                className="w-full" 
+                size="lg"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Creating account...' : "Let's go"}
+              </Button>
             </div>
           )}
         </div>
