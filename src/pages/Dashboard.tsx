@@ -374,8 +374,8 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Onboarding Week Challenges */}
-        {progress.is_onboarding_week ? (
+        {/* Onboarding Week Challenges - only show if in onboarding AND hasn't completed it */}
+        {progress.is_onboarding_week && !progress.has_completed_onboarding ? (
           <div className="mt-6">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-5 h-5 text-primary" />
