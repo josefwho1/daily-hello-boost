@@ -1,0 +1,20 @@
+-- Simplify handle_new_user function - name doesn't need to be unique
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+  INSERT INTO public.profiles (id, username)
+  VALUES (
+    new.id,
+    COALESCE(new.raw_user_meta_data->>'name', 'User')
+  )
+  ON CONFLICT (id) DO UPDATE 
+  SET username = COALESCE(new.raw_user_meta_data->>'name', 'User')
+  WHERE profiles.id = new.id;
+  
+  RETURN new;
+END;
+$function$;
