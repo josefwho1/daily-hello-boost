@@ -26,12 +26,15 @@ const signupSchema = z.object({
 });
 
 const whyHereOptions = [
-  { id: "confidence", label: "Build confidence" },
-  { id: "make-friends", label: "Meet new people / make new friends" },
-  { id: "social-anxiety", label: "Reduce social anxiety" },
-  { id: "comfort-zone", label: "Get out of my comfort zone" },
-  { id: "fun", label: "For fun" },
-  { id: "other", label: "Other" }
+  { id: "confidence", label: "I want to build confidence" },
+  { id: "social-anxiety", label: "I want to reduce my social anxiety" },
+  { id: "make-friends", label: "I want to make more friends / meet new people" },
+  { id: "comfort-zone", label: "I want to step out of my comfort zone" },
+  { id: "new-city", label: "I'm new to a city and want to connect" },
+  { id: "community", label: "I want to feel more connected to my community" },
+  { id: "habit", label: "I want to build a new habit" },
+  { id: "challenges", label: "I like challenges!" },
+  { id: "curious", label: "Just curious!" }
 ];
 
 // Generate timezone options from GMT-12 to GMT+14
