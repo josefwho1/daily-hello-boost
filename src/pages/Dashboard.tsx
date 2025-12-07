@@ -12,6 +12,9 @@ import { TodaysHelloCard } from "@/components/TodaysHelloCard";
 import { RemisWeeklyChallengeCard } from "@/components/RemisWeeklyChallengeCard";
 import { StatsBar } from "@/components/StatsBar";
 import { LogHelloButton } from "@/components/LogHelloButton";
+import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
+import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
+import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingCompleteMilestoneDialog";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
@@ -28,6 +31,7 @@ export default function Dashboard() {
   
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
+  const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
   const [username, setUsername] = useState("");
   
   // Dialog states
@@ -36,12 +40,73 @@ export default function Dashboard() {
   const [showModeSelection, setShowModeSelection] = useState(false);
   const [showDailyOrbDialog, setShowDailyOrbDialog] = useState(false);
   const [showWeeklyOrbDialog, setShowWeeklyOrbDialog] = useState(false);
+  const [showDayReveal, setShowDayReveal] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [showMilestone, setShowMilestone] = useState(false);
+  const [lastSeenDay, setLastSeenDay] = useState<number | null>(null);
 
   useEffect(() => {
     if (user) {
       setUsername(user.user_metadata?.name || 'Friend');
     }
   }, [user]);
+
+  // Determine which day of onboarding the user is on
+  const getOnboardingDay = () => {
+    if (!progress?.onboarding_week_start) return 1;
+    const start = new Date(progress.onboarding_week_start);
+    start.setHours(0, 0, 0, 0);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const dayDiff = differenceInDays(now, start) + 1;
+    return Math.min(Math.max(dayDiff, 1), 7);
+  };
+
+  const currentOnboardingDay = getOnboardingDay();
+
+  // Get completed onboarding challenges from logs
+  const getCompletedOnboardingChallenges = () => {
+    if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return [];
+    
+    const weekLogs = logs.filter(log => {
+      const logDate = new Date(log.created_at);
+      const onboardingStart = new Date(progress.onboarding_week_start || new Date());
+      return logDate >= onboardingStart;
+    });
+
+    return weekLogs.map(log => log.hello_type).filter(Boolean);
+  };
+
+  const completedTypes = getCompletedOnboardingChallenges();
+  
+  // Count how many DAYS are completed (1 per day max)
+  const getCompletedDaysCount = () => {
+    let count = 0;
+    for (let i = 0; i < onboardingChallenges.length; i++) {
+      if (completedTypes.includes(onboardingChallenges[i].title)) {
+        count++;
+      }
+    }
+    return count;
+  };
+
+  const completedDaysCount = getCompletedDaysCount();
+  const allOnboardingComplete = completedDaysCount >= 7;
+
+  // Show day reveal dialog when a new day unlocks
+  useEffect(() => {
+    if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return;
+    if (progressLoading || logsLoading) return;
+
+    const todaysChallenge = onboardingChallenges[currentOnboardingDay - 1];
+    const isTodayCompleted = todaysChallenge && completedTypes.includes(todaysChallenge.title);
+    
+    // Show reveal if this is a new day and today's challenge isn't completed yet
+    if (!isTodayCompleted && lastSeenDay !== currentOnboardingDay) {
+      setShowDayReveal(true);
+      setLastSeenDay(currentOnboardingDay);
+    }
+  }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progressLoading, logsLoading, completedTypes, lastSeenDay]);
 
   // Weekly reset logic - check for missed weekly goal (Connect Mode)
   useEffect(() => {
@@ -185,6 +250,7 @@ export default function Dashboard() {
 
   const handleLogHello = async (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative' }) => {
     const isFirstHelloEver = logs.length === 0 && !progress?.has_received_first_orb;
+    const isOnboardingChallenge = onboardingChallenges.some(c => c.title === selectedChallenge);
     
     const result = await addLog({
       ...data,
@@ -224,7 +290,12 @@ export default function Dashboard() {
 
       await updateProgress(updates);
 
-      toast.success("Hello logged! 🎉");
+      // Show celebration for onboarding challenges
+      if (isOnboardingChallenge && progress?.is_onboarding_week) {
+        setShowCelebration(true);
+      } else {
+        toast.success("Hello logged! 🎉");
+      }
 
       if (isFirstHelloEver) {
         setShowFirstOrbGift(true);
@@ -232,6 +303,23 @@ export default function Dashboard() {
     }
     
     setSelectedChallenge(null);
+  };
+
+  const handleCelebrationContinue = () => {
+    setShowCelebration(false);
+    
+    // Check if all 7 are now complete
+    const newCompletedCount = completedDaysCount + 1;
+    if (newCompletedCount >= 7) {
+      setShowMilestone(true);
+    } else {
+      setShowComeBackTomorrow(true);
+    }
+  };
+
+  const handleMilestoneContinue = () => {
+    setShowMilestone(false);
+    setShowModeSelection(true);
   };
 
   const handleClaimFirstOrb = async () => {
@@ -244,38 +332,11 @@ export default function Dashboard() {
     setShowComeBackTomorrow(true);
   };
 
-  // Get completed onboarding challenges from logs
-  const getCompletedOnboardingChallenges = () => {
-    // If onboarding is already complete, skip this logic
-    if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return [];
-    
-    const weekLogs = logs.filter(log => {
-      const logDate = new Date(log.created_at);
-      const onboardingStart = new Date(progress.onboarding_week_start || new Date());
-      return logDate >= onboardingStart;
-    });
-
-    return weekLogs.map(log => log.hello_type).filter(Boolean);
-  };
-
-  const completedTypes = getCompletedOnboardingChallenges();
-  const allOnboardingComplete = completedTypes.length >= 7;
-
-  // Determine which day of onboarding the user is on
-  const getOnboardingDay = () => {
-    if (!progress?.onboarding_week_start) return 1;
-    const start = new Date(progress.onboarding_week_start);
-    const now = new Date();
-    const dayDiff = differenceInDays(now, start) + 1;
-    return Math.min(Math.max(dayDiff, 1), 7);
-  };
-
-  const currentOnboardingDay = getOnboardingDay();
-
   // Check if all 7 onboarding challenges are complete - show mode selection
   useEffect(() => {
     if (allOnboardingComplete && progress?.is_onboarding_week && !progress?.has_completed_onboarding) {
-      setShowModeSelection(true);
+      // Show milestone first, then mode selection
+      setShowMilestone(true);
     }
   }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding]);
 
@@ -318,6 +379,7 @@ export default function Dashboard() {
 
   const todaysHello = getTodaysHello();
   const thisWeeksChallenge = getThisWeeksChallenge();
+  const todaysOnboardingChallenge = onboardingChallenges[currentOnboardingDay - 1];
 
   if (progressLoading || logsLoading) {
     return (
@@ -361,7 +423,7 @@ export default function Dashboard() {
           orbs={progress.orbs || 0}
           mode={mode}
           isOnboardingWeek={progress.is_onboarding_week || false}
-          onboardingCompleted={completedTypes.length}
+          onboardingCompleted={completedDaysCount}
           hasCompletedOnboarding={progress.has_completed_onboarding || false}
         />
 
@@ -380,25 +442,30 @@ export default function Dashboard() {
           <div className="mt-6">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Your 7-Day Challenges</h2>
+              <h2 className="text-lg font-semibold text-foreground">Your 7-Day Challenge</h2>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Challenges unlock daily at midnight. Complete each one!
+              Challenges unlock daily at midnight. Complete today's challenge!
             </p>
             <div className="space-y-3">
               {onboardingChallenges.map((challenge, index) => {
                 const dayNumber = index + 1;
                 const isUnlocked = dayNumber <= currentOnboardingDay;
                 const isCompleted = completedTypes.includes(challenge.title);
+                const isTodaysChallenge = dayNumber === currentOnboardingDay;
+                const isLocked = !isUnlocked;
                 
                 return (
                   <OnboardingChallengeCard
                     key={challenge.id}
                     challenge={challenge}
                     isCompleted={isCompleted}
-                    isAvailable={isUnlocked && !isCompleted}
+                    isAvailable={isUnlocked && !isCompleted && isTodaysChallenge}
+                    isLocked={isLocked}
+                    isTodaysChallenge={isTodaysChallenge}
                     onComplete={() => {
                       setSelectedChallenge(challenge.title);
+                      setSelectedDayNumber(dayNumber);
                       setShowLogDialog(true);
                     }}
                   />
@@ -444,6 +511,29 @@ export default function Dashboard() {
         }}
         onLog={handleLogHello}
         challengeTitle={selectedChallenge}
+      />
+
+      {todaysOnboardingChallenge && (
+        <DayChallengeRevealDialog
+          open={showDayReveal}
+          onOpenChange={setShowDayReveal}
+          dayNumber={currentOnboardingDay}
+          challengeTitle={todaysOnboardingChallenge.title}
+          challengeDescription={todaysOnboardingChallenge.description}
+          onAccept={() => setShowDayReveal(false)}
+        />
+      )}
+
+      <ChallengeCompletionCelebrationDialog
+        open={showCelebration}
+        onContinue={handleCelebrationContinue}
+        dayNumber={selectedDayNumber}
+        isFirstHelloEver={logs.length === 1}
+      />
+
+      <OnboardingCompleteMilestoneDialog
+        open={showMilestone}
+        onContinue={handleMilestoneContinue}
       />
 
       <FirstOrbGiftDialog

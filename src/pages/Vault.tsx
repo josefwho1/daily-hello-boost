@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, Lock, Sparkles, Globe, Lightbulb, Heart, Briefcase } from "lucide-react";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
+import { useUserProgress } from "@/hooks/useUserProgress";
 import remiMascot from "@/assets/remi-mascot.png";
 
 // Hello in 50 languages
@@ -74,11 +75,15 @@ const remiTips = [
 ];
 
 const Vault = () => {
+  const { progress } = useUserProgress();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
   };
+
+  // Hide the 7-Day Challenge section if user hasn't completed onboarding
+  const hasCompletedOnboarding = progress?.has_completed_onboarding || false;
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -96,49 +101,66 @@ const Vault = () => {
 
         {/* Sections */}
         <div className="space-y-3">
-          {/* The Original 7-Day Challenge */}
-          <Card 
-            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
-            onClick={() => toggleSection('7day')}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">The Original 7-Day Challenge</h3>
-                  <p className="text-xs text-muted-foreground">7 ways to break the ice</p>
-                </div>
-              </div>
-              <ChevronRight 
-                className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
-                  expandedSection === '7day' ? 'rotate-90' : ''
-                }`} 
-              />
-            </div>
-            
-            {expandedSection === '7day' && (
-              <div className="mt-4 space-y-2 animate-fade-in">
-                {onboardingChallenges.map((challenge, index) => (
-                  <div 
-                    key={challenge.id}
-                    className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl"
-                  >
-                    <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                      {index + 1}
-                    </span>
-                    <div>
-                      <p className="font-medium text-foreground text-sm">
-                        {challenge.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{challenge.description}</p>
-                    </div>
+          {/* The Original 7-Day Challenge - ONLY show if onboarding is complete */}
+          {hasCompletedOnboarding ? (
+            <Card 
+              className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
+              onClick={() => toggleSection('7day')}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-primary" />
                   </div>
-                ))}
+                  <div>
+                    <h3 className="font-semibold text-foreground">The Original 7-Day Challenge</h3>
+                    <p className="text-xs text-muted-foreground">7 ways to break the ice</p>
+                  </div>
+                </div>
+                <ChevronRight 
+                  className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
+                    expandedSection === '7day' ? 'rotate-90' : ''
+                  }`} 
+                />
               </div>
-            )}
-          </Card>
+              
+              {expandedSection === '7day' && (
+                <div className="mt-4 space-y-2 animate-fade-in">
+                  {onboardingChallenges.map((challenge, index) => (
+                    <div 
+                      key={challenge.id}
+                      className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl"
+                    >
+                      <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                        {index + 1}
+                      </span>
+                      <div>
+                        <p className="font-medium text-foreground text-sm">
+                          {challenge.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{challenge.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          ) : (
+            <Card className="p-4 rounded-2xl opacity-60">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center">
+                    <Lock className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-muted-foreground">The Original 7-Day Challenge</h3>
+                    <p className="text-xs text-muted-foreground">Complete all 7 days to unlock</p>
+                  </div>
+                </div>
+                <Lock className="w-5 h-5 text-muted-foreground" />
+              </div>
+            </Card>
+          )}
 
           {/* Hello in 50 Languages */}
           <Card 
