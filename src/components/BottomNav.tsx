@@ -1,53 +1,69 @@
-import { Home, Hand, BookOpen, Settings, Lightbulb } from "lucide-react";
+import { useState } from "react";
+import { Home, BookOpen, Box, User } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useLocation } from "react-router-dom";
+import remiMascot from "@/assets/remi-mascot.png";
+
+const PawPrint = ({ show }: { show: boolean }) => {
+  if (!show) return null;
+  return (
+    <div className="absolute -top-3 left-1/2 -translate-x-1/2 pointer-events-none">
+      <svg 
+        viewBox="0 0 24 24" 
+        className="w-5 h-5 text-primary animate-paw-print"
+        fill="currentColor"
+      >
+        <ellipse cx="12" cy="17" rx="4" ry="5" />
+        <circle cx="6" cy="10" r="2.5" />
+        <circle cx="18" cy="10" r="2.5" />
+        <circle cx="8" cy="5" r="2" />
+        <circle cx="16" cy="5" r="2" />
+      </svg>
+    </div>
+  );
+};
 
 export const BottomNav = () => {
   const location = useLocation();
+  const [lastClicked, setLastClicked] = useState<string | null>(null);
   
   // Hide nav on auth and onboarding pages
   if (location.pathname === '/auth' || location.pathname === '/onboarding') {
     return null;
   }
 
+  const handleTabClick = (path: string) => {
+    setLastClicked(path);
+    setTimeout(() => setLastClicked(null), 600);
+  };
+
+  const tabs = [
+    { to: "/", icon: Home, label: "Home" },
+    { to: "/hellobook", icon: BookOpen, label: "Hellobook" },
+    { to: "/vault", icon: Box, label: "Vault" },
+    { to: "/profile", icon: User, label: "Profile" },
+  ];
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
-      <div className="max-w-md mx-auto flex justify-around items-center h-16 px-4">
-        <NavLink
-          to="/"
-          className="flex flex-col items-center gap-1 py-2 px-4 text-muted-foreground transition-colors"
-          activeClassName="text-primary"
-        >
-          <Home size={24} />
-          <span className="text-xs font-medium">Home</span>
-        </NavLink>
-        
-        <NavLink
-          to="/challenges"
-          className="flex flex-col items-center gap-1 py-2 px-4 text-muted-foreground transition-colors"
-          activeClassName="text-primary"
-        >
-          <Lightbulb size={24} />
-          <span className="text-xs font-medium">Inspire</span>
-        </NavLink>
-        
-        <NavLink
-          to="/notes"
-          className="flex flex-col items-center gap-1 py-2 px-4 text-muted-foreground transition-colors"
-          activeClassName="text-primary"
-        >
-          <BookOpen size={24} />
-          <span className="text-xs font-medium">Notes</span>
-        </NavLink>
-        
-        <NavLink
-          to="/settings"
-          className="flex flex-col items-center gap-1 py-2 px-4 text-muted-foreground transition-colors"
-          activeClassName="text-primary"
-        >
-          <Settings size={24} />
-          <span className="text-xs font-medium">Settings</span>
-        </NavLink>
+    <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-50 shadow-lg">
+      <div className="max-w-md mx-auto flex justify-around items-center h-18 px-2 relative">
+        {tabs.map((tab) => (
+          <NavLink
+            key={tab.to}
+            to={tab.to}
+            onClick={() => handleTabClick(tab.to)}
+            className="relative flex flex-col items-center gap-1 py-3 px-4 text-muted-foreground transition-all duration-200 hover:text-primary"
+            activeClassName="text-primary"
+          >
+            <PawPrint show={lastClicked === tab.to} />
+            <tab.icon 
+              size={24} 
+              className="transition-transform duration-200" 
+              strokeWidth={location.pathname === tab.to ? 2.5 : 2}
+            />
+            <span className="text-xs font-medium">{tab.label}</span>
+          </NavLink>
+        ))}
       </div>
     </nav>
   );

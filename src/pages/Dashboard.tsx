@@ -9,7 +9,6 @@ import { useWeeklyChallenges } from "@/hooks/useWeeklyChallenges";
 import { useDailyChallenges } from "@/hooks/useDailyChallenges";
 import { ProgressRing } from "@/components/ProgressRing";
 import { StreakCard } from "@/components/StreakCard";
-import { InspirationCard } from "@/components/InspirationCard";
 import { LogHelloDialog } from "@/components/LogHelloDialog";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
@@ -486,11 +485,6 @@ export default function Dashboard() {
             )}
           </div>
         )}
-
-        {/* Inspiration Section */}
-        <div className="mt-6">
-          <InspirationCard />
-        </div>
 
       </div>
 
