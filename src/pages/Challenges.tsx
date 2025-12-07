@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { InspirationCard } from "@/components/InspirationCard";
 import { sevenWaysToSayHello, onboardingChallenges } from "@/data/onboardingChallenges";
 import { Lightbulb, ChevronDown, ChevronUp } from "lucide-react";
-import remiMascot from "@/assets/remi-mascot.png";
+import remiMascot from "@/assets/remi-waving.png";
 
 export default function Challenges() {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);

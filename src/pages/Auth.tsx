@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import logo from '@/assets/one-hello-logo-sticker.png';
-import remiMascot from '@/assets/remi-mascot.png';
+import remiMascot from '@/assets/remi-waving.png';
 
 const Auth = () => {
   const navigate = useNavigate();
