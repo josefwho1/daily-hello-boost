@@ -1,17 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { useUserProgress } from "@/hooks/useUserProgress";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import logoText from "@/assets/one-hello-logo-text.png";
 import remiMascot from "@/assets/remi-mascot.png";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MapPin } from "lucide-react";
 
 const signupSchema = z.object({
   name: z.string().trim().min(1, { message: "First name is required" }).max(50, { message: "Name must be less than 50 characters" }),
@@ -20,34 +26,63 @@ const signupSchema = z.object({
 });
 
 const whyHereOptions = [
-  { id: "social-anxiety", label: "I want to reduce my social anxiety" },
-  { id: "make-friends", label: "I want to make more friends" },
-  { id: "confidence", label: "I want to build confidence" },
-  { id: "new-city", label: "I'm new to a city and want to connect" },
-  { id: "challenge", label: "I like challenges!" },
-  { id: "other", label: "Just curious!" }
+  { id: "confidence", label: "Build confidence" },
+  { id: "make-friends", label: "Meet new people / make new friends" },
+  { id: "social-anxiety", label: "Reduce social anxiety" },
+  { id: "comfort-zone", label: "Get out of my comfort zone" },
+  { id: "fun", label: "For fun" },
+  { id: "other", label: "Other" }
 ];
 
-const modeOptions = [
-  { value: "easy", label: "Easy", description: "3 hellos per week", emoji: "🌱" },
-  { value: "normal", label: "Normal", description: "5 hellos per week", emoji: "🌟" },
-  { value: "hard", label: "Hard", description: "7 hellos per week", emoji: "🔥" }
-];
+// Generate timezone options from GMT-12 to GMT+14
+const timezoneOptions: { value: string; label: string }[] = [];
+for (let i = -12; i <= 14; i++) {
+  const sign = i >= 0 ? '+' : '';
+  const hours = Math.abs(i).toString().padStart(2, '0');
+  const value = `${sign}${hours}:00`;
+  const label = `GMT${sign}${i}`;
+  timezoneOptions.push({ value, label });
+}
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { updateProgress } = useUserProgress();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [comfortRating, setComfortRating] = useState(5);
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
-  const [selectedMode, setSelectedMode] = useState("normal");
+  const [selectedTimezone, setSelectedTimezone] = useState("+00:00");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDetectingTimezone, setIsDetectingTimezone] = useState(false);
   
   // Signup form fields
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Auto-detect timezone on mount
+  useEffect(() => {
+    detectTimezone();
+  }, []);
+
+  const detectTimezone = () => {
+    try {
+      setIsDetectingTimezone(true);
+      const offset = new Date().getTimezoneOffset();
+      const hours = Math.floor(Math.abs(offset) / 60);
+      const sign = offset <= 0 ? '+' : '-';
+      const formattedOffset = `${sign}${hours.toString().padStart(2, '0')}:00`;
+      
+      // Find the closest matching timezone option
+      const matchingTz = timezoneOptions.find(tz => tz.value === formattedOffset);
+      if (matchingTz) {
+        setSelectedTimezone(matchingTz.value);
+      }
+    } catch (error) {
+      console.error("Error detecting timezone:", error);
+    } finally {
+      setIsDetectingTimezone(false);
+    }
+  };
 
   const handleReasonToggle = (id: string) => {
     setSelectedReasons(prev => 
@@ -55,14 +90,6 @@ export default function Onboarding() {
         ? prev.filter(r => r !== id)
         : [...prev, id]
     );
-  };
-
-  const getTargetHellos = (mode: string) => {
-    switch (mode) {
-      case 'easy': return 3;
-      case 'hard': return 7;
-      default: return 5;
-    }
   };
 
   const handleSignupAndComplete = async () => {
@@ -85,24 +112,36 @@ export default function Onboarding() {
 
       if (signUpError) throw signUpError;
 
-      // Wait for user to be set, then update progress
+      // Wait for user to be set, then update progress and profile
       if (data.user) {
         // Small delay to ensure profile is created
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        await updateProgress({
-          mode: selectedMode,
-          target_hellos_per_week: getTargetHellos(selectedMode),
-          why_here: selectedReasons.join(','),
-          has_completed_onboarding: true,
-          is_onboarding_week: true,
-          onboarding_week_start: new Date().toISOString().split('T')[0]
-        });
+        // Update timezone in profile
+        await supabase
+          .from('profiles')
+          .update({ timezone_preference: selectedTimezone })
+          .eq('id', data.user.id);
+
+        // Update user progress with onboarding data
+        // Note: has_completed_onboarding stays FALSE until 7-day challenge is done
+        await supabase
+          .from('user_progress')
+          .update({
+            why_here: selectedReasons.join(','),
+            is_onboarding_week: true,
+            onboarding_week_start: new Date().toISOString().split('T')[0],
+            current_day: 1,
+            mode: 'daily', // Default mode until post-7-day selection
+            target_hellos_per_week: 7, // During onboarding, aim for all 7
+            has_completed_onboarding: false // Will be set true after 7-day challenge
+          })
+          .eq('user_id', data.user.id);
       }
 
       toast({
         title: "Welcome!",
-        description: `Hi ${validated.name}, let's start your journey!`,
+        description: `Hi ${validated.name}, let's start your 7-day journey!`,
       });
       
       navigate('/');
@@ -125,30 +164,33 @@ export default function Onboarding() {
     }
   };
 
+  const totalSteps = 6;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Progress indicator */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-muted z-50">
         <div 
           className="h-full bg-primary transition-all duration-300"
-          style={{ width: `${(step / 7) * 100}%` }}
+          style={{ width: `${(step / totalSteps) * 100}%` }}
         />
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          {/* Step 1: Welcome */}
+          {/* Step 1: Welcome - Introduce Remi */}
           {step === 1 && (
             <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <img src={remiMascot} alt="Remi" className="w-64 h-64 mx-auto" />
               <div className="space-y-3">
                 <h1 className="text-2xl font-bold text-foreground">Hello, I'm Remi!</h1>
                 <p className="text-muted-foreground">
-                  Just a quick 3 questions before your first hello.
+                  I'm your Reminder Raccoon, here to help you build 
+                  confidence and connect with the world, one hello at a time.
                 </p>
               </div>
               <Button onClick={() => setStep(2)} className="w-full" size="lg">
-                Continue
+                Let's Go!
               </Button>
               <button 
                 onClick={() => navigate('/signin')}
@@ -159,11 +201,11 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 2: Why are you here? */}
+          {/* Step 2: Why are you joining? */}
           {step === 2 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-2">Why are you here?</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-2">Why are you joining One Hello?</h2>
                 <p className="text-muted-foreground">Select all that apply</p>
               </div>
               
@@ -208,9 +250,9 @@ export default function Onboarding() {
           {step === 3 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-2">How comfortable do you feel?</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-2">How comfortable do you feel talking to strangers?</h2>
                 <p className="text-muted-foreground">
-                  Starting a conversation with a stranger...
+                  Rate from 1-10
                 </p>
               </div>
 
@@ -255,39 +297,44 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 4: Mode selection */}
+          {/* Step 4: Timezone Selection */}
           {step === 4 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-2">Choose Your Challenge</h2>
+                <MapPin className="w-12 h-12 mx-auto mb-4 text-primary" />
+                <h2 className="text-2xl font-bold text-foreground mb-2">What timezone are you in?</h2>
                 <p className="text-muted-foreground">
-                  How many days per week do you want to say hello to someone new?
+                  This helps us reset your streaks at midnight your time.
                 </p>
               </div>
 
-              <RadioGroup value={selectedMode} onValueChange={setSelectedMode}>
-                {modeOptions.map((option) => (
-                  <Card 
-                    key={option.value}
-                    className={`p-4 cursor-pointer transition-all ${
-                      selectedMode === option.value 
-                        ? 'border-primary bg-primary/5' 
-                        : 'hover:border-primary/50'
-                    }`}
-                    onClick={() => setSelectedMode(option.value)}
-                  >
-                    <div className="flex items-center gap-4">
-                      <RadioGroupItem value={option.value} id={option.value} />
-                      <div className="flex-1">
-                        <Label className="text-lg font-semibold cursor-pointer">
-                          {option.emoji} {option.label}
-                        </Label>
-                        <p className="text-sm text-muted-foreground">{option.description}</p>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </RadioGroup>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Your timezone</Label>
+                  <Select value={selectedTimezone} onValueChange={setSelectedTimezone}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select timezone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timezoneOptions.map((tz) => (
+                        <SelectItem key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button 
+                  variant="outline" 
+                  onClick={detectTimezone}
+                  disabled={isDetectingTimezone}
+                  className="w-full"
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  {isDetectingTimezone ? 'Detecting...' : 'Auto-detect my timezone'}
+                </Button>
+              </div>
 
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
@@ -300,74 +347,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 5: Onboarding Week Intro */}
+          {/* Step 5: Create Account */}
           {step === 5 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <img src={remiMascot} alt="Remi" className="w-24 h-24 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-foreground mb-2">Your First Week</h2>
-                <p className="text-muted-foreground">
-                  During your first week, we'll give you 7 different types of hello to try.
-                </p>
-              </div>
-
-              <Card className="p-4 bg-primary/5 border-primary/20">
-                <p className="text-center text-foreground">
-                  Complete them in any order you like. This is your chance to discover what 
-                  feels natural to you!
-                </p>
-              </Card>
-
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>✅ Smile & say hello</p>
-                <p>✅ Give a compliment</p>
-                <p>✅ Ask a simple question</p>
-                <p>✅ Learn someone's name</p>
-                <p>✅ ...and more!</p>
-              </div>
-
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(4)} className="flex-1">
-                  Back
-                </Button>
-                <Button onClick={() => setStep(6)} className="flex-1">
-                  I'm Ready!
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 6: Motivation */}
-          {step === 6 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🎉</div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">You're Almost There!</h2>
-                <p className="text-muted-foreground">
-                  Remember: 99% of people light up when a stranger is kind. 
-                  Your job is to put more good energy into the world than you take out.
-                </p>
-              </div>
-
-              <Card className="p-6 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
-                <p className="text-center text-lg font-medium text-foreground">
-                  Now let's create your account! 👋
-                </p>
-              </Card>
-
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(6)} className="flex-1">
-                  Back
-                </Button>
-                <Button onClick={() => setStep(7)} className="flex-1">
-                  Create Account
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 7: Signup Form */}
-          {step === 7 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-foreground mb-2">Create Your Account</h2>
@@ -378,11 +359,11 @@ export default function Onboarding() {
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">First Name *</Label>
+                  <Label htmlFor="name">Name *</Label>
                   <Input
                     id="name"
                     type="text"
-                    placeholder="Enter your first name"
+                    placeholder="Enter your name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
@@ -408,7 +389,7 @@ export default function Onboarding() {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Simple letters & numbers"
+                    placeholder="Minimum 6 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -422,15 +403,58 @@ export default function Onboarding() {
               </div>
 
               <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep(4)} className="flex-1">
+                  Back
+                </Button>
+                <Button 
+                  onClick={() => setStep(6)} 
+                  className="flex-1"
+                  disabled={!name || !email || !password || password.length < 6}
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 6: Introduce 7-Day Challenge */}
+          {step === 6 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <img src={remiMascot} alt="Remi" className="w-24 h-24 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-foreground mb-2">Your 7-Day Challenge</h2>
+                <p className="text-muted-foreground">
+                  You'll start with a 7-day series to build momentum and confidence.
+                </p>
+              </div>
+
+              <Card className="p-4 bg-primary/5 border-primary/20">
+                <p className="text-center text-foreground">
+                  Each day you'll unlock a new type of "hello" to try. 
+                  Complete all 7 to unlock your personalized journey!
+                </p>
+              </Card>
+
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>✅ Day 1: First Hello</p>
+                <p>✅ Day 2: Well Wishes</p>
+                <p>✅ Day 3: How Are You?</p>
+                <p>✅ Day 4: Give a Compliment</p>
+                <p>✅ Day 5: Ask a Question</p>
+                <p>✅ Day 6: Learn a Name</p>
+                <p>✅ Day 7: Getting Personal</p>
+              </div>
+
+              <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(5)} className="flex-1">
                   Back
                 </Button>
                 <Button 
                   onClick={handleSignupAndComplete} 
                   className="flex-1"
-                  disabled={isSubmitting || !name || !email || !password}
+                  disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Creating..." : "Start My Journey"}
+                  {isSubmitting ? "Creating..." : "Start Day 1!"}
                 </Button>
               </div>
             </div>

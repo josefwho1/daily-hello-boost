@@ -64,6 +64,30 @@ export type Database = {
           },
         ]
       }
+      daily_challenges: {
+        Row: {
+          created_at: string
+          day_of_year: number
+          description: string
+          id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_year: number
+          description: string
+          id?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          day_of_year?: number
+          description?: string
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       hello_logs: {
         Row: {
           created_at: string
@@ -166,6 +190,7 @@ export type Database = {
           current_streak: number
           daily_streak: number | null
           has_completed_onboarding: boolean | null
+          has_received_first_orb: boolean | null
           has_seen_welcome_messages: boolean | null
           hellos_this_week: number | null
           id: string
@@ -175,10 +200,11 @@ export type Database = {
           longest_streak: number | null
           mode: string | null
           onboarding_week_start: string | null
+          orbs: number | null
           save_offered_for_date: string | null
           selected_pack_id: string
-          streak_savers: number | null
           target_hellos_per_week: number | null
+          total_hellos: number | null
           updated_at: string
           user_id: string
           username: string | null
@@ -192,6 +218,7 @@ export type Database = {
           current_streak?: number
           daily_streak?: number | null
           has_completed_onboarding?: boolean | null
+          has_received_first_orb?: boolean | null
           has_seen_welcome_messages?: boolean | null
           hellos_this_week?: number | null
           id?: string
@@ -201,10 +228,11 @@ export type Database = {
           longest_streak?: number | null
           mode?: string | null
           onboarding_week_start?: string | null
+          orbs?: number | null
           save_offered_for_date?: string | null
           selected_pack_id?: string
-          streak_savers?: number | null
           target_hellos_per_week?: number | null
+          total_hellos?: number | null
           updated_at?: string
           user_id: string
           username?: string | null
@@ -218,6 +246,7 @@ export type Database = {
           current_streak?: number
           daily_streak?: number | null
           has_completed_onboarding?: boolean | null
+          has_received_first_orb?: boolean | null
           has_seen_welcome_messages?: boolean | null
           hellos_this_week?: number | null
           id?: string
@@ -227,10 +256,11 @@ export type Database = {
           longest_streak?: number | null
           mode?: string | null
           onboarding_week_start?: string | null
+          orbs?: number | null
           save_offered_for_date?: string | null
           selected_pack_id?: string
-          streak_savers?: number | null
           target_hellos_per_week?: number | null
+          total_hellos?: number | null
           updated_at?: string
           user_id?: string
           username?: string | null
