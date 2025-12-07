@@ -52,7 +52,11 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (progress && !progress.has_completed_onboarding) {
+  // Allow access if:
+  // 1. User has completed onboarding (has_completed_onboarding: true)
+  // 2. User is in their 7-day challenge period (is_onboarding_week: true)
+  // Only redirect to /onboarding if neither condition is met (fresh user)
+  if (progress && !progress.has_completed_onboarding && !progress.is_onboarding_week) {
     return <Navigate to="/onboarding" replace />;
   }
 
