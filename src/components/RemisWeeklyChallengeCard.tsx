@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, Check, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import remiMascot from "@/assets/remi-mascot.png";
 
 interface RemisWeeklyChallengeCardProps {
   title: string;
@@ -19,11 +20,18 @@ export const RemisWeeklyChallengeCard = ({
   onComplete 
 }: RemisWeeklyChallengeCardProps) => {
   return (
-    <Card className={`p-5 border-accent/20 ${
+    <Card className={`p-5 border-accent/20 relative overflow-hidden ${
       isCompleted 
         ? 'bg-muted/50' 
         : 'bg-gradient-to-br from-accent/10 to-accent/5'
     }`}>
+      {/* Remi mascot in the corner */}
+      <img 
+        src={remiMascot} 
+        alt="Remi the raccoon" 
+        className="absolute bottom-2 right-2 w-16 h-16 object-contain opacity-80"
+      />
+      
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <Trophy className={`w-6 h-6 ${isCompleted ? 'text-muted-foreground' : 'text-accent'}`} />
@@ -54,7 +62,7 @@ export const RemisWeeklyChallengeCard = ({
         </p>
       )}
       
-      <div className={`rounded-xl p-4 ${isCompleted ? 'bg-muted' : 'bg-background/50'}`}>
+      <div className={`rounded-xl p-4 pr-20 ${isCompleted ? 'bg-muted' : 'bg-background/50'}`}>
         <p className={`text-sm font-medium mb-1 ${isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
           {title}
         </p>
