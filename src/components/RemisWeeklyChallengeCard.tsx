@@ -29,7 +29,7 @@ export const RemisWeeklyChallengeCard = ({
       <img 
         src={remiMascot} 
         alt="Remi the raccoon" 
-        className="absolute bottom-2 right-2 w-16 h-16 object-contain opacity-80"
+        className="absolute bottom-2 right-2 w-16 h-auto max-h-16 object-contain opacity-80"
       />
       
       <div className="flex items-center justify-between mb-3">

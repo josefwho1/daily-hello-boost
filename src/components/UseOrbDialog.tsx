@@ -32,7 +32,7 @@ export const UseOrbDialog = ({
       <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <img src={remiMascot} alt="Remi" className="w-20 h-20" />
+            <img src={remiMascot} alt="Remi" className="w-20 h-auto max-h-20 object-contain" />
           </div>
           <DialogTitle className="text-xl flex items-center justify-center gap-2">
             <Sparkles className="w-6 h-6 text-primary" />

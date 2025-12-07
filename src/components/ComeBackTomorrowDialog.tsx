@@ -18,7 +18,7 @@ export const ComeBackTomorrowDialog = ({ open, onContinue }: ComeBackTomorrowDia
           <img 
             src={remiMascot} 
             alt="Remi" 
-            className="w-24 h-24 mx-auto mb-4"
+            className="w-24 h-auto max-h-24 mx-auto mb-4 object-contain"
           />
           
           <p className="text-lg text-muted-foreground mb-4">

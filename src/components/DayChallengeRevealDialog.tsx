@@ -46,7 +46,7 @@ export const DayChallengeRevealDialog = ({
             <img 
               src={remiMascot} 
               alt="Remi" 
-              className="w-24 h-24 animate-bounce-soft" 
+              className="w-24 h-auto max-h-24 animate-bounce-soft object-contain" 
             />
           </div>
           <DialogTitle className="text-xl">Day {dayNumber} Challenge! 🎉</DialogTitle>

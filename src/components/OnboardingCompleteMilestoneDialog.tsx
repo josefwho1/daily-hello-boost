@@ -28,7 +28,7 @@ export const OnboardingCompleteMilestoneDialog = ({
             <img 
               src={remiMascot} 
               alt="Remi celebrating" 
-              className="w-32 h-32 animate-bounce-soft" 
+              className="w-32 h-auto max-h-32 animate-bounce-soft object-contain" 
             />
           </div>
           <DialogTitle className="text-2xl">

@@ -22,7 +22,7 @@ export const WeeklyStreakCard = ({
       <img 
         src={remiMascot} 
         alt="Remi" 
-        className="absolute -right-4 -bottom-4 w-24 h-24 opacity-30"
+        className="absolute -right-4 -bottom-4 w-24 h-auto max-h-24 opacity-30 object-contain"
       />
       
       <div className="relative z-10">

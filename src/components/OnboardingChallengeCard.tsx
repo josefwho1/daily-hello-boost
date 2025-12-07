@@ -16,6 +16,8 @@ interface OnboardingChallengeCardProps {
   isAvailable: boolean;
   isLocked: boolean;
   isTodaysChallenge: boolean;
+  isNextDay?: boolean; // The day after today
+  hasCompletedToday?: boolean; // If today's challenge is done
   onComplete: () => void;
 }
 
@@ -25,15 +27,24 @@ export const OnboardingChallengeCard = ({
   isAvailable,
   isLocked,
   isTodaysChallenge,
+  isNextDay = false,
+  hasCompletedToday = false,
   onComplete
 }: OnboardingChallengeCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Future days (not next day, not today) - fully blurred
+  const isFutureDay = isLocked && !isNextDay;
+  
+  // Next day - show title only, greyed out
+  const showNextDayTeaser = isNextDay && isLocked;
 
   return (
     <Card className={cn(
       "p-4 transition-all",
       isCompleted && "bg-success/10 border-success/30",
-      isLocked && "opacity-50 bg-muted/30",
+      isLocked && !showNextDayTeaser && "opacity-50 bg-muted/30",
+      showNextDayTeaser && "bg-muted/20 border-muted",
       isTodaysChallenge && !isCompleted && "border-primary border-2 shadow-md"
     )}>
       <div className="flex items-center gap-3">
@@ -41,12 +52,16 @@ export const OnboardingChallengeCard = ({
           "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold",
           isCompleted 
             ? "bg-success text-success-foreground" 
+            : isFutureDay
+            ? "bg-muted/50 text-muted-foreground/50"
             : isLocked
             ? "bg-muted text-muted-foreground"
             : "bg-primary/20 text-primary"
         )}>
           {isCompleted ? (
             <Check className="w-5 h-5" />
+          ) : isFutureDay ? (
+            <span className="text-muted-foreground/50">{challenge.id}</span>
           ) : isLocked ? (
             <Lock className="w-4 h-4" />
           ) : (
@@ -55,22 +70,47 @@ export const OnboardingChallengeCard = ({
         </div>
         
         <div className="flex-1 min-w-0">
-          <h3 className={cn(
-            "font-semibold text-foreground",
-            isCompleted && "line-through text-muted-foreground",
-            isLocked && "text-muted-foreground"
-          )}>
-            {challenge.title}
-          </h3>
-          {isLocked && (
-            <p className="text-xs text-muted-foreground">
-              Unlocks tomorrow at midnight
-            </p>
-          )}
-          {isTodaysChallenge && !isCompleted && !isLocked && (
-            <p className="text-xs text-primary font-medium">
-              Today's challenge!
-            </p>
+          {/* For future days, blur title and description */}
+          {isFutureDay ? (
+            <>
+              <h3 className="font-semibold text-muted-foreground/30 blur-[3px] select-none">
+                {challenge.title}
+              </h3>
+              <p className="text-xs text-muted-foreground/20 blur-[3px] select-none">
+                {challenge.description}
+              </p>
+            </>
+          ) : showNextDayTeaser ? (
+            <>
+              <h3 className="font-semibold text-muted-foreground">
+                {challenge.title}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {hasCompletedToday 
+                  ? "Unlocks at midnight" 
+                  : "Complete today's challenge to unlock"}
+              </p>
+            </>
+          ) : (
+            <>
+              <h3 className={cn(
+                "font-semibold text-foreground",
+                isCompleted && "line-through text-muted-foreground",
+                isLocked && "text-muted-foreground"
+              )}>
+                {challenge.title}
+              </h3>
+              {isLocked && (
+                <p className="text-xs text-muted-foreground">
+                  Unlocks tomorrow at midnight
+                </p>
+              )}
+              {isTodaysChallenge && !isCompleted && !isLocked && (
+                <p className="text-xs text-primary font-medium">
+                  Today's challenge!
+                </p>
+              )}
+            </>
           )}
         </div>
 
@@ -80,6 +120,8 @@ export const OnboardingChallengeCard = ({
               <Check className="w-4 h-4" />
               Done!
             </span>
+          ) : isFutureDay ? (
+            <span className="text-muted-foreground/30">{challenge.id}</span>
           ) : isLocked ? (
             <Lock className="w-4 h-4 text-muted-foreground" />
           ) : (
@@ -93,7 +135,7 @@ export const OnboardingChallengeCard = ({
             </Button>
           )}
           
-          {!isLocked && (
+          {!isLocked && !isFutureDay && (
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="px-2">
@@ -109,7 +151,7 @@ export const OnboardingChallengeCard = ({
         </div>
       </div>
 
-      {!isLocked && (
+      {!isLocked && !isFutureDay && (
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleContent className="mt-3 ml-13 pl-13">
             <div className="ml-13 pl-1 border-l-2 border-muted pl-4">

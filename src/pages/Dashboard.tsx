@@ -407,7 +407,7 @@ export default function Dashboard() {
 
         {/* Greeting with Remi */}
         <div className="flex items-center gap-3 mb-6">
-          <img src={remiMascot} alt="Remi" className="w-12 h-12" />
+          <img src={remiMascot} alt="Remi" className="w-12 h-12 object-contain" />
           <p className="text-lg font-medium text-foreground">
             Hello, <span className="text-primary">{username}</span>! 👋
           </p>
@@ -454,6 +454,8 @@ export default function Dashboard() {
                 const isCompleted = completedTypes.includes(challenge.title);
                 const isTodaysChallenge = dayNumber === currentOnboardingDay;
                 const isLocked = !isUnlocked;
+                const isNextDay = dayNumber === currentOnboardingDay + 1;
+                const todaysChallengeCompleted = completedTypes.includes(onboardingChallenges[currentOnboardingDay - 1]?.title);
                 
                 return (
                   <OnboardingChallengeCard
@@ -463,6 +465,8 @@ export default function Dashboard() {
                     isAvailable={isUnlocked && !isCompleted && isTodaysChallenge}
                     isLocked={isLocked}
                     isTodaysChallenge={isTodaysChallenge}
+                    isNextDay={isNextDay}
+                    hasCompletedToday={todaysChallengeCompleted}
                     onComplete={() => {
                       setSelectedChallenge(challenge.title);
                       setSelectedDayNumber(dayNumber);

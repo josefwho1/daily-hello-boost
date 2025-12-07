@@ -56,7 +56,7 @@ const Hellobook = () => {
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <img src={remiMascot} alt="Remi" className="w-10 h-10" />
+          <img src={remiMascot} alt="Remi" className="w-10 h-auto max-h-10 object-contain" />
           <h1 className="text-2xl font-bold text-foreground">Your Hellobook</h1>
         </div>
 
@@ -74,7 +74,7 @@ const Hellobook = () => {
         {/* Logs */}
         {filteredLogs.length === 0 ? (
           <Card className="p-8 text-center rounded-2xl">
-            <img src={remiMascot} alt="Remi" className="w-16 h-16 mx-auto mb-4 opacity-50" />
+            <img src={remiMascot} alt="Remi" className="w-16 h-auto max-h-16 mx-auto mb-4 opacity-50 object-contain" />
             <p className="text-muted-foreground">
               {searchQuery ? "No hellos match your search." : "No hellos logged yet. Start saying hello!"}
             </p>

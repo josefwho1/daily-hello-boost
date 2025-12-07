@@ -197,7 +197,7 @@ export default function Onboarding() {
           {/* Step 1: Welcome - Introduce Remi */}
           {step === 1 && (
             <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <img src={remiMascot} alt="Remi" className="w-64 h-64 mx-auto" />
+              <img src={remiMascot} alt="Remi" className="w-64 h-auto max-h-64 mx-auto object-contain" />
               <div className="space-y-3">
                 <h1 className="text-2xl font-bold text-foreground">Hello, I'm Remi!</h1>
                 <p className="text-muted-foreground">
@@ -440,7 +440,7 @@ export default function Onboarding() {
                 <img 
                   src={remiMascot} 
                   alt="Remi waving" 
-                  className="w-48 h-48 mx-auto mb-4 animate-bounce-soft" 
+                  className="w-48 h-auto max-h-48 mx-auto mb-4 animate-bounce-soft object-contain" 
                 />
                 <h2 className="text-2xl font-bold text-foreground mb-3">You're in. 🦝</h2>
                 <p className="text-muted-foreground leading-relaxed">
@@ -458,7 +458,7 @@ export default function Onboarding() {
           {step === 7 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
-                <img src={remiMascot} alt="Remi" className="w-24 h-24 mx-auto mb-4" />
+                <img src={remiMascot} alt="Remi" className="w-24 h-auto max-h-24 mx-auto mb-4 object-contain" />
                 <h2 className="text-2xl font-bold text-foreground mb-3">
                   Your journey starts with a 7-day challenge.
                 </h2>
@@ -562,7 +562,7 @@ export default function Onboarding() {
           {step === 11 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
-                <img src={remiMascot} alt="Remi" className="w-24 h-24 mx-auto mb-4" />
+                <img src={remiMascot} alt="Remi" className="w-24 h-auto max-h-24 mx-auto mb-4 object-contain" />
                 <p className="text-sm text-primary font-medium mb-2">Day 1</p>
                 <h2 className="text-2xl font-bold text-foreground mb-4">First Hello</h2>
                 <Card className="p-6 bg-primary/5 border-primary/20">

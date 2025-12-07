@@ -12,7 +12,7 @@ export default function Challenges() {
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">
-          <img src={remiMascot} alt="Remi" className="w-12 h-12" />
+          <img src={remiMascot} alt="Remi" className="w-12 h-12 object-contain" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">Inspiration</h1>
             <p className="text-sm text-muted-foreground">Ideas to help you say hello</p>

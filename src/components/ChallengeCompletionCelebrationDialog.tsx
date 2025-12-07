@@ -71,7 +71,7 @@ export const ChallengeCompletionCelebrationDialog = ({
             <img 
               src={remiMascot} 
               alt="Remi celebrating" 
-              className="w-28 h-28 animate-bounce-soft" 
+              className="w-28 h-auto max-h-28 animate-bounce-soft object-contain" 
             />
           </div>
           <DialogTitle className="text-2xl">
