@@ -18,15 +18,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import remiMascot from "@/assets/remi-waving.png";
 
@@ -347,11 +345,11 @@ const Profile = () => {
       </div>
 
       {/* Mode Change Confirmation Dialog */}
-      <AlertDialog open={showModeChangeDialog} onOpenChange={setShowModeChangeDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to change modes?</AlertDialogTitle>
-            <AlertDialogDescription>
+      <Dialog open={showModeChangeDialog} onOpenChange={setShowModeChangeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure you want to change modes?</DialogTitle>
+            <DialogDescription>
               {pendingMode !== '7-day-starter' && currentMode === '7-day-starter' && !progress?.has_completed_onboarding ? (
                 <span>
                   You haven't completed the 7-day challenge yet. Switching modes now will skip the remaining days of your starter journey.
@@ -361,18 +359,18 @@ const Profile = () => {
                   Changing your challenge mode will affect how your progress is tracked.
                 </span>
               )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelModeChange}>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button variant="outline" onClick={handleCancelModeChange}>
               No
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmModeChange}>
+            </Button>
+            <Button onClick={handleConfirmModeChange}>
               Yes
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
