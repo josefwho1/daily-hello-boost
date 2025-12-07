@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Trophy, Flame, Hand, Shield } from "lucide-react";
-import remiMascot from "@/assets/remi-mascot.png";
+import remiMascot from "@/assets/remi-waving.png";
 
 interface WeeklyStreakCardProps {
   weeklyStreak: number;

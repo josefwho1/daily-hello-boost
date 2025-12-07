@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import remiMascot from "@/assets/remi-mascot.png";
+import remiMascot from "@/assets/remi-waving.png";
 
 interface WeeklyChallengeIntroDialogProps {
   open: boolean;

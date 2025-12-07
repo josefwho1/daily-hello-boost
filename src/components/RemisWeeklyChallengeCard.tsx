@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, Check, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import remiMascot from "@/assets/remi-mascot.png";
+import remiMascot from "@/assets/remi-waving.png";
 
 interface RemisWeeklyChallengeCardProps {
   title: string;

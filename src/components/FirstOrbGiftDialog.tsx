@@ -3,7 +3,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import remiMascot from "@/assets/remi-mascot.png";
+import remiMascot from "@/assets/remi-waving.png";
 import { Sparkles } from "lucide-react";
 
 interface FirstOrbGiftDialogProps {
