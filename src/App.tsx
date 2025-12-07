@@ -6,12 +6,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
-import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
-import Challenges from "./pages/Challenges";
-import Notes from "./pages/Notes";
-import Settings from "./pages/Settings";
-import Packs from "./pages/Packs";
+import Hellobook from "./pages/Hellobook";
+import Vault from "./pages/Vault";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import SignIn from "./pages/SignIn";
 import Onboarding from "./pages/Onboarding";
@@ -24,7 +22,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#ffeeee' }}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
@@ -45,7 +43,7 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#ffeeee' }}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
@@ -66,7 +64,7 @@ const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#ffeeee' }}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
@@ -75,7 +73,6 @@ const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // If user is already logged in, redirect to home
   if (user) {
     return <Navigate to="/" replace />;
   }
@@ -104,51 +101,31 @@ const App = () => (
             } 
           />
           <Route 
-            path="/legacy" 
+            path="/hellobook" 
             element={
               <ProtectedRoute>
                 <OnboardingCheck>
-                  <Home />
+                  <Hellobook />
                 </OnboardingCheck>
               </ProtectedRoute>
             } 
           />
           <Route 
-            path="/challenges" 
+            path="/vault" 
             element={
               <ProtectedRoute>
                 <OnboardingCheck>
-                  <Challenges />
+                  <Vault />
                 </OnboardingCheck>
               </ProtectedRoute>
             } 
           />
           <Route 
-            path="/notes" 
+            path="/profile" 
             element={
               <ProtectedRoute>
                 <OnboardingCheck>
-                  <Notes />
-                </OnboardingCheck>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/settings" 
-            element={
-              <ProtectedRoute>
-                <OnboardingCheck>
-                  <Settings />
-                </OnboardingCheck>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/packs" 
-            element={
-              <ProtectedRoute>
-                <OnboardingCheck>
-                  <Packs />
+                  <Profile />
                 </OnboardingCheck>
               </ProtectedRoute>
             } 

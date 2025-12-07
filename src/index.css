@@ -8,8 +8,9 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 352 100% 97.5%;
-    --foreground: 23 62% 19%;
+    /* One Hello Color Palette - Warm & Friendly */
+    --background: 5 100% 97%; /* #fff3f4 - very light coral */
+    --foreground: 23 62% 19%; /* #502a13 - dark warm brown */
 
     --card: 0 0% 100%;
     --card-foreground: 23 62% 19%;
@@ -17,14 +18,14 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 23 62% 19%;
 
-    --primary: 16 100% 62%;
+    --primary: 16 100% 62%; /* #ff6f3b - primary orange */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 23 62% 19%;
+    --secondary: 23 62% 19%; /* #502a13 - dark brown */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 355 60% 94%;
-    --muted-foreground: 23 40% 40%;
+    --muted: 5 60% 94%;
+    --muted-foreground: 23 40% 35%; /* #71472e - lighter brown */
 
     --accent: 16 100% 62%;
     --accent-foreground: 0 0% 100%;
@@ -32,14 +33,14 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 40% 90%;
+    --border: 16 40% 88%;
     --input: 0 0% 100%;
-    --ring: 8 100% 67%;
+    --ring: 16 100% 62%;
 
     --success: 140 60% 50%;
     --success-foreground: 0 0% 100%;
 
-    --radius: 1rem;
+    --radius: 1.25rem;
 
     --sidebar-background: 0 0% 98%;
 
