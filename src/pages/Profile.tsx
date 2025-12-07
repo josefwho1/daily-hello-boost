@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { LogOut, Clock, User, Pencil, Check, X, Flame, Calendar } from "lucide-react";
+import { LogOut, Clock, User, Pencil, Check, X, Flame, Calendar, Sparkles, Target } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -17,7 +17,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import remiMascot from "@/assets/remi-mascot.png";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
+import remiMascot from "@/assets/remi-waving.png";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -28,6 +39,8 @@ const Profile = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState("");
   const [isSavingName, setIsSavingName] = useState(false);
+  const [showModeChangeDialog, setShowModeChangeDialog] = useState(false);
+  const [pendingMode, setPendingMode] = useState<string | null>(null);
 
   // Generate timezone options
   const timezoneOptions = [];
@@ -38,6 +51,39 @@ const Profile = () => {
     const label = `GMT${sign}${i}`;
     timezoneOptions.push({ value, label });
   }
+
+  const modeOptions = [
+    { 
+      value: '7-day-starter', 
+      label: '7-Day Starter', 
+      description: 'Complete 7-day challenge',
+      icon: Sparkles,
+      isDefault: true
+    },
+    { 
+      value: 'daily', 
+      label: 'Daily Mode', 
+      description: '1 hello per day',
+      icon: Flame,
+      isDefault: false
+    },
+    { 
+      value: 'connect', 
+      label: 'Connect Mode', 
+      description: '5 hellos per week',
+      icon: Calendar,
+      isDefault: false
+    },
+  ];
+
+  const getTargetFromMode = (mode: string) => {
+    switch (mode) {
+      case '7-day-starter': return 7;
+      case 'daily': return 7;
+      case 'connect': return 5;
+      default: return 5;
+    }
+  };
 
   const handleStartEditName = () => {
     setEditName(user?.user_metadata?.name || '');
@@ -104,31 +150,45 @@ const Profile = () => {
     }
   };
 
-  const handleModeChange = async (mode: 'daily' | 'connect') => {
-    const target = mode === 'daily' ? 7 : 5;
+  const handleModeClick = (value: string) => {
+    if (value === currentMode) return; // Already selected
+    
+    setPendingMode(value);
+    setShowModeChangeDialog(true);
+  };
+
+  const handleConfirmModeChange = async () => {
+    if (!pendingMode) return;
+    
     try {
       await updateProgress({
-        mode,
-        target_hellos_per_week: target,
-        // Reset relevant streaks when switching modes
-        ...(mode === 'daily' ? { daily_streak: 0 } : { weekly_streak: 0 }),
-        hellos_this_week: 0
+        mode: pendingMode,
+        target_hellos_per_week: getTargetFromMode(pendingMode),
+        // If switching away from 7-day-starter, mark as completed
+        ...(pendingMode !== '7-day-starter' && { has_completed_onboarding: true, is_onboarding_week: false })
       });
-      toast.success(`Switched to ${mode === 'daily' ? 'Daily' : 'Connect'} Mode`);
+      toast.success("Challenge mode updated successfully");
     } catch (error) {
       console.error("Error updating mode:", error);
       toast.error("Failed to update mode");
     }
+    setShowModeChangeDialog(false);
+    setPendingMode(null);
   };
 
-  const currentMode = progress?.mode || 'daily';
+  const handleCancelModeChange = () => {
+    setShowModeChangeDialog(false);
+    setPendingMode(null);
+  };
+
+  const currentMode = progress?.mode || '7-day-starter';
 
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <img src={remiMascot} alt="Remi" className="w-10 h-10" />
+          <img src={remiMascot} alt="Remi" className="w-10 h-auto max-h-10 object-contain" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">Profile</h1>
             <p className="text-sm text-muted-foreground">Your settings & preferences</p>
@@ -189,45 +249,57 @@ const Profile = () => {
           </div>
         </Card>
 
-        {/* Mode Selection */}
+        {/* Challenge Mode - 3 Buttons */}
         <Card className="p-5 mb-4 rounded-2xl">
           <div className="flex items-center gap-3 mb-4">
-            <Flame className="text-primary w-5 h-5" />
+            <Target className="text-primary w-5 h-5" />
             <h3 className="font-semibold text-foreground">Challenge Mode</h3>
           </div>
           
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => handleModeChange('daily')}
-              className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                currentMode === 'daily' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-border hover:border-primary/50'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <Calendar className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-sm text-foreground">Daily Mode</span>
-              </div>
-              <p className="text-xs text-muted-foreground">One Hello a Day</p>
-              <p className="text-xs text-primary mt-1">7 hellos/week</p>
-            </button>
-
-            <button
-              onClick={() => handleModeChange('connect')}
-              className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                currentMode === 'connect' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-border hover:border-primary/50'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <User className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-sm text-foreground">Connect</span>
-              </div>
-              <p className="text-xs text-muted-foreground">5 Hellos a Week</p>
-              <p className="text-xs text-primary mt-1">Flexible schedule</p>
-            </button>
+          <div className="space-y-2">
+            {modeOptions.map((mode) => {
+              const Icon = mode.icon;
+              const isSelected = currentMode === mode.value;
+              
+              return (
+                <button
+                  key={mode.value}
+                  onClick={() => handleModeClick(mode.value)}
+                  className={cn(
+                    "w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left",
+                    isSelected 
+                      ? "border-primary bg-primary/10" 
+                      : "border-border hover:border-primary/50 bg-muted/30"
+                  )}
+                >
+                  <div className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
+                    isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  )}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        "font-medium",
+                        isSelected ? "text-primary" : "text-foreground"
+                      )}>
+                        {mode.label}
+                      </span>
+                      {mode.isDefault && (
+                        <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-sm text-muted-foreground">{mode.description}</span>
+                  </div>
+                  {isSelected && (
+                    <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </Card>
 
@@ -273,6 +345,34 @@ const Profile = () => {
           <p className="text-xs text-muted-foreground mt-3">Version 2.0.0</p>
         </Card>
       </div>
+
+      {/* Mode Change Confirmation Dialog */}
+      <AlertDialog open={showModeChangeDialog} onOpenChange={setShowModeChangeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to change modes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingMode !== '7-day-starter' && currentMode === '7-day-starter' && !progress?.has_completed_onboarding ? (
+                <span>
+                  You haven't completed the 7-day challenge yet. Switching modes now will skip the remaining days of your starter journey.
+                </span>
+              ) : (
+                <span>
+                  Changing your challenge mode will affect how your progress is tracked.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelModeChange}>
+              No
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmModeChange}>
+              Yes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
