@@ -25,7 +25,7 @@ export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogP
           <img 
             src={remiMascot} 
             alt="Remi" 
-            className="w-20 h-20 mx-auto mb-4"
+            className="w-20 h-auto max-h-20 mx-auto mb-4 object-contain"
           />
           
           <h2 className="text-2xl font-bold text-foreground mb-2">

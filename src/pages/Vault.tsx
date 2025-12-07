@@ -279,7 +279,7 @@ const Vault = () => {
           <img 
             src={remiMascot} 
             alt="Remi" 
-            className="w-16 h-16 drop-shadow-lg animate-bounce-soft"
+            className="w-16 h-auto max-h-16 drop-shadow-lg animate-bounce-soft object-contain"
           />
           <div className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
             <Sparkles className="w-3 h-3 text-primary" />

@@ -46,7 +46,7 @@ export const LogHelloDialog = ({ open, onOpenChange, onLog, challengeTitle }: Lo
       <DialogContent className="max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <img src={remiMascot} alt="Remi" className="w-12 h-12" />
+            <img src={remiMascot} alt="Remi" className="w-12 h-auto max-h-12 object-contain" />
             <DialogTitle className="text-xl">{dialogTitle}</DialogTitle>
           </div>
         </DialogHeader>

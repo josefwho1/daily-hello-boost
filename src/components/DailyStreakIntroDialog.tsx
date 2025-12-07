@@ -18,7 +18,7 @@ export const DailyStreakIntroDialog = ({ open, onContinue }: DailyStreakIntroDia
           <img 
             src={remiMascot} 
             alt="Remi" 
-            className="w-24 h-24 mx-auto mb-4"
+            className="w-24 h-auto max-h-24 mx-auto mb-4 object-contain"
           />
           
           <h2 className="text-2xl font-bold text-foreground mb-3">

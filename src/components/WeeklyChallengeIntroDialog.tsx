@@ -15,7 +15,7 @@ export const WeeklyChallengeIntroDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm mx-auto bg-background border-primary/20">
         <div className="flex flex-col items-center text-center space-y-4 py-4">
-          <img src={remiMascot} alt="Remi" className="w-24 h-24" />
+          <img src={remiMascot} alt="Remi" className="w-24 h-auto max-h-24 object-contain" />
           
           <h2 className="text-2xl font-bold text-primary">
             Weekly Challenge 🏆

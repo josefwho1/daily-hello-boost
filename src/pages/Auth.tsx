@@ -20,7 +20,7 @@ const Auth = () => {
         <img 
           src={remiMascot} 
           alt="Remi" 
-          className="w-64 max-w-full mx-auto object-contain"
+          className="w-64 max-w-full h-auto mx-auto object-contain"
         />
 
         {/* Buttons */}

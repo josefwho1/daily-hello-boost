@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { LogOut, Clock, Target, User, Pencil, Check, X } from "lucide-react";
+import { LogOut, Clock, Target, User, Pencil, Check, X, Flame, Calendar, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -27,6 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const Settings = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState("");
   const [isSavingName, setIsSavingName] = useState(false);
-  const [showExitStarterDialog, setShowExitStarterDialog] = useState(false);
+  const [showModeChangeDialog, setShowModeChangeDialog] = useState(false);
   const [pendingMode, setPendingMode] = useState<string | null>(null);
 
   // Generate timezone options from GMT-12 to GMT+12
@@ -51,9 +52,27 @@ const Settings = () => {
   }
 
   const modeOptions = [
-    { value: '7-day-starter', label: '7-Day Starter', description: 'Complete 7-day challenge' },
-    { value: 'daily', label: 'Daily', description: '1 hello per day' },
-    { value: 'connect', label: 'Connect', description: '5 hellos per week' },
+    { 
+      value: '7-day-starter', 
+      label: '7-Day Starter', 
+      description: 'Complete 7-day challenge',
+      icon: Sparkles,
+      isDefault: true
+    },
+    { 
+      value: 'daily', 
+      label: 'Daily Mode', 
+      description: '1 hello per day',
+      icon: Flame,
+      isDefault: false
+    },
+    { 
+      value: 'connect', 
+      label: 'Connect Mode', 
+      description: '5 hellos per week',
+      icon: Calendar,
+      isDefault: false
+    },
   ];
 
   const getTargetFromMode = (mode: string) => {
@@ -131,37 +150,38 @@ const Settings = () => {
     }
   };
 
-  const handleModeChange = async (value: string) => {
-    // Check if user is leaving 7-day-starter before completing it
-    if (progress?.mode === '7-day-starter' && value !== '7-day-starter' && !progress?.has_completed_onboarding) {
-      setPendingMode(value);
-      setShowExitStarterDialog(true);
-      return;
-    }
+  const handleModeClick = (value: string) => {
+    if (value === progress?.mode) return; // Already selected
     
-    await applyModeChange(value);
+    setPendingMode(value);
+    setShowModeChangeDialog(true);
   };
 
-  const applyModeChange = async (value: string) => {
+  const handleConfirmModeChange = async () => {
+    if (!pendingMode) return;
+    
     try {
       await updateProgress({
-        mode: value,
-        target_hellos_per_week: getTargetFromMode(value)
+        mode: pendingMode,
+        target_hellos_per_week: getTargetFromMode(pendingMode),
+        // If switching away from 7-day-starter, mark as completed
+        ...(pendingMode !== '7-day-starter' && { has_completed_onboarding: true, is_onboarding_week: false })
       });
       toast.success("Challenge mode updated successfully");
     } catch (error) {
       console.error("Error updating mode:", error);
       toast.error("Failed to update mode");
     }
-  };
-
-  const handleConfirmExitStarter = async () => {
-    if (pendingMode) {
-      await applyModeChange(pendingMode);
-    }
-    setShowExitStarterDialog(false);
+    setShowModeChangeDialog(false);
     setPendingMode(null);
   };
+
+  const handleCancelModeChange = () => {
+    setShowModeChangeDialog(false);
+    setPendingMode(null);
+  };
+
+  const currentMode = progress?.mode || '7-day-starter';
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -240,20 +260,52 @@ const Settings = () => {
           </div>
           
           <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">How many hellos per week?</Label>
-            <Select value={progress?.mode || 'normal'} onValueChange={handleModeChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select mode" />
-              </SelectTrigger>
-              <SelectContent>
-                {modeOptions.map((mode) => (
-                  <SelectItem key={mode.value} value={mode.value}>
-                    <span className="font-medium">{mode.label}</span>
-                    <span className="text-muted-foreground ml-2">({mode.description})</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label className="text-sm text-muted-foreground">Select your challenge mode</Label>
+            <div className="grid grid-cols-1 gap-2 mt-2">
+              {modeOptions.map((mode) => {
+                const Icon = mode.icon;
+                const isSelected = currentMode === mode.value;
+                
+                return (
+                  <button
+                    key={mode.value}
+                    onClick={() => handleModeClick(mode.value)}
+                    className={cn(
+                      "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                      isSelected 
+                        ? "border-primary bg-primary/10" 
+                        : "border-border hover:border-primary/50 bg-muted/30"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center",
+                      isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    )}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "font-medium",
+                          isSelected ? "text-primary" : "text-foreground"
+                        )}>
+                          {mode.label}
+                        </span>
+                        {mode.isDefault && (
+                          <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-sm text-muted-foreground">{mode.description}</span>
+                    </div>
+                    {isSelected && (
+                      <Check className="w-5 h-5 text-primary" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </Card>
 
@@ -305,21 +357,26 @@ const Settings = () => {
 
       </div>
 
-      {/* Exit 7-Day Starter Confirmation Dialog */}
-      <AlertDialog open={showExitStarterDialog} onOpenChange={setShowExitStarterDialog}>
+      {/* Mode Change Confirmation Dialog */}
+      <AlertDialog open={showModeChangeDialog} onOpenChange={setShowModeChangeDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to exit the 7-Day Starter?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure you want to change modes?</AlertDialogTitle>
             <AlertDialogDescription>
-              You haven't completed the 7-day challenge yet. Switching modes now will skip the remaining days of your starter journey.
+              Changing your challenge mode will affect how your progress is tracked. 
+              {pendingMode !== '7-day-starter' && progress?.mode === '7-day-starter' && !progress?.has_completed_onboarding && (
+                <span className="block mt-2 text-destructive">
+                  You haven't completed the 7-day challenge yet. Switching modes now will skip the remaining days.
+                </span>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingMode(null)}>
-              Stay in 7-Day Starter
+            <AlertDialogCancel onClick={handleCancelModeChange}>
+              No
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmExitStarter}>
-              Yes, switch mode
+            <AlertDialogAction onClick={handleConfirmModeChange}>
+              Yes
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
