@@ -49,13 +49,13 @@ export const StatsBar = ({
       <div>
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-foreground">
-            {effectivelyOnboarding ? 'Your 7-Day Challenge' : 'Hellos This Week'}
+            {effectivelyOnboarding ? 'Your 7-Day Challenge' : "Hello's This Week"}
           </span>
           <span className="text-sm font-bold text-primary">
             {progressValue} / {progressMax}
           </span>
         </div>
-        <Progress value={progressPercent} className="h-3" />
+        <Progress value={progressPercent} className="h-3 [&>div]:bg-[#ff6f3b]" />
       </div>
 
       {/* Stats Grid */}
@@ -83,8 +83,8 @@ export const StatsBar = ({
         )}
 
         {/* Lifetime Hellos - ALWAYS visible */}
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-secondary/30">
-          <Hand className="w-5 h-5 text-secondary-foreground flex-shrink-0" />
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/10">
+          <Hand className="w-5 h-5 text-primary flex-shrink-0" />
           <div>
             <p className="text-xs text-muted-foreground">Lifetime Hellos</p>
             <p className="font-bold text-foreground">{lifetimeHellos}</p>
