@@ -246,7 +246,8 @@ export default function Dashboard() {
 
   // Get completed onboarding challenges from logs
   const getCompletedOnboardingChallenges = () => {
-    if (!progress?.is_onboarding_week) return [];
+    // If onboarding is already complete, skip this logic
+    if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return [];
     
     const weekLogs = logs.filter(log => {
       const logDate = new Date(log.created_at);
