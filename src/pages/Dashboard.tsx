@@ -98,19 +98,16 @@ export default function Dashboard() {
     if (progressLoading || logsLoading) return;
     if (!user?.id) return;
 
-    const todaysChallenge = onboardingChallenges[currentOnboardingDay - 1];
-    const isTodayCompleted = todaysChallenge && completedTypes.includes(todaysChallenge.title);
-    
     // Check if we've already shown the reveal for this day using localStorage
     const revealKey = `day_reveal_shown_${user.id}_day_${currentOnboardingDay}`;
     const alreadyShown = localStorage.getItem(revealKey) === 'true';
     
-    // Only show reveal if today's challenge isn't completed and we haven't shown it yet
-    if (!isTodayCompleted && !alreadyShown) {
+    // Only show if we haven't shown it yet - don't check completion status
+    if (!alreadyShown) {
       setShowDayReveal(true);
       localStorage.setItem(revealKey, 'true');
     }
-  }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progressLoading, logsLoading, completedTypes, user?.id]);
+  }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progressLoading, logsLoading, user?.id]);
 
   // Weekly reset logic - check for missed weekly goal (Connect Mode)
   useEffect(() => {
