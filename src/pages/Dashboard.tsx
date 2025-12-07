@@ -427,15 +427,17 @@ export default function Dashboard() {
           hasCompletedOnboarding={progress.has_completed_onboarding || false}
         />
 
-        {/* Log a Hello Button - ALWAYS visible */}
-        <div className="mt-6">
-          <LogHelloButton 
-            onClick={() => {
-              setSelectedChallenge('Standard Hello');
-              setShowLogDialog(true);
-            }}
-          />
-        </div>
+        {/* Log a Hello Button - Only show when NOT in 7-day starter */}
+        {!(progress.is_onboarding_week && !progress.has_completed_onboarding) && (
+          <div className="mt-6">
+            <LogHelloButton 
+              onClick={() => {
+                setSelectedChallenge('Standard Hello');
+                setShowLogDialog(true);
+              }}
+            />
+          </div>
+        )}
 
         {/* Onboarding Week Challenges - only show if in onboarding AND hasn't completed it */}
         {progress.is_onboarding_week && !progress.has_completed_onboarding ? (
