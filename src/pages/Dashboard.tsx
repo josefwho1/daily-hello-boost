@@ -93,7 +93,7 @@ export default function Dashboard() {
   const completedDaysCount = getCompletedDaysCount();
   const allOnboardingComplete = completedDaysCount >= 7;
 
-  // Show day reveal dialog when a new day unlocks
+  // Show day reveal dialog when a new day unlocks - only once per day
   useEffect(() => {
     if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return;
     if (progressLoading || logsLoading) return;
@@ -101,12 +101,17 @@ export default function Dashboard() {
     const todaysChallenge = onboardingChallenges[currentOnboardingDay - 1];
     const isTodayCompleted = todaysChallenge && completedTypes.includes(todaysChallenge.title);
     
-    // Show reveal if this is a new day and today's challenge isn't completed yet
-    if (!isTodayCompleted && lastSeenDay !== currentOnboardingDay) {
+    // Check if we've already shown the reveal for this day using localStorage
+    const revealKey = `day_reveal_shown_${user?.id}_day_${currentOnboardingDay}`;
+    const alreadyShown = localStorage.getItem(revealKey) === 'true';
+    
+    // Show reveal if this is a new day, today's challenge isn't completed, and we haven't shown it yet
+    if (!isTodayCompleted && !alreadyShown && lastSeenDay !== currentOnboardingDay) {
       setShowDayReveal(true);
       setLastSeenDay(currentOnboardingDay);
+      localStorage.setItem(revealKey, 'true');
     }
-  }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progressLoading, logsLoading, completedTypes, lastSeenDay]);
+  }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progressLoading, logsLoading, completedTypes, lastSeenDay, user?.id]);
 
   // Weekly reset logic - check for missed weekly goal (Connect Mode)
   useEffect(() => {
