@@ -361,6 +361,7 @@ export default function Dashboard() {
           mode={mode}
           isOnboardingWeek={progress.is_onboarding_week || false}
           onboardingCompleted={completedTypes.length}
+          hasCompletedOnboarding={progress.has_completed_onboarding || false}
         />
 
         {/* Log a Hello Button - ALWAYS visible */}

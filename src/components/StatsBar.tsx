@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Flame, Trophy, Hand, Sparkles, Calendar } from "lucide-react";
+import { Flame, Trophy, Hand, Sparkles } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface StatsBarProps {
@@ -12,6 +12,7 @@ interface StatsBarProps {
   mode: 'daily' | 'connect';
   isOnboardingWeek: boolean;
   onboardingCompleted: number;
+  hasCompletedOnboarding?: boolean;
 }
 
 export const StatsBar = ({
@@ -23,15 +24,23 @@ export const StatsBar = ({
   orbs,
   mode,
   isOnboardingWeek,
-  onboardingCompleted
+  onboardingCompleted,
+  hasCompletedOnboarding = false
 }: StatsBarProps) => {
   const isDaily = mode === 'daily';
-  const showDailyStreak = isOnboardingWeek || isDaily;
-  const showWeeklyStreak = !isOnboardingWeek;
+  
+  // If onboarding is completed, treat as post-onboarding even if flag is stale
+  const effectivelyOnboarding = isOnboardingWeek && !hasCompletedOnboarding;
+  
+  // Daily streak visible during onboarding OR in Daily mode (not Connect mode)
+  const showDailyStreak = effectivelyOnboarding || isDaily;
+  
+  // Weekly streak visible AFTER onboarding in BOTH modes
+  const showWeeklyStreak = !effectivelyOnboarding;
   
   // During onboarding, show progress out of 7
-  const progressValue = isOnboardingWeek ? onboardingCompleted : hellosThisWeek;
-  const progressMax = isOnboardingWeek ? 7 : targetHellos;
+  const progressValue = effectivelyOnboarding ? onboardingCompleted : hellosThisWeek;
+  const progressMax = effectivelyOnboarding ? 7 : targetHellos;
   const progressPercent = Math.min((progressValue / progressMax) * 100, 100);
 
   return (
@@ -40,7 +49,7 @@ export const StatsBar = ({
       <div>
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-foreground">
-            {isOnboardingWeek ? 'Your 7-Day Challenge' : 'Hellos This Week'}
+            {effectivelyOnboarding ? 'Your 7-Day Challenge' : 'Hellos This Week'}
           </span>
           <span className="text-sm font-bold text-primary">
             {progressValue} / {progressMax}
