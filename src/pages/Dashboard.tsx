@@ -446,9 +446,16 @@ export default function Dashboard() {
               <Sparkles className="w-5 h-5 text-primary" />
               <h2 className="text-lg font-semibold text-foreground">Your 7-Day Challenge</h2>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Challenges unlock daily at midnight. Complete today's challenge!
-            </p>
+            {/* Dynamic messaging based on today's challenge completion */}
+            {completedTypes.includes(onboardingChallenges[currentOnboardingDay - 1]?.title) ? (
+              <p className="text-sm text-success mb-4 font-medium">
+                Nice work today! Come back tomorrow to reveal tomorrow's challenge!
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground mb-4">
+                Complete today's challenge to unlock the next
+              </p>
+            )}
             <div className="space-y-3">
               {onboardingChallenges.map((challenge, index) => {
                 const dayNumber = index + 1;
