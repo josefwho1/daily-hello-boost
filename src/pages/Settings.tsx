@@ -17,6 +17,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -27,6 +37,8 @@ const Settings = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState("");
   const [isSavingName, setIsSavingName] = useState(false);
+  const [showExitStarterDialog, setShowExitStarterDialog] = useState(false);
+  const [pendingMode, setPendingMode] = useState<string | null>(null);
 
   // Generate timezone options from GMT-12 to GMT+12
   const timezoneOptions = [];
@@ -39,15 +51,16 @@ const Settings = () => {
   }
 
   const modeOptions = [
-    { value: 'easy', label: 'Easy', description: '3 hellos per week' },
-    { value: 'normal', label: 'Normal', description: '5 hellos per week' },
-    { value: 'hard', label: 'Hard', description: '7 hellos per week' },
+    { value: '7-day-starter', label: '7-Day Starter', description: 'Complete 7-day challenge' },
+    { value: 'daily', label: 'Daily', description: '1 hello per day' },
+    { value: 'connect', label: 'Connect', description: '5 hellos per week' },
   ];
 
   const getTargetFromMode = (mode: string) => {
     switch (mode) {
-      case 'easy': return 3;
-      case 'hard': return 7;
+      case '7-day-starter': return 7;
+      case 'daily': return 7;
+      case 'connect': return 5;
       default: return 5;
     }
   };
@@ -119,6 +132,17 @@ const Settings = () => {
   };
 
   const handleModeChange = async (value: string) => {
+    // Check if user is leaving 7-day-starter before completing it
+    if (progress?.mode === '7-day-starter' && value !== '7-day-starter' && !progress?.has_completed_onboarding) {
+      setPendingMode(value);
+      setShowExitStarterDialog(true);
+      return;
+    }
+    
+    await applyModeChange(value);
+  };
+
+  const applyModeChange = async (value: string) => {
     try {
       await updateProgress({
         mode: value,
@@ -129,6 +153,14 @@ const Settings = () => {
       console.error("Error updating mode:", error);
       toast.error("Failed to update mode");
     }
+  };
+
+  const handleConfirmExitStarter = async () => {
+    if (pendingMode) {
+      await applyModeChange(pendingMode);
+    }
+    setShowExitStarterDialog(false);
+    setPendingMode(null);
   };
 
   return (
@@ -272,6 +304,26 @@ const Settings = () => {
         </Card>
 
       </div>
+
+      {/* Exit 7-Day Starter Confirmation Dialog */}
+      <AlertDialog open={showExitStarterDialog} onOpenChange={setShowExitStarterDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to exit the 7-Day Starter?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You haven't completed the 7-day challenge yet. Switching modes now will skip the remaining days of your starter journey.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingMode(null)}>
+              Stay in 7-Day Starter
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmExitStarter}>
+              Yes, switch mode
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

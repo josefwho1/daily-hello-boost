@@ -115,31 +115,44 @@ export default function Onboarding() {
 
       if (signUpError) throw signUpError;
 
-      // Wait for user to be set, then update progress and profile
+      // Wait for user to be set, then create profile and progress
       if (data.user) {
-        // Small delay to ensure profile is created
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Small delay to let auth complete
+        await new Promise(resolve => setTimeout(resolve, 300));
         
-        // Update timezone in profile
-        await supabase
+        // First, CREATE the profile (upsert to handle edge cases)
+        const { error: profileError } = await supabase
           .from('profiles')
-          .update({ timezone_preference: selectedTimezone })
-          .eq('id', data.user.id);
+          .upsert({
+            id: data.user.id,
+            username: validated.name,
+            timezone_preference: selectedTimezone
+          }, { onConflict: 'id' });
 
-        // Update user progress with onboarding data
-        // Note: has_completed_onboarding stays FALSE until 7-day challenge is done
-        await supabase
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          throw new Error('Failed to create profile');
+        }
+
+        // Then CREATE user progress with onboarding data
+        const { error: progressError } = await supabase
           .from('user_progress')
-          .update({
+          .upsert({
+            user_id: data.user.id,
             why_here: selectedReasons.join(','),
             is_onboarding_week: true,
             onboarding_week_start: new Date().toISOString().split('T')[0],
             current_day: 1,
-            mode: 'daily', // Default mode until post-7-day selection
-            target_hellos_per_week: 7, // During onboarding, aim for all 7
-            has_completed_onboarding: false // Will be set true after 7-day challenge
-          })
-          .eq('user_id', data.user.id);
+            current_streak: 0,
+            mode: '7-day-starter', // Start with 7-day starter mode
+            target_hellos_per_week: 7,
+            has_completed_onboarding: false
+          }, { onConflict: 'user_id' });
+
+        if (progressError) {
+          console.error('Error creating progress:', progressError);
+          throw new Error('Failed to create progress');
+        }
       }
 
       toast({
