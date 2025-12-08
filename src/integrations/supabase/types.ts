@@ -209,6 +209,7 @@ export type Database = {
           user_id: string
           username: string | null
           week_start_date: string | null
+          weekly_goal_achieved_this_week: boolean | null
           weekly_streak: number | null
           why_here: string | null
         }
@@ -237,6 +238,7 @@ export type Database = {
           user_id: string
           username?: string | null
           week_start_date?: string | null
+          weekly_goal_achieved_this_week?: boolean | null
           weekly_streak?: number | null
           why_here?: string | null
         }
@@ -265,6 +267,7 @@ export type Database = {
           user_id?: string
           username?: string | null
           week_start_date?: string | null
+          weekly_goal_achieved_this_week?: boolean | null
           weekly_streak?: number | null
           why_here?: string | null
         }

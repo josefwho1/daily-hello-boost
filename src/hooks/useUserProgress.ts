@@ -24,6 +24,7 @@ export interface UserProgress {
   save_offered_for_date?: string;
   has_received_first_orb?: boolean;
   total_hellos?: number;
+  weekly_goal_achieved_this_week?: boolean;
 }
 
 export const useUserProgress = () => {
