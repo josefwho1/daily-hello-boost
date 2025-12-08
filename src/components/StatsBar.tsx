@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
-import { Flame, Trophy, Hand, Sparkles } from "lucide-react";
+import { Flame, Trophy, Hand } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import orbImage from "@/assets/orb.webp";
 
 interface StatsBarProps {
   hellosThisWeek: number;
@@ -93,7 +94,7 @@ export const StatsBar = ({
 
         {/* Orbs - ALWAYS visible */}
         <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20">
-          <Sparkles className="w-5 h-5 text-primary flex-shrink-0" />
+          <img src={orbImage} alt="Orb" className="w-5 h-5 flex-shrink-0 object-contain" />
           <div>
             <p className="text-xs text-muted-foreground">Orbs</p>
             <p className="font-bold text-foreground">{orbs} / 3</p>
