@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import logo from '@/assets/one-hello-logo-sticker.png';
+import logo from '@/assets/one-hello-logo-tagline.svg';
 import remiMascot from '@/assets/remi-waving.webp';
 
 const Auth = () => {

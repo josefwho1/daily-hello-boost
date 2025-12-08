@@ -20,7 +20,7 @@ import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
 import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
-import logoSticker from "@/assets/one-hello-logo-sticker.png";
+import logoSticker from "@/assets/one-hello-logo-tagline.svg";
 import remiMascot from "@/assets/remi-waving.webp";
 import { Sparkles } from "lucide-react";
 
