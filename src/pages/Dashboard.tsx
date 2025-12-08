@@ -151,6 +151,7 @@ export default function Dashboard() {
             week_start_date: weekStartStr,
             weekly_streak: newWeeklyStreak,
             longest_streak: newLongestStreak,
+            weekly_goal_achieved_this_week: false,
           });
 
           if (targetMet) {
@@ -163,6 +164,7 @@ export default function Dashboard() {
       setWeeklyResetDone(true);
       updateProgress({
         week_start_date: weekStartStr,
+        weekly_goal_achieved_this_week: false,
       });
     }
   }, [progress, progressLoading, weeklyResetDone]);
@@ -309,16 +311,18 @@ export default function Dashboard() {
         updates.last_weekly_challenge_date = today;
       }
 
-      // Check if user just hit 5/5 in Connect mode - increment weekly streak
+      // Check if user just hit 5/5 in Connect mode - increment weekly streak (once per week only)
       const mode = progress?.mode || 'daily';
       const isConnectMode = mode === 'connect' && !progress?.is_onboarding_week;
-      const justHitWeeklyGoal = isConnectMode && previousHellosThisWeek < 5 && newHellosThisWeek >= 5;
+      const alreadyAchievedThisWeek = (progress as any)?.weekly_goal_achieved_this_week === true;
+      const justHitWeeklyGoal = isConnectMode && newHellosThisWeek >= 5 && !alreadyAchievedThisWeek;
       
       if (justHitWeeklyGoal) {
         const currentWeeklyStreak = progress?.weekly_streak || 0;
         const newWeeklyStreak = currentWeeklyStreak + 1;
         updates.weekly_streak = newWeeklyStreak;
         updates.longest_streak = Math.max(newWeeklyStreak, progress?.longest_streak || 0);
+        updates.weekly_goal_achieved_this_week = true;
         setNewWeeklyStreakValue(newWeeklyStreak);
       }
 
