@@ -37,7 +37,7 @@ export const StatsBar = ({
   const progressValue = effectivelyOnboarding 
     ? onboardingCompleted 
     : isDaily 
-      ? Math.min(hellosToday, 1) // Daily mode: show 0/1 or 1/1
+      ? hellosToday // Daily mode: show actual count (can exceed 1)
       : hellosThisWeek; // Connect mode: show X/5
   
   const progressMax = effectivelyOnboarding ? 7 : isDaily ? 1 : 5;
