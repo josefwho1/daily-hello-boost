@@ -16,6 +16,7 @@ import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog"
 import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
 import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingCompleteMilestoneDialog";
 import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompleteDialog";
+import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationDialog";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
@@ -46,6 +47,8 @@ export default function Dashboard() {
   const [showMilestone, setShowMilestone] = useState(false);
   const [showWeeklyChallengeComplete, setShowWeeklyChallengeComplete] = useState(false);
   const [weeklyChallengeOrbAwarded, setWeeklyChallengeOrbAwarded] = useState(false);
+  const [showWeeklyGoalCelebration, setShowWeeklyGoalCelebration] = useState(false);
+  const [newWeeklyStreakValue, setNewWeeklyStreakValue] = useState(1);
 
   useEffect(() => {
     if (user) {
@@ -264,7 +267,8 @@ export default function Dashboard() {
     });
     
     if (result) {
-      const newHellosThisWeek = (progress?.hellos_this_week || 0) + 1;
+      const previousHellosThisWeek = progress?.hellos_this_week || 0;
+      const newHellosThisWeek = previousHellosThisWeek + 1;
       const newTotalHellos = (progress?.total_hellos || logs.length) + 1;
       const today = format(new Date(), 'yyyy-MM-dd');
 
@@ -292,11 +296,27 @@ export default function Dashboard() {
         updates.last_weekly_challenge_date = today;
       }
 
+      // Check if user just hit 5/5 in Connect mode - increment weekly streak
+      const mode = progress?.mode || 'daily';
+      const isConnectMode = mode === 'connect' && !progress?.is_onboarding_week;
+      const justHitWeeklyGoal = isConnectMode && previousHellosThisWeek < 5 && newHellosThisWeek >= 5;
+      
+      if (justHitWeeklyGoal) {
+        const currentWeeklyStreak = progress?.weekly_streak || 0;
+        const newWeeklyStreak = currentWeeklyStreak + 1;
+        updates.weekly_streak = newWeeklyStreak;
+        updates.longest_streak = Math.max(newWeeklyStreak, progress?.longest_streak || 0);
+        setNewWeeklyStreakValue(newWeeklyStreak);
+      }
+
       await updateProgress(updates);
 
       // Show celebration for onboarding challenges (only in 7-day-starter mode)
       if (isOnboardingChallenge && progress?.is_onboarding_week && progress?.mode === '7-day-starter') {
         setShowCelebration(true);
+      } else if (justHitWeeklyGoal) {
+        // Show weekly goal celebration in Connect mode
+        setShowWeeklyGoalCelebration(true);
       } else if (isWeeklyChallenge) {
         // Show weekly challenge completion celebration
         setWeeklyChallengeOrbAwarded(orbAwardedThisTime);
@@ -593,6 +613,12 @@ export default function Dashboard() {
         open={showWeeklyChallengeComplete}
         onContinue={() => setShowWeeklyChallengeComplete(false)}
         orbsAwarded={weeklyChallengeOrbAwarded}
+      />
+
+      <WeeklyGoalCelebrationDialog
+        open={showWeeklyGoalCelebration}
+        onContinue={() => setShowWeeklyGoalCelebration(false)}
+        newStreak={newWeeklyStreakValue}
       />
     </div>
   );
