@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { ArrowLeft } from 'lucide-react';
-import logo from '@/assets/one-hello-logo-sticker.png';
+import logo from '@/assets/one-hello-logo-tagline.svg';
 
 const signinSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }),
