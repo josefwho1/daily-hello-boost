@@ -10,17 +10,17 @@ export interface RankInfo {
 }
 
 export const RANKS: RankInfo[] = [
-  { name: "New Friend", minLevel: 1, maxLevel: 9, xpThreshold: 0, color: "#8B5CF6", emoji: "👋" },
-  { name: "Hello Rookie", minLevel: 10, maxLevel: 19, xpThreshold: 2000, color: "#3B82F6", emoji: "🌱" },
-  { name: "Social Caterpillar", minLevel: 20, maxLevel: 29, xpThreshold: 10000, color: "#10B981", emoji: "🐛" },
-  { name: "Social Butterfly", minLevel: 30, maxLevel: 39, xpThreshold: 30000, color: "#F59E0B", emoji: "🦋" },
-  { name: "Social Eagle", minLevel: 40, maxLevel: 49, xpThreshold: 75000, color: "#EF4444", emoji: "🦅" },
-  { name: "Kindaroo", minLevel: 50, maxLevel: 59, xpThreshold: 150000, color: "#EC4899", emoji: "🦘" },
-  { name: "Cooala", minLevel: 60, maxLevel: 69, xpThreshold: 350000, color: "#8B5CF6", emoji: "🐨" },
-  { name: "Legend Status", minLevel: 70, maxLevel: 79, xpThreshold: 700000, color: "#F97316", emoji: "🏆" },
-  { name: "Hello Hero", minLevel: 80, maxLevel: 89, xpThreshold: 1500000, color: "#14B8A6", emoji: "🦸" },
-  { name: "World (Re)Connector", minLevel: 90, maxLevel: 99, xpThreshold: 3500000, color: "#6366F1", emoji: "🌍" },
-  { name: "One Hello Immortal", minLevel: 100, maxLevel: 100, xpThreshold: 7500000, color: "#FFD700", emoji: "✨" },
+  { name: "New Friend", minLevel: 1, maxLevel: 9, xpThreshold: 0, color: "#FF6B35", emoji: "👋" },
+  { name: "Hello Rookie", minLevel: 10, maxLevel: 19, xpThreshold: 2000, color: "#FF6B35", emoji: "🌱" },
+  { name: "Kindaroo", minLevel: 20, maxLevel: 29, xpThreshold: 10000, color: "#FF6B35", emoji: "🦘" },
+  { name: "Social Butterfly", minLevel: 30, maxLevel: 39, xpThreshold: 30000, color: "#FF6B35", emoji: "🦋" },
+  { name: "Social Eagle", minLevel: 40, maxLevel: 49, xpThreshold: 75000, color: "#FF6B35", emoji: "🦅" },
+  { name: "Cooala", minLevel: 50, maxLevel: 59, xpThreshold: 150000, color: "#FF6B35", emoji: "🐨" },
+  { name: "Brave Heart", minLevel: 60, maxLevel: 69, xpThreshold: 350000, color: "#FF6B35", emoji: "💪" },
+  { name: "Hello Hero", minLevel: 70, maxLevel: 79, xpThreshold: 700000, color: "#FF6B35", emoji: "🦸" },
+  { name: "World Connecter", minLevel: 80, maxLevel: 89, xpThreshold: 1500000, color: "#FF6B35", emoji: "🌍" },
+  { name: "Legend Status", minLevel: 90, maxLevel: 99, xpThreshold: 3500000, color: "#FF6B35", emoji: "🏆" },
+  { name: "One Hello Immortal", minLevel: 100, maxLevel: 100, xpThreshold: 7500000, color: "#FF6B35", emoji: "✨" },
 ];
 
 // XP thresholds for each level (cumulative)
