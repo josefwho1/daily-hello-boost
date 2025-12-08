@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import remiMascot from "@/assets/remi-waving.png";
+import remiMascot from "@/assets/remi-waving.webp";
 
 interface LogHelloDialogProps {
   open: boolean;

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronRight, Lock, Sparkles, Globe, Lightbulb, Heart, Briefcase } from "lucide-react";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { useUserProgress } from "@/hooks/useUserProgress";
-import remiMascot from "@/assets/remi-waving.png";
+import remiMascot from "@/assets/remi-waving.webp";
 
 // Hello in 50 languages
 const helloLanguages = [

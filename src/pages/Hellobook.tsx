@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Hand, SmilePlus, Meh, Frown } from "lucide-react";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
-import remiMascot from "@/assets/remi-waving.png";
+import remiMascot from "@/assets/remi-waving.webp";
 
 const Hellobook = () => {
   const { logs, loading } = useHelloLogs();
