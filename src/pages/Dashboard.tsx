@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
-import { LogHelloDialog } from "@/components/LogHelloDialog";
+import { LogHelloDialog, HelloType } from "@/components/LogHelloDialog";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
 import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
@@ -33,6 +33,7 @@ export default function Dashboard() {
   
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
+  const [selectedHelloType, setSelectedHelloType] = useState<HelloType>('regular_hello');
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
   const [username, setUsername] = useState("");
   
@@ -272,13 +273,13 @@ export default function Dashboard() {
     }
   }, [logs]);
 
-  const handleLogHello = async (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative' }) => {
+  const handleLogHello = async (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number }) => {
     const isFirstHelloEver = logs.length === 0 && !progress?.has_received_first_orb;
     const isOnboardingChallenge = onboardingChallenges.some(c => c.title === selectedChallenge);
     
     const result = await addLog({
       ...data,
-      hello_type: selectedChallenge || 'Standard Hello'
+      hello_type: selectedHelloType
     });
     
     if (result) {
@@ -288,7 +289,7 @@ export default function Dashboard() {
       const today = format(new Date(), 'yyyy-MM-dd');
 
       // Check if this is a weekly challenge completion - award orb (max 3)
-      const isWeeklyChallenge = selectedChallenge === "Weekly Challenge";
+      const isWeeklyChallenge = selectedHelloType === "remis_challenge";
       const currentOrbs = progress?.orbs || 0;
       const lastChallengeDate = progress?.last_weekly_challenge_date;
       const thisWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -403,14 +404,13 @@ export default function Dashboard() {
 
   // Check if today's hello is completed
   const isTodaysHelloComplete = () => {
-    const todaysHello = getTodaysHello();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     return logs.some(log => {
       const logDate = new Date(log.created_at);
       logDate.setHours(0, 0, 0, 0);
-      return logDate.getTime() === today.getTime() && log.hello_type === todaysHello.title;
+      return logDate.getTime() === today.getTime() && log.hello_type === 'todays_hello';
     });
   };
 
@@ -418,7 +418,7 @@ export default function Dashboard() {
   const isWeeklyChallengeComplete = () => {
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 }); // Sunday
     return logs.some(log => {
-      if (log.hello_type !== "Weekly Challenge") return false;
+      if (log.hello_type !== "remis_challenge") return false;
       const logDate = new Date(log.created_at);
       return logDate >= weekStart;
     });
@@ -478,7 +478,8 @@ export default function Dashboard() {
           <div className="mt-6">
             <LogHelloButton 
               onClick={() => {
-                setSelectedChallenge('Standard Hello');
+                setSelectedChallenge(null);
+                setSelectedHelloType('regular_hello');
                 setShowLogDialog(true);
               }}
             />
@@ -524,6 +525,7 @@ export default function Dashboard() {
                     hasCompletedToday={todaysChallengeCompleted}
                     onComplete={() => {
                       setSelectedChallenge(challenge.title);
+                      setSelectedHelloType('regular_hello'); // Onboarding challenges use regular_hello type
                       setSelectedDayNumber(dayNumber);
                       setShowLogDialog(true);
                     }}
@@ -541,6 +543,7 @@ export default function Dashboard() {
               isCompleted={isTodaysHelloComplete()}
               onComplete={() => {
                 setSelectedChallenge(todaysHello.title);
+                setSelectedHelloType('todays_hello');
                 setShowLogDialog(true);
               }}
             />
@@ -552,7 +555,8 @@ export default function Dashboard() {
               isCompleted={isWeeklyChallengeComplete()}
               orbsFull={(progress.orbs || 0) >= 3}
               onComplete={() => {
-                setSelectedChallenge("Weekly Challenge");
+                setSelectedChallenge(thisWeeksChallenge.title);
+                setSelectedHelloType('remis_challenge');
                 setShowLogDialog(true);
               }}
             />
@@ -566,10 +570,14 @@ export default function Dashboard() {
         open={showLogDialog}
         onOpenChange={(open) => {
           setShowLogDialog(open);
-          if (!open) setSelectedChallenge(null);
+          if (!open) {
+            setSelectedChallenge(null);
+            setSelectedHelloType('regular_hello');
+          }
         }}
         onLog={handleLogHello}
         challengeTitle={selectedChallenge}
+        helloType={selectedHelloType}
       />
 
       {todaysOnboardingChallenge && (

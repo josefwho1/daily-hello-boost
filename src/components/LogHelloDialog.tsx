@@ -7,18 +7,35 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import remiMascot from "@/assets/remi-waving.webp";
 
+export type HelloType = 'regular_hello' | 'todays_hello' | 'remis_challenge';
+
 interface LogHelloDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onLog: (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative' }) => Promise<void>;
+  onLog: (data: { 
+    name?: string; 
+    notes?: string; 
+    rating?: 'positive' | 'neutral' | 'negative';
+    difficulty_rating?: number;
+  }) => Promise<void>;
   challengeTitle?: string | null;
+  helloType?: HelloType;
 }
 
-export const LogHelloDialog = ({ open, onOpenChange, onLog, challengeTitle }: LogHelloDialogProps) => {
+export const LogHelloDialog = ({ 
+  open, 
+  onOpenChange, 
+  onLog, 
+  challengeTitle,
+  helloType = 'regular_hello'
+}: LogHelloDialogProps) => {
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
   const [rating, setRating] = useState<'positive' | 'neutral' | 'negative' | ''>("");
+  const [difficultyRating, setDifficultyRating] = useState<number | null>(null);
   const [isLogging, setIsLogging] = useState(false);
+
+  const showDifficultyRating = helloType === 'todays_hello' || helloType === 'remis_challenge';
 
   const dialogTitle = challengeTitle 
     ? `Complete: ${challengeTitle}` 
@@ -30,11 +47,13 @@ export const LogHelloDialog = ({ open, onOpenChange, onLog, challengeTitle }: Lo
       await onLog({
         name: name || undefined,
         notes: notes || undefined,
-        rating: rating || undefined
+        rating: rating || undefined,
+        difficulty_rating: difficultyRating || undefined
       });
       setName("");
       setNotes("");
       setRating("");
+      setDifficultyRating(null);
       onOpenChange(false);
     } finally {
       setIsLogging(false);
@@ -94,6 +113,41 @@ export const LogHelloDialog = ({ open, onOpenChange, onLog, challengeTitle }: Lo
               </div>
             </RadioGroup>
           </div>
+
+          {showDifficultyRating && (
+            <div className="space-y-2">
+              <Label>Difficulty (optional)</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={difficultyRating === 1 ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setDifficultyRating(difficultyRating === 1 ? null : 1)}
+                  className="flex-1"
+                >
+                  😌 Easy
+                </Button>
+                <Button
+                  type="button"
+                  variant={difficultyRating === 2 ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setDifficultyRating(difficultyRating === 2 ? null : 2)}
+                  className="flex-1"
+                >
+                  👍 Just right
+                </Button>
+                <Button
+                  type="button"
+                  variant={difficultyRating === 3 ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setDifficultyRating(difficultyRating === 3 ? null : 3)}
+                  className="flex-1"
+                >
+                  💪 Hard
+                </Button>
+              </div>
+            </div>
+          )}
 
           <Button 
             onClick={handleSubmit} 

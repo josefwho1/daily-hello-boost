@@ -91,6 +91,7 @@ export type Database = {
       hello_logs: {
         Row: {
           created_at: string
+          difficulty_rating: number | null
           hello_type: string | null
           id: string
           name: string | null
@@ -101,6 +102,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          difficulty_rating?: number | null
           hello_type?: string | null
           id?: string
           name?: string | null
@@ -111,6 +113,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          difficulty_rating?: number | null
           hello_type?: string | null
           id?: string
           name?: string | null

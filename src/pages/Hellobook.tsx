@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Hand, SmilePlus, Meh, Frown } from "lucide-react";
+import { Search, Hand, SmilePlus, Meh, Frown, Sparkles, Trophy, MessageCircle } from "lucide-react";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import remiMascot from "@/assets/remi-waving.webp";
@@ -36,6 +36,50 @@ const Hellobook = () => {
       case 'positive': return <SmilePlus className="w-4 h-4 text-success" />;
       case 'neutral': return <Meh className="w-4 h-4 text-yellow-500" />;
       case 'negative': return <Frown className="w-4 h-4 text-destructive" />;
+      default: return null;
+    }
+  };
+
+  // Get tag display info
+  const getTagInfo = (helloType: string | null) => {
+    switch (helloType) {
+      case 'todays_hello':
+        return { 
+          label: "Today's Hello", 
+          className: "bg-primary/10 text-primary border-primary/20",
+          icon: <Sparkles className="w-3 h-3" />
+        };
+      case 'remis_challenge':
+        return { 
+          label: "Remi's Challenge", 
+          className: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+          icon: <Trophy className="w-3 h-3" />
+        };
+      case 'regular_hello':
+        return { 
+          label: "Regular Hello", 
+          className: "bg-muted text-muted-foreground border-border",
+          icon: <MessageCircle className="w-3 h-3" />
+        };
+      default:
+        // Legacy support for old hello_type values
+        if (helloType && helloType !== 'Standard Hello') {
+          return { 
+            label: helloType, 
+            className: "bg-muted text-muted-foreground border-border",
+            icon: null
+          };
+        }
+        return null;
+    }
+  };
+
+  // Get difficulty label
+  const getDifficultyLabel = (difficultyRating: number | null) => {
+    switch (difficultyRating) {
+      case 1: return { label: "Easy", emoji: "😌" };
+      case 2: return { label: "Just right", emoji: "👍" };
+      case 3: return { label: "Hard", emoji: "💪" };
       default: return null;
     }
   };
@@ -81,53 +125,66 @@ const Hellobook = () => {
           </Card>
         ) : (
           <div className="space-y-3">
-            {filteredLogs.map((log) => (
-              <Card 
-                key={log.id} 
-                className="p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in"
-              >
-                <div className="flex items-start gap-3">
-                  {/* Avatar */}
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Hand className="text-primary w-6 h-6" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h3 className="font-semibold text-foreground truncate">
-                          {log.name || "Hello"}
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {formatTimestamp(log.created_at)}
-                        </p>
-                      </div>
-                      
-                      {/* Remi reaction */}
-                      <div className="flex items-center gap-1">
-                        {getRatingIcon(log.rating)}
-                        <span className="text-lg">{getRemiEmoji(log.rating)}</span>
-                      </div>
+            {filteredLogs.map((log) => {
+              const tagInfo = getTagInfo(log.hello_type);
+              const difficultyInfo = getDifficultyLabel(log.difficulty_rating);
+              
+              return (
+                <Card 
+                  key={log.id} 
+                  className="p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in"
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Avatar */}
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Hand className="text-primary w-6 h-6" />
                     </div>
 
-                    {/* Notes */}
-                    {log.notes && (
-                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                        {log.notes}
-                      </p>
-                    )}
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h3 className="font-semibold text-foreground truncate">
+                            {log.name || "Hello"}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            {formatTimestamp(log.created_at)}
+                          </p>
+                        </div>
+                        
+                        {/* Remi reaction */}
+                        <div className="flex items-center gap-1">
+                          {getRatingIcon(log.rating)}
+                          <span className="text-lg">{getRemiEmoji(log.rating)}</span>
+                        </div>
+                      </div>
 
-                    {/* Type badge */}
-                    {log.hello_type && log.hello_type !== 'Standard Hello' && (
-                      <Badge variant="secondary" className="mt-2 text-xs">
-                        {log.hello_type}
-                      </Badge>
-                    )}
+                      {/* Notes */}
+                      {log.notes && (
+                        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                          {log.notes}
+                        </p>
+                      )}
+
+                      {/* Tags and Difficulty */}
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
+                        {tagInfo && (
+                          <Badge variant="outline" className={`text-xs ${tagInfo.className}`}>
+                            {tagInfo.icon && <span className="mr-1">{tagInfo.icon}</span>}
+                            {tagInfo.label}
+                          </Badge>
+                        )}
+                        {difficultyInfo && (
+                          <Badge variant="outline" className="text-xs bg-secondary/50 text-secondary-foreground border-secondary">
+                            {difficultyInfo.emoji} {difficultyInfo.label}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
 
