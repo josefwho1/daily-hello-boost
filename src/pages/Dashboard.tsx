@@ -95,8 +95,10 @@ export default function Dashboard() {
   const completedDaysCount = getCompletedDaysCount();
   const allOnboardingComplete = completedDaysCount >= 7;
 
-  // Show day reveal dialog when a new day unlocks - only once per day
+  // Show day reveal dialog when a new day unlocks - only once per day (7-day starter only)
   useEffect(() => {
+    // Only show in 7-day-starter mode during onboarding week
+    if (progress?.mode !== '7-day-starter') return;
     if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return;
     if (progressLoading || logsLoading) return;
     if (!user?.id) return;
@@ -110,7 +112,7 @@ export default function Dashboard() {
       setShowDayReveal(true);
       localStorage.setItem(revealKey, 'true');
     }
-  }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progressLoading, logsLoading, user?.id]);
+  }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode, progressLoading, logsLoading, user?.id]);
 
   // Weekly reset logic - check for missed weekly goal (Connect Mode)
   useEffect(() => {
@@ -292,8 +294,8 @@ export default function Dashboard() {
 
       await updateProgress(updates);
 
-      // Show celebration for onboarding challenges
-      if (isOnboardingChallenge && progress?.is_onboarding_week) {
+      // Show celebration for onboarding challenges (only in 7-day-starter mode)
+      if (isOnboardingChallenge && progress?.is_onboarding_week && progress?.mode === '7-day-starter') {
         setShowCelebration(true);
       } else if (isWeeklyChallenge) {
         // Show weekly challenge completion celebration
@@ -338,13 +340,15 @@ export default function Dashboard() {
     setShowComeBackTomorrow(true);
   };
 
-  // Check if all 7 onboarding challenges are complete - show mode selection
+  // Check if all 7 onboarding challenges are complete - show mode selection (7-day starter only)
   useEffect(() => {
+    // Only trigger in 7-day-starter mode
+    if (progress?.mode !== '7-day-starter') return;
     if (allOnboardingComplete && progress?.is_onboarding_week && !progress?.has_completed_onboarding) {
       // Show milestone first, then mode selection
       setShowMilestone(true);
     }
-  }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding]);
+  }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode]);
 
   const handleModeSelect = async (mode: 'daily' | 'connect') => {
     const target = mode === 'daily' ? 7 : 5;
