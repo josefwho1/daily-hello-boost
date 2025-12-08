@@ -146,8 +146,6 @@ const Profile = () => {
   };
 
   const handleModeClick = (value: string) => {
-    if (value === currentMode) return; // Already selected
-    
     setPendingMode(value);
     setShowModeChangeDialog(true);
   };
@@ -156,13 +154,30 @@ const Profile = () => {
     if (!pendingMode) return;
     
     try {
-      await updateProgress({
-        mode: pendingMode,
-        target_hellos_per_week: getTargetFromMode(pendingMode),
-        // If switching away from 7-day-starter, mark as completed
-        ...(pendingMode !== '7-day-starter' && { has_completed_onboarding: true, is_onboarding_week: false })
-      });
-      toast.success("Challenge mode updated successfully");
+      const today = new Date().toISOString().split('T')[0];
+      
+      if (pendingMode === '7-day-starter') {
+        // Reset to 7-day starter mode - restart onboarding
+        await updateProgress({
+          mode: pendingMode,
+          target_hellos_per_week: 7,
+          has_completed_onboarding: false,
+          is_onboarding_week: true,
+          onboarding_week_start: today,
+          hellos_this_week: 0,
+          daily_streak: 0,
+        });
+        toast.success("7-Day Starter challenge restarted!");
+      } else {
+        // Switching to daily or connect mode
+        await updateProgress({
+          mode: pendingMode,
+          target_hellos_per_week: getTargetFromMode(pendingMode),
+          has_completed_onboarding: true,
+          is_onboarding_week: false,
+        });
+        toast.success("Challenge mode updated successfully");
+      }
     } catch (error) {
       console.error("Error updating mode:", error);
       toast.error("Failed to update mode");
@@ -343,9 +358,17 @@ const Profile = () => {
       <Dialog open={showModeChangeDialog} onOpenChange={setShowModeChangeDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Are you sure you want to change modes?</DialogTitle>
+            <DialogTitle>
+              {pendingMode === '7-day-starter' 
+                ? "Restart 7-Day Starter Challenge?" 
+                : "Are you sure you want to change modes?"}
+            </DialogTitle>
             <DialogDescription>
-              {pendingMode !== '7-day-starter' && currentMode === '7-day-starter' && !progress?.has_completed_onboarding ? (
+              {pendingMode === '7-day-starter' ? (
+                <span>
+                  This will restart your 7-day challenge from Day 1. Your daily streak will reset, but your lifetime hellos and orbs will be kept.
+                </span>
+              ) : pendingMode !== '7-day-starter' && currentMode === '7-day-starter' && !progress?.has_completed_onboarding ? (
                 <span>
                   You haven't completed the 7-day challenge yet. Switching modes now will skip the remaining days of your starter journey.
                 </span>
@@ -361,7 +384,7 @@ const Profile = () => {
               No
             </Button>
             <Button onClick={handleConfirmModeChange}>
-              Yes
+              {pendingMode === '7-day-starter' ? "Restart" : "Yes"}
             </Button>
           </DialogFooter>
         </DialogContent>
