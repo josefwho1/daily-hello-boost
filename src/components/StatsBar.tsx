@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
-import { Flame, Trophy, Hand } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import orbImage from "@/assets/orb.webp";
+import remiWaving from "@/assets/remi-waving.webp";
+import remiStreak from "@/assets/remi-streak.webp";
 
 interface StatsBarProps {
   hellosToday: number;
@@ -69,7 +70,7 @@ export const StatsBar = ({
       {/* Daily Streak - visible during onboarding AND in Daily mode only */}
       {(effectivelyOnboarding || isDaily) && (
         <div className="flex items-center gap-4 p-6 rounded-xl bg-primary/10">
-          <Flame className="w-10 h-10 text-primary flex-shrink-0" />
+          <img src={remiStreak} alt="Streak" className="w-12 h-12 flex-shrink-0 object-contain" />
           <div>
             <p className="text-sm text-muted-foreground">Daily Streak</p>
             <p className="text-2xl font-bold text-foreground">{dailyStreak} day{dailyStreak !== 1 ? 's' : ''}</p>
@@ -80,7 +81,7 @@ export const StatsBar = ({
       {/* Weekly Streak - shown in Connect mode only (not during onboarding) */}
       {!effectivelyOnboarding && !isDaily && (
         <div className="flex items-center gap-4 p-6 rounded-xl bg-accent/10">
-          <Trophy className="w-10 h-10 text-accent flex-shrink-0" />
+          <img src={remiStreak} alt="Streak" className="w-12 h-12 flex-shrink-0 object-contain" />
           <div>
             <p className="text-sm text-muted-foreground">Weekly Streak</p>
             <p className="text-2xl font-bold text-foreground">{weeklyStreak} week{weeklyStreak !== 1 ? 's' : ''}</p>
@@ -92,7 +93,7 @@ export const StatsBar = ({
       <div className="grid grid-cols-2 gap-3">
         {/* Lifetime Hellos - ALWAYS visible */}
         <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/10">
-          <Hand className="w-5 h-5 text-primary flex-shrink-0" />
+          <img src={remiWaving} alt="Lifetime Hellos" className="w-8 h-8 flex-shrink-0 object-contain" />
           <div>
             <p className="text-xs text-muted-foreground">Lifetime Hellos</p>
             <p className="font-bold text-foreground">{lifetimeHellos}</p>

@@ -415,9 +415,8 @@ export default function Dashboard() {
           <img src={logoSticker} alt="One Hello" className="h-32" />
         </div>
 
-        {/* Greeting with Remi */}
-        <div className="flex items-center gap-3 mb-6">
-          <img src={remiMascot} alt="Remi" className="w-12 h-12 object-contain" />
+        {/* Greeting - Centered */}
+        <div className="text-center mb-6">
           <p className="text-lg font-medium text-foreground">
             Hello, <span className="text-primary">{username}</span>! 👋
           </p>
