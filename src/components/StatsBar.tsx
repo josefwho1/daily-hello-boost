@@ -65,30 +65,31 @@ export const StatsBar = ({
         <Progress value={progressPercent} className="h-3 [&>div]:bg-[#ff6f3b]" />
       </div>
 
-      {/* Stats Grid */}
+      {/* Primary Streak - Emphasized */}
+      {/* Daily Streak - visible during onboarding AND in Daily mode only */}
+      {(effectivelyOnboarding || isDaily) && (
+        <div className="flex items-center gap-4 p-6 rounded-xl bg-primary/10">
+          <Flame className="w-10 h-10 text-primary flex-shrink-0" />
+          <div>
+            <p className="text-sm text-muted-foreground">Daily Streak</p>
+            <p className="text-2xl font-bold text-foreground">{dailyStreak} day{dailyStreak !== 1 ? 's' : ''}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Weekly Streak - shown in Connect mode only (not during onboarding) */}
+      {!effectivelyOnboarding && !isDaily && (
+        <div className="flex items-center gap-4 p-6 rounded-xl bg-accent/10">
+          <Trophy className="w-10 h-10 text-accent flex-shrink-0" />
+          <div>
+            <p className="text-sm text-muted-foreground">Weekly Streak</p>
+            <p className="text-2xl font-bold text-foreground">{weeklyStreak} week{weeklyStreak !== 1 ? 's' : ''}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Stats Grid - Smaller items */}
       <div className="grid grid-cols-2 gap-3">
-        {/* Daily Streak - visible during onboarding AND in Daily mode only */}
-        {(effectivelyOnboarding || isDaily) && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/10">
-            <Flame className="w-5 h-5 text-primary flex-shrink-0" />
-            <div>
-              <p className="text-xs text-muted-foreground">Daily Streak</p>
-              <p className="font-bold text-foreground">{dailyStreak} day{dailyStreak !== 1 ? 's' : ''}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Weekly Streak - shown in Connect mode only (not during onboarding) */}
-        {!effectivelyOnboarding && !isDaily && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-accent/10">
-            <Trophy className="w-5 h-5 text-accent flex-shrink-0" />
-            <div>
-              <p className="text-xs text-muted-foreground">Weekly Streak</p>
-              <p className="font-bold text-foreground">{weeklyStreak} week{weeklyStreak !== 1 ? 's' : ''}</p>
-            </div>
-          </div>
-        )}
-
         {/* Lifetime Hellos - ALWAYS visible */}
         <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/10">
           <Hand className="w-5 h-5 text-primary flex-shrink-0" />
