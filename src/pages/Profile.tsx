@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { LogOut, Clock, User, Pencil, Check, X, Flame, Calendar, Sparkles, Target } from "lucide-react";
+import { XpProgressBar } from "@/components/XpProgressBar";
+import { LogOut, Clock, User, Pencil, Check, X, Flame, Calendar, Sparkles, Target, Hand } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -260,6 +261,23 @@ const Profile = () => {
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </div>
+        </Card>
+
+        {/* XP & Level Progress */}
+        <div className="mb-4">
+          <XpProgressBar
+            totalXp={progress?.total_xp || 0}
+            currentLevel={progress?.current_level || 1}
+          />
+        </div>
+
+        {/* Lifetime Stats */}
+        <Card className="p-5 mb-4 rounded-2xl bg-gradient-to-br from-[#FFF4F5] to-white border border-[#FF6B35]/10">
+          <div className="flex items-center gap-3 mb-3">
+            <Hand className="text-[#FF6B35] w-5 h-5" />
+            <h3 className="font-semibold text-[#502a13]">Lifetime Hellos</h3>
+          </div>
+          <p className="text-3xl font-bold text-[#FF6B35]">{progress?.total_hellos || 0}</p>
         </Card>
 
         {/* Challenge Mode - 3 Buttons */}

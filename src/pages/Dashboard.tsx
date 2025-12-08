@@ -11,15 +11,18 @@ import { UseOrbDialog } from "@/components/UseOrbDialog";
 import { TodaysHelloCard } from "@/components/TodaysHelloCard";
 import { RemisWeeklyChallengeCard } from "@/components/RemisWeeklyChallengeCard";
 import { StatsBar } from "@/components/StatsBar";
+import { TopStatsBar } from "@/components/TopStatsBar";
 import { LogHelloButton } from "@/components/LogHelloButton";
 import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
 import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
 import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingCompleteMilestoneDialog";
 import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompleteDialog";
 import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationDialog";
+import { LevelUpCelebrationDialog } from "@/components/LevelUpCelebrationDialog";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
+import { calculateHelloXp, getLevelFromXp } from "@/lib/xpSystem";
 import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
 import logoSticker from "@/assets/one-hello-logo-tagline.svg";
@@ -50,6 +53,8 @@ export default function Dashboard() {
   const [weeklyChallengeOrbAwarded, setWeeklyChallengeOrbAwarded] = useState(false);
   const [showWeeklyGoalCelebration, setShowWeeklyGoalCelebration] = useState(false);
   const [newWeeklyStreakValue, setNewWeeklyStreakValue] = useState(1);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [newLevelValue, setNewLevelValue] = useState(1);
 
   useEffect(() => {
     if (user) {
@@ -290,16 +295,59 @@ export default function Dashboard() {
 
       // Check if this is a weekly challenge completion - award orb (max 3)
       const isWeeklyChallenge = selectedHelloType === "remis_challenge";
+      const isTodaysHello = selectedHelloType === "todays_hello";
       const currentOrbs = progress?.orbs || 0;
       const lastChallengeDate = progress?.last_weekly_challenge_date;
       const thisWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
       const alreadyEarnedThisWeek = lastChallengeDate && new Date(lastChallengeDate) >= thisWeekStart;
       
+      // XP System - check if daily counts need reset
+      const lastXpResetDate = progress?.last_xp_reset_date;
+      const needsXpReset = lastXpResetDate !== today;
+      
+      let hellosToday = needsXpReset ? 0 : (progress?.hellos_today_count || 0);
+      let namesToday = needsXpReset ? 0 : (progress?.names_today_count || 0);
+      let notesToday = needsXpReset ? 0 : (progress?.notes_today_count || 0);
+      
+      // Check if this completes weekly goal (for XP bonus)
+      const mode = (progress?.mode === 'connect' ? 'chill' : (progress?.mode || 'daily')) as 'daily' | 'chill';
+      const isChillMode = mode === 'chill' && !progress?.is_onboarding_week;
+      const alreadyAchievedThisWeek = (progress as any)?.weekly_goal_achieved_this_week === true;
+      const justHitWeeklyGoal = isChillMode && newHellosThisWeek >= 5 && !alreadyAchievedThisWeek;
+      
+      // Calculate XP
+      const xpResult = calculateHelloXp(
+        hellosToday,
+        namesToday,
+        notesToday,
+        !!data.name && data.name.trim().length > 0,
+        !!data.notes && data.notes.trim().length > 0,
+        isTodaysHello,
+        isWeeklyChallenge,
+        justHitWeeklyGoal,
+        mode,
+        progress?.daily_streak || 0,
+        progress?.weekly_streak || 0
+      );
+      
+      const currentXp = progress?.total_xp || 0;
+      const newTotalXp = currentXp + xpResult.totalXp;
+      const currentLevel = progress?.current_level || 1;
+      const newLevel = getLevelFromXp(newTotalXp);
+      const didLevelUp = newLevel > currentLevel;
+      
       const updates: Record<string, unknown> = {
         hellos_this_week: newHellosThisWeek,
         last_completed_date: today,
         total_hellos: newTotalHellos,
-        daily_streak: Math.max(progress?.daily_streak || 0, 1)
+        daily_streak: Math.max(progress?.daily_streak || 0, 1),
+        // XP updates
+        total_xp: newTotalXp,
+        current_level: newLevel,
+        hellos_today_count: hellosToday + 1,
+        names_today_count: data.name ? namesToday + 1 : namesToday,
+        notes_today_count: data.notes ? notesToday + 1 : notesToday,
+        last_xp_reset_date: today
       };
 
       // Award orb for weekly challenge (max 3, once per week)
@@ -312,12 +360,6 @@ export default function Dashboard() {
         updates.last_weekly_challenge_date = today;
       }
 
-      // Check if user just hit 5/5 in Chill mode - increment weekly streak (once per week only)
-      const mode = progress?.mode || 'daily';
-      const isChillMode = mode === 'chill' && !progress?.is_onboarding_week;
-      const alreadyAchievedThisWeek = (progress as any)?.weekly_goal_achieved_this_week === true;
-      const justHitWeeklyGoal = isChillMode && newHellosThisWeek >= 5 && !alreadyAchievedThisWeek;
-      
       if (justHitWeeklyGoal) {
         const currentWeeklyStreak = progress?.weekly_streak || 0;
         const newWeeklyStreak = currentWeeklyStreak + 1;
@@ -329,6 +371,19 @@ export default function Dashboard() {
 
       await updateProgress(updates);
 
+      // Show XP toast
+      if (xpResult.totalXp > 0) {
+        toast.success(`+${xpResult.totalXp} XP earned!`, {
+          description: xpResult.breakdown.slice(0, 2).join(' • ')
+        });
+      }
+
+      // Show level up celebration
+      if (didLevelUp) {
+        setNewLevelValue(newLevel);
+        setTimeout(() => setShowLevelUp(true), 500);
+      }
+
       // Show celebration for onboarding challenges (only in 7-day-starter mode)
       if (isOnboardingChallenge && progress?.is_onboarding_week && progress?.mode === '7-day-starter') {
         setShowCelebration(true);
@@ -339,8 +394,6 @@ export default function Dashboard() {
         // Show weekly challenge completion celebration
         setWeeklyChallengeOrbAwarded(orbAwardedThisTime);
         setShowWeeklyChallengeComplete(true);
-      } else {
-        toast.success("Hello logged! 🎉");
       }
 
       if (isFirstHelloEver) {
@@ -445,8 +498,21 @@ export default function Dashboard() {
   const targetHellos = mode === 'chill' ? 5 : 7;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-[#FFF4F5] pb-24">
       <div className="max-w-md mx-auto px-4 py-6">
+        {/* Top Stats Bar - Compact */}
+        <div className="mb-4">
+          <TopStatsBar
+            hellosThisWeek={progress.hellos_this_week || 0}
+            targetHellos={targetHellos}
+            streak={mode === 'daily' ? (progress.daily_streak || 0) : (progress.weekly_streak || 0)}
+            orbs={progress.orbs || 0}
+            level={progress.current_level || 1}
+            mode={mode}
+            isOnboarding={progress.is_onboarding_week && !progress.has_completed_onboarding}
+          />
+        </div>
+
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <img src={logoSticker} alt="One Hello" className="h-32" />
@@ -454,8 +520,8 @@ export default function Dashboard() {
 
         {/* Greeting - Centered */}
         <div className="text-center mb-6">
-          <p className="text-lg font-medium text-foreground">
-            Hello, <span className="text-primary">{username}</span>! 👋
+          <p className="text-lg font-medium text-[#502a13]">
+            Hello, <span className="text-[#FF6B35]">{username}</span>! 👋
           </p>
         </div>
 
@@ -644,6 +710,13 @@ export default function Dashboard() {
         open={showWeeklyGoalCelebration}
         onContinue={() => setShowWeeklyGoalCelebration(false)}
         newStreak={newWeeklyStreakValue}
+      />
+
+      <LevelUpCelebrationDialog
+        open={showLevelUp}
+        onClose={() => setShowLevelUp(false)}
+        newLevel={newLevelValue}
+        totalXp={progress?.total_xp || 0}
       />
     </div>
   );
