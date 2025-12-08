@@ -15,6 +15,7 @@ import { LogHelloButton } from "@/components/LogHelloButton";
 import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
 import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
 import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingCompleteMilestoneDialog";
+import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompleteDialog";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
@@ -43,6 +44,8 @@ export default function Dashboard() {
   const [showDayReveal, setShowDayReveal] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showMilestone, setShowMilestone] = useState(false);
+  const [showWeeklyChallengeComplete, setShowWeeklyChallengeComplete] = useState(false);
+  const [weeklyChallengeOrbAwarded, setWeeklyChallengeOrbAwarded] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -278,13 +281,11 @@ export default function Dashboard() {
       };
 
       // Award orb for weekly challenge (max 3, once per week)
+      let orbAwardedThisTime = false;
       if (isWeeklyChallenge && !alreadyEarnedThisWeek && currentOrbs < 3) {
         updates.orbs = currentOrbs + 1;
         updates.last_weekly_challenge_date = today;
-        toast.success("✨ +1 Orb earned!");
-      } else if (isWeeklyChallenge && currentOrbs >= 3) {
-        toast.info("Orbs are full (3/3). Challenge completed!");
-        updates.last_weekly_challenge_date = today;
+        orbAwardedThisTime = true;
       } else if (isWeeklyChallenge) {
         updates.last_weekly_challenge_date = today;
       }
@@ -294,6 +295,10 @@ export default function Dashboard() {
       // Show celebration for onboarding challenges
       if (isOnboardingChallenge && progress?.is_onboarding_week) {
         setShowCelebration(true);
+      } else if (isWeeklyChallenge) {
+        // Show weekly challenge completion celebration
+        setWeeklyChallengeOrbAwarded(orbAwardedThisTime);
+        setShowWeeklyChallengeComplete(true);
       } else {
         toast.success("Hello logged! 🎉");
       }
@@ -579,6 +584,12 @@ export default function Dashboard() {
         onDecline={handleDeclineWeeklyOrb}
         type="weekly"
         orbsAvailable={progress?.orbs || 0}
+      />
+
+      <WeeklyChallengeCompleteDialog
+        open={showWeeklyChallengeComplete}
+        onContinue={() => setShowWeeklyChallengeComplete(false)}
+        orbsAwarded={weeklyChallengeOrbAwarded}
       />
     </div>
   );
