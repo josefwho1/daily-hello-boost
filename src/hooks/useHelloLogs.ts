@@ -9,6 +9,7 @@ export interface HelloLog {
   notes: string | null;
   hello_type: string | null;
   rating: 'positive' | 'neutral' | 'negative' | null;
+  difficulty_rating: number | null;
   created_at: string;
   timezone_offset: string;
 }
@@ -55,6 +56,7 @@ export const useHelloLogs = () => {
     notes?: string;
     hello_type?: string;
     rating?: 'positive' | 'neutral' | 'negative';
+    difficulty_rating?: number;
   }) => {
     if (!user) return null;
 
@@ -76,6 +78,7 @@ export const useHelloLogs = () => {
           notes: log.notes || null,
           hello_type: log.hello_type || null,
           rating: log.rating || null,
+          difficulty_rating: log.difficulty_rating || null,
           timezone_offset: timezoneOffset
         })
         .select()

@@ -45,7 +45,16 @@ export const TodaysHelloCard = ({
           {description}
         </p>
       </div>
-      
+
+      {!isCompleted && (
+        <Button 
+          onClick={onComplete}
+          className="w-full mt-4"
+          variant="default"
+        >
+          Complete Today's Hello
+        </Button>
+      )}
     </Card>
   );
 };
