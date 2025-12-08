@@ -118,20 +118,27 @@ export default function Dashboard() {
   }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode, progressLoading, logsLoading, user?.id]);
 
   // Weekly reset logic - check for missed weekly goal (Connect Mode)
+  // Use a ref to prevent the effect from running multiple times
+  const [weeklyResetDone, setWeeklyResetDone] = useState(false);
+  
   useEffect(() => {
-    if (!progress || progressLoading) return;
+    if (!progress || progressLoading || weeklyResetDone) return;
     if (progress.is_onboarding_week) return;
 
     const now = new Date();
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const weekStartStr = weekStart.toISOString().split('T')[0];
 
     if (progress.week_start_date) {
       const storedWeekStart = new Date(progress.week_start_date);
       
+      // Only reset if the stored week is BEFORE the current week start
       if (isBefore(storedWeekStart, weekStart)) {
         const mode = progress.mode || 'daily';
         const target = mode === 'connect' ? 5 : 7;
         const targetMet = (progress.hellos_this_week || 0) >= target;
+        
+        setWeeklyResetDone(true); // Prevent re-running
         
         if (mode === 'connect' && !targetMet && (progress.weekly_streak || 0) > 0) {
           setShowWeeklyOrbDialog(true);
@@ -141,7 +148,7 @@ export default function Dashboard() {
 
           updateProgress({
             hellos_this_week: 0,
-            week_start_date: weekStart.toISOString().split('T')[0],
+            week_start_date: weekStartStr,
             weekly_streak: newWeeklyStreak,
             longest_streak: newLongestStreak,
           });
@@ -151,8 +158,14 @@ export default function Dashboard() {
           }
         }
       }
+    } else {
+      // Initialize week_start_date if not set
+      setWeeklyResetDone(true);
+      updateProgress({
+        week_start_date: weekStartStr,
+      });
     }
-  }, [progress, progressLoading]);
+  }, [progress, progressLoading, weeklyResetDone]);
 
   // Check for missed daily streak (Daily Mode)
   useEffect(() => {
