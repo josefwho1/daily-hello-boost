@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
-import { Trophy, Flame, Hand, Calendar } from "lucide-react";
+import { Trophy, Hand, Calendar } from "lucide-react";
 import remiMascot from "@/assets/remi-waving.webp";
 import orbImage from "@/assets/orb.webp";
+import dailyStreakIcon from "@/assets/daily-streak-icon.webp";
 
 interface StreakCardProps {
   weeklyStreak: number;
@@ -51,8 +52,8 @@ export const StreakCard = ({
               </span>
             </div>
           </div>
-          {isDaily ? (
-            <Flame className="w-12 h-12 opacity-90" />
+        {isDaily ? (
+            <img src={dailyStreakIcon} alt="Daily Streak" className="w-14 h-14 object-contain" />
           ) : (
             <Calendar className="w-12 h-12 opacity-90" />
           )}
@@ -63,7 +64,7 @@ export const StreakCard = ({
             {isDaily ? (
               <Trophy className="w-5 h-5 flex-shrink-0" />
             ) : (
-              <Flame className="w-5 h-5 flex-shrink-0" />
+              <img src={dailyStreakIcon} alt="Daily Streak" className="w-6 h-6 flex-shrink-0 object-contain" />
             )}
             <div>
               <p className="text-xs opacity-75">

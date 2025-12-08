@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
-import { Flame, Trophy, Hand } from "lucide-react";
+import { Trophy, Hand } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import orbImage from "@/assets/orb.webp";
+import dailyStreakIcon from "@/assets/daily-streak-icon.webp";
 
 interface StatsBarProps {
   hellosThisWeek: number;
@@ -64,7 +65,7 @@ export const StatsBar = ({
         {/* Daily Streak - visible during onboarding & daily mode */}
         {showDailyStreak && (
           <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/10">
-            <Flame className="w-5 h-5 text-primary flex-shrink-0" />
+            <img src={dailyStreakIcon} alt="Daily Streak" className="w-6 h-6 flex-shrink-0 object-contain" />
             <div>
               <p className="text-xs text-muted-foreground">Daily Streak</p>
               <p className="font-bold text-foreground">{dailyStreak} day{dailyStreak !== 1 ? 's' : ''}</p>
