@@ -7,8 +7,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import remiMascot from "@/assets/remi-waving.webp";
+import orbImage from "@/assets/orb.webp";
 
 interface UseOrbDialogProps {
   open: boolean;
@@ -35,7 +36,7 @@ export const UseOrbDialog = ({
             <img src={remiMascot} alt="Remi" className="w-20 h-auto max-h-20 object-contain" />
           </div>
           <DialogTitle className="text-xl flex items-center justify-center gap-2">
-            <Sparkles className="w-6 h-6 text-primary" />
+            <img src={orbImage} alt="Orb" className="w-6 h-6 object-contain" />
             Use an Orb to keep your streak alive?
           </DialogTitle>
           <DialogDescription className="text-center pt-2">
@@ -46,8 +47,8 @@ export const UseOrbDialog = ({
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
-          <Sparkles className="w-5 h-5 text-primary" />
+        <div className="flex items-center justify-center gap-3 py-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
+          <img src={orbImage} alt="Orb" className="w-6 h-6 object-contain" />
           <span className="font-medium">Orbs available: {orbsAvailable} / 3</span>
         </div>
 
@@ -65,7 +66,7 @@ export const UseOrbDialog = ({
             onClick={onUseOrb}
             disabled={orbsAvailable < 1}
           >
-            <Sparkles className="w-4 h-4 mr-2" />
+            <img src={orbImage} alt="Orb" className="w-4 h-4 mr-2 object-contain" />
             Use Orb
           </Button>
         </DialogFooter>

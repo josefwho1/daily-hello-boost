@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
-import { Trophy, Flame, Hand, Sparkles, Calendar } from "lucide-react";
-import remiMascot from "@/assets/remi-mascot.png";
+import { Trophy, Flame, Hand, Calendar } from "lucide-react";
+import remiMascot from "@/assets/remi-waving.webp";
+import orbImage from "@/assets/orb.webp";
 
 interface StreakCardProps {
   weeklyStreak: number;
@@ -84,7 +85,7 @@ export const StreakCard = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 flex-shrink-0" />
+            <img src={orbImage} alt="Orb" className="w-5 h-5 flex-shrink-0 object-contain" />
             <div>
               <p className="text-xs opacity-75">Orbs</p>
               <p className="font-semibold">{orbs} / 3</p>

@@ -4,7 +4,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import remiMascot from "@/assets/remi-waving.webp";
-import { Sparkles } from "lucide-react";
+import orbImage from "@/assets/orb.webp";
 
 interface FirstOrbGiftDialogProps {
   open: boolean;
@@ -34,8 +34,8 @@ export const FirstOrbGiftDialog = ({ open, onClaim }: FirstOrbGiftDialogProps) =
             I have a gift for you — your very first <span className="font-semibold text-primary">Orb</span>!
           </p>
           
-          <div className="flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg mb-4">
-            <Sparkles className="w-8 h-8 text-primary" />
+          <div className="flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg mb-4">
+            <img src={orbImage} alt="Orb" className="w-10 h-10 object-contain" />
             <span className="text-lg font-semibold text-primary">+1 Orb</span>
           </div>
 
@@ -44,7 +44,7 @@ export const FirstOrbGiftDialog = ({ open, onClaim }: FirstOrbGiftDialogProps) =
           </p>
           
           <Button onClick={onClaim} className="w-full" size="lg">
-            <Sparkles className="w-5 h-5 mr-2" />
+            <img src={orbImage} alt="Orb" className="w-5 h-5 mr-2 object-contain" />
             Claim Orb
           </Button>
         </div>
