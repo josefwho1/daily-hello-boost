@@ -4,8 +4,8 @@ import { Progress } from "@/components/ui/progress";
 import orbImage from "@/assets/orb.webp";
 
 interface StatsBarProps {
+  hellosToday: number;
   hellosThisWeek: number;
-  targetHellos: number;
   dailyStreak: number;
   weeklyStreak: number;
   lifetimeHellos: number;
@@ -17,8 +17,8 @@ interface StatsBarProps {
 }
 
 export const StatsBar = ({
+  hellosToday,
   hellosThisWeek,
-  targetHellos,
   dailyStreak,
   weeklyStreak,
   lifetimeHellos,
@@ -33,24 +33,30 @@ export const StatsBar = ({
   // If onboarding is completed, treat as post-onboarding even if flag is stale
   const effectivelyOnboarding = isOnboardingWeek && !hasCompletedOnboarding;
   
-  // Daily streak visible during onboarding OR in Daily mode (not Connect mode)
-  const showDailyStreak = effectivelyOnboarding || isDaily;
+  // During onboarding (7-day starter), show progress out of 7
+  const progressValue = effectivelyOnboarding 
+    ? onboardingCompleted 
+    : isDaily 
+      ? Math.min(hellosToday, 1) // Daily mode: show 0/1 or 1/1
+      : hellosThisWeek; // Connect mode: show X/5
   
-  // Weekly streak visible AFTER onboarding in BOTH modes
-  const showWeeklyStreak = !effectivelyOnboarding;
-  
-  // During onboarding, show progress out of 7
-  const progressValue = effectivelyOnboarding ? onboardingCompleted : hellosThisWeek;
-  const progressMax = effectivelyOnboarding ? 7 : targetHellos;
+  const progressMax = effectivelyOnboarding ? 7 : isDaily ? 1 : 5;
   const progressPercent = Math.min((progressValue / progressMax) * 100, 100);
+
+  // Labels based on mode
+  const getProgressLabel = () => {
+    if (effectivelyOnboarding) return 'Your 7-Day Challenge';
+    if (isDaily) return 'Today';
+    return "Hello's This Week";
+  };
 
   return (
     <Card className="p-4 space-y-4">
-      {/* Hellos this week / Onboarding progress */}
+      {/* Progress bar section */}
       <div>
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-foreground">
-            {effectivelyOnboarding ? 'Your 7-Day Challenge' : "Hello's This Week"}
+            {getProgressLabel()}
           </span>
           <span className="text-sm font-bold text-primary">
             {progressValue} / {progressMax}
@@ -61,8 +67,8 @@ export const StatsBar = ({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3">
-        {/* Daily Streak - visible during onboarding & daily mode */}
-        {showDailyStreak && (
+        {/* Daily Streak - visible during onboarding AND in Daily mode only */}
+        {(effectivelyOnboarding || isDaily) && (
           <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/10">
             <Flame className="w-5 h-5 text-primary flex-shrink-0" />
             <div>
@@ -72,8 +78,8 @@ export const StatsBar = ({
           </div>
         )}
 
-        {/* Weekly Streak - shown after onboarding in BOTH modes */}
-        {showWeeklyStreak && (
+        {/* Weekly Streak - shown in Connect mode only (not during onboarding) */}
+        {!effectivelyOnboarding && !isDaily && (
           <div className="flex items-center gap-2 p-3 rounded-xl bg-accent/10">
             <Trophy className="w-5 h-5 text-accent flex-shrink-0" />
             <div>

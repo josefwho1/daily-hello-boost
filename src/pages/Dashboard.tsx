@@ -425,8 +425,8 @@ export default function Dashboard() {
 
         {/* Stats Bar - ALWAYS visible */}
         <StatsBar
+          hellosToday={getLogsTodayCount()}
           hellosThisWeek={progress.hellos_this_week || 0}
-          targetHellos={targetHellos}
           dailyStreak={progress.daily_streak || 0}
           weeklyStreak={progress.weekly_streak || 0}
           lifetimeHellos={progress.total_hellos || logs.length}
