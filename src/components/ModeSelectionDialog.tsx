@@ -12,11 +12,11 @@ import { useState } from "react";
 
 interface ModeSelectionDialogProps {
   open: boolean;
-  onSelectMode: (mode: 'daily' | 'connect') => void;
+  onSelectMode: (mode: 'daily' | 'chill') => void;
 }
 
 export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogProps) => {
-  const [selectedMode, setSelectedMode] = useState<'daily' | 'connect'>('daily');
+  const [selectedMode, setSelectedMode] = useState<'daily' | 'chill'>('daily');
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
@@ -42,7 +42,7 @@ export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogP
           
           <RadioGroup 
             value={selectedMode} 
-            onValueChange={(v) => setSelectedMode(v as 'daily' | 'connect')}
+            onValueChange={(v) => setSelectedMode(v as 'daily' | 'chill')}
             className="space-y-4"
           >
             {/* Daily Mode */}
@@ -74,26 +74,26 @@ export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogP
               </div>
             </Card>
 
-            {/* Connect Mode */}
+            {/* Chill Mode */}
             <Card 
               className={`p-4 cursor-pointer transition-all text-left ${
-                selectedMode === 'connect' 
+                selectedMode === 'chill' 
                   ? 'border-primary bg-primary/5' 
                   : 'hover:border-primary/50'
               }`}
-              onClick={() => setSelectedMode('connect')}
+              onClick={() => setSelectedMode('chill')}
             >
               <div className="flex items-start gap-4">
-                <RadioGroupItem value="connect" id="connect" className="mt-1" />
+                <RadioGroupItem value="chill" id="chill" className="mt-1" />
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar className="w-5 h-5 text-blue-500" />
                     <Label className="text-lg font-semibold cursor-pointer">
-                      Connect Mode
+                      Chill Mode
                     </Label>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    "5 Hellos a Week"
+                    "5 Hellos a Week (flexible)"
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Designed for users who want flexibility without daily pressure. 
@@ -109,7 +109,7 @@ export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogP
             className="w-full mt-6" 
             size="lg"
           >
-            Start {selectedMode === 'daily' ? 'Daily' : 'Connect'} Mode
+            Start {selectedMode === 'daily' ? 'Daily' : 'Chill'} Mode
           </Button>
         </div>
       </DialogContent>
