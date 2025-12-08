@@ -11,7 +11,7 @@ interface StatsBarProps {
   weeklyStreak: number;
   lifetimeHellos: number;
   orbs: number;
-  mode: 'daily' | 'connect';
+  mode: 'daily' | 'chill';
   isOnboardingWeek: boolean;
   onboardingCompleted: number;
   hasCompletedOnboarding?: boolean;
@@ -39,7 +39,7 @@ export const StatsBar = ({
     ? onboardingCompleted 
     : isDaily 
       ? hellosToday // Daily mode: show actual count (can exceed 1)
-      : hellosThisWeek; // Connect mode: show X/5
+      : hellosThisWeek; // Chill mode: show X/5
   
   const progressMax = effectivelyOnboarding ? 7 : isDaily ? 1 : 5;
   const progressPercent = Math.min((progressValue / progressMax) * 100, 100);
@@ -78,7 +78,7 @@ export const StatsBar = ({
         </div>
       )}
 
-      {/* Weekly Streak - shown in Connect mode only (not during onboarding) */}
+      {/* Weekly Streak - shown in Chill mode only (not during onboarding) */}
       {!effectivelyOnboarding && !isDaily && (
         <div className="flex items-center gap-4 p-6 rounded-xl bg-accent/10">
           <img src={remiStreak} alt="Streak" className="w-12 h-12 flex-shrink-0 object-contain" />

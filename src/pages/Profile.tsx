@@ -64,9 +64,9 @@ const Profile = () => {
       icon: Flame
     },
     { 
-      value: 'connect', 
-      label: 'Connect Mode', 
-      description: '5 hellos per week',
+      value: 'chill', 
+      label: 'Chill Mode', 
+      description: '5 hellos per week (flexible)',
       icon: Calendar
     },
   ];
@@ -75,7 +75,7 @@ const Profile = () => {
     switch (mode) {
       case '7-day-starter': return 7;
       case 'daily': return 7;
-      case 'connect': return 5;
+      case 'chill': return 5;
       default: return 5;
     }
   };
@@ -194,7 +194,7 @@ const Profile = () => {
   // Determine current mode - if still in onboarding week with 'normal' default, show as 7-day-starter
   const currentMode = (progress?.is_onboarding_week && !progress?.has_completed_onboarding) 
     ? '7-day-starter' 
-    : (progress?.mode === 'normal' ? 'connect' : (progress?.mode || '7-day-starter'));
+    : (progress?.mode === 'normal' ? 'chill' : (progress?.mode === 'connect' ? 'chill' : (progress?.mode || '7-day-starter')));
 
   return (
     <div className="min-h-screen bg-background pb-24">

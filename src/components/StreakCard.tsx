@@ -8,7 +8,7 @@ interface StreakCardProps {
   dailyStreak: number;
   totalHellos: number;
   orbs: number;
-  mode: 'daily' | 'connect';
+  mode: 'daily' | 'chill';
 }
 
 export const StreakCard = ({ 
@@ -36,7 +36,7 @@ export const StreakCard = ({
                 {isDaily ? 'Daily Streak' : 'Weekly Streak'}
               </p>
               <span className="text-xs opacity-75 capitalize px-2 py-0.5 bg-primary-foreground/20 rounded-full">
-                {isDaily ? 'Daily Mode' : 'Connect Mode'}
+                {isDaily ? 'Daily Mode' : 'Chill Mode'}
               </span>
             </div>
             <div className="flex items-baseline gap-2">

@@ -118,7 +118,7 @@ export default function Dashboard() {
     }
   }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode, progressLoading, logsLoading, user?.id]);
 
-  // Weekly reset logic - check for missed weekly goal (Connect Mode)
+  // Weekly reset logic - check for missed weekly goal (Chill Mode)
   // Use a ref to prevent the effect from running multiple times
   const [weeklyResetDone, setWeeklyResetDone] = useState(false);
   
@@ -136,12 +136,12 @@ export default function Dashboard() {
       // Only reset if the stored week is BEFORE the current week start
       if (isBefore(storedWeekStart, weekStart)) {
         const mode = progress.mode || 'daily';
-        const target = mode === 'connect' ? 5 : 7;
+        const target = mode === 'chill' ? 5 : 7;
         const targetMet = (progress.hellos_this_week || 0) >= target;
         
         setWeeklyResetDone(true); // Prevent re-running
         
-        if (mode === 'connect' && !targetMet && (progress.weekly_streak || 0) > 0) {
+        if (mode === 'chill' && !targetMet && (progress.weekly_streak || 0) > 0) {
           setShowWeeklyOrbDialog(true);
         } else {
           const newWeeklyStreak = targetMet ? (progress.weekly_streak || 0) + 1 : 0;
@@ -312,11 +312,11 @@ export default function Dashboard() {
         updates.last_weekly_challenge_date = today;
       }
 
-      // Check if user just hit 5/5 in Connect mode - increment weekly streak (once per week only)
+      // Check if user just hit 5/5 in Chill mode - increment weekly streak (once per week only)
       const mode = progress?.mode || 'daily';
-      const isConnectMode = mode === 'connect' && !progress?.is_onboarding_week;
+      const isChillMode = mode === 'chill' && !progress?.is_onboarding_week;
       const alreadyAchievedThisWeek = (progress as any)?.weekly_goal_achieved_this_week === true;
-      const justHitWeeklyGoal = isConnectMode && newHellosThisWeek >= 5 && !alreadyAchievedThisWeek;
+      const justHitWeeklyGoal = isChillMode && newHellosThisWeek >= 5 && !alreadyAchievedThisWeek;
       
       if (justHitWeeklyGoal) {
         const currentWeeklyStreak = progress?.weekly_streak || 0;
@@ -333,7 +333,7 @@ export default function Dashboard() {
       if (isOnboardingChallenge && progress?.is_onboarding_week && progress?.mode === '7-day-starter') {
         setShowCelebration(true);
       } else if (justHitWeeklyGoal) {
-        // Show weekly goal celebration in Connect mode
+        // Show weekly goal celebration in Chill mode
         setShowWeeklyGoalCelebration(true);
       } else if (isWeeklyChallenge) {
         // Show weekly challenge completion celebration
@@ -388,7 +388,7 @@ export default function Dashboard() {
     }
   }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode]);
 
-  const handleModeSelect = async (mode: 'daily' | 'connect') => {
+  const handleModeSelect = async (mode: 'daily' | 'chill') => {
     const target = mode === 'daily' ? 7 : 5;
     await updateProgress({ 
       mode,
@@ -399,7 +399,7 @@ export default function Dashboard() {
       week_start_date: startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0]
     });
     setShowModeSelection(false);
-    toast.success(`🎉 You're now in ${mode === 'daily' ? 'Daily' : 'Connect'} Mode!`);
+    toast.success(`🎉 You're now in ${mode === 'daily' ? 'Daily' : 'Chill'} Mode!`);
   };
 
   // Check if today's hello is completed
@@ -441,8 +441,8 @@ export default function Dashboard() {
 
   if (!progress) return null;
 
-  const mode = (progress.mode || 'daily') as 'daily' | 'connect';
-  const targetHellos = mode === 'connect' ? 5 : 7;
+  const mode = (progress.mode === 'connect' ? 'chill' : (progress.mode || 'daily')) as 'daily' | 'chill';
+  const targetHellos = mode === 'chill' ? 5 : 7;
 
   return (
     <div className="min-h-screen bg-background pb-24">
