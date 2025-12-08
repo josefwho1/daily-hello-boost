@@ -11,7 +11,6 @@ import { UseOrbDialog } from "@/components/UseOrbDialog";
 import { TodaysHelloCard } from "@/components/TodaysHelloCard";
 import { RemisWeeklyChallengeCard } from "@/components/RemisWeeklyChallengeCard";
 import { StatsBar } from "@/components/StatsBar";
-import { TopStatsBar } from "@/components/TopStatsBar";
 import { LogHelloButton } from "@/components/LogHelloButton";
 import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
 import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
@@ -500,19 +499,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[#FFF4F5] pb-24">
       <div className="max-w-md mx-auto px-4 py-6">
-        {/* Top Stats Bar - Compact */}
-        <div className="mb-4">
-          <TopStatsBar
-            hellosThisWeek={progress.hellos_this_week || 0}
-            targetHellos={targetHellos}
-            streak={mode === 'daily' ? (progress.daily_streak || 0) : (progress.weekly_streak || 0)}
-            orbs={progress.orbs || 0}
-            level={progress.current_level || 1}
-            mode={mode}
-            isOnboarding={progress.is_onboarding_week && !progress.has_completed_onboarding}
-          />
-        </div>
-
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <img src={logoSticker} alt="One Hello" className="h-32" />
@@ -537,6 +523,8 @@ export default function Dashboard() {
           isOnboardingWeek={progress.is_onboarding_week || false}
           onboardingCompleted={completedDaysCount}
           hasCompletedOnboarding={progress.has_completed_onboarding || false}
+          currentLevel={progress.current_level || 1}
+          totalXp={progress.total_xp || 0}
         />
 
         {/* Log a Hello Button - Only show when NOT in 7-day starter */}
