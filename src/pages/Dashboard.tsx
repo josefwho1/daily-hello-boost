@@ -21,7 +21,7 @@ import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
 import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
 import logoSticker from "@/assets/one-hello-logo-sticker.png";
-import remiMascot from "@/assets/remi-waving.png";
+import remiMascot from "@/assets/remi-waving.webp";
 import { Sparkles } from "lucide-react";
 
 export default function Dashboard() {

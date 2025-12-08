@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import logoText from "@/assets/one-hello-logo-text.png";
-import remiMascot from "@/assets/remi-waving.png";
+import remiMascot from "@/assets/remi-waving.webp";
 import {
   Select,
   SelectContent,

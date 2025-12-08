@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import remiMascot from "@/assets/remi-waving.png";
+import remiMascot from "@/assets/remi-waving.webp";
 
 const Profile = () => {
   const navigate = useNavigate();
