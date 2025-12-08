@@ -25,6 +25,13 @@ export interface UserProgress {
   has_received_first_orb?: boolean;
   total_hellos?: number;
   weekly_goal_achieved_this_week?: boolean;
+  // XP System fields
+  total_xp?: number;
+  current_level?: number;
+  hellos_today_count?: number;
+  names_today_count?: number;
+  notes_today_count?: number;
+  last_xp_reset_date?: string;
 }
 
 export const useUserProgress = () => {

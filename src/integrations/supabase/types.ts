@@ -190,24 +190,30 @@ export type Database = {
         Row: {
           created_at: string
           current_day: number
+          current_level: number | null
           current_streak: number
           daily_streak: number | null
           has_completed_onboarding: boolean | null
           has_received_first_orb: boolean | null
           has_seen_welcome_messages: boolean | null
           hellos_this_week: number | null
+          hellos_today_count: number | null
           id: string
           is_onboarding_week: boolean | null
           last_completed_date: string | null
           last_weekly_challenge_date: string | null
+          last_xp_reset_date: string | null
           longest_streak: number | null
           mode: string | null
+          names_today_count: number | null
+          notes_today_count: number | null
           onboarding_week_start: string | null
           orbs: number | null
           save_offered_for_date: string | null
           selected_pack_id: string
           target_hellos_per_week: number | null
           total_hellos: number | null
+          total_xp: number | null
           updated_at: string
           user_id: string
           username: string | null
@@ -219,24 +225,30 @@ export type Database = {
         Insert: {
           created_at?: string
           current_day?: number
+          current_level?: number | null
           current_streak?: number
           daily_streak?: number | null
           has_completed_onboarding?: boolean | null
           has_received_first_orb?: boolean | null
           has_seen_welcome_messages?: boolean | null
           hellos_this_week?: number | null
+          hellos_today_count?: number | null
           id?: string
           is_onboarding_week?: boolean | null
           last_completed_date?: string | null
           last_weekly_challenge_date?: string | null
+          last_xp_reset_date?: string | null
           longest_streak?: number | null
           mode?: string | null
+          names_today_count?: number | null
+          notes_today_count?: number | null
           onboarding_week_start?: string | null
           orbs?: number | null
           save_offered_for_date?: string | null
           selected_pack_id?: string
           target_hellos_per_week?: number | null
           total_hellos?: number | null
+          total_xp?: number | null
           updated_at?: string
           user_id: string
           username?: string | null
@@ -248,24 +260,30 @@ export type Database = {
         Update: {
           created_at?: string
           current_day?: number
+          current_level?: number | null
           current_streak?: number
           daily_streak?: number | null
           has_completed_onboarding?: boolean | null
           has_received_first_orb?: boolean | null
           has_seen_welcome_messages?: boolean | null
           hellos_this_week?: number | null
+          hellos_today_count?: number | null
           id?: string
           is_onboarding_week?: boolean | null
           last_completed_date?: string | null
           last_weekly_challenge_date?: string | null
+          last_xp_reset_date?: string | null
           longest_streak?: number | null
           mode?: string | null
+          names_today_count?: number | null
+          notes_today_count?: number | null
           onboarding_week_start?: string | null
           orbs?: number | null
           save_offered_for_date?: string | null
           selected_pack_id?: string
           target_hellos_per_week?: number | null
           total_hellos?: number | null
+          total_xp?: number | null
           updated_at?: string
           user_id?: string
           username?: string | null
