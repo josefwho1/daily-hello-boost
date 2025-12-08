@@ -1,8 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Check, Sparkles } from "lucide-react";
+import { Trophy, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import remiMascot from "@/assets/remi-waving.webp";
+import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
+import orbImage from "@/assets/orb.webp";
 
 interface RemisWeeklyChallengeCardProps {
   title: string;
@@ -25,11 +26,11 @@ export const RemisWeeklyChallengeCard = ({
         ? 'bg-muted/50' 
         : 'bg-gradient-to-br from-accent/10 to-accent/5'
     }`}>
-      {/* Remi mascot in the corner */}
+      {/* Remi mascot holding orb in the corner */}
       <img 
-        src={remiMascot} 
-        alt="Remi the raccoon" 
-        className="absolute bottom-2 right-2 w-16 h-auto max-h-16 object-contain opacity-80"
+        src={remiHoldingOrb} 
+        alt="Remi holding orb" 
+        className="absolute bottom-2 right-2 w-20 h-auto max-h-20 object-contain"
       />
       
       <div className="flex items-center justify-between mb-3">
@@ -51,7 +52,7 @@ export const RemisWeeklyChallengeCard = ({
         <p className="text-sm text-muted-foreground mb-3">
           Complete this challenge to earn{' '}
           <span className="inline-flex items-center gap-1 text-primary font-medium">
-            <Sparkles className="w-4 h-4" /> +1 Orb
+            <img src={orbImage} alt="Orb" className="w-4 h-4 object-contain" /> +1 Orb
           </span>
         </p>
       )}
@@ -77,7 +78,7 @@ export const RemisWeeklyChallengeCard = ({
           variant="secondary"
           onClick={onComplete}
         >
-          <Sparkles className="w-4 h-4 mr-2" />
+          <img src={orbImage} alt="Orb" className="w-4 h-4 mr-2 object-contain" />
           Complete Challenge
         </Button>
       )}
