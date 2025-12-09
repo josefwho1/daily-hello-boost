@@ -22,19 +22,24 @@ export const TodaysHelloCard = ({
         ? 'bg-muted/50' 
         : 'bg-gradient-to-br from-primary/10 to-primary/5'
     }`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <Sparkles className={`w-6 h-6 ${isCompleted ? 'text-muted-foreground' : 'text-primary'}`} />
-          <h2 className={`text-lg font-semibold ${isCompleted ? 'text-muted-foreground' : 'text-foreground'}`}>
-            Today's Hello
-          </h2>
+      <div className="mb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Sparkles className={`w-6 h-6 ${isCompleted ? 'text-muted-foreground' : 'text-primary'}`} />
+            <h2 className={`text-lg font-semibold ${isCompleted ? 'text-muted-foreground' : 'text-foreground'}`}>
+              Today's Hello
+            </h2>
+          </div>
+          {isCompleted && (
+            <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+              <Check className="w-3 h-3 mr-1" />
+              Done!
+            </Badge>
+          )}
         </div>
-        {isCompleted && (
-          <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
-            <Check className="w-3 h-3 mr-1" />
-            Done!
-          </Badge>
-        )}
+        <p className="text-xs text-muted-foreground mt-1 ml-9">
+          Any Hello counts, but this one gives you extra XP 🦝
+        </p>
       </div>
       
       <div className={`rounded-xl p-4 ${isCompleted ? 'bg-muted' : 'bg-background/50'}`}>
