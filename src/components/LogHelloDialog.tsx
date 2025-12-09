@@ -7,7 +7,10 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import remiMascot from "@/assets/remi-waving.webp";
 
-export type HelloType = 'regular_hello' | 'todays_hello' | 'remis_challenge';
+// Includes regular types + onboarding challenge titles for tracking completion
+export type HelloType = 'regular_hello' | 'todays_hello' | 'remis_challenge' | 
+  'First Hello' | 'Well Wishes' | 'Observation' | 'Nice Shoes' | 
+  'How Are You?' | 'Name to the Face' | 'Getting Personal';
 
 interface LogHelloDialogProps {
   open: boolean;
