@@ -20,10 +20,10 @@ export const challenges: Challenge[] = [
   {
     id: 3,
     day: 3,
-    title: "Observation",
-    description: "Make a neutral observation to one stranger (\"Nice/terrible/strange weather today\" \"This line always takes ages\")",
+    title: "Nice Observation",
+    description: "Share an observation about the weather to one stranger",
     icon: "💬",
-    tips: "\"Nice weather today\" \"This line always takes ages\""
+    tips: "\"Nice/terrible/strange weather today\" \"So cold this morning 🥶\""
   },
   {
     id: 4,
