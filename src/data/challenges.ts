@@ -20,7 +20,7 @@ export const challenges: Challenge[] = [
   {
     id: 3,
     day: 3,
-    title: "Nice Observation",
+    title: "Weather Chat",
     description: "Share an observation about the weather to one stranger",
     icon: "💬",
     tips: "\"Nice/terrible/strange weather today\" \"So cold this morning 🥶\""
