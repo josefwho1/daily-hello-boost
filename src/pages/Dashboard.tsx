@@ -567,19 +567,22 @@ export default function Dashboard() {
                 const isNextDay = dayNumber === currentOnboardingDay + 1;
                 const todaysChallengeCompleted = completedTypes.includes(onboardingChallenges[currentOnboardingDay - 1]?.title);
                 
+                // A challenge is available if: unlocked, not completed, AND (is today's OR is a missed previous day)
+                const isAvailableToComplete = isUnlocked && !isCompleted;
+                
                 return (
                   <OnboardingChallengeCard
                     key={challenge.id}
                     challenge={challenge}
                     isCompleted={isCompleted}
-                    isAvailable={isUnlocked && !isCompleted && isTodaysChallenge}
+                    isAvailable={isAvailableToComplete}
                     isLocked={isLocked}
                     isTodaysChallenge={isTodaysChallenge}
                     isNextDay={isNextDay}
                     hasCompletedToday={todaysChallengeCompleted}
                     onComplete={() => {
                       setSelectedChallenge(challenge.title);
-                      setSelectedHelloType('regular_hello'); // Onboarding challenges use regular_hello type
+                      setSelectedHelloType(challenge.title as HelloType); // Use challenge title as hello_type for tracking completion
                       setSelectedDayNumber(dayNumber);
                       setShowLogDialog(true);
                     }}
