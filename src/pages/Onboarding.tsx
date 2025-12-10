@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import logoText from "@/assets/one-hello-logo-text.png";
 import remiMascot from "@/assets/remi-waving.webp";
-import orbImage from "@/assets/orb.webp";
+import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
 import {
   Select,
   SelectContent,
@@ -518,7 +518,7 @@ export default function Onboarding() {
           {step === 9 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
-                <img src={orbImage} alt="Orb" className="w-24 h-24 mx-auto mb-4 object-contain" />
+                <img src={remiHoldingOrb} alt="Remi with Orb" className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" />
                 <h2 className="text-2xl font-bold text-foreground mb-3">
                   Complete Day 1 to earn your first Orb.
                 </h2>
