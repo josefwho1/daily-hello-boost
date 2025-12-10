@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { XpProgressBar } from "@/components/XpProgressBar";
 import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
-import { LogOut, Clock, User, Pencil, Check, X, Flame, Calendar, Sparkles, Target, Hand } from "lucide-react";
+import { LogOut, Clock, User, Pencil, Check, X, Flame, Calendar, Target, Hand } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -57,21 +57,15 @@ const Profile = () => {
 
   const modeOptions = [
     { 
-      value: '7-day-starter', 
-      label: '7-Day Starter', 
-      description: 'Complete 7-day challenge',
-      icon: Sparkles
-    },
-    { 
       value: 'daily', 
-      label: 'Daily Mode', 
+      label: 'Daily', 
       description: '1 hello per day',
       icon: Flame
     },
     { 
       value: 'chill', 
-      label: 'Chill Mode', 
-      description: '5 hellos per week (flexible)',
+      label: 'Chill', 
+      description: '5 hellos per week',
       icon: Calendar
     },
   ];
@@ -159,30 +153,12 @@ const Profile = () => {
     if (!pendingMode) return;
     
     try {
-      const today = new Date().toISOString().split('T')[0];
-      
-      if (pendingMode === '7-day-starter') {
-        // Reset to 7-day starter mode - restart onboarding
-        await updateProgress({
-          mode: pendingMode,
-          target_hellos_per_week: 7,
-          has_completed_onboarding: false,
-          is_onboarding_week: true,
-          onboarding_week_start: today,
-          hellos_this_week: 0,
-          daily_streak: 0,
-        });
-        setShowModeChangeDialog(false);
-        setPendingMode(null);
-        toast.success("7-Day Starter challenge restarted!");
+      // Show mode-specific confirmation dialog
+      setShowModeChangeDialog(false);
+      if (pendingMode === 'daily') {
+        setShowDailyModeConfirm(true);
       } else {
-        // Show mode-specific confirmation dialog
-        setShowModeChangeDialog(false);
-        if (pendingMode === 'daily') {
-          setShowDailyModeConfirm(true);
-        } else {
-          setShowChillModeConfirm(true);
-        }
+        setShowChillModeConfirm(true);
       }
     } catch (error) {
       console.error("Error updating mode:", error);
@@ -306,54 +282,56 @@ const Profile = () => {
           <p className="text-3xl font-bold text-[#FF6B35]">{progress?.total_hellos || 0}</p>
         </Card>
 
-        {/* Challenge Mode - 3 Buttons */}
-        <Card className="p-5 mb-4 rounded-2xl">
-          <div className="flex items-center gap-3 mb-4">
-            <Target className="text-primary w-5 h-5" />
-            <h3 className="font-semibold text-foreground">Challenge Mode</h3>
-          </div>
-          
-          <div className="space-y-2">
-            {modeOptions.map((mode) => {
-              const Icon = mode.icon;
-              const isSelected = currentMode === mode.value;
-              
-              return (
-                <button
-                  key={mode.value}
-                  onClick={() => handleModeClick(mode.value)}
-                  className={cn(
-                    "w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left",
-                    isSelected 
-                      ? "border-primary bg-primary/10" 
-                      : "border-border hover:border-primary/50 bg-muted/30"
-                  )}
-                >
-                  <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
-                    isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                  )}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className={cn(
-                        "font-medium",
-                        isSelected ? "text-primary" : "text-foreground"
-                      )}>
-                        {mode.label}
-                      </span>
+        {/* Pace - Only show after onboarding is complete */}
+        {progress?.has_completed_onboarding && (
+          <Card className="p-5 mb-4 rounded-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <Target className="text-primary w-5 h-5" />
+              <h3 className="font-semibold text-foreground">Pace</h3>
+            </div>
+            
+            <div className="space-y-2">
+              {modeOptions.map((mode) => {
+                const Icon = mode.icon;
+                const isSelected = currentMode === mode.value;
+                
+                return (
+                  <button
+                    key={mode.value}
+                    onClick={() => handleModeClick(mode.value)}
+                    className={cn(
+                      "w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left",
+                      isSelected 
+                        ? "border-primary bg-primary/10" 
+                        : "border-border hover:border-primary/50 bg-muted/30"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
+                      isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    )}>
+                      <Icon className="w-5 h-5" />
                     </div>
-                    <span className="text-sm text-muted-foreground">{mode.description}</span>
-                  </div>
-                  {isSelected && (
-                    <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </Card>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "font-medium",
+                          isSelected ? "text-primary" : "text-foreground"
+                        )}>
+                          {mode.label}
+                        </span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">{mode.description}</span>
+                    </div>
+                    {isSelected && (
+                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+        )}
 
         {/* Timezone */}
         <Card className="p-5 mb-4 rounded-2xl">
@@ -402,25 +380,9 @@ const Profile = () => {
       <Dialog open={showModeChangeDialog} onOpenChange={setShowModeChangeDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {pendingMode === '7-day-starter' 
-                ? "Restart 7-Day Starter Challenge?" 
-                : "Are you sure you want to change modes?"}
-            </DialogTitle>
+            <DialogTitle>Change your pace?</DialogTitle>
             <DialogDescription>
-              {pendingMode === '7-day-starter' ? (
-                <span>
-                  This will restart your 7-day challenge from Day 1. Your daily streak will reset, but your lifetime hellos and orbs will be kept.
-                </span>
-              ) : pendingMode !== '7-day-starter' && currentMode === '7-day-starter' && !progress?.has_completed_onboarding ? (
-                <span>
-                  You haven't completed the 7-day challenge yet. Switching modes now will skip the remaining days of your starter journey.
-                </span>
-              ) : (
-                <span>
-                  Changing your challenge mode will affect how your progress is tracked.
-                </span>
-              )}
+              Changing your pace will affect how your progress is tracked.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 sm:gap-0">
@@ -428,7 +390,7 @@ const Profile = () => {
               No
             </Button>
             <Button onClick={handleConfirmModeChange}>
-              {pendingMode === '7-day-starter' ? "Restart" : "Yes"}
+              Yes
             </Button>
           </DialogFooter>
         </DialogContent>
