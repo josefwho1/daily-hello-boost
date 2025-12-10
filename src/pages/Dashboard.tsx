@@ -363,11 +363,8 @@ export default function Dashboard() {
           
           const diffDays = differenceInDays(todayDate, lastCompletedDate);
           
-          if (diffDays === 0) {
-            // Orb was used today - increment streak since this is the actual hello
-            newDailyStreak = (progress?.daily_streak || 0) + 1;
-          } else if (diffDays === 1) {
-            // Yesterday was completed - increment streak
+          if (diffDays <= 1) {
+            // Yesterday was completed (or orb was used which sets to yesterday) - increment streak
             newDailyStreak = (progress?.daily_streak || 0) + 1;
           } else {
             // Missed days - reset to 1
