@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { XpProgressBar } from "@/components/XpProgressBar";
 import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
-import { LogOut, Clock, User, Pencil, Check, X, Flame, Calendar, Target, Hand } from "lucide-react";
+import { LogOut, Clock, User, Pencil, Check, X, Flame, Calendar, Route, Hand } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -282,12 +282,12 @@ const Profile = () => {
           <p className="text-3xl font-bold text-[#FF6B35]">{progress?.total_hellos || 0}</p>
         </Card>
 
-        {/* Pace - Only show after onboarding is complete */}
+        {/* Path - Only show after onboarding is complete */}
         {progress?.has_completed_onboarding && (
           <Card className="p-5 mb-4 rounded-2xl">
             <div className="flex items-center gap-3 mb-4">
-              <Target className="text-primary w-5 h-5" />
-              <h3 className="font-semibold text-foreground">Pace</h3>
+              <Route className="text-primary w-5 h-5" />
+              <h3 className="font-semibold text-foreground">Path</h3>
             </div>
             
             <div className="space-y-2">
@@ -380,9 +380,9 @@ const Profile = () => {
       <Dialog open={showModeChangeDialog} onOpenChange={setShowModeChangeDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Change your pace?</DialogTitle>
+            <DialogTitle>Change your path?</DialogTitle>
             <DialogDescription>
-              Changing your pace will affect how your progress is tracked.
+              Changing your path will affect how your progress is tracked.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 sm:gap-0">
