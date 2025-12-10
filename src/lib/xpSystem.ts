@@ -54,6 +54,11 @@ export const LEVEL_XP_THRESHOLDS: number[] = (() => {
     }
   }
   
+  // Add 25 XP to level 2 threshold so it doesn't trigger on first day
+  if (thresholds.length > 1) {
+    thresholds[1] = thresholds[1] + 25;
+  }
+  
   thresholds.push(15000000); // Level 100 completion
   return thresholds;
 })();
