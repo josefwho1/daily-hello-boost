@@ -5,8 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { getRankFromLevel, formatXp, getXpProgress } from "@/lib/xpSystem";
 import remiCelebrating from "@/assets/remi-orb-celebration.webp";
-import { Sparkles, Star, Trophy } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Trophy } from "lucide-react";
 
 interface LevelUpCelebrationDialogProps {
   open: boolean;
@@ -21,55 +20,19 @@ export const LevelUpCelebrationDialog = ({
   newLevel, 
   totalXp 
 }: LevelUpCelebrationDialogProps) => {
-  const [showConfetti, setShowConfetti] = useState(false);
   const rank = getRankFromLevel(newLevel);
   const progress = getXpProgress(totalXp, newLevel);
-  
-  useEffect(() => {
-    if (open) {
-      setShowConfetti(true);
-      const timer = setTimeout(() => setShowConfetti(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-sm mx-auto [&>button]:hidden bg-[#FFF4F5] border-2 border-[#FF6B35]/20 overflow-hidden">
-        {/* Confetti effect */}
-        {showConfetti && (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {[...Array(20)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute animate-bounce"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 0.5}s`,
-                  animationDuration: `${0.5 + Math.random() * 0.5}s`
-                }}
-              >
-                {i % 3 === 0 ? (
-                  <Star className="w-4 h-4 text-[#FF6B35]" fill="#FF6B35" />
-                ) : i % 3 === 1 ? (
-                  <Sparkles className="w-4 h-4 text-amber-400" />
-                ) : (
-                  <div className="w-2 h-2 rounded-full bg-[#FF6B35]" />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
         <div className="text-center py-6 relative z-10">
           {/* Remi celebrating */}
           <div className="relative inline-block mb-4">
             <img 
               src={remiCelebrating} 
               alt="Remi celebrating" 
-              className="w-28 h-auto max-h-28 mx-auto object-contain animate-bounce"
-              style={{ animationDuration: '1s' }}
+              className="w-28 h-auto max-h-28 mx-auto object-contain"
             />
             <div 
               className="absolute -top-2 -right-2 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg"
