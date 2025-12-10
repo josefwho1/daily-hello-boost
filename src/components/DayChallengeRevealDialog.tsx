@@ -57,7 +57,7 @@ export const DayChallengeRevealDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-4 my-4 space-y-2">
+        <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-4 my-4 space-y-2 text-center">
           <h3 className="font-bold text-xl text-foreground">
             {challengeTitle}
           </h3>
