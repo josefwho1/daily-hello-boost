@@ -711,6 +711,7 @@ export default function Dashboard() {
           dayNumber={currentOnboardingDay}
           challengeTitle={todaysOnboardingChallenge.title}
           challengeDescription={todaysOnboardingChallenge.description}
+          challengeSuggestion={todaysOnboardingChallenge.suggestion}
           onAccept={() => setShowDayReveal(false)}
         />
       )}

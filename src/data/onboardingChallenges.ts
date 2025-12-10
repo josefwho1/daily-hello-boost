@@ -2,51 +2,51 @@ export interface OnboardingChallenge {
   id: number;
   title: string;
   description: string;
-  tip: string;
+  suggestion: string;
 }
 
 export const onboardingChallenges: OnboardingChallenge[] = [
   {
     id: 1,
     title: "First Hello",
-    description: "Smile + say \"Hello / Hey / Good morning\" to one stranger",
-    tip: "\"Hello\" \"Hey\" \"Good morning\""
+    description: "Smile and say hello to one stranger today",
+    suggestion: "\"Hello\" \"Hey\" \"Good morning\""
   },
   {
     id: 2,
     title: "Well Wishes",
-    description: "Wish one stranger a great day / evening / weekend (\"Hope you have a great day\" \"Enjoy your evening\")",
-    tip: "\"Hope you have a great day\" \"Enjoy your evening\""
+    description: "Wish one stranger a great day, evening, or weekend",
+    suggestion: "\"Hope you have a great day\" \"Enjoy your evening\""
   },
   {
     id: 3,
-    title: "Observation",
-    description: "Make a neutral observation to one stranger (\"Nice/terrible/strange weather today\" \"This line always takes ages\")",
-    tip: "\"Nice weather today\" \"This line always takes ages\""
+    title: "Weather Chat",
+    description: "Share an observation about the weather to one stranger",
+    suggestion: "\"Nice/terrible/strange weather today\" \"So cold this morning 🥶\""
   },
   {
     id: 4,
     title: "Nice Shoes",
-    description: "Give one stranger a genuine compliment (\"Love your jacket\" \"Nice shoes\")",
-    tip: "\"Love your jacket\" \"Nice shoes\""
+    description: "Give one stranger a genuine compliment",
+    suggestion: "\"Love your jacket\" \"Nice shoes\""
   },
   {
     id: 5,
     title: "How Are You?",
-    description: "Ask one stranger \"How's your day going?\"",
-    tip: "\"How's your day going?\" \"How are you?\""
+    description: "Ask one stranger how their day is going",
+    suggestion: "\"How's your day going?\" \"How are you?\""
   },
   {
     id: 6,
     title: "Name to the Face",
-    description: "Ask one stranger their name (& remember it) \"Hi, I'm Remi, nice to meet you - what's your name?\" PS: log it in here straight away so you don't forget 🦝",
-    tip: "\"Hi, I'm [name], nice to meet you - what's your name?\""
+    description: "Ask one stranger their name and remember it",
+    suggestion: "\"Hi, I'm [name], nice to meet you - what's your name?\""
   },
   {
     id: 7,
     title: "Getting Personal",
-    description: "Ask one stranger one follow-up question (where they're from / what they do for fun / what they are up to today)",
-    tip: "\"Where are you from?\" \"What do you do for fun?\" \"What are you up to today?\""
+    description: "Ask one stranger a follow-up question about themselves",
+    suggestion: "\"Where are you from?\" \"What do you do for fun?\""
   }
 ];
 
