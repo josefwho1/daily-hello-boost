@@ -457,9 +457,9 @@ export default function Dashboard() {
   const handleCelebrationContinue = () => {
     setShowCelebration(false);
     
-    // Check if all 7 are now complete
-    const newCompletedCount = completedDaysCount + 1;
-    if (newCompletedCount >= 7) {
+    // Check if all 7 are now complete - completedDaysCount already includes the just-completed challenge
+    // since logs have been refetched, so no need to add +1
+    if (completedDaysCount >= 7) {
       setShowMilestone(true);
     }
     // Don't show ComeBackTomorrow - celebration messages now include this context
