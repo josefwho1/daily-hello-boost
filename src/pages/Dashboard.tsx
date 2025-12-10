@@ -461,9 +461,8 @@ export default function Dashboard() {
     const newCompletedCount = completedDaysCount + 1;
     if (newCompletedCount >= 7) {
       setShowMilestone(true);
-    } else {
-      setShowComeBackTomorrow(true);
     }
+    // Don't show ComeBackTomorrow - celebration messages now include this context
   };
 
   const handleMilestoneContinue = () => {

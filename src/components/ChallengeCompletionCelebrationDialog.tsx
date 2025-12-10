@@ -33,7 +33,8 @@ const getDayMessage = (dayNumber: number, streak: number, username: string, isPe
             "Come back tomorrow to retrieve your next challenge.",
             "I really wish you do 😊"
           ],
-          showOrb: true
+          showOrb: true,
+          buttonText: "See you Tomorrow"
         };
       case 2:
         return {
@@ -43,7 +44,8 @@ const getDayMessage = (dayNumber: number, streak: number, username: string, isPe
             "",
             "See you tomorrow 👋",
             "Hope it's a nice day ☀️"
-          ]
+          ],
+          buttonText: "See you then"
         };
       case 3:
         return {
@@ -53,7 +55,8 @@ const getDayMessage = (dayNumber: number, streak: number, username: string, isPe
             "",
             "Time to have some fun tomorrow.",
             "I'd suggest to wear something nice 👟"
-          ]
+          ],
+          buttonText: "Sounds good"
         };
       case 4:
         return {
@@ -63,7 +66,8 @@ const getDayMessage = (dayNumber: number, streak: number, username: string, isPe
             "",
             "Hope you're feeling as good as I am.",
             "See you for Day 5!"
-          ]
+          ],
+          buttonText: "Let's do it"
         };
       case 5:
         return {
@@ -75,7 +79,8 @@ const getDayMessage = (dayNumber: number, streak: number, username: string, isPe
             "It's time to start taking names.",
             "",
             `See you tomorrow ${name}`
-          ]
+          ],
+          buttonText: "I'm In"
         };
       case 6:
         return {
@@ -85,7 +90,8 @@ const getDayMessage = (dayNumber: number, streak: number, username: string, isPe
             "",
             "Now it's Getting Personal.",
             "See you for Day 7."
-          ]
+          ],
+          buttonText: "See you tomorrow, Remi"
         };
       case 7:
         return {
@@ -99,7 +105,67 @@ const getDayMessage = (dayNumber: number, streak: number, username: string, isPe
             "Here's another Orb for your superb efforts you legend."
           ],
           showOrb: true,
-          isPerfectWeek: true
+          isPerfectWeek: true,
+          buttonText: "Choose My Journey 🚀"
+        };
+    }
+  }
+  
+  // Non-streak messages for Days 2-6 (when streak doesn't match day number)
+  if (dayNumber >= 2 && dayNumber <= 6 && streak !== dayNumber) {
+    switch (dayNumber) {
+      case 2:
+        return {
+          title: `Great work, ${name}!`,
+          lines: [
+            "A small well-wish goes further than people realise.",
+            "",
+            "Tomorrow it gets a little more… observational."
+          ],
+          buttonText: "See you then"
+        };
+      case 3:
+        return {
+          title: "Nailed it.",
+          lines: [
+            "A quick observation can open more doors than you think.",
+            "",
+            "Next up, lets add a tiny bit of warmth."
+          ],
+          buttonText: "Sounds good"
+        };
+      case 4:
+        return {
+          title: "Well done!",
+          lines: [
+            "A genuine compliment can change someone's whole day.",
+            "",
+            "Tomorrow's challenge takes it a step deeper."
+          ],
+          buttonText: "Let's do it"
+        };
+      case 5:
+        return {
+          title: "Good stuff.",
+          lines: [
+            "Asking about someone's day is a powerful way to connect.",
+            "Simple and universal.",
+            "",
+            "Now it's time to start taking names."
+          ],
+          buttonText: "I'm In"
+        };
+      case 6:
+        return {
+          title: "Great job!",
+          lines: [
+            "You just turned a stranger into someone familiar.",
+            "",
+            "Names are like magic, remember them and you can make someone light up.",
+            "",
+            "Tomorrow's challenge brings it all together."
+          ],
+          buttonText: "See you tomorrow, Remi"
         };
     }
   }
@@ -113,11 +179,26 @@ const getDayMessage = (dayNumber: number, streak: number, username: string, isPe
         "",
         "Here's another Orb for your efforts you beautiful human. 🔮"
       ],
-      showOrb: true
+      showOrb: true,
+      buttonText: "Choose My Journey 🚀"
     };
   }
   
-  // Default message for non-streak completions
+  // Default message for non-streak completions (Day 7 without streak)
+  if (dayNumber === 7) {
+    return {
+      title: "Congrats on completing all 7 challenges!",
+      lines: [
+        "You are officially onboarded!",
+        "",
+        "Here's another Orb for your efforts you beautiful human. 🔮"
+      ],
+      showOrb: true,
+      buttonText: "Choose My Journey 🚀"
+    };
+  }
+  
+  // Fallback default message
   return {
     title: dayNumber === 1 
       ? `Congrats ${name} on your First Hello!` 
@@ -125,7 +206,8 @@ const getDayMessage = (dayNumber: number, streak: number, username: string, isPe
     lines: [
       `Day ${dayNumber} complete!`,
       "Come back tomorrow for the next challenge."
-    ]
+    ],
+    buttonText: "Continue ✨"
   };
 };
 
@@ -216,7 +298,7 @@ export const ChallengeCompletionCelebrationDialog = ({
           </div>
 
           <Button onClick={onContinue} className="w-full mt-4" size="lg">
-            {isDay7Complete ? "Choose My Journey 🚀" : "Continue ✨"}
+            {message.buttonText || (isDay7Complete ? "Choose My Journey 🚀" : "Continue ✨")}
           </Button>
         </div>
       </DialogContent>
