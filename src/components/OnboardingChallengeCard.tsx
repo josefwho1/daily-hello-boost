@@ -16,8 +16,8 @@ interface OnboardingChallengeCardProps {
   isAvailable: boolean;
   isLocked: boolean;
   isTodaysChallenge: boolean;
-  isNextDay?: boolean; // The day after today
-  hasCompletedToday?: boolean; // If today's challenge is done
+  isNextDay?: boolean;
+  hasCompletedToday?: boolean;
   onComplete: () => void;
 }
 
@@ -33,10 +33,7 @@ export const OnboardingChallengeCard = ({
 }: OnboardingChallengeCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Future days (not next day, not today) - fully blurred
   const isFutureDay = isLocked && !isNextDay;
-  
-  // Next day - show title only, greyed out
   const showNextDayTeaser = isNextDay && isLocked;
 
   return (
@@ -70,19 +67,18 @@ export const OnboardingChallengeCard = ({
         </div>
         
         <div className="flex-1 min-w-0">
-          {/* For future days, blur title and description */}
           {isFutureDay ? (
             <>
-              <h3 className="font-semibold text-muted-foreground/30 blur-[3px] select-none">
+              <h3 className="font-bold text-lg text-muted-foreground/30 blur-[3px] select-none">
                 {challenge.title}
               </h3>
-              <p className="text-xs text-muted-foreground/20 blur-[3px] select-none">
+              <p className="text-sm text-muted-foreground/20 blur-[3px] select-none">
                 {challenge.description}
               </p>
             </>
           ) : showNextDayTeaser ? (
             <>
-              <h3 className="font-semibold text-muted-foreground">
+              <h3 className="font-bold text-lg text-muted-foreground">
                 {challenge.title}
               </h3>
               <p className="text-xs text-muted-foreground">
@@ -94,9 +90,8 @@ export const OnboardingChallengeCard = ({
           ) : (
             <>
               <h3 className={cn(
-                "font-semibold text-foreground",
-                isCompleted && "line-through text-muted-foreground",
-                isLocked && "text-muted-foreground"
+                "font-bold text-lg text-foreground",
+                isCompleted && "line-through text-muted-foreground"
               )}>
                 {challenge.title}
               </h3>
@@ -154,10 +149,10 @@ export const OnboardingChallengeCard = ({
       {!isLocked && !isFutureDay && (
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleContent className="mt-3 ml-13 pl-13">
-            <div className="ml-13 pl-1 border-l-2 border-muted pl-4">
+            <div className="ml-13 pl-1 border-l-2 border-muted pl-4 space-y-2">
               <p className="text-sm text-muted-foreground">{challenge.description}</p>
               {isAvailable && !isCompleted && (
-                <p className="text-xs text-primary mt-2 italic">💡 {challenge.tip}</p>
+                <p className="text-xs text-primary/80 italic">💡 {challenge.suggestion}</p>
               )}
             </div>
           </CollapsibleContent>
