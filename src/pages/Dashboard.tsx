@@ -208,9 +208,16 @@ export default function Dashboard() {
   const handleUseDailyOrb = async () => {
     const currentOrbs = progress?.orbs || 0;
     if (currentOrbs > 0) {
+      // Using an Orb increments the streak by 1 (as if yesterday was completed)
+      // but sets last_completed_date to yesterday so today's hello can still increment
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+      
       await updateProgress({
         orbs: currentOrbs - 1,
-        last_completed_date: format(new Date(), 'yyyy-MM-dd')
+        daily_streak: (progress?.daily_streak || 0) + 1,
+        last_completed_date: yesterdayStr
       });
       toast.success("✨ Orb used! Your daily streak is protected.");
     }
@@ -285,6 +292,9 @@ export default function Dashboard() {
   const handleLogHello = async (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number }) => {
     const isFirstHelloEver = logs.length === 0 && !progress?.has_received_first_orb;
     const isOnboardingChallenge = onboardingChallenges.some(c => c.title === selectedChallenge);
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const todayCount = getLogsTodayCount();
+    const isFirstHelloToday = todayCount === 0;
     
     const result = await addLog({
       ...data,
@@ -295,7 +305,6 @@ export default function Dashboard() {
       const previousHellosThisWeek = progress?.hellos_this_week || 0;
       const newHellosThisWeek = previousHellosThisWeek + 1;
       const newTotalHellos = (progress?.total_hellos || logs.length) + 1;
-      const today = format(new Date(), 'yyyy-MM-dd');
 
       // Check if this is a weekly challenge completion - award orb (max 3)
       const isWeeklyChallenge = selectedHelloType === "remis_challenge";
@@ -340,11 +349,42 @@ export default function Dashboard() {
       const newLevel = getLevelFromXp(newTotalXp);
       const didLevelUp = newLevel > currentLevel;
       
+      // Calculate the new daily streak
+      let newDailyStreak = progress?.daily_streak || 0;
+      
+      if (isFirstHelloToday) {
+        // First hello of the day - check if we should increment streak
+        const lastDate = progress?.last_completed_date;
+        if (lastDate) {
+          const lastCompletedDate = new Date(lastDate);
+          const todayDate = new Date();
+          todayDate.setHours(0, 0, 0, 0);
+          lastCompletedDate.setHours(0, 0, 0, 0);
+          
+          const diffDays = differenceInDays(todayDate, lastCompletedDate);
+          
+          if (diffDays === 0) {
+            // Orb was used today - increment streak since this is the actual hello
+            newDailyStreak = (progress?.daily_streak || 0) + 1;
+          } else if (diffDays === 1) {
+            // Yesterday was completed - increment streak
+            newDailyStreak = (progress?.daily_streak || 0) + 1;
+          } else {
+            // Missed days - reset to 1
+            newDailyStreak = 1;
+          }
+        } else {
+          // First ever hello
+          newDailyStreak = 1;
+        }
+      }
+      // If not first hello today, keep current streak value
+      
       const updates: Record<string, unknown> = {
         hellos_this_week: newHellosThisWeek,
         last_completed_date: today,
         total_hellos: newTotalHellos,
-        daily_streak: Math.max(progress?.daily_streak || 0, 1),
+        daily_streak: newDailyStreak,
         // XP updates
         total_xp: newTotalXp,
         current_level: newLevel,
