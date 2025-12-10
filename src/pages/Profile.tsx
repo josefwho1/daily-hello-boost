@@ -381,8 +381,9 @@ const Profile = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Change your path?</DialogTitle>
-            <DialogDescription>
-              Changing your path will affect how your progress is tracked.
+            <DialogDescription className="space-y-2">
+              <p>Switching your path will affect how your progress is tracked (daily vs weekly).</p>
+              <p>You'll keep your stats and orbs don't worry.</p>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 sm:gap-0">
