@@ -51,7 +51,7 @@ export const DayChallengeRevealDialog = ({
               className="w-24 h-auto max-h-24 animate-bounce-soft object-contain" 
             />
           </div>
-          <DialogTitle className="text-xl">Day {dayNumber} Challenge! 🎉</DialogTitle>
+          <DialogTitle className="text-xl text-center">Day {dayNumber} Challenge! 🎉</DialogTitle>
           <DialogDescription className="text-center pt-2">
             {remiMessage}
           </DialogDescription>
