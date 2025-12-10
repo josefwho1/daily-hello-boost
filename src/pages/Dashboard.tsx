@@ -109,12 +109,16 @@ export default function Dashboard() {
   const allOnboardingComplete = completedDaysCount >= 7;
 
   // Show day reveal dialog when a new day unlocks - only once per day (7-day starter only)
+  // Skip Day 1 since it's revealed during onboarding
   useEffect(() => {
     // Only show in 7-day-starter mode during onboarding week
     if (progress?.mode !== '7-day-starter') return;
     if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return;
     if (progressLoading || logsLoading) return;
     if (!user?.id) return;
+    
+    // Skip Day 1 - it's already revealed in the onboarding flow
+    if (currentOnboardingDay === 1) return;
 
     // Check if we've already shown the reveal for this day using localStorage
     const revealKey = `day_reveal_shown_${user.id}_day_${currentOnboardingDay}`;
@@ -426,8 +430,12 @@ export default function Dashboard() {
       }
 
       // Show celebration for onboarding challenges (only in 7-day-starter mode)
+      // For Day 1 (first hello ever), only show FirstOrbGiftDialog (skip ChallengeCompletionCelebrationDialog)
       if (isOnboardingChallenge && progress?.is_onboarding_week && progress?.mode === '7-day-starter') {
-        setShowCelebration(true);
+        if (!isFirstHelloEver) {
+          // Days 2-7: show the normal celebration dialog
+          setShowCelebration(true);
+        }
       } else if (justHitWeeklyGoal) {
         // Show weekly goal celebration in Chill mode
         setShowWeeklyGoalCelebration(true);
@@ -437,6 +445,7 @@ export default function Dashboard() {
         setShowWeeklyChallengeComplete(true);
       }
 
+      // Day 1 shows the consolidated FirstOrbGiftDialog instead of multiple popups
       if (isFirstHelloEver) {
         setShowFirstOrbGift(true);
       }
@@ -469,7 +478,7 @@ export default function Dashboard() {
       has_received_first_orb: true 
     });
     setShowFirstOrbGift(false);
-    setShowComeBackTomorrow(true);
+    // Don't show ComeBackTomorrow since FirstOrbGiftDialog now includes that messaging
   };
 
   // Check if all 7 onboarding challenges are complete - show mode selection (7-day starter only)
@@ -726,6 +735,7 @@ export default function Dashboard() {
       <FirstOrbGiftDialog
         open={showFirstOrbGift}
         onClaim={handleClaimFirstOrb}
+        username={username}
       />
 
       <ComeBackTomorrowDialog

@@ -27,15 +27,14 @@ const signupSchema = z.object({
 });
 
 const whyHereOptions = [
-  { id: "confidence", label: "I want to build confidence" },
-  { id: "social-anxiety", label: "I want to reduce my social anxiety" },
-  { id: "make-friends", label: "I want to make more friends / meet new people" },
-  { id: "comfort-zone", label: "I want to step out of my comfort zone" },
-  { id: "new-city", label: "I'm new to a city and want to connect" },
-  { id: "community", label: "I want to feel more connected to my community" },
-  { id: "habit", label: "I want to build a new habit" },
-  { id: "challenges", label: "I like challenges!" },
-  { id: "curious", label: "Just curious!" }
+  { id: "confidence", label: "Build confidence" },
+  { id: "meet-people", label: "To meet new people" },
+  { id: "fun", label: "For fun" },
+  { id: "social-anxiety", label: "Reduce social anxiety" },
+  { id: "comfort-zone", label: "Get out of my comfort zone" },
+  { id: "community", label: "To feel more connected in my community" },
+  { id: "habit", label: "To build a new habit" },
+  { id: "curious", label: "Just curious" }
 ];
 
 // Generate timezone options from GMT-12 to GMT+14
@@ -181,7 +180,7 @@ export default function Onboarding() {
     }
   };
 
-  const totalSteps = 11; // 5 original + 6 new intro screens
+  const totalSteps = 10; // 5 profile questions + 5 intro screens
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -198,16 +197,15 @@ export default function Onboarding() {
           {/* Step 1: Welcome - Introduce Remi */}
           {step === 1 && (
             <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <img src={remiMascot} alt="Remi" className="w-64 h-auto max-h-64 mx-auto object-contain" />
+              <img src={remiMascot} alt="Remi" className="w-64 h-auto max-h-64 mx-auto object-contain animate-bounce-soft" />
               <div className="space-y-3">
-                <h1 className="text-2xl font-bold text-foreground">Hello, I'm Remi!</h1>
-                <p className="text-muted-foreground">
-                  I'm your Reminder Raccoon, here to help you build 
-                  confidence and connect with the world, one hello at a time.
+                <h1 className="text-2xl font-bold text-foreground">You're in. 🦝</h1>
+                <p className="text-muted-foreground leading-relaxed">
+                  This is a place to build confidence, meet new people, and make real connections — one simple hello at a time.
                 </p>
               </div>
               <Button onClick={() => setStep(2)} className="w-full" size="lg">
-                Let's Go!
+                Continue
               </Button>
               <button 
                 onClick={() => navigate('/signin')}
@@ -296,10 +294,13 @@ export default function Onboarding() {
                 </div>
 
                 <p className="text-center text-sm text-muted-foreground">
-                  {comfortRating <= 3 && "(heart races, I avoid it)"}
-                  {comfortRating >= 4 && comfortRating <= 6 && "(a bit nervous but manageable)"}
-                  {comfortRating >= 7 && comfortRating <= 9 && "(pretty comfortable)"}
-                  {comfortRating === 10 && "(easy and fun)"}
+                  {comfortRating <= 2 && "(heart races, I avoid it)"}
+                  {(comfortRating === 3 || comfortRating === 4) && "(quite nervous, I don't like to)"}
+                  {(comfortRating === 5 || comfortRating === 6) && "(a bit nervous but manageable)"}
+                  {comfortRating === 7 && "(pretty comfortable)"}
+                  {comfortRating === 8 && "(comfortable)"}
+                  {comfortRating === 9 && "(super comfortable)"}
+                  {comfortRating === 10 && "(no problem at all)"}
                 </p>
               </div>
 
@@ -434,84 +435,62 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 6: Welcome to One Hello */}
+          {/* Step 6: Why we start with 7 days */}
           {step === 6 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img 
                   src={remiMascot} 
-                  alt="Remi waving" 
-                  className="w-48 h-auto max-h-48 mx-auto mb-4 animate-bounce-soft object-contain" 
+                  alt="Remi" 
+                  className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
                 />
-                <h2 className="text-2xl font-bold text-foreground mb-3">You're in. 🦝</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  This is a place to build confidence, meet new people, and make real connections — one simple hello at a time.
-                </p>
-              </div>
-
-              <Button onClick={() => setStep(7)} className="w-full" size="lg">
-                Continue
-              </Button>
-            </div>
-          )}
-
-          {/* Step 7: Why we start with 7 days */}
-          {step === 7 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <img src={remiMascot} alt="Remi" className="w-24 h-auto max-h-24 mx-auto mb-4 object-contain" />
-                <h2 className="text-2xl font-bold text-foreground mb-3">
-                  Your journey starts with a 7-day challenge.
-                </h2>
+                <h2 className="text-2xl font-bold text-foreground mb-3">Your journey starts with a 7-day challenge.</h2>
                 <p className="text-muted-foreground leading-relaxed">
                   For your first week, I'll guide you through one small action each day.
                 </p>
                 <p className="text-muted-foreground leading-relaxed mt-3">
-                  Nothing crazy. Nothing awkward. Just simple, realistic moments to open up confidence and connection. With each day getting progressively more challenging.
+                  With each day getting progressively more challenging.
                 </p>
               </div>
 
-              <Button onClick={() => setStep(8)} className="w-full" size="lg">
+              <Button onClick={() => setStep(7)} className="w-full" size="lg">
                 Okay, tell me more
               </Button>
             </div>
           )}
 
-          {/* Step 8: What to expect */}
-          {step === 8 && (
+          {/* Step 7: What to expect */}
+          {step === 7 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-foreground mb-3">
-                  One small challenge. Every day. Seven days.
+                  What to expect
                 </h2>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>
-                    Each morning, I'll reveal a new challenge. (Or at midnight to be exact)
+                    Each day, I'll reveal a new challenge.
                   </p>
                   <p>
-                    You'll complete it anytime that day — and log your hello inside the app.
+                    You'll complete it anytime that day.
                   </p>
                   <p>
-                    Most challenges take less than 10 seconds.
-                  </p>
-                  <p className="font-medium text-foreground">
-                    But their impact? Much bigger.
+                    Don't forget to log it inside here so I know you've done it.
                   </p>
                 </div>
               </div>
 
-              <Button onClick={() => setStep(9)} className="w-full" size="lg">
-                I'm in
+              <Button onClick={() => setStep(8)} className="w-full" size="lg">
+                Sounds good
               </Button>
             </div>
           )}
 
-          {/* Step 9: What you can achieve */}
-          {step === 9 && (
+          {/* Step 8: What you can achieve */}
+          {step === 8 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-foreground mb-6">
-                  What others achieved in just 7 days
+                  What you can achieve in 7 days
                 </h2>
                 <div className="space-y-4">
                   <Card className="p-4 bg-primary/5 border-primary/20">
@@ -529,14 +508,14 @@ export default function Onboarding() {
                 </div>
               </div>
 
-              <Button onClick={() => setStep(10)} className="w-full" size="lg">
+              <Button onClick={() => setStep(9)} className="w-full" size="lg">
                 Let's do it
               </Button>
             </div>
           )}
 
-          {/* Step 10: Your first reward (Orbs) */}
-          {step === 10 && (
+          {/* Step 9: Your first reward (Orbs) */}
+          {step === 9 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img src={orbImage} alt="Orb" className="w-24 h-24 mx-auto mb-4 object-contain" />
@@ -545,7 +524,7 @@ export default function Onboarding() {
                 </h2>
                 <div className="space-y-3 text-muted-foreground leading-relaxed">
                   <p>
-                    Orbs are your streak savers — little boosts of courage for days when life gets busy.
+                    Orbs are your streak savers — a magical hello for when life gets busy.
                   </p>
                   <p>
                     You'll get your first Orb after finishing your First Hello.
@@ -553,14 +532,14 @@ export default function Onboarding() {
                 </div>
               </div>
 
-              <Button onClick={() => setStep(11)} className="w-full" size="lg">
-                Sounds good
+              <Button onClick={() => setStep(10)} className="w-full" size="lg">
+                I love Orbs
               </Button>
             </div>
           )}
 
-          {/* Step 11: Your first challenge */}
-          {step === 11 && (
+          {/* Step 10: Your first challenge */}
+          {step === 10 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img src={remiMascot} alt="Remi" className="w-24 h-auto max-h-24 mx-auto mb-4 object-contain" />
@@ -586,6 +565,7 @@ export default function Onboarding() {
               </Button>
             </div>
           )}
+
         </div>
       </div>
     </div>
