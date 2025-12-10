@@ -7,6 +7,8 @@ import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
 import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
 import { ModeSelectionDialog } from "@/components/ModeSelectionDialog";
+import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
+import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { UseOrbDialog } from "@/components/UseOrbDialog";
 import { TodaysHelloCard } from "@/components/TodaysHelloCard";
 import { RemisWeeklyChallengeCard } from "@/components/RemisWeeklyChallengeCard";
@@ -43,6 +45,8 @@ export default function Dashboard() {
   const [showFirstOrbGift, setShowFirstOrbGift] = useState(false);
   const [showComeBackTomorrow, setShowComeBackTomorrow] = useState(false);
   const [showModeSelection, setShowModeSelection] = useState(false);
+  const [showDailyModeConfirm, setShowDailyModeConfirm] = useState(false);
+  const [showChillModeConfirm, setShowChillModeConfirm] = useState(false);
   const [showDailyOrbDialog, setShowDailyOrbDialog] = useState(false);
   const [showWeeklyOrbDialog, setShowWeeklyOrbDialog] = useState(false);
   const [showDayReveal, setShowDayReveal] = useState(false);
@@ -54,6 +58,7 @@ export default function Dashboard() {
   const [newWeeklyStreakValue, setNewWeeklyStreakValue] = useState(1);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [newLevelValue, setNewLevelValue] = useState(1);
+  const [pendingMode, setPendingMode] = useState<'daily' | 'chill' | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -441,17 +446,34 @@ export default function Dashboard() {
   }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode]);
 
   const handleModeSelect = async (mode: 'daily' | 'chill') => {
-    const target = mode === 'daily' ? 7 : 5;
+    setPendingMode(mode);
+    setShowModeSelection(false);
+    
+    // Show the appropriate mode confirmation dialog
+    if (mode === 'daily') {
+      setShowDailyModeConfirm(true);
+    } else {
+      setShowChillModeConfirm(true);
+    }
+  };
+
+  const handleModeConfirmContinue = async () => {
+    if (!pendingMode) return;
+    
+    const target = pendingMode === 'daily' ? 7 : 5;
     await updateProgress({ 
-      mode,
+      mode: pendingMode,
       target_hellos_per_week: target,
       has_completed_onboarding: true,
       is_onboarding_week: false,
       hellos_this_week: 0,
       week_start_date: startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0]
     });
-    setShowModeSelection(false);
-    toast.success(`🎉 You're now in ${mode === 'daily' ? 'Daily' : 'Chill'} Mode!`);
+    
+    setShowDailyModeConfirm(false);
+    setShowChillModeConfirm(false);
+    setPendingMode(null);
+    toast.success(`🎉 You're now in ${pendingMode === 'daily' ? 'Daily' : 'Chill'} Mode!`);
   };
 
   // Check if today's hello is completed
@@ -652,7 +674,11 @@ export default function Dashboard() {
         open={showCelebration}
         onContinue={handleCelebrationContinue}
         dayNumber={selectedDayNumber}
+        currentStreak={progress?.daily_streak || 0}
+        username={username}
         isFirstHelloEver={logs.length === 1}
+        isPerfectWeek={(progress?.daily_streak || 0) === 7 && selectedDayNumber === 7}
+        totalChallengesCompleted={getCompletedOnboardingChallenges().length + 1}
       />
 
       <OnboardingCompleteMilestoneDialog
@@ -673,6 +699,16 @@ export default function Dashboard() {
       <ModeSelectionDialog
         open={showModeSelection}
         onSelectMode={handleModeSelect}
+      />
+
+      <DailyModeSelectedDialog
+        open={showDailyModeConfirm}
+        onContinue={handleModeConfirmContinue}
+      />
+
+      <ChillModeSelectedDialog
+        open={showChillModeConfirm}
+        onContinue={handleModeConfirmContinue}
       />
 
       <UseOrbDialog
