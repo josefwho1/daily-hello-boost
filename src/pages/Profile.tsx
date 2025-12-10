@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { XpProgressBar } from "@/components/XpProgressBar";
+import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
+import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { LogOut, Clock, User, Pencil, Check, X, Flame, Calendar, Sparkles, Target, Hand } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -39,6 +41,8 @@ const Profile = () => {
   const [editName, setEditName] = useState("");
   const [isSavingName, setIsSavingName] = useState(false);
   const [showModeChangeDialog, setShowModeChangeDialog] = useState(false);
+  const [showDailyModeConfirm, setShowDailyModeConfirm] = useState(false);
+  const [showChillModeConfirm, setShowChillModeConfirm] = useState(false);
   const [pendingMode, setPendingMode] = useState<string | null>(null);
 
   // Generate timezone options
@@ -168,22 +172,44 @@ const Profile = () => {
           hellos_this_week: 0,
           daily_streak: 0,
         });
+        setShowModeChangeDialog(false);
+        setPendingMode(null);
         toast.success("7-Day Starter challenge restarted!");
       } else {
-        // Switching to daily or connect mode
-        await updateProgress({
-          mode: pendingMode,
-          target_hellos_per_week: getTargetFromMode(pendingMode),
-          has_completed_onboarding: true,
-          is_onboarding_week: false,
-        });
-        toast.success("Challenge mode updated successfully");
+        // Show mode-specific confirmation dialog
+        setShowModeChangeDialog(false);
+        if (pendingMode === 'daily') {
+          setShowDailyModeConfirm(true);
+        } else {
+          setShowChillModeConfirm(true);
+        }
       }
     } catch (error) {
       console.error("Error updating mode:", error);
       toast.error("Failed to update mode");
+      setShowModeChangeDialog(false);
+      setPendingMode(null);
     }
-    setShowModeChangeDialog(false);
+  };
+
+  const handleModeConfirmContinue = async () => {
+    if (!pendingMode) return;
+    
+    try {
+      await updateProgress({
+        mode: pendingMode,
+        target_hellos_per_week: getTargetFromMode(pendingMode),
+        has_completed_onboarding: true,
+        is_onboarding_week: false,
+      });
+      toast.success(`🎉 You're now in ${pendingMode === 'daily' ? 'Daily' : 'Chill'} Mode!`);
+    } catch (error) {
+      console.error("Error updating mode:", error);
+      toast.error("Failed to update mode");
+    }
+    
+    setShowDailyModeConfirm(false);
+    setShowChillModeConfirm(false);
     setPendingMode(null);
   };
 
@@ -407,6 +433,16 @@ const Profile = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <DailyModeSelectedDialog
+        open={showDailyModeConfirm}
+        onContinue={handleModeConfirmContinue}
+      />
+
+      <ChillModeSelectedDialog
+        open={showChillModeConfirm}
+        onContinue={handleModeConfirmContinue}
+      />
     </div>
   );
 };

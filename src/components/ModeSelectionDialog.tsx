@@ -3,12 +3,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import remiMascot from "@/assets/remi-waving.webp";
-import { Flame, Calendar } from "lucide-react";
-import { useState } from "react";
+import { Flame, Leaf } from "lucide-react";
 
 interface ModeSelectionDialogProps {
   open: boolean;
@@ -16,101 +11,71 @@ interface ModeSelectionDialogProps {
 }
 
 export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogProps) => {
-  const [selectedMode, setSelectedMode] = useState<'daily' | 'chill'>('daily');
-
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent className="max-w-md mx-auto [&>button]:hidden max-h-[90vh] overflow-y-auto">
         <div className="text-center py-4">
-          <img 
-            src={remiMascot} 
-            alt="Remi" 
-            className="w-20 h-auto max-h-20 mx-auto mb-4 object-contain"
-          />
-          
-          <h2 className="text-2xl font-bold text-foreground mb-2">
-            🏆 Congratulations!
+          <h2 className="text-xl font-bold text-foreground mb-6">
+            Now choose the pace that works best for you.
           </h2>
-
-          <p className="text-lg font-medium text-primary mb-2">
-            You've completed the One Hello challenge!
-          </p>
           
-          <p className="text-muted-foreground mb-6">
-            Now choose how you want to continue your journey.
-          </p>
-          
-          <RadioGroup 
-            value={selectedMode} 
-            onValueChange={(v) => setSelectedMode(v as 'daily' | 'chill')}
-            className="space-y-4"
-          >
+          <div className="space-y-4">
             {/* Daily Mode */}
-            <Card 
-              className={`p-4 cursor-pointer transition-all text-left ${
-                selectedMode === 'daily' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'hover:border-primary/50'
-              }`}
-              onClick={() => setSelectedMode('daily')}
-            >
-              <div className="flex items-start gap-4">
-                <RadioGroupItem value="daily" id="daily" className="mt-1" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Flame className="w-5 h-5 text-orange-500" />
-                    <Label className="text-lg font-semibold cursor-pointer">
-                      Daily Mode
-                    </Label>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    "One Hello a Day"
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Designed for users who enjoy streaks and daily motivation. 
-                    Complete 1 hello per day to maintain your streak.
-                  </p>
-                </div>
+            <div className="border border-primary/20 rounded-xl p-4 bg-primary/5">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Flame className="w-5 h-5 text-orange-500" />
+                <h3 className="text-lg font-bold">Daily Mode</h3>
+                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">Recommended</span>
               </div>
-            </Card>
+              
+              <p className="text-sm text-muted-foreground italic mb-3">
+                One Hello a Day
+              </p>
+              
+              <ul className="text-sm text-muted-foreground space-y-1 mb-4 text-left">
+                <li>• Builds powerful habits</li>
+                <li>• Daily streak + XP boosts</li>
+                <li>• Best way to stay connected</li>
+              </ul>
+              
+              <Button 
+                onClick={() => onSelectMode('daily')} 
+                className="w-full"
+                size="lg"
+              >
+                <Flame className="w-4 h-4 mr-2" />
+                Daily Mode
+              </Button>
+            </div>
 
             {/* Chill Mode */}
-            <Card 
-              className={`p-4 cursor-pointer transition-all text-left ${
-                selectedMode === 'chill' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'hover:border-primary/50'
-              }`}
-              onClick={() => setSelectedMode('chill')}
-            >
-              <div className="flex items-start gap-4">
-                <RadioGroupItem value="chill" id="chill" className="mt-1" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="w-5 h-5 text-blue-500" />
-                    <Label className="text-lg font-semibold cursor-pointer">
-                      Chill Mode
-                    </Label>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    "5 Hellos a Week (flexible)"
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Designed for users who want flexibility without daily pressure. 
-                    Complete 5 hellos per week (Mon–Sun).
-                  </p>
-                </div>
+            <div className="border border-border rounded-xl p-4">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Leaf className="w-5 h-5 text-green-500" />
+                <h3 className="text-lg font-bold">Chill Mode</h3>
               </div>
-            </Card>
-          </RadioGroup>
-          
-          <Button 
-            onClick={() => onSelectMode(selectedMode)} 
-            className="w-full mt-6" 
-            size="lg"
-          >
-            Start {selectedMode === 'daily' ? 'Daily' : 'Chill'} Mode
-          </Button>
+              
+              <p className="text-sm text-muted-foreground italic mb-3">
+                5 Hellos per Week
+              </p>
+              
+              <ul className="text-sm text-muted-foreground space-y-1 mb-4 text-left">
+                <li>• More flexible</li>
+                <li>• Weekly streak</li>
+                <li>• Perfect for busy schedules</li>
+              </ul>
+              
+              <Button 
+                onClick={() => onSelectMode('chill')} 
+                variant="outline"
+                className="w-full"
+                size="lg"
+              >
+                <Leaf className="w-4 h-4 mr-2" />
+                Chill Mode
+              </Button>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
