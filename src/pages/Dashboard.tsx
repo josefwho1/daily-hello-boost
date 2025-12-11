@@ -183,11 +183,14 @@ export default function Dashboard() {
     }
   }, [progress, progressLoading, weeklyResetDone]);
 
-  // Check for missed daily streak (Daily Mode)
+  // Check for missed daily streak (Daily Mode AND 7-day-starter mode)
   useEffect(() => {
     if (!progress || progressLoading || logsLoading) return;
-    if (progress.is_onboarding_week) return;
-    if (progress.mode !== 'daily') return;
+    
+    // Check both daily mode and 7-day-starter mode for missed streak
+    const mode = progress.mode || '7-day-starter';
+    const shouldCheckDailyStreak = mode === 'daily' || mode === '7-day-starter';
+    if (!shouldCheckDailyStreak) return;
     
     const dailyStreak = progress.daily_streak || 0;
     const lastCompletedDate = progress.last_completed_date;
@@ -201,6 +204,7 @@ export default function Dashboard() {
       if (todayCount === 0) {
         const daysSinceLastHello = differenceInDays(new Date(), lastDate);
         
+        // If more than 1 day has passed and we haven't offered save today
         if (daysSinceLastHello > 1 && saveOfferedForDate !== today) {
           setShowDailyOrbDialog(true);
           updateProgress({ save_offered_for_date: today });
