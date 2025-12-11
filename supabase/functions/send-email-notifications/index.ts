@@ -27,7 +27,15 @@ interface UserForEmail {
 // CTA button style
 const ctaButton = `
   <div style="text-align: center; margin: 24px 0;">
-    <a href="https://onehello.io" style="display: inline-block; background-color: #ff6f3b; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">Open One Hello</a>
+    <a href="https://app.onehello.io" style="display: inline-block; background-color: #ff6f3b; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">Open One Hello</a>
+  </div>
+`
+
+// Remi signature with image
+const remiSignature = `
+  <div style="text-align: center; margin-top: 24px;">
+    <img src="https://app.onehello.io/remi-waving.webp" alt="Remi the raccoon waving" style="width: 80px; height: auto; margin-bottom: 8px;" />
+    <p style="margin: 0; color: #502a13;">— Remi 🦝</p>
   </div>
 `
 
@@ -42,7 +50,8 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
       <p>Once you've done it, open the app and log your hello. You can add their name if you caught it, and any notes you want to remember.</p>
       <p>Complete this and earn your first Orb 🔮</p>
       ${ctaButton}
-      <p>You've got this!<br/>— Remi 🦝</p>
+      <p>You've got this!</p>
+      ${remiSignature}
     `
   },
   2: {
@@ -58,7 +67,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
       </ul>
       <p>A small well-wish goes further than people realise. Log it when you're done!</p>
       ${ctaButton}
-      <p>— Remi 🦝</p>
+      ${remiSignature}
     `
   },
   3: {
@@ -74,7 +83,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
       </ul>
       <p>You might be surprised how much people appreciate being asked. Log it when done!</p>
       ${ctaButton}
-      <p>— Remi 🦝</p>
+      ${remiSignature}
     `
   },
   4: {
@@ -90,7 +99,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
       </ul>
       <p>A genuine compliment can change someone's whole day. You're building confidence with every hello!</p>
       ${ctaButton}
-      <p>— Remi 🦝</p>
+      ${remiSignature}
     `
   },
   5: {
@@ -106,7 +115,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
       </ul>
       <p>Observations are natural ice-breakers. They give people an easy way to respond.</p>
       ${ctaButton}
-      <p>— Remi 🦝</p>
+      ${remiSignature}
     `
   },
   6: {
@@ -123,7 +132,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
       </ul>
       <p>Log their name in the app so you don't forget. You just turned a stranger into someone familiar!</p>
       ${ctaButton}
-      <p>— Remi 🦝</p>
+      ${remiSignature}
     `
   },
   7: {
@@ -139,7 +148,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
       </ul>
       <p>Complete this and you'll unlock the next phase of your One Hello journey. You've got this!</p>
       ${ctaButton}
-      <p>— Remi 🦝</p>
+      ${remiSignature}
     `
   }
 }
@@ -151,7 +160,7 @@ const dailyPathTemplate = {
     <p>Just a friendly nudge — have you logged your hello today?</p>
     <p>One hello a day keeps your streak alive. If life gets in the way, you can always use an Orb to save it 🔮</p>
     ${ctaButton}
-    <p>— Remi 🦝</p>
+    ${remiSignature}
   `
 }
 
@@ -162,7 +171,7 @@ const chillPathTemplate = {
     <p>You're at <strong>${hellosThisWeek}/5 hellos</strong> this week.</p>
     <p>No pressure — you've got flexibility! Just wanted to make sure you don't miss your weekly goal.</p>
     ${ctaButton}
-    <p>— Remi 🦝</p>
+    ${remiSignature}
   `
 }
 
