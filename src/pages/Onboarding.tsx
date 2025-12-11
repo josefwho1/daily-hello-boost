@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
@@ -54,6 +55,7 @@ export default function Onboarding() {
   const [comfortRating, setComfortRating] = useState(5);
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [selectedTimezone, setSelectedTimezone] = useState("+00:00");
+  const [emailRemindersEnabled, setEmailRemindersEnabled] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDetectingTimezone, setIsDetectingTimezone] = useState(false);
   
@@ -146,7 +148,12 @@ export default function Onboarding() {
             current_streak: 0,
             mode: '7-day-starter', // Start with 7-day starter mode
             target_hellos_per_week: 7,
-            has_completed_onboarding: false
+            has_completed_onboarding: false,
+            // Email notification preferences
+            current_phase: 'onboarding',
+            onboarding_email_opt_in: emailRemindersEnabled,
+            daily_email_opt_in: emailRemindersEnabled,
+            chill_email_opt_in: emailRemindersEnabled
           }, { onConflict: 'user_id' });
 
         if (progressError) {
@@ -353,6 +360,22 @@ export default function Onboarding() {
                   {isDetectingTimezone ? 'Detecting...' : 'Auto-detect my timezone'}
                 </Button>
               </div>
+
+              {/* Email Reminders Toggle */}
+              <Card className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <Label className="text-foreground font-medium">Daily reminders</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      One email per day to help you finish the 7-day challenge
+                    </p>
+                  </div>
+                  <Switch
+                    checked={emailRemindersEnabled}
+                    onCheckedChange={setEmailRemindersEnabled}
+                  />
+                </div>
+              </Card>
 
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
