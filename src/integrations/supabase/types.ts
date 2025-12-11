@@ -88,6 +88,33 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          created_at: string
+          email_type: string
+          id: string
+          sent_at: string
+          template_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_type: string
+          id?: string
+          sent_at?: string
+          template_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_type?: string
+          id?: string
+          sent_at?: string
+          template_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       hello_logs: {
         Row: {
           created_at: string
@@ -188,10 +215,15 @@ export type Database = {
       }
       user_progress: {
         Row: {
+          chill_email_opt_in: boolean | null
+          chill_path_selected_at: string | null
           created_at: string
           current_day: number
           current_level: number | null
+          current_phase: string | null
           current_streak: number
+          daily_email_opt_in: boolean | null
+          daily_path_selected_at: string | null
           daily_streak: number | null
           has_completed_onboarding: boolean | null
           has_received_first_orb: boolean | null
@@ -201,12 +233,15 @@ export type Database = {
           id: string
           is_onboarding_week: boolean | null
           last_completed_date: string | null
+          last_hello_at: string | null
           last_weekly_challenge_date: string | null
           last_xp_reset_date: string | null
           longest_streak: number | null
           mode: string | null
           names_today_count: number | null
           notes_today_count: number | null
+          onboarding_completed_at: string | null
+          onboarding_email_opt_in: boolean | null
           onboarding_week_start: string | null
           orbs: number | null
           save_offered_for_date: string | null
@@ -223,10 +258,15 @@ export type Database = {
           why_here: string | null
         }
         Insert: {
+          chill_email_opt_in?: boolean | null
+          chill_path_selected_at?: string | null
           created_at?: string
           current_day?: number
           current_level?: number | null
+          current_phase?: string | null
           current_streak?: number
+          daily_email_opt_in?: boolean | null
+          daily_path_selected_at?: string | null
           daily_streak?: number | null
           has_completed_onboarding?: boolean | null
           has_received_first_orb?: boolean | null
@@ -236,12 +276,15 @@ export type Database = {
           id?: string
           is_onboarding_week?: boolean | null
           last_completed_date?: string | null
+          last_hello_at?: string | null
           last_weekly_challenge_date?: string | null
           last_xp_reset_date?: string | null
           longest_streak?: number | null
           mode?: string | null
           names_today_count?: number | null
           notes_today_count?: number | null
+          onboarding_completed_at?: string | null
+          onboarding_email_opt_in?: boolean | null
           onboarding_week_start?: string | null
           orbs?: number | null
           save_offered_for_date?: string | null
@@ -258,10 +301,15 @@ export type Database = {
           why_here?: string | null
         }
         Update: {
+          chill_email_opt_in?: boolean | null
+          chill_path_selected_at?: string | null
           created_at?: string
           current_day?: number
           current_level?: number | null
+          current_phase?: string | null
           current_streak?: number
+          daily_email_opt_in?: boolean | null
+          daily_path_selected_at?: string | null
           daily_streak?: number | null
           has_completed_onboarding?: boolean | null
           has_received_first_orb?: boolean | null
@@ -271,12 +319,15 @@ export type Database = {
           id?: string
           is_onboarding_week?: boolean | null
           last_completed_date?: string | null
+          last_hello_at?: string | null
           last_weekly_challenge_date?: string | null
           last_xp_reset_date?: string | null
           longest_streak?: number | null
           mode?: string | null
           names_today_count?: number | null
           notes_today_count?: number | null
+          onboarding_completed_at?: string | null
+          onboarding_email_opt_in?: boolean | null
           onboarding_week_start?: string | null
           orbs?: number | null
           save_offered_for_date?: string | null
