@@ -32,6 +32,15 @@ export interface UserProgress {
   names_today_count?: number;
   notes_today_count?: number;
   last_xp_reset_date?: string;
+  // Email notification fields
+  current_phase?: string;
+  onboarding_email_opt_in?: boolean;
+  daily_email_opt_in?: boolean;
+  chill_email_opt_in?: boolean;
+  onboarding_completed_at?: string;
+  last_hello_at?: string;
+  daily_path_selected_at?: string;
+  chill_path_selected_at?: string;
 }
 
 export const useUserProgress = () => {
