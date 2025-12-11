@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import SignIn from "./pages/SignIn";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
+import EmailPreview from "./pages/EmailPreview";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,7 @@ const App = () => {
           <Route path="/auth" element={<AuthRedirect><Auth /></AuthRedirect>} />
           <Route path="/signin" element={<AuthRedirect><SignIn /></AuthRedirect>} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/email-preview" element={<EmailPreview />} />
           <Route 
             path="/" 
             element={
