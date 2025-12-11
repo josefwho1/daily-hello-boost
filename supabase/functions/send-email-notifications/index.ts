@@ -24,6 +24,13 @@ interface UserForEmail {
   timezone_preference: string
 }
 
+// CTA button style
+const ctaButton = `
+  <div style="text-align: center; margin: 24px 0;">
+    <a href="https://onehello.io" style="display: inline-block; background-color: #ff6f3b; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">Open One Hello</a>
+  </div>
+`
+
 // Email templates
 const onboardingTemplates: Record<number, { subject: string; html: string }> = {
   1: {
@@ -34,6 +41,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
       <p>It can be anyone — a barista, someone in the elevator, a person walking by. Just a simple "Hi" or "Hello" is all it takes.</p>
       <p>Once you've done it, open the app and log your hello. You can add their name if you caught it, and any notes you want to remember.</p>
       <p>Complete this and earn your first Orb 🔮</p>
+      ${ctaButton}
       <p>You've got this!<br/>— Remi 🦝</p>
     `
   },
@@ -49,6 +57,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
         <li>"Good luck with that!"</li>
       </ul>
       <p>A small well-wish goes further than people realise. Log it when you're done!</p>
+      ${ctaButton}
       <p>— Remi 🦝</p>
     `
   },
@@ -64,6 +73,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
         <li>"How are things?"</li>
       </ul>
       <p>You might be surprised how much people appreciate being asked. Log it when done!</p>
+      ${ctaButton}
       <p>— Remi 🦝</p>
     `
   },
@@ -79,6 +89,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
         <li>"Your energy is awesome today!"</li>
       </ul>
       <p>A genuine compliment can change someone's whole day. You're building confidence with every hello!</p>
+      ${ctaButton}
       <p>— Remi 🦝</p>
     `
   },
@@ -94,6 +105,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
         <li>"Love what they've done with this place!"</li>
       </ul>
       <p>Observations are natural ice-breakers. They give people an easy way to respond.</p>
+      ${ctaButton}
       <p>— Remi 🦝</p>
     `
   },
@@ -110,6 +122,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
         <li>"I didn't catch your name?"</li>
       </ul>
       <p>Log their name in the app so you don't forget. You just turned a stranger into someone familiar!</p>
+      ${ctaButton}
       <p>— Remi 🦝</p>
     `
   },
@@ -125,6 +138,7 @@ const onboardingTemplates: Record<number, { subject: string; html: string }> = {
         <li>"What are you working on?"</li>
       </ul>
       <p>Complete this and you'll unlock the next phase of your One Hello journey. You've got this!</p>
+      ${ctaButton}
       <p>— Remi 🦝</p>
     `
   }
@@ -136,7 +150,7 @@ const dailyPathTemplate = {
     <h2>Quick check-in!</h2>
     <p>Just a friendly nudge — have you logged your hello today?</p>
     <p>One hello a day keeps your streak alive. If life gets in the way, you can always use an Orb to save it 🔮</p>
-    <p>Open the app and log when you're ready!</p>
+    ${ctaButton}
     <p>— Remi 🦝</p>
   `
 }
@@ -147,7 +161,7 @@ const chillPathTemplate = {
     <h2>Weekly progress check</h2>
     <p>You're at <strong>${hellosThisWeek}/5 hellos</strong> this week.</p>
     <p>No pressure — you've got flexibility! Just wanted to make sure you don't miss your weekly goal.</p>
-    <p>Every hello counts. Log them when you're ready!</p>
+    ${ctaButton}
     <p>— Remi 🦝</p>
   `
 }
