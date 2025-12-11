@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Home, BookOpen, Box, User } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useLocation } from "react-router-dom";
-import remiMascot from "@/assets/remi-mascot.png";
 
 const PawPrint = ({ show }: { show: boolean }) => {
   if (!show) return null;
