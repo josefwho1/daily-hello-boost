@@ -8,6 +8,7 @@ const corsHeaders = {
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const CRON_SECRET = Deno.env.get('CRON_SECRET')
 
 interface UserForEmail {
   user_id: string
@@ -213,6 +214,18 @@ function isWeekday(): boolean {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
+  }
+
+  // Verify authorization
+  const authHeader = req.headers.get('Authorization')
+  const expectedAuth = `Bearer ${CRON_SECRET}`
+  
+  if (!CRON_SECRET || authHeader !== expectedAuth) {
+    console.error('Unauthorized request - invalid or missing CRON_SECRET')
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
 
   try {
