@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,7 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { XpProgressBar } from "@/components/XpProgressBar";
 import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
-import { LogOut, Clock, User, Pencil, Check, X, Flame, Calendar, Route, Hand, Bell } from "lucide-react";
+import { ProfilePictureSelector, getProfilePictureSrc } from "@/components/ProfilePictureSelector";
+import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Hand, Bell, Camera } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -45,6 +46,40 @@ const Profile = () => {
   const [showDailyModeConfirm, setShowDailyModeConfirm] = useState(false);
   const [showChillModeConfirm, setShowChillModeConfirm] = useState(false);
   const [pendingMode, setPendingMode] = useState<string | null>(null);
+  const [showProfilePictureSelector, setShowProfilePictureSelector] = useState(false);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+
+  // Fetch profile picture from profiles table
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('profile_picture')
+        .eq('id', user.id)
+        .single();
+      if (data?.profile_picture) {
+        setProfilePicture(data.profile_picture);
+      }
+    };
+    fetchProfilePicture();
+  }, [user]);
+
+  const handleProfilePictureSelect = async (id: string) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ profile_picture: id })
+        .eq('id', user.id);
+      if (error) throw error;
+      setProfilePicture(id);
+      toast.success("Profile picture updated!");
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+      toast.error("Failed to update profile picture");
+    }
+  };
 
   // Generate timezone options
   const timezoneOptions = [];
@@ -215,9 +250,19 @@ const Profile = () => {
         {/* Profile Card */}
         <Card className="p-6 mb-4 rounded-2xl">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-8 h-8 text-primary" />
-            </div>
+            <button 
+              onClick={() => setShowProfilePictureSelector(true)}
+              className="relative w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden group"
+            >
+              <img 
+                src={getProfilePictureSrc(profilePicture)} 
+                alt="Profile" 
+                className="w-full h-full object-contain"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                <Camera className="w-5 h-5 text-white" />
+              </div>
+            </button>
             <div className="flex-1">
               {isEditingName ? (
                 <div className="flex gap-2">
@@ -500,6 +545,13 @@ const Profile = () => {
       <ChillModeSelectedDialog
         open={showChillModeConfirm}
         onContinue={handleModeConfirmContinue}
+      />
+
+      <ProfilePictureSelector
+        open={showProfilePictureSelector}
+        onOpenChange={setShowProfilePictureSelector}
+        selectedId={profilePicture}
+        onSelect={handleProfilePictureSelect}
       />
     </div>
   );
