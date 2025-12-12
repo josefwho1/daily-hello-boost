@@ -552,6 +552,7 @@ const Profile = () => {
         onOpenChange={setShowProfilePictureSelector}
         selectedId={profilePicture}
         onSelect={handleProfilePictureSelect}
+        userLevel={progress?.current_level || 1}
       />
     </div>
   );

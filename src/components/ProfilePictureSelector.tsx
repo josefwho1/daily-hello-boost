@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,7 +5,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { Check } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 
 // Import all Remi images
 import remiWaving from "@/assets/remi-waving.webp";
@@ -32,10 +31,10 @@ import remiLogging3 from "@/assets/remi-logging-3.webp";
 import remiLogging4 from "@/assets/remi-logging-4.webp";
 import remiLogging5 from "@/assets/remi-logging-5.webp";
 import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
-import remiStreak from "@/assets/remi-streak.webp";
+import remiSuper1 from "@/assets/remi-super-1.webp";
 import remiOrbCelebration from "@/assets/remi-orb-celebration.webp";
 
-export const remiImages: { id: string; src: string; label: string }[] = [
+export const remiImages: { id: string; src: string; label: string; requiredLevel?: number }[] = [
   { id: "remi-waving.webp", src: remiWaving, label: "Waving Remi" },
   { id: "remi-waving-1.webp", src: remiWaving1, label: "Waving Remi 1" },
   { id: "remi-waving-2.webp", src: remiWaving2, label: "Waving Remi 2" },
@@ -59,7 +58,7 @@ export const remiImages: { id: string; src: string; label: string }[] = [
   { id: "remi-logging-4.webp", src: remiLogging4, label: "Logging 4" },
   { id: "remi-logging-5.webp", src: remiLogging5, label: "Logging 5" },
   { id: "remi-holding-orb.webp", src: remiHoldingOrb, label: "Holding Orb" },
-  { id: "remi-streak.webp", src: remiStreak, label: "Streak Remi" },
+  { id: "remi-super-1.webp", src: remiSuper1, label: "Super Remi", requiredLevel: 10 },
   { id: "remi-orb-celebration.webp", src: remiOrbCelebration, label: "Orb Celebration" },
 ];
 
@@ -74,6 +73,7 @@ interface ProfilePictureSelectorProps {
   onOpenChange: (open: boolean) => void;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  userLevel?: number;
 }
 
 export const ProfilePictureSelector = ({
@@ -81,8 +81,12 @@ export const ProfilePictureSelector = ({
   onOpenChange,
   selectedId,
   onSelect,
+  userLevel = 1,
 }: ProfilePictureSelectorProps) => {
-  const handleSelect = (id: string) => {
+  const handleSelect = (id: string, requiredLevel?: number) => {
+    if (requiredLevel && userLevel < requiredLevel) {
+      return; // Don't allow selection if locked
+    }
     onSelect(id);
     onOpenChange(false);
   };
@@ -95,29 +99,46 @@ export const ProfilePictureSelector = ({
         </DialogHeader>
         <div className="overflow-y-auto flex-1 pr-2">
           <div className="grid grid-cols-3 gap-3 pb-4">
-            {remiImages.map((image) => (
-              <button
-                key={image.id}
-                onClick={() => handleSelect(image.id)}
-                className={cn(
-                  "relative aspect-square rounded-xl border-2 p-2 transition-all hover:scale-105 bg-muted/30",
-                  selectedId === image.id
-                    ? "border-primary bg-primary/10"
-                    : "border-border hover:border-primary/50"
-                )}
-              >
-                <img
-                  src={image.src}
-                  alt={image.label}
-                  className="w-full h-full object-contain"
-                />
-                {selectedId === image.id && (
-                  <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                    <Check className="w-3 h-3 text-primary-foreground" />
-                  </div>
-                )}
-              </button>
-            ))}
+            {remiImages.map((image) => {
+              const isLocked = image.requiredLevel && userLevel < image.requiredLevel;
+              
+              return (
+                <button
+                  key={image.id}
+                  onClick={() => handleSelect(image.id, image.requiredLevel)}
+                  disabled={isLocked}
+                  className={cn(
+                    "relative aspect-square rounded-xl border-2 p-2 transition-all bg-muted/30",
+                    isLocked 
+                      ? "opacity-60 cursor-not-allowed border-border"
+                      : "hover:scale-105",
+                    selectedId === image.id && !isLocked
+                      ? "border-primary bg-primary/10"
+                      : !isLocked && "border-border hover:border-primary/50"
+                  )}
+                >
+                  <img
+                    src={image.src}
+                    alt={image.label}
+                    className={cn(
+                      "w-full h-full object-contain",
+                      isLocked && "grayscale"
+                    )}
+                  />
+                  {isLocked && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 rounded-xl">
+                      <Lock className="w-5 h-5 text-white mb-1" />
+                      <span className="text-[10px] text-white font-medium">Lvl {image.requiredLevel}</span>
+                    </div>
+                  )}
+                  {selectedId === image.id && !isLocked && (
+                    <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                      <Check className="w-3 h-3 text-primary-foreground" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       </DialogContent>
