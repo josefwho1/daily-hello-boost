@@ -5,7 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { getRankFromLevel, formatXp, getXpProgress } from "@/lib/xpSystem";
 import remiCelebrating from "@/assets/remi-orb-celebration.webp";
-import { Trophy, User } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 interface LevelUpCelebrationDialogProps {
   open: boolean;
@@ -22,9 +22,6 @@ export const LevelUpCelebrationDialog = ({
 }: LevelUpCelebrationDialogProps) => {
   const rank = getRankFromLevel(newLevel);
   const progress = getXpProgress(totalXp, newLevel);
-  
-  // Check if this is Level 4 - profile picture unlock level
-  const isProfileUnlockLevel = newLevel === 4;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -57,19 +54,6 @@ export const LevelUpCelebrationDialog = ({
             You've reached Level {newLevel}!
           </p>
 
-          {/* Profile Picture Unlock Notification - Level 4 */}
-          {isProfileUnlockLevel && (
-            <div className="bg-gradient-to-r from-[#FF6B35]/20 to-[#FF6B35]/30 rounded-2xl p-4 mb-4 border border-[#FF6B35]/30">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <User className="w-5 h-5 text-[#FF6B35]" />
-                <span className="font-bold text-[#502a13]">New Feature Unlocked!</span>
-              </div>
-              <p className="text-sm text-[#502a13]/80">
-                You can now customize your profile picture! Head to your Profile to choose your favorite Remi 🦝
-              </p>
-            </div>
-          )}
-
           {/* XP Badge */}
           <div className="bg-gradient-to-r from-[#FF6B35]/10 to-[#FF6B35]/20 rounded-2xl p-4 mb-6">
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -101,7 +85,7 @@ export const LevelUpCelebrationDialog = ({
             className="w-full bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-semibold"
             size="lg"
           >
-            {isProfileUnlockLevel ? "Check it out! 🦝" : "Keep Going! 🚀"}
+            Keep Going! 🚀
           </Button>
         </div>
       </DialogContent>
