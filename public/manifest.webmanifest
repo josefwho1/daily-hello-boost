@@ -1,0 +1,14 @@
+{
+  "name": "One Hello",
+  "short_name": "One Hello",
+  "description": "Reconnecting the world, One Hello at a time.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff4f5",
+  "theme_color": "#ff6f3b",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
