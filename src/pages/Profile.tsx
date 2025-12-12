@@ -400,93 +400,38 @@ const Profile = () => {
           </div>
           
           <div className="space-y-4">
-            {/* Show relevant toggle based on current phase */}
-            {progress?.current_phase === 'onboarding' && (
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-foreground">Onboarding reminders</Label>
-                  <p className="text-xs text-muted-foreground">One email per day to help you finish the 7-day challenge</p>
-                </div>
-                <Switch
-                  checked={progress?.onboarding_email_opt_in !== false}
-                  onCheckedChange={async (checked) => {
-                    try {
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-foreground">Email reminders</Label>
+                <p className="text-xs text-muted-foreground">Get reminders from Remi to keep you on track 🦝</p>
+              </div>
+              <Switch
+                checked={
+                  progress?.current_phase === 'onboarding' 
+                    ? progress?.onboarding_email_opt_in !== false
+                    : progress?.current_phase === 'daily_path'
+                    ? progress?.daily_email_opt_in !== false
+                    : progress?.chill_email_opt_in !== false
+                }
+                onCheckedChange={async (checked) => {
+                  try {
+                    if (progress?.current_phase === 'onboarding') {
                       await updateProgress({ onboarding_email_opt_in: checked });
-                      toast.success(checked ? "Reminders enabled" : "Reminders disabled");
-                    } catch (error) {
-                      toast.error("Failed to update preference");
-                    }
-                  }}
-                />
-              </div>
-            )}
-            
-            {progress?.current_phase === 'daily_path' && (
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-foreground">Daily Hello reminders</Label>
-                  <p className="text-xs text-muted-foreground">Email reminders if you haven't said your hello yet today</p>
-                </div>
-                <Switch
-                  checked={progress?.daily_email_opt_in !== false}
-                  onCheckedChange={async (checked) => {
-                    try {
+                    } else if (progress?.current_phase === 'daily_path') {
                       await updateProgress({ daily_email_opt_in: checked });
-                      toast.success(checked ? "Reminders enabled" : "Reminders disabled");
-                    } catch (error) {
-                      toast.error("Failed to update preference");
-                    }
-                  }}
-                />
-              </div>
-            )}
-            
-            {progress?.current_phase === 'chill_path' && (
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-foreground">Weekly Hello reminders</Label>
-                  <p className="text-xs text-muted-foreground">Email reminders to help you reach 5 hellos each week</p>
-                </div>
-                <Switch
-                  checked={progress?.chill_email_opt_in !== false}
-                  onCheckedChange={async (checked) => {
-                    try {
+                    } else {
                       await updateProgress({ chill_email_opt_in: checked });
-                      toast.success(checked ? "Reminders enabled" : "Reminders disabled");
-                    } catch (error) {
-                      toast.error("Failed to update preference");
                     }
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Fallback for users without current_phase set */}
-            {!progress?.current_phase && (
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-foreground">Email reminders</Label>
-                  <p className="text-xs text-muted-foreground">Receive helpful reminder emails</p>
-                </div>
-                <Switch
-                  checked={progress?.daily_email_opt_in !== false}
-                  onCheckedChange={async (checked) => {
-                    try {
-                      await updateProgress({ 
-                        daily_email_opt_in: checked,
-                        chill_email_opt_in: checked,
-                        onboarding_email_opt_in: checked
-                      });
-                      toast.success(checked ? "Reminders enabled" : "Reminders disabled");
-                    } catch (error) {
-                      toast.error("Failed to update preference");
-                    }
-                  }}
-                />
-              </div>
-            )}
+                    toast.success(checked ? "Reminders enabled" : "Reminders disabled");
+                  } catch (error) {
+                    toast.error("Failed to update preference");
+                  }
+                }}
+              />
+            </div>
           </div>
         </Card>
+
         <Card className="p-5 mb-4 rounded-2xl">
           <Button
             variant="outline"
