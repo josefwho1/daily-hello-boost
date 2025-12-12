@@ -94,6 +94,38 @@ export const useHelloLogs = () => {
     }
   };
 
+  const updateLog = async (id: string, updates: {
+    name?: string | null;
+    notes?: string | null;
+    rating?: 'positive' | 'neutral' | 'negative' | null;
+    difficulty_rating?: number | null;
+  }) => {
+    if (!user) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('hello_logs')
+        .update({
+          name: updates.name,
+          notes: updates.notes,
+          rating: updates.rating,
+          difficulty_rating: updates.difficulty_rating
+        })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setLogs(prev => prev.map(log => log.id === id ? data as HelloLog : log));
+      return data;
+    } catch (error) {
+      console.error('Error updating hello log:', error);
+      return null;
+    }
+  };
+
   const getLogsThisWeek = () => {
     const now = new Date();
     const dayOfWeek = now.getDay();
@@ -116,6 +148,7 @@ export const useHelloLogs = () => {
     logs,
     loading,
     addLog,
+    updateLog,
     refetch: fetchLogs,
     getLogsThisWeek,
     getLogsTodayCount,

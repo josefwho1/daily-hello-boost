@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, Trophy, MessageCircle, Calendar } from "lucide-react";
-import { useHelloLogs } from "@/hooks/useHelloLogs";
+import { Search, Sparkles, Trophy, MessageCircle, Calendar, Pencil } from "lucide-react";
+import { useHelloLogs, HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
+import { toast } from "sonner";
 import hellobookIcon from "@/assets/hellobook-icon.webp";
+import EditHelloDialog from "@/components/EditHelloDialog";
 
 // Helper to check if it's a 7-day onboarding challenge type
 const isOnboardingChallenge = (helloType: string | null) => {
@@ -51,9 +53,31 @@ const getTypeDisplay = (helloType: string | null) => {
 };
 
 const Hellobook = () => {
-  const { logs, loading } = useHelloLogs();
+  const { logs, loading, updateLog } = useHelloLogs();
   const { formatTimestamp } = useTimezone();
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const handleEditClick = (log: HelloLog) => {
+    setEditingLog(log);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = async (id: string, updates: {
+    name?: string | null;
+    notes?: string | null;
+    rating?: 'positive' | 'neutral' | 'negative' | null;
+    difficulty_rating?: number | null;
+  }) => {
+    const result = await updateLog(id, updates);
+    if (result) {
+      toast.success("Hello updated!");
+    } else {
+      toast.error("Failed to update hello");
+    }
+    return result;
+  };
 
   // Filter logs based on search query (includes day of week in timestamp)
   const filteredLogs = logs.filter(log => {
@@ -153,8 +177,15 @@ const Hellobook = () => {
                           </p>
                         </div>
                         
-                        {/* Tags on right side */}
+                        {/* Tags and Edit button on right side */}
                         <div className="flex flex-col gap-1 items-end">
+                          <button
+                            onClick={() => handleEditClick(log)}
+                            className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                            aria-label="Edit hello"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
                           {ratingInfo && (
                             <span className={`text-xs px-2 py-0.5 rounded-full border ${ratingInfo.className}`}>
                               {ratingInfo.emoji} {ratingInfo.label}
@@ -189,6 +220,13 @@ const Hellobook = () => {
           </div>
         )}
       </div>
+
+      <EditHelloDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        log={editingLog}
+        onSave={handleSaveEdit}
+      />
     </div>
   );
 };
