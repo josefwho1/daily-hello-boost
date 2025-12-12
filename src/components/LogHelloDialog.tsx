@@ -1,11 +1,21 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import remiMascot from "@/assets/remi-waving.webp";
+import remiLogging1 from "@/assets/remi-logging-1.webp";
+import remiLogging2 from "@/assets/remi-logging-2.webp";
+import remiLogging3 from "@/assets/remi-logging-3.webp";
+import remiLogging4 from "@/assets/remi-logging-4.webp";
+import remiLogging5 from "@/assets/remi-logging-5.webp";
+
+const remiLoggingImages = [remiLogging1, remiLogging2, remiLogging3, remiLogging4, remiLogging5];
+
+const getRandomLoggingImage = () => {
+  return remiLoggingImages[Math.floor(Math.random() * remiLoggingImages.length)];
+};
 
 // Includes regular types + onboarding challenge titles for tracking completion
 export type HelloType = 'regular_hello' | 'todays_hello' | 'remis_challenge' | 
@@ -38,6 +48,8 @@ export const LogHelloDialog = ({
   const [difficultyRating, setDifficultyRating] = useState<number | null>(null);
   const [isLogging, setIsLogging] = useState(false);
 
+  const remiImage = useMemo(() => getRandomLoggingImage(), [open]);
+
   const showDifficultyRating = helloType === 'todays_hello' || helloType === 'remis_challenge';
 
   const dialogTitle = challengeTitle 
@@ -68,7 +80,7 @@ export const LogHelloDialog = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <img src={remiMascot} alt="Remi" className="w-12 h-auto max-h-12 object-contain" />
+            <img src={remiImage} alt="Remi" className="w-12 h-auto max-h-12 object-contain" />
             <DialogTitle className="text-xl">{dialogTitle}</DialogTitle>
           </div>
         </DialogHeader>
