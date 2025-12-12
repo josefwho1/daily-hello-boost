@@ -12,7 +12,7 @@ import { z } from "zod";
 import logoText from "@/assets/one-hello-logo-text.png";
 import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
 
-// Remi Waving images - for welcome/onboarding
+// Remi Waving images - for welcome/onboarding and challenge cards
 import remiWaving1 from "@/assets/remi-waving-1.webp";
 import remiWaving2 from "@/assets/remi-waving-2.webp";
 import remiWaving3 from "@/assets/remi-waving-3.webp";
@@ -23,6 +23,10 @@ import remiCurious1 from "@/assets/remi-curious-1.webp";
 import remiCurious2 from "@/assets/remi-curious-2.webp";
 import remiCurious3 from "@/assets/remi-curious-3.webp";
 import remiCurious4 from "@/assets/remi-curious-4.webp";
+
+// Remi Surprised images - for specific onboarding screens
+import remiSurprised1 from "@/assets/remi-surprised-1.webp";
+import remiSurprised2 from "@/assets/remi-surprised-2.webp";
 
 const remiWavingImages = [remiWaving1, remiWaving2, remiWaving3, remiWaving4];
 const remiCuriousImages = [remiCurious1, remiCurious2, remiCurious3, remiCurious4];
@@ -76,6 +80,7 @@ export default function Onboarding() {
   // Random Remi images - memoized to stay consistent during session
   const [welcomeRemiImage] = useState(() => getRandomImage(remiWavingImages));
   const [curiousRemiImage] = useState(() => getRandomImage(remiCuriousImages));
+  const [challengeRemiImage] = useState(() => getRandomImage(remiWavingImages));
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [selectedTimezone, setSelectedTimezone] = useState("+00:00");
   const [emailRemindersEnabled, setEmailRemindersEnabled] = useState(true);
@@ -487,8 +492,8 @@ export default function Onboarding() {
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img 
-                  src={welcomeRemiImage} 
-                  alt="Remi" 
+                  src={remiSurprised1} 
+                  alt="Remi surprised" 
                   className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
                 />
                 <h2 className="text-2xl font-bold text-foreground mb-3">Your journey starts with a 7-day challenge.</h2>
@@ -516,6 +521,11 @@ export default function Onboarding() {
           {step === 7 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
+                <img 
+                  src={remiCurious1} 
+                  alt="Remi curious" 
+                  className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
+                />
                 <h2 className="text-2xl font-bold text-foreground mb-3">
                   What to expect
                 </h2>
@@ -548,6 +558,11 @@ export default function Onboarding() {
           {step === 8 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
+                <img 
+                  src={remiSurprised2} 
+                  alt="Remi excited" 
+                  className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
+                />
                 <h2 className="text-2xl font-bold text-foreground mb-6">
                   What you can achieve in 7 days
                 </h2>
@@ -613,7 +628,7 @@ export default function Onboarding() {
           {step === 10 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
-                <img src={welcomeRemiImage} alt="Remi" className="w-24 h-auto max-h-24 mx-auto mb-4 object-contain" />
+                <img src={challengeRemiImage} alt="Remi" className="w-24 h-auto max-h-24 mx-auto mb-4 object-contain" />
                 <p className="text-sm text-primary font-medium mb-2">Day 1</p>
                 <h2 className="text-2xl font-bold text-foreground mb-4">First Hello</h2>
                 <Card className="p-6 bg-primary/5 border-primary/20">
