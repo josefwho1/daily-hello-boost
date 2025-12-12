@@ -31,10 +31,9 @@ const ctaButton = `
   </div>
 `
 
-// Remi signature with image
+// Remi signature (text only)
 const remiSignature = `
   <div style="text-align: center; margin-top: 24px;">
-    <img src="https://app.onehello.io/remi-waving.webp" alt="Remi the raccoon waving" style="width: 80px; height: auto; margin-bottom: 8px;" />
     <p style="margin: 0; color: #502a13;">— Remi 🦝</p>
   </div>
 `
