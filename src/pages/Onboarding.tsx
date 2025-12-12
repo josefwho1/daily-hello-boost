@@ -295,7 +295,7 @@ export default function Onboarding() {
           {step === 3 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
-                <img src={curiousRemiImage} alt="Remi curious" className="w-32 h-auto max-h-32 mx-auto object-contain mb-4" />
+                <img src={remiCurious4} alt="Remi curious" className="w-32 h-auto max-h-32 mx-auto object-contain mb-4" />
                 <h2 className="text-2xl font-bold text-foreground mb-2">How comfortable do you feel talking to strangers?</h2>
                 <p className="text-sm text-muted-foreground italic">
                   (i.e. friends you haven't met yet 🦝)
