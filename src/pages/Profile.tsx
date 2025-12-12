@@ -443,14 +443,6 @@ const Profile = () => {
           </Button>
         </Card>
 
-        {/* About */}
-        <Card className="p-5 mb-4 rounded-2xl">
-          <h3 className="font-semibold mb-2 text-foreground">About One Hello</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            One Hello helps you build confidence and connect with others through small daily challenges.
-          </p>
-          <p className="text-xs text-muted-foreground mt-3">Version 2.0.0</p>
-        </Card>
 
         {/* Social & Support Links */}
         <Card className="p-5 rounded-2xl">
