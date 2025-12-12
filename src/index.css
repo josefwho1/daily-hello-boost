@@ -60,45 +60,46 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 0 40% 12%;
-    --foreground: 0 20% 95%;
+    /* Dark mode - #502a13 brown as base */
+    --background: 23 62% 19%; /* #502a13 - dark warm brown */
+    --foreground: 5 100% 97%; /* #fff3f4 - light coral for text */
 
-    --card: 0 30% 15%;
-    --card-foreground: 0 20% 95%;
+    --card: 23 50% 15%;
+    --card-foreground: 5 100% 97%;
 
-    --popover: 0 30% 15%;
-    --popover-foreground: 0 20% 95%;
+    --popover: 23 50% 15%;
+    --popover-foreground: 5 100% 97%;
 
-    --primary: 8 100% 67%;
+    --primary: 16 100% 62%; /* #ff6f3b - primary orange */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 30% 20%;
-    --secondary-foreground: 0 20% 95%;
+    --secondary: 23 40% 25%;
+    --secondary-foreground: 5 100% 97%;
 
-    --muted: 0 30% 20%;
-    --muted-foreground: 0 20% 70%;
+    --muted: 23 40% 22%;
+    --muted-foreground: 23 30% 70%;
 
-    --accent: 15 90% 60%;
+    --accent: 16 100% 62%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 30% 25%;
-    --input: 0 30% 20%;
-    --ring: 8 100% 67%;
+    --border: 23 40% 28%;
+    --input: 23 40% 22%;
+    --ring: 16 100% 62%;
 
     --success: 140 60% 50%;
     --success-foreground: 0 0% 100%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 23 62% 15%;
+    --sidebar-foreground: 5 100% 97%;
+    --sidebar-primary: 16 100% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 23 40% 22%;
+    --sidebar-accent-foreground: 5 100% 97%;
+    --sidebar-border: 23 40% 28%;
+    --sidebar-ring: 16 100% 62%;
   }
 }
 
