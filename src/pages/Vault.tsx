@@ -7,6 +7,7 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { useAuth } from "@/hooks/useAuth";
 import { PackUnlockCelebrationDialog } from "@/components/PackUnlockCelebrationDialog";
 import remiMascot from "@/assets/remi-waving.webp";
+import vaultIcon from "@/assets/vault-icon.webp";
 
 // Level requirements for packs
 const TIPS_UNLOCK_LEVEL = 3;
@@ -132,9 +133,7 @@ const Vault = () => {
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-primary" />
-          </div>
+          <img src={vaultIcon} alt="Vault" className="w-12 h-12 object-contain" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">Remi's Vault</h1>
             <p className="text-sm text-muted-foreground">Secrets to saying hello</p>
