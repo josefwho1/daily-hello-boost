@@ -598,16 +598,18 @@ export default function Dashboard() {
           totalXp={progress.total_xp || 0}
         />
 
-        {/* Log a Hello Button - Always visible */}
-        <div className="mt-6">
-          <LogHelloButton 
-            onClick={() => {
-              setSelectedChallenge(null);
-              setSelectedHelloType('regular_hello');
-              setShowLogDialog(true);
-            }}
-          />
-        </div>
+        {/* Log a Hello Button - Show above challenges for non-onboarding users */}
+        {!(progress.is_onboarding_week && !progress.has_completed_onboarding) && (
+          <div className="mt-6">
+            <LogHelloButton 
+              onClick={() => {
+                setSelectedChallenge(null);
+                setSelectedHelloType('regular_hello');
+                setShowLogDialog(true);
+              }}
+            />
+          </div>
+        )}
 
         {/* Onboarding Week Challenges - only show if in onboarding AND hasn't completed it */}
         {progress.is_onboarding_week && !progress.has_completed_onboarding ? (
@@ -658,6 +660,19 @@ export default function Dashboard() {
                   />
                 );
               })}
+            </div>
+
+            {/* Log a Hello Button - Show below challenges for onboarding users */}
+            <div className="mt-6">
+              <LogHelloButton 
+                onClick={() => {
+                  setSelectedChallenge(null);
+                  setSelectedHelloType('regular_hello');
+                  setShowLogDialog(true);
+                }}
+                variant="onboarding"
+              />
+              <p className="text-center text-sm text-muted-foreground mt-2">Optional during onboarding</p>
             </div>
           </div>
         ) : (
