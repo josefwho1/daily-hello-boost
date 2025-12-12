@@ -57,7 +57,7 @@ export const remiImages: { id: string; src: string; label: string; requiredLevel
   { id: "remi-logging-3.webp", src: remiLogging3, label: "Logging 3" },
   { id: "remi-logging-4.webp", src: remiLogging4, label: "Logging 4" },
   { id: "remi-logging-5.webp", src: remiLogging5, label: "Logging 5" },
-  { id: "remi-holding-orb.webp", src: remiHoldingOrb, label: "Holding Orb" },
+  { id: "remi-holding-orb.webp", src: remiHoldingOrb, label: "Holding Orb", requiredLevel: 5 },
   { id: "remi-super-1.webp", src: remiSuper1, label: "Super Remi", requiredLevel: 10 },
   { id: "remi-orb-celebration.webp", src: remiOrbCelebration, label: "Orb Celebration" },
 ];
