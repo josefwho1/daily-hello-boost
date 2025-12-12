@@ -568,7 +568,7 @@ export default function Dashboard() {
   const targetHellos = mode === 'chill' ? 5 : 7;
 
   return (
-    <div className="min-h-screen bg-[#FFF4F5] pb-24">
+    <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Logo */}
         <div className="flex justify-center mb-6">
@@ -577,8 +577,8 @@ export default function Dashboard() {
 
         {/* Greeting - Centered */}
         <div className="text-center mb-6">
-          <p className="text-lg font-medium text-[#502a13]">
-            Hello, <span className="text-[#FF6B35]">{username}</span>! 👋
+          <p className="text-lg font-medium text-foreground">
+            Hello, <span className="text-primary">{username}</span>! 👋
           </p>
         </div>
 
