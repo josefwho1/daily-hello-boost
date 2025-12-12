@@ -40,6 +40,8 @@ All colors MUST be HSL.
     --success: 140 60% 50%;
     --success-foreground: 0 0% 100%;
 
+    --suggestion: 27 45% 48%; /* #a67c52 - light brown for suggestions */
+
     --radius: 1.25rem;
 
     --sidebar-background: 0 0% 98%;
@@ -91,6 +93,8 @@ All colors MUST be HSL.
 
     --success: 140 60% 50%;
     --success-foreground: 0 0% 100%;
+
+    --suggestion: 27 35% 60%; /* lighter brown for dark mode */
 
     --sidebar-background: 23 62% 15%;
     --sidebar-foreground: 5 100% 97%;

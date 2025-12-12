@@ -152,7 +152,7 @@ export const OnboardingChallengeCard = ({
             <div className="ml-13 pl-1 border-l-2 border-muted pl-4 space-y-2">
               <p className="text-sm text-muted-foreground">{challenge.description}</p>
               {isAvailable && !isCompleted && (
-                <p className="text-xs italic" style={{ color: '#a67c52' }}>💡 {challenge.suggestion}</p>
+                <p className="text-xs italic text-suggestion">💡 {challenge.suggestion}</p>
               )}
             </div>
           </CollapsibleContent>
