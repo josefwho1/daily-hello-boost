@@ -64,22 +64,22 @@ const Hellobook = () => {
     return nameMatch || notesMatch || dateMatch || !query;
   });
 
-  // Get rating label
+  // Get rating label with color classes
   const getRatingLabel = (rating: string | null) => {
     switch (rating) {
-      case 'positive': return { label: "Positive", emoji: "😊" };
-      case 'neutral': return { label: "Neutral", emoji: "😐" };
-      case 'negative': return { label: "Negative", emoji: "😔" };
+      case 'positive': return { label: "Positive", emoji: "😊", className: "bg-emerald-500/20 text-emerald-700 border-emerald-500/30" };
+      case 'neutral': return { label: "Neutral", emoji: "😐", className: "bg-gray-500/20 text-gray-600 border-gray-500/30" };
+      case 'negative': return { label: "Negative", emoji: "😔", className: "bg-red-500/20 text-red-700 border-red-500/30" };
       default: return null;
     }
   };
 
-  // Get difficulty label
+  // Get difficulty label with color classes
   const getDifficultyLabel = (difficultyRating: number | null) => {
     switch (difficultyRating) {
-      case 1: return { label: "Easy", emoji: "😌" };
-      case 2: return { label: "Just right", emoji: "👍" };
-      case 3: return { label: "Hard", emoji: "💪" };
+      case 1: return { label: "Easy", emoji: "😌", className: "bg-gray-500/20 text-gray-600 border-gray-500/30" };
+      case 2: return { label: "Just right", emoji: "👍", className: "bg-gray-500/20 text-gray-600 border-gray-500/30" };
+      case 3: return { label: "Hard", emoji: "💪", className: "bg-gray-500/20 text-gray-600 border-gray-500/30" };
       default: return null;
     }
   };
@@ -156,12 +156,12 @@ const Hellobook = () => {
                         {/* Tags on right side */}
                         <div className="flex flex-col gap-1 items-end">
                           {ratingInfo && (
-                            <span className="text-xs bg-secondary/50 text-secondary-foreground px-2 py-0.5 rounded-full border border-secondary">
+                            <span className={`text-xs px-2 py-0.5 rounded-full border ${ratingInfo.className}`}>
                               {ratingInfo.emoji} {ratingInfo.label}
                             </span>
                           )}
                           {difficultyInfo && (
-                            <span className="text-xs bg-secondary/50 text-secondary-foreground px-2 py-0.5 rounded-full border border-secondary">
+                            <span className={`text-xs px-2 py-0.5 rounded-full border ${difficultyInfo.className}`}>
                               {difficultyInfo.emoji} {difficultyInfo.label}
                             </span>
                           )}
