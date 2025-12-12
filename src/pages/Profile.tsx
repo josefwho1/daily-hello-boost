@@ -13,7 +13,7 @@ import { XpProgressBar } from "@/components/XpProgressBar";
 import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { ProfilePictureSelector, getProfilePictureSrc } from "@/components/ProfilePictureSelector";
-import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Hand, Bell, Camera, Lock } from "lucide-react";
+import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Hand, Bell, Camera } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -250,37 +250,19 @@ const Profile = () => {
         {/* Profile Card */}
         <Card className="p-6 mb-4 rounded-2xl">
           <div className="flex items-center gap-4 mb-6">
-            {/* Profile Picture - locked until Level 4 */}
-            {(progress?.current_level || 1) >= 4 ? (
-              <button 
-                onClick={() => setShowProfilePictureSelector(true)}
-                className="relative w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden group"
-              >
-                <img 
-                  src={getProfilePictureSrc(profilePicture)} 
-                  alt="Profile" 
-                  className="w-full h-full object-contain"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
-                  <Camera className="w-5 h-5 text-white" />
-                </div>
-              </button>
-            ) : (
-              <div 
-                className="relative w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden cursor-not-allowed"
-                onClick={() => toast.info("🔒 Unlock at Level 4 to customize your profile picture!")}
-              >
-                <img 
-                  src={getProfilePictureSrc(profilePicture)} 
-                  alt="Profile" 
-                  className="w-full h-full object-contain opacity-80"
-                />
-                <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center rounded-full">
-                  <Lock className="w-4 h-4 text-white mb-0.5" />
-                  <span className="text-[9px] text-white font-medium">Lvl 4</span>
-                </div>
+            <button 
+              onClick={() => setShowProfilePictureSelector(true)}
+              className="relative w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden group"
+            >
+              <img 
+                src={getProfilePictureSrc(profilePicture)} 
+                alt="Profile" 
+                className="w-full h-full object-contain"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                <Camera className="w-5 h-5 text-white" />
               </div>
-            )}
+            </button>
             <div className="flex-1">
               {isEditingName ? (
                 <div className="flex gap-2">
