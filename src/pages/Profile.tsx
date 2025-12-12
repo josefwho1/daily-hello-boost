@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useUserProgress } from "@/hooks/useUserProgress";
+import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,7 @@ import { XpProgressBar } from "@/components/XpProgressBar";
 import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { ProfilePictureSelector, getProfilePictureSrc } from "@/components/ProfilePictureSelector";
-import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Hand, Bell, Camera, Instagram, Globe, Mail } from "lucide-react";
+import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Bell, Camera, Instagram, Globe, Mail, Sun, Moon, Monitor } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -38,6 +39,7 @@ const Profile = () => {
   const { user } = useAuth();
   const { timezoneOffset, updateTimezone } = useTimezone();
   const { progress, updateProgress } = useUserProgress();
+  const { theme, setTheme } = useTheme();
   
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState("");
@@ -432,20 +434,51 @@ const Profile = () => {
           </div>
         </Card>
 
+        {/* Appearance */}
         <Card className="p-5 mb-4 rounded-2xl">
-          <Button
-            variant="outline"
-            className="w-full justify-center rounded-xl"
-            onClick={handleSignOut}
-          >
-            <LogOut size={16} className="mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-3 mb-4">
+            <Sun className="text-primary w-5 h-5" />
+            <h3 className="font-semibold text-foreground">Appearance</h3>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { value: 'system' as const, label: 'System', icon: Monitor },
+              { value: 'light' as const, label: 'Light', icon: Sun },
+              { value: 'dark' as const, label: 'Dark', icon: Moon },
+            ].map((option) => {
+              const Icon = option.icon;
+              const isSelected = theme === option.value;
+              
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => setTheme(option.value)}
+                  className={cn(
+                    "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all",
+                    isSelected 
+                      ? "border-primary bg-primary/10" 
+                      : "border-border hover:border-primary/50 bg-muted/30"
+                  )}
+                >
+                  <Icon className={cn(
+                    "w-5 h-5",
+                    isSelected ? "text-primary" : "text-muted-foreground"
+                  )} />
+                  <span className={cn(
+                    "text-sm font-medium",
+                    isSelected ? "text-primary" : "text-foreground"
+                  )}>
+                    {option.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </Card>
 
-
         {/* Social & Support Links */}
-        <Card className="p-5 rounded-2xl">
+        <Card className="p-5 mb-4 rounded-2xl">
           <h3 className="font-semibold mb-4 text-foreground">Follow us on</h3>
           <div className="flex justify-center gap-6 mb-6">
             <a 
@@ -506,6 +539,18 @@ const Profile = () => {
               <span>Something not working? Email remi@onehello.io</span>
             </a>
           </div>
+        </Card>
+
+        {/* Sign Out */}
+        <Card className="p-5 rounded-2xl">
+          <Button
+            variant="outline"
+            className="w-full justify-center rounded-xl"
+            onClick={handleSignOut}
+          >
+            <LogOut size={16} className="mr-2" />
+            Sign Out
+          </Button>
         </Card>
       </div>
 
