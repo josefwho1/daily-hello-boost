@@ -65,7 +65,7 @@ export const DayChallengeRevealDialog = ({
             {challengeDescription}
           </p>
           {challengeSuggestion && (
-            <p className="text-xs italic" style={{ color: '#a67c52' }}>
+            <p className="text-xs italic text-suggestion">
               💡 {challengeSuggestion}
             </p>
           )}

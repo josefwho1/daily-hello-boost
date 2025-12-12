@@ -25,7 +25,7 @@ export const LevelUpCelebrationDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto [&>button]:hidden bg-[#FFF4F5] border-2 border-[#FF6B35]/20 overflow-hidden">
+      <DialogContent className="max-w-sm mx-auto [&>button]:hidden bg-background border-2 border-primary/20 overflow-hidden">
         <div className="text-center py-6 relative z-10">
           {/* Remi celebrating */}
           <div className="relative inline-block mb-4">
@@ -35,14 +35,14 @@ export const LevelUpCelebrationDialog = ({
               className="w-28 h-auto max-h-28 mx-auto object-contain"
             />
             <div 
-              className="absolute -top-2 -right-2 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg"
+              className="absolute -top-2 -right-2 w-12 h-12 rounded-full flex items-center justify-center text-primary-foreground font-bold text-lg shadow-lg"
               style={{ backgroundColor: rank.color }}
             >
               {newLevel}
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-[#502a13] mb-2">
+          <h2 className="text-2xl font-bold text-foreground mb-2">
             🎉 Level Up!
           </h2>
 
@@ -50,21 +50,21 @@ export const LevelUpCelebrationDialog = ({
             {rank.emoji} {rank.name}
           </p>
 
-          <p className="text-[#502a13]/70 text-sm mb-4">
+          <p className="text-foreground/70 text-sm mb-4">
             You've reached Level {newLevel}!
           </p>
 
           {/* XP Badge */}
-          <div className="bg-gradient-to-r from-[#FF6B35]/10 to-[#FF6B35]/20 rounded-2xl p-4 mb-6">
+          <div className="bg-gradient-to-r from-primary/10 to-primary/20 rounded-2xl p-4 mb-6">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Trophy className="w-5 h-5 text-[#FF6B35]" />
-              <span className="font-bold text-[#502a13]">{formatXp(totalXp)} XP</span>
+              <Trophy className="w-5 h-5 text-primary" />
+              <span className="font-bold text-foreground">{formatXp(totalXp)} XP</span>
             </div>
             
             {/* Progress to next level */}
             {newLevel < 100 && (
               <div className="space-y-1">
-                <div className="h-2 bg-white/50 rounded-full overflow-hidden">
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div 
                     className="h-full rounded-full transition-all duration-1000"
                     style={{ 
@@ -73,7 +73,7 @@ export const LevelUpCelebrationDialog = ({
                     }}
                   />
                 </div>
-                <p className="text-xs text-[#502a13]/60">
+                <p className="text-xs text-muted-foreground">
                   {formatXp(progress.current)} / {formatXp(progress.needed)} to Level {newLevel + 1}
                 </p>
               </div>
@@ -82,7 +82,7 @@ export const LevelUpCelebrationDialog = ({
 
           <Button 
             onClick={onClose}
-            className="w-full bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-semibold"
+            className="w-full"
             size="lg"
           >
             Keep Going! 🚀
