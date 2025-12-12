@@ -110,7 +110,7 @@ const Hellobook = () => {
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <img src={remiMascot} alt="Remi" className="w-10 h-auto max-h-10 object-contain" />
-          <h1 className="text-2xl font-bold text-foreground">Your Hellobook</h1>
+          <h1 className="text-2xl font-bold text-foreground">Book of Hello's</h1>
         </div>
 
         {/* Search */}
