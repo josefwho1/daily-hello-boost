@@ -598,18 +598,16 @@ export default function Dashboard() {
           totalXp={progress.total_xp || 0}
         />
 
-        {/* Log a Hello Button - Only show when NOT in 7-day starter */}
-        {!(progress.is_onboarding_week && !progress.has_completed_onboarding) && (
-          <div className="mt-6">
-            <LogHelloButton 
-              onClick={() => {
-                setSelectedChallenge(null);
-                setSelectedHelloType('regular_hello');
-                setShowLogDialog(true);
-              }}
-            />
-          </div>
-        )}
+        {/* Log a Hello Button - Always visible */}
+        <div className="mt-6">
+          <LogHelloButton 
+            onClick={() => {
+              setSelectedChallenge(null);
+              setSelectedHelloType('regular_hello');
+              setShowLogDialog(true);
+            }}
+          />
+        </div>
 
         {/* Onboarding Week Challenges - only show if in onboarding AND hasn't completed it */}
         {progress.is_onboarding_week && !progress.has_completed_onboarding ? (
