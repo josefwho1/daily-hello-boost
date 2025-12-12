@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Search, SmilePlus, Meh, Frown, Sparkles, Trophy, MessageCircle, Calendar } from "lucide-react";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
-import remiMascot from "@/assets/remi-waving.webp";
+import hellobookIcon from "@/assets/hellobook-icon.webp";
 
 // Helper to check if it's a 7-day onboarding challenge type
 const isOnboardingChallenge = (helloType: string | null) => {
@@ -109,8 +109,8 @@ const Hellobook = () => {
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <img src={remiMascot} alt="Remi" className="w-10 h-auto max-h-10 object-contain" />
-          <h1 className="text-2xl font-bold text-foreground">Book of Hello's</h1>
+          <img src={hellobookIcon} alt="Hellobook" className="w-10 h-auto max-h-10 object-contain" />
+          <h1 className="text-2xl font-bold text-foreground">Hellobook</h1>
         </div>
 
         {/* Search */}
@@ -127,7 +127,7 @@ const Hellobook = () => {
         {/* Logs */}
         {filteredLogs.length === 0 ? (
           <Card className="p-8 text-center rounded-2xl">
-            <img src={remiMascot} alt="Remi" className="w-16 h-auto max-h-16 mx-auto mb-4 opacity-50 object-contain" />
+            <img src={hellobookIcon} alt="Hellobook" className="w-16 h-auto max-h-16 mx-auto mb-4 opacity-50 object-contain" />
             <p className="text-muted-foreground">
               {searchQuery ? "No hellos match your search." : "No hellos logged yet. Start saying hello!"}
             </p>
