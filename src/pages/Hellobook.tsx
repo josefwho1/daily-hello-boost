@@ -1,23 +1,66 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Search, Hand, SmilePlus, Meh, Frown, Sparkles, Trophy, MessageCircle } from "lucide-react";
+import { Search, SmilePlus, Meh, Frown, Sparkles, Trophy, MessageCircle, Calendar } from "lucide-react";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import remiMascot from "@/assets/remi-waving.webp";
+
+// Helper to check if it's a 7-day onboarding challenge type
+const isOnboardingChallenge = (helloType: string | null) => {
+  const onboardingTypes = [
+    'First Hello', 'Well Wishes', 'Observation', 'Nice Shoes',
+    'How Are You?', 'Name to the Face', 'Getting Personal', 'Weather Chat'
+  ];
+  return helloType && onboardingTypes.includes(helloType);
+};
+
+// Get icon and styling based on hello type
+const getTypeDisplay = (helloType: string | null) => {
+  if (helloType === 'todays_hello') {
+    return {
+      icon: <Sparkles className="w-5 h-5 text-primary" />,
+      label: "Today's Hello",
+      bgClass: "bg-primary/10 border-primary/20",
+      textClass: "text-primary"
+    };
+  }
+  if (helloType === 'remis_challenge') {
+    return {
+      icon: <Trophy className="w-5 h-5 text-amber-600" />,
+      label: "Weekly Challenge",
+      bgClass: "bg-amber-500/10 border-amber-500/20",
+      textClass: "text-amber-600"
+    };
+  }
+  if (isOnboardingChallenge(helloType)) {
+    return {
+      icon: <Calendar className="w-5 h-5 text-emerald-600" />,
+      label: helloType,
+      bgClass: "bg-emerald-500/10 border-emerald-500/20",
+      textClass: "text-emerald-600"
+    };
+  }
+  // Regular hello
+  return {
+    icon: <MessageCircle className="w-5 h-5 text-muted-foreground" />,
+    label: "Regular Hello",
+    bgClass: "bg-muted border-border",
+    textClass: "text-muted-foreground"
+  };
+};
 
 const Hellobook = () => {
   const { logs, loading } = useHelloLogs();
   const { formatTimestamp } = useTimezone();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter logs based on search query
+  // Filter logs based on search query (includes day of week in timestamp)
   const filteredLogs = logs.filter(log => {
     const query = searchQuery.toLowerCase();
     const nameMatch = log.name?.toLowerCase().includes(query);
     const notesMatch = log.notes?.toLowerCase().includes(query);
-    const dateMatch = formatTimestamp(log.created_at).toLowerCase().includes(query);
+    const dateMatch = formatTimestamp(log.created_at, true).toLowerCase().includes(query);
     return nameMatch || notesMatch || dateMatch || !query;
   });
 
@@ -37,40 +80,6 @@ const Hellobook = () => {
       case 'neutral': return <Meh className="w-4 h-4 text-yellow-500" />;
       case 'negative': return <Frown className="w-4 h-4 text-destructive" />;
       default: return null;
-    }
-  };
-
-  // Get tag display info
-  const getTagInfo = (helloType: string | null) => {
-    switch (helloType) {
-      case 'todays_hello':
-        return { 
-          label: "Today's Hello", 
-          className: "bg-primary/10 text-primary border-primary/20",
-          icon: <Sparkles className="w-3 h-3" />
-        };
-      case 'remis_challenge':
-        return { 
-          label: "Remi's Challenge", 
-          className: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-          icon: <Trophy className="w-3 h-3" />
-        };
-      case 'regular_hello':
-        return { 
-          label: "Regular Hello", 
-          className: "bg-muted text-muted-foreground border-border",
-          icon: <MessageCircle className="w-3 h-3" />
-        };
-      default:
-        // Legacy support for old hello_type values
-        if (helloType && helloType !== 'Standard Hello') {
-          return { 
-            label: helloType, 
-            className: "bg-muted text-muted-foreground border-border",
-            icon: null
-          };
-        }
-        return null;
     }
   };
 
@@ -108,7 +117,7 @@ const Hellobook = () => {
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
-            placeholder="Search by name or date..."
+            placeholder="Search by name, notes or date..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-card border-border rounded-xl"
@@ -126,7 +135,7 @@ const Hellobook = () => {
         ) : (
           <div className="space-y-3">
             {filteredLogs.map((log) => {
-              const tagInfo = getTagInfo(log.hello_type);
+              const typeDisplay = getTypeDisplay(log.hello_type);
               const difficultyInfo = getDifficultyLabel(log.difficulty_rating);
               
               return (
@@ -135,9 +144,12 @@ const Hellobook = () => {
                   className="p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in"
                 >
                   <div className="flex items-start gap-3">
-                    {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Hand className="text-primary w-6 h-6" />
+                    {/* Type Icon with Label */}
+                    <div className={`w-14 h-14 rounded-xl border flex flex-col items-center justify-center flex-shrink-0 ${typeDisplay.bgClass}`}>
+                      {typeDisplay.icon}
+                      <span className={`text-[9px] font-medium mt-0.5 text-center leading-tight px-1 ${typeDisplay.textClass}`}>
+                        {typeDisplay.label.length > 12 ? typeDisplay.label.substring(0, 10) + '...' : typeDisplay.label}
+                      </span>
                     </div>
 
                     {/* Content */}
@@ -148,7 +160,7 @@ const Hellobook = () => {
                             {log.name || "Hello"}
                           </h3>
                           <p className="text-xs text-muted-foreground">
-                            {formatTimestamp(log.created_at)}
+                            {formatTimestamp(log.created_at, true)}
                           </p>
                         </div>
                         
@@ -166,20 +178,14 @@ const Hellobook = () => {
                         </p>
                       )}
 
-                      {/* Tags and Difficulty */}
-                      <div className="flex flex-wrap items-center gap-2 mt-2">
-                        {tagInfo && (
-                          <Badge variant="outline" className={`text-xs ${tagInfo.className}`}>
-                            {tagInfo.icon && <span className="mr-1">{tagInfo.icon}</span>}
-                            {tagInfo.label}
-                          </Badge>
-                        )}
-                        {difficultyInfo && (
-                          <Badge variant="outline" className="text-xs bg-secondary/50 text-secondary-foreground border-secondary">
+                      {/* Difficulty */}
+                      {difficultyInfo && (
+                        <div className="mt-2">
+                          <span className="text-xs bg-secondary/50 text-secondary-foreground px-2 py-0.5 rounded-full border border-secondary">
                             {difficultyInfo.emoji} {difficultyInfo.label}
-                          </Badge>
-                        )}
-                      </div>
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Card>
