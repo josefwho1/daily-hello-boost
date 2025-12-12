@@ -505,7 +505,7 @@ export default function Onboarding() {
               </Button>
               <button 
                 onClick={() => setStep(5)}
-                className="text-sm text-muted-foreground hover:text-primary underline"
+                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
               </button>
@@ -537,7 +537,7 @@ export default function Onboarding() {
               </Button>
               <button 
                 onClick={() => setStep(6)}
-                className="text-sm text-muted-foreground hover:text-primary underline"
+                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
               </button>
@@ -572,7 +572,7 @@ export default function Onboarding() {
               </Button>
               <button 
                 onClick={() => setStep(7)}
-                className="text-sm text-muted-foreground hover:text-primary underline"
+                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
               </button>
@@ -602,7 +602,7 @@ export default function Onboarding() {
               </Button>
               <button 
                 onClick={() => setStep(8)}
-                className="text-sm text-muted-foreground hover:text-primary underline"
+                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
               </button>
@@ -636,7 +636,7 @@ export default function Onboarding() {
               </Button>
               <button 
                 onClick={() => setStep(9)}
-                className="text-sm text-muted-foreground hover:text-primary underline"
+                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
               </button>
