@@ -98,9 +98,6 @@ export const LogHelloDialog = ({
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes (optional)</Label>
-            <p className="text-xs text-muted-foreground">
-              Describe who you met, location, how it felt or any details you might want to remember :)
-            </p>
             <Textarea
               id="notes"
               placeholder="Describe who you met, location, how it felt or any details you might want to remember :)"
