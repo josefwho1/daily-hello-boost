@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Home, BookOpen, Box, User } from "lucide-react";
+import { Home, Box, User } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useLocation } from "react-router-dom";
+import bookOfHellosIcon from "@/assets/book-of-hellos.webp";
 
 const PawPrint = ({ show }: { show: boolean }) => {
   if (!show) return null;
@@ -37,10 +38,10 @@ export const BottomNav = () => {
   };
 
   const tabs = [
-    { to: "/", icon: Home, label: "Home" },
-    { to: "/hellobook", icon: BookOpen, label: "Hellobook" },
-    { to: "/vault", icon: Box, label: "Vault" },
-    { to: "/profile", icon: User, label: "Profile" },
+    { to: "/", icon: Home, label: "Home", isImage: false },
+    { to: "/hellobook", icon: bookOfHellosIcon, label: "Book", isImage: true },
+    { to: "/vault", icon: Box, label: "Vault", isImage: false },
+    { to: "/profile", icon: User, label: "Profile", isImage: false },
   ];
 
   return (
@@ -55,11 +56,20 @@ export const BottomNav = () => {
             activeClassName="text-primary"
           >
             <PawPrint show={lastClicked === tab.to} />
-            <tab.icon 
-              size={24} 
-              className="transition-transform duration-200" 
-              strokeWidth={location.pathname === tab.to ? 2.5 : 2}
-            />
+            {tab.isImage ? (
+              <img 
+                src={tab.icon as string} 
+                alt={tab.label} 
+                className="w-6 h-6 object-contain transition-transform duration-200"
+                style={{ filter: location.pathname === tab.to ? 'none' : 'grayscale(50%) opacity(0.7)' }}
+              />
+            ) : (
+              <tab.icon 
+                size={24} 
+                className="transition-transform duration-200" 
+                strokeWidth={location.pathname === tab.to ? 2.5 : 2}
+              />
+            )}
             <span className="text-xs font-medium">{tab.label}</span>
           </NavLink>
         ))}
