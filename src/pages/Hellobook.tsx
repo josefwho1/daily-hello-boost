@@ -144,12 +144,9 @@ const Hellobook = () => {
                   className="p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in"
                 >
                   <div className="flex items-start gap-3">
-                    {/* Type Icon with Label */}
-                    <div className={`w-14 h-14 rounded-xl border flex flex-col items-center justify-center flex-shrink-0 ${typeDisplay.bgClass}`}>
+                    {/* Type Icon */}
+                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center flex-shrink-0 ${typeDisplay.bgClass}`}>
                       {typeDisplay.icon}
-                      <span className={`text-[9px] font-medium mt-0.5 text-center leading-tight px-1 ${typeDisplay.textClass}`}>
-                        {typeDisplay.label.length > 12 ? typeDisplay.label.substring(0, 10) + '...' : typeDisplay.label}
-                      </span>
                     </div>
 
                     {/* Content */}
