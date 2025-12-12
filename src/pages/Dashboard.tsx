@@ -672,7 +672,7 @@ export default function Dashboard() {
                 }}
                 variant="onboarding"
               />
-              <p className="text-center text-sm text-muted-foreground mt-2">Optional during onboarding</p>
+              <p className="text-center text-sm text-muted-foreground mt-2">For any extra Hellos during onboarding</p>
             </div>
           </div>
         ) : (
