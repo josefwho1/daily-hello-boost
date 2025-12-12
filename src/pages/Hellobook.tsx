@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, SmilePlus, Meh, Frown, Sparkles, Trophy, MessageCircle, Calendar } from "lucide-react";
+import { Search, Sparkles, Trophy, MessageCircle, Calendar } from "lucide-react";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import hellobookIcon from "@/assets/hellobook-icon.webp";
@@ -64,21 +64,12 @@ const Hellobook = () => {
     return nameMatch || notesMatch || dateMatch || !query;
   });
 
-  // Get Remi reaction emoji based on rating
-  const getRemiEmoji = (rating: string | null) => {
+  // Get rating label
+  const getRatingLabel = (rating: string | null) => {
     switch (rating) {
-      case 'positive': return '🦝✨';
-      case 'neutral': return '🦝👍';
-      case 'negative': return '🦝💪';
-      default: return '🦝';
-    }
-  };
-
-  const getRatingIcon = (rating: string | null) => {
-    switch (rating) {
-      case 'positive': return <SmilePlus className="w-4 h-4 text-success" />;
-      case 'neutral': return <Meh className="w-4 h-4 text-yellow-500" />;
-      case 'negative': return <Frown className="w-4 h-4 text-destructive" />;
+      case 'positive': return { label: "Positive", emoji: "😊" };
+      case 'neutral': return { label: "Neutral", emoji: "😐" };
+      case 'negative': return { label: "Negative", emoji: "😔" };
       default: return null;
     }
   };
@@ -137,6 +128,7 @@ const Hellobook = () => {
             {filteredLogs.map((log) => {
               const typeDisplay = getTypeDisplay(log.hello_type);
               const difficultyInfo = getDifficultyLabel(log.difficulty_rating);
+              const ratingInfo = getRatingLabel(log.rating);
               
               return (
                 <Card 
@@ -161,10 +153,18 @@ const Hellobook = () => {
                           </p>
                         </div>
                         
-                        {/* Remi reaction */}
-                        <div className="flex items-center gap-1">
-                          {getRatingIcon(log.rating)}
-                          <span className="text-lg">{getRemiEmoji(log.rating)}</span>
+                        {/* Tags on right side */}
+                        <div className="flex flex-col gap-1 items-end">
+                          {ratingInfo && (
+                            <span className="text-xs bg-secondary/50 text-secondary-foreground px-2 py-0.5 rounded-full border border-secondary">
+                              {ratingInfo.emoji} {ratingInfo.label}
+                            </span>
+                          )}
+                          {difficultyInfo && (
+                            <span className="text-xs bg-secondary/50 text-secondary-foreground px-2 py-0.5 rounded-full border border-secondary">
+                              {difficultyInfo.emoji} {difficultyInfo.label}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -173,15 +173,6 @@ const Hellobook = () => {
                         <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
                           {log.notes}
                         </p>
-                      )}
-
-                      {/* Difficulty */}
-                      {difficultyInfo && (
-                        <div className="mt-2">
-                          <span className="text-xs bg-secondary/50 text-secondary-foreground px-2 py-0.5 rounded-full border border-secondary">
-                            {difficultyInfo.emoji} {difficultyInfo.label}
-                          </span>
-                        </div>
                       )}
                     </div>
                   </div>
