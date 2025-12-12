@@ -5,10 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { ArrowLeft } from 'lucide-react';
 import logo from '@/assets/one-hello-logo-tagline.svg';
+
+const resetEmailSchema = z.object({
+  email: z.string().trim().email({ message: "Invalid email address" }),
+});
 
 const signinSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }),
@@ -19,8 +24,47 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handlePasswordReset = async () => {
+    try {
+      const validated = resetEmailSchema.parse({ email: resetEmail });
+      setResetLoading(true);
+
+      const { error } = await supabase.auth.resetPasswordForEmail(validated.email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Check your email",
+        description: "We've sent you a password reset link.",
+      });
+      setResetDialogOpen(false);
+      setResetEmail('');
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else if (error instanceof Error) {
+        toast({
+          title: "Reset Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,9 +153,48 @@ const SignIn = () => {
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
+
+            <Button
+              type="button"
+              variant="link"
+              className="w-full text-sm text-muted-foreground"
+              onClick={() => setResetDialogOpen(true)}
+            >
+              Forgot your password?
+            </Button>
           </form>
         </CardContent>
       </Card>
+
+      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="reset-email">Email</Label>
+              <Input
+                id="reset-email"
+                type="email"
+                placeholder="Enter your email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+              />
+            </div>
+            <Button 
+              onClick={handlePasswordReset}
+              className="w-full"
+              disabled={resetLoading}
+            >
+              {resetLoading ? 'Sending...' : 'Send Reset Link'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
