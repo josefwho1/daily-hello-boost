@@ -193,6 +193,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          profile_picture: string | null
           timezone_preference: string | null
           updated_at: string
           username: string
@@ -200,6 +201,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id: string
+          profile_picture?: string | null
           timezone_preference?: string | null
           updated_at?: string
           username: string
@@ -207,6 +209,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          profile_picture?: string | null
           timezone_preference?: string | null
           updated_at?: string
           username?: string
