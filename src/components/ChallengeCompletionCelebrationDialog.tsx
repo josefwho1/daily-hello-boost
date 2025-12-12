@@ -1,10 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import remiMascot from "@/assets/remi-waving.webp";
+
+// Remi Celebrating images - for days 1-6
+import remiCelebrating1 from "@/assets/remi-celebrating-1.webp";
+import remiCelebrating2 from "@/assets/remi-celebrating-2.webp";
+import remiCelebrating3 from "@/assets/remi-celebrating-3.webp";
+import remiCelebrating4 from "@/assets/remi-celebrating-4.webp";
+
+// Remi Congrats images - for day 7 / milestone
+import remiCongrats1 from "@/assets/remi-congrats-1.webp";
+import remiCongrats2 from "@/assets/remi-congrats-2.webp";
+
+const remiCelebratingImages = [remiCelebrating1, remiCelebrating2, remiCelebrating3, remiCelebrating4];
+const remiCongratsImages = [remiCongrats1, remiCongrats2];
+
+// Get a random image from an array
+const getRandomImage = (images: string[]) => {
+  return images[Math.floor(Math.random() * images.length)];
+};
 
 interface ChallengeCompletionCelebrationDialogProps {
   open: boolean;
@@ -234,10 +251,17 @@ export const ChallengeCompletionCelebrationDialog = ({
   const message = getDayMessage(dayNumber, currentStreak, username, isPerfectWeek, totalChallengesCompleted);
   const isDay7Complete = dayNumber === 7 || totalChallengesCompleted === 7;
 
+  // Pick random Remi image - Celebrating for days 1-6, Congrats for day 7
+  const remiImage = useMemo(() => {
+    return isDay7Complete 
+      ? getRandomImage(remiCongratsImages) 
+      : getRandomImage(remiCelebratingImages);
+  }, [isDay7Complete]);
+
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent 
-        className="sm:max-w-md overflow-hidden [&>button]:hidden" 
+        className="sm:max-w-md overflow-hidden [&>button]:hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         {/* Confetti effect */}
@@ -263,7 +287,7 @@ export const ChallengeCompletionCelebrationDialog = ({
         <div className="text-center relative z-10 py-4">
           <div className="flex justify-center mb-4">
             <img 
-              src={remiMascot} 
+              src={remiImage} 
               alt="Remi celebrating" 
               className="w-24 h-auto max-h-24 animate-bounce-soft object-contain" 
             />
