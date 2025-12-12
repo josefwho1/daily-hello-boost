@@ -50,7 +50,14 @@ export const LogHelloDialog = ({
 
   const remiImage = useMemo(() => getRandomLoggingImage(), [open]);
 
-  const showDifficultyRating = helloType === 'todays_hello' || helloType === 'remis_challenge';
+  // Show difficulty rating for Today's Hello, Remi's Challenge, and all onboarding challenges
+  const onboardingChallengeTypes: HelloType[] = [
+    'First Hello', 'Well Wishes', 'Observation', 'Nice Shoes', 
+    'How Are You?', 'Name to the Face', 'Getting Personal'
+  ];
+  const showDifficultyRating = helloType === 'todays_hello' || 
+    helloType === 'remis_challenge' || 
+    onboardingChallengeTypes.includes(helloType);
 
   const dialogTitle = challengeTitle 
     ? `Complete: ${challengeTitle}` 
