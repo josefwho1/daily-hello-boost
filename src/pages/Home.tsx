@@ -237,7 +237,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="max-w-md mx-auto px-4 py-8">
+      <div className="max-w-md mx-auto px-4 py-4">
         {/* Header */}
         <div className="mb-8">
           <div className="text-center">
