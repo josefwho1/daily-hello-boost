@@ -21,13 +21,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { InstructionsCarousel } from "@/components/InstructionsCarousel";
 import { AddPersonDialog } from "@/components/AddPersonDialog";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Plus } from "lucide-react";
+import { LogHelloDialog } from "@/components/LogHelloDialog";
+import { useHelloLogs } from "@/hooks/useHelloLogs";
 
 const Home = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress, loading: progressLoading, updateProgress } = useUserProgress();
   const { completions, loading: completionsLoading, addCompletion } = useChallengeCompletions();
+  const { addLog: addHelloLog } = useHelloLogs();
+  const [showLogHelloDialog, setShowLogHelloDialog] = useState(false);
   const [showNoteDialog, setShowNoteDialog] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showSecondWelcomeDialog, setShowSecondWelcomeDialog] = useState(false);
@@ -278,6 +282,21 @@ const Home = () => {
           </Button>
         </Card>
 
+        {/* Log a Hello Section */}
+        <Card className="p-6 mt-4">
+          <h2 className="text-xl font-bold mb-2 text-foreground">Log a Hello</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Had any interaction today? Log it here to track your progress
+          </p>
+          <Button 
+            onClick={() => setShowLogHelloDialog(true)}
+            className="w-full"
+          >
+            <Plus className="mr-2" size={18} />
+            Log a Hello
+          </Button>
+        </Card>
+
         {/* Streak Display */}
         <StreakDisplay streak={progress.current_streak} className="my-6" />
 
@@ -498,6 +517,22 @@ const Home = () => {
       <AddPersonDialog 
         open={isAddPersonOpen} 
         onOpenChange={setIsAddPersonOpen}
+      />
+
+      <LogHelloDialog
+        open={showLogHelloDialog}
+        onOpenChange={setShowLogHelloDialog}
+        helloType="regular_hello"
+        onLog={async (data) => {
+          await addHelloLog({
+            name: data.name,
+            notes: data.notes,
+            rating: data.rating,
+            difficulty_rating: data.difficulty_rating,
+            hello_type: 'regular_hello'
+          });
+          toast.success("Hello logged!");
+        }}
       />
     </div>
   );
