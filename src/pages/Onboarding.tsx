@@ -503,6 +503,12 @@ export default function Onboarding() {
               <Button onClick={() => setStep(7)} className="w-full" size="lg">
                 Okay, tell me more
               </Button>
+              <button 
+                onClick={() => setStep(5)}
+                className="text-sm text-muted-foreground hover:text-primary underline"
+              >
+                Back
+              </button>
             </div>
           )}
 
@@ -529,6 +535,12 @@ export default function Onboarding() {
               <Button onClick={() => setStep(8)} className="w-full" size="lg">
                 Sounds good
               </Button>
+              <button 
+                onClick={() => setStep(6)}
+                className="text-sm text-muted-foreground hover:text-primary underline"
+              >
+                Back
+              </button>
             </div>
           )}
 
@@ -558,6 +570,12 @@ export default function Onboarding() {
               <Button onClick={() => setStep(9)} className="w-full" size="lg">
                 Let's do it
               </Button>
+              <button 
+                onClick={() => setStep(7)}
+                className="text-sm text-muted-foreground hover:text-primary underline"
+              >
+                Back
+              </button>
             </div>
           )}
 
@@ -582,6 +600,12 @@ export default function Onboarding() {
               <Button onClick={() => setStep(10)} className="w-full" size="lg">
                 I love Orbs
               </Button>
+              <button 
+                onClick={() => setStep(8)}
+                className="text-sm text-muted-foreground hover:text-primary underline"
+              >
+                Back
+              </button>
             </div>
           )}
 
@@ -610,6 +634,12 @@ export default function Onboarding() {
               >
                 {isSubmitting ? 'Creating account...' : "Let's go"}
               </Button>
+              <button 
+                onClick={() => setStep(9)}
+                className="text-sm text-muted-foreground hover:text-primary underline"
+              >
+                Back
+              </button>
             </div>
           )}
 
