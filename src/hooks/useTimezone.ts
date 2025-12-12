@@ -51,7 +51,7 @@ export const useTimezone = () => {
     return timezoneOffset;
   };
 
-  const formatTimestamp = (timestamp: string) => {
+  const formatTimestamp = (timestamp: string, includeDay = false) => {
     const date = new Date(timestamp);
     
     // Parse the offset (e.g., "+05:30" or "-08:00")
@@ -66,13 +66,19 @@ export const useTimezone = () => {
     const offsetMinutes = (sign === '+' ? 1 : -1) * (hours * 60 + minutes);
     const localDate = new Date(date.getTime() + offsetMinutes * 60000);
     
-    return localDate.toLocaleString('en-GB', {
+    const options: Intl.DateTimeFormatOptions = {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-    });
+    };
+
+    if (includeDay) {
+      options.weekday = 'long';
+    }
+    
+    return localDate.toLocaleString('en-GB', options);
   };
 
   return {
