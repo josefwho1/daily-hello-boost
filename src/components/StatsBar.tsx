@@ -36,7 +36,7 @@ const LevelCircle = ({ level, progress }: { level: number; progress: number }) =
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#FFE4D6"
+          className="stroke-primary/20"
           strokeWidth={strokeWidth}
           fill="transparent"
         />
@@ -45,18 +45,18 @@ const LevelCircle = ({ level, progress }: { level: number; progress: number }) =
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#FF6B35"
+          className="stroke-primary"
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className="transition-all duration-500"
+          style={{ transition: 'all 0.5s' }}
         />
       </svg>
       {/* Level number in center */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-lg font-bold text-[#FF6B35]">{level}</span>
+        <span className="text-lg font-bold text-primary">{level}</span>
       </div>
     </div>
   );
@@ -93,7 +93,6 @@ export const StatsBar = ({
 
   // Get XP progress for level circle
   const xpProgress = getXpProgress(totalXp, currentLevel);
-  const rank = getRankFromLevel(currentLevel);
 
   // Labels based on mode
   const getProgressLabel = () => {
@@ -103,49 +102,49 @@ export const StatsBar = ({
   };
 
   return (
-    <Card className="p-4 space-y-4 bg-white border-[#FF6B35]/10">
+    <Card className="p-4 space-y-4 border-primary/10">
       {/* Progress bar section */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-[#502a13]">
+          <span className="text-sm font-medium text-foreground">
             {getProgressLabel()}
           </span>
-          <span className="text-sm font-bold text-[#FF6B35]">
+          <span className="text-sm font-bold text-primary">
             {progressValue} / {progressMax}
           </span>
         </div>
-        <Progress value={progressPercent} className="h-3 [&>div]:bg-[#FF6B35]" />
+        <Progress value={progressPercent} className="h-3 [&>div]:bg-primary" />
       </div>
 
       {/* Primary Streak with Level - Emphasized */}
       {/* Daily Streak - visible during onboarding AND in Daily mode only */}
       {(effectivelyOnboarding || isDaily) && (
-        <div className="flex items-center gap-4 p-5 rounded-xl bg-[#FFF4F5]">
+        <div className="flex items-center gap-4 p-5 rounded-xl bg-muted">
           <img src={remiSuper1} alt="Streak" className="w-12 h-12 flex-shrink-0 object-contain" />
           <div className="flex-1">
-            <p className="text-sm text-[#502a13]/70">Daily Streak</p>
-            <p className="text-2xl font-bold text-[#502a13]">{dailyStreak} day{dailyStreak !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-muted-foreground">Daily Streak</p>
+            <p className="text-2xl font-bold text-foreground">{dailyStreak} day{dailyStreak !== 1 ? 's' : ''}</p>
           </div>
           {/* Level Circle */}
           <div className="flex flex-col items-center">
             <LevelCircle level={currentLevel} progress={xpProgress.percent} />
-            <p className="text-xs text-[#502a13]/60 mt-1">Level</p>
+            <p className="text-xs text-muted-foreground mt-1">Level</p>
           </div>
         </div>
       )}
 
       {/* Weekly Streak - shown in Chill mode only (not during onboarding) */}
       {!effectivelyOnboarding && !isDaily && (
-        <div className="flex items-center gap-4 p-5 rounded-xl bg-[#FFF4F5]">
+        <div className="flex items-center gap-4 p-5 rounded-xl bg-muted">
           <img src={remiSuper1} alt="Streak" className="w-12 h-12 flex-shrink-0 object-contain" />
           <div className="flex-1">
-            <p className="text-sm text-[#502a13]/70">Weekly Streak</p>
-            <p className="text-2xl font-bold text-[#502a13]">{weeklyStreak} week{weeklyStreak !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-muted-foreground">Weekly Streak</p>
+            <p className="text-2xl font-bold text-foreground">{weeklyStreak} week{weeklyStreak !== 1 ? 's' : ''}</p>
           </div>
           {/* Level Circle */}
           <div className="flex flex-col items-center">
             <LevelCircle level={currentLevel} progress={xpProgress.percent} />
-            <p className="text-xs text-[#502a13]/60 mt-1">Level</p>
+            <p className="text-xs text-muted-foreground mt-1">Level</p>
           </div>
         </div>
       )}
@@ -153,20 +152,20 @@ export const StatsBar = ({
       {/* Stats Grid - Smaller items */}
       <div className="grid grid-cols-2 gap-3">
         {/* Lifetime Hellos - ALWAYS visible */}
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-[#FFF4F5]">
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-muted">
           <img src={remiWaving} alt="Lifetime Hellos" className="w-8 h-8 flex-shrink-0 object-contain" />
           <div>
-            <p className="text-xs text-[#502a13]/70">Lifetime Hellos</p>
-            <p className="font-bold text-[#502a13]">{lifetimeHellos}</p>
+            <p className="text-xs text-muted-foreground">Lifetime Hellos</p>
+            <p className="font-bold text-foreground">{lifetimeHellos}</p>
           </div>
         </div>
 
         {/* Orbs - ALWAYS visible */}
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-[#FFF4F5] border border-[#FF6B35]/20">
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-muted border border-primary/20">
           <img src={orbImage} alt="Orb" className="w-5 h-5 flex-shrink-0 object-contain" />
           <div>
-            <p className="text-xs text-[#502a13]/70">Orbs</p>
-            <p className="font-bold text-[#502a13]">{orbs} / 3</p>
+            <p className="text-xs text-muted-foreground">Orbs</p>
+            <p className="font-bold text-foreground">{orbs} / 3</p>
           </div>
         </div>
       </div>
