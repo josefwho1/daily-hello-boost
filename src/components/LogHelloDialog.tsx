@@ -103,7 +103,7 @@ export const LogHelloDialog = ({
             </p>
             <Textarea
               id="notes"
-              placeholder="How did it go? What did you talk about?"
+              placeholder="Describe who you met, location, how it felt or any details you might want to remember :)"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="min-h-24"
