@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import orbImage from "@/assets/orb.webp";
 import remiWaving from "@/assets/remi-waving.webp";
-import remiStreak from "@/assets/remi-streak.webp";
+import remiSuper1 from "@/assets/remi-super-1.webp";
 import { getRankFromLevel, getXpProgress } from "@/lib/xpSystem";
 
 interface StatsBarProps {
@@ -121,7 +121,7 @@ export const StatsBar = ({
       {/* Daily Streak - visible during onboarding AND in Daily mode only */}
       {(effectivelyOnboarding || isDaily) && (
         <div className="flex items-center gap-4 p-5 rounded-xl bg-[#FFF4F5]">
-          <img src={remiStreak} alt="Streak" className="w-12 h-12 flex-shrink-0 object-contain" />
+          <img src={remiSuper1} alt="Streak" className="w-12 h-12 flex-shrink-0 object-contain" />
           <div className="flex-1">
             <p className="text-sm text-[#502a13]/70">Daily Streak</p>
             <p className="text-2xl font-bold text-[#502a13]">{dailyStreak} day{dailyStreak !== 1 ? 's' : ''}</p>
@@ -137,7 +137,7 @@ export const StatsBar = ({
       {/* Weekly Streak - shown in Chill mode only (not during onboarding) */}
       {!effectivelyOnboarding && !isDaily && (
         <div className="flex items-center gap-4 p-5 rounded-xl bg-[#FFF4F5]">
-          <img src={remiStreak} alt="Streak" className="w-12 h-12 flex-shrink-0 object-contain" />
+          <img src={remiSuper1} alt="Streak" className="w-12 h-12 flex-shrink-0 object-contain" />
           <div className="flex-1">
             <p className="text-sm text-[#502a13]/70">Weekly Streak</p>
             <p className="text-2xl font-bold text-[#502a13]">{weeklyStreak} week{weeklyStreak !== 1 ? 's' : ''}</p>
