@@ -4,7 +4,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { getRankFromLevel, formatXp, getXpProgress } from "@/lib/xpSystem";
-import remiCelebrating from "@/assets/remi-orb-celebration.webp";
+import remiCelebrating from "@/assets/remi-celebrating.webp";
 import { Trophy } from "lucide-react";
 
 interface LevelUpCelebrationDialogProps {
