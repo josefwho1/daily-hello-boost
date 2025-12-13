@@ -253,7 +253,7 @@ export default function Onboarding() {
     }
   };
 
-  const totalSteps = 10; // 5 profile questions + 5 intro screens
+  const totalSteps = 11; // 5 profile questions + 6 intro screens
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -525,7 +525,7 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 6: Why we start with 7 days */}
+          {/* Step 6: Your journey starts here */}
           {step === 6 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
@@ -534,12 +534,12 @@ export default function Onboarding() {
                   alt="Remi surprised" 
                   className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
                 />
-                <h2 className="text-2xl font-bold text-foreground mb-3">Your journey starts with a 7-day challenge.</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-3 italic">Your journey starts here.</h2>
                 <p className="text-muted-foreground leading-relaxed">
                   For your first week, I'll guide you through one small action each day.
                 </p>
                 <p className="text-muted-foreground leading-relaxed mt-3">
-                  With each day getting progressively more challenging.
+                  Progressively getting more challenging.
                 </p>
               </div>
 
@@ -555,8 +555,42 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 7: What to expect */}
+          {/* Step 7: The Purpose */}
           {step === 7 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <img 
+                  src={remiCurious1} 
+                  alt="Remi curious" 
+                  className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
+                />
+                <h2 className="text-2xl font-bold text-foreground mb-3">
+                  The Purpose
+                </h2>
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
+                  <p>
+                    These challenges are designed to get you out in the real world.
+                  </p>
+                  <p>
+                    Interacting with new people, strangers & friends you haven't met yet.
+                  </p>
+                </div>
+              </div>
+
+              <Button onClick={() => setStep(8)} className="w-full" size="lg">
+                I'm In
+              </Button>
+              <button 
+                onClick={() => setStep(6)}
+                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
+              >
+                Back
+              </button>
+            </div>
+          )}
+
+          {/* Step 8: What to expect */}
+          {step === 8 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img 
@@ -569,22 +603,22 @@ export default function Onboarding() {
                 </h2>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>
-                    Each day, I'll reveal a new challenge.
+                    Every morning, I'll reveal a new Hello.
                   </p>
                   <p>
                     You'll complete it anytime that day.
                   </p>
                   <p>
-                    Don't forget to log it inside here so I know you've done it.
+                    Don't forget to log it inside here so I know you've done it 🦝
                   </p>
                 </div>
               </div>
 
-              <Button onClick={() => setStep(8)} className="w-full" size="lg">
+              <Button onClick={() => setStep(9)} className="w-full" size="lg">
                 Sounds good
               </Button>
               <button 
-                onClick={() => setStep(6)}
+                onClick={() => setStep(7)}
                 className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
@@ -592,8 +626,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 8: What you can achieve */}
-          {step === 8 && (
+          {/* Step 9: What you can achieve */}
+          {step === 9 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img 
@@ -607,7 +641,7 @@ export default function Onboarding() {
                 <div className="space-y-4">
                   <Card className="p-4 bg-primary/5 border-primary/20">
                     <p className="text-3xl font-bold text-primary">100%</p>
-                    <p className="text-muted-foreground">said their week felt better</p>
+                    <p className="text-muted-foreground">saw a positive improvement in their week</p>
                   </Card>
                   <Card className="p-4 bg-primary/5 border-primary/20">
                     <p className="text-3xl font-bold text-primary">93%</p>
@@ -620,11 +654,11 @@ export default function Onboarding() {
                 </div>
               </div>
 
-              <Button onClick={() => setStep(9)} className="w-full" size="lg">
+              <Button onClick={() => setStep(10)} className="w-full" size="lg">
                 Let's do it
               </Button>
               <button 
-                onClick={() => setStep(7)}
+                onClick={() => setStep(8)}
                 className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
@@ -632,12 +666,12 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 9: Your first reward (Orbs) */}
-          {step === 9 && (
+          {/* Step 10: Your first reward (Orbs) */}
+          {step === 10 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img src={remiHoldingOrb} alt="Remi with Orb" className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" />
-                <h2 className="text-2xl font-bold text-foreground mb-3">
+                <h2 className="text-2xl font-bold text-foreground mb-3 italic">
                   Complete Day 1 to earn your first Orb.
                 </h2>
                 <div className="space-y-3 text-muted-foreground leading-relaxed">
@@ -650,11 +684,11 @@ export default function Onboarding() {
                 </div>
               </div>
 
-              <Button onClick={() => setStep(10)} className="w-full" size="lg">
+              <Button onClick={() => setStep(11)} className="w-full" size="lg">
                 I love Orbs
               </Button>
               <button 
-                onClick={() => setStep(8)}
+                onClick={() => setStep(9)}
                 className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
@@ -662,8 +696,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 10: Your first challenge */}
-          {step === 10 && (
+          {/* Step 11: Your first challenge */}
+          {step === 11 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img src={challengeRemiImage} alt="Remi" className="w-24 h-auto max-h-24 mx-auto mb-4 object-contain" />
@@ -688,7 +722,7 @@ export default function Onboarding() {
                 {isSubmitting ? 'Starting...' : "Let's go"}
               </Button>
               <button 
-                onClick={() => setStep(9)}
+                onClick={() => setStep(10)}
                 className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
