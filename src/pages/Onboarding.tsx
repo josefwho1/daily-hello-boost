@@ -125,7 +125,11 @@ export default function Onboarding() {
     );
   };
 
-  const handleSignupAndComplete = async () => {
+  // Track if account was created
+  const [accountCreated, setAccountCreated] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  const handleCreateAccount = async () => {
     try {
       const validated = signupSchema.parse({ name, email, password });
       setIsSubmitting(true);
@@ -145,7 +149,7 @@ export default function Onboarding() {
 
       if (signUpError) throw signUpError;
 
-      // Wait for user to be set, then create profile and progress
+      // Wait for user to be set, then create profile
       if (data.user) {
         // Small delay to let auth complete
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -164,38 +168,10 @@ export default function Onboarding() {
           throw new Error('Failed to create profile');
         }
 
-        // Then CREATE user progress with onboarding data
-        const { error: progressError } = await supabase
-          .from('user_progress')
-          .upsert({
-            user_id: data.user.id,
-            why_here: selectedReasons.join(','),
-            is_onboarding_week: true,
-            onboarding_week_start: new Date().toISOString().split('T')[0],
-            current_day: 1,
-            current_streak: 0,
-            mode: '7-day-starter', // Start with 7-day starter mode
-            target_hellos_per_week: 7,
-            has_completed_onboarding: false,
-            // Email notification preferences
-            current_phase: 'onboarding',
-            onboarding_email_opt_in: emailRemindersEnabled,
-            daily_email_opt_in: emailRemindersEnabled,
-            chill_email_opt_in: emailRemindersEnabled
-          }, { onConflict: 'user_id' });
-
-        if (progressError) {
-          console.error('Error creating progress:', progressError);
-          throw new Error('Failed to create progress');
-        }
+        setUserId(data.user.id);
+        setAccountCreated(true);
+        setStep(6); // Proceed to next onboarding step
       }
-
-      toast({
-        title: "Welcome!",
-        description: `Hi ${validated.name}, let's start your 7-day journey!`,
-      });
-      
-      navigate('/');
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -204,6 +180,68 @@ export default function Onboarding() {
           variant: "destructive",
         });
       } else if (error instanceof Error) {
+        // Handle "User already registered" specifically
+        if (error.message.includes('already registered')) {
+          toast({
+            title: "Account exists",
+            description: "This email is already registered. Please sign in instead.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCompleteOnboarding = async () => {
+    try {
+      setIsSubmitting(true);
+
+      const currentUserId = userId || (await supabase.auth.getUser()).data.user?.id;
+      
+      if (!currentUserId) {
+        throw new Error('No user found');
+      }
+
+      // Create user progress with onboarding data
+      const { error: progressError } = await supabase
+        .from('user_progress')
+        .upsert({
+          user_id: currentUserId,
+          why_here: selectedReasons.join(','),
+          is_onboarding_week: true,
+          onboarding_week_start: new Date().toISOString().split('T')[0],
+          current_day: 1,
+          current_streak: 0,
+          mode: '7-day-starter',
+          target_hellos_per_week: 7,
+          has_completed_onboarding: false,
+          current_phase: 'onboarding',
+          onboarding_email_opt_in: emailRemindersEnabled,
+          daily_email_opt_in: emailRemindersEnabled,
+          chill_email_opt_in: emailRemindersEnabled
+        }, { onConflict: 'user_id' });
+
+      if (progressError) {
+        console.error('Error creating progress:', progressError);
+        throw new Error('Failed to create progress');
+      }
+
+      toast({
+        title: "Let's go!",
+        description: `Your 7-day journey begins now!`,
+      });
+      
+      navigate('/');
+    } catch (error) {
+      if (error instanceof Error) {
         toast({
           title: "Error",
           description: error.message,
@@ -473,15 +511,15 @@ export default function Onboarding() {
               </div>
 
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(4)} className="flex-1">
+                <Button variant="outline" onClick={() => setStep(4)} className="flex-1" disabled={isSubmitting}>
                   Back
                 </Button>
                 <Button 
-                  onClick={() => setStep(6)} 
+                  onClick={handleCreateAccount} 
                   className="flex-1"
-                  disabled={!name || !email || !password || password.length < 6}
+                  disabled={!name || !email || !password || password.length < 6 || isSubmitting}
                 >
-                  Continue
+                  {isSubmitting ? 'Creating...' : 'Continue'}
                 </Button>
               </div>
             </div>
@@ -642,12 +680,12 @@ export default function Onboarding() {
               </div>
 
               <Button 
-                onClick={handleSignupAndComplete} 
+                onClick={handleCompleteOnboarding} 
                 className="w-full" 
                 size="lg"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating account...' : "Let's go"}
+                {isSubmitting ? 'Starting...' : "Let's go"}
               </Button>
               <button 
                 onClick={() => setStep(9)}
