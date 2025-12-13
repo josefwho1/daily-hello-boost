@@ -593,9 +593,9 @@ export default function Onboarding() {
           {step === 8 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
-                <img 
-                  src={remiCurious1} 
-                  alt="Remi curious" 
+              <img 
+                  src={remiWaving3} 
+                  alt="Remi waving" 
                   className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
                 />
                 <h2 className="text-2xl font-bold text-foreground mb-3">
