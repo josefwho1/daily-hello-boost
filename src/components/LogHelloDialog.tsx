@@ -84,7 +84,7 @@ export const LogHelloDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md mx-4">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <img src={remiImage} alt="Remi" className="w-12 h-auto max-h-12 object-contain" />
