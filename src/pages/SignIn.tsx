@@ -144,6 +144,7 @@ const SignIn = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <p className="text-xs text-muted-foreground">Minimum 6 characters - letters & numbers</p>
             </div>
 
             <Button 
