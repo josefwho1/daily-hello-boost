@@ -5,18 +5,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-// Remi Celebrating images - for days 1-6
+// Remi Celebrating images - used for all celebrations
 import remiCelebrating1 from "@/assets/remi-celebrating-1.webp";
 import remiCelebrating2 from "@/assets/remi-celebrating-2.webp";
 import remiCelebrating3 from "@/assets/remi-celebrating-3.webp";
 import remiCelebrating4 from "@/assets/remi-celebrating-4.webp";
 
-// Remi Congrats images - for day 7 / milestone
-import remiCongrats1 from "@/assets/remi-congrats-1.webp";
-import remiCongrats2 from "@/assets/remi-congrats-2.webp";
-
 const remiCelebratingImages = [remiCelebrating1, remiCelebrating2, remiCelebrating3, remiCelebrating4];
-const remiCongratsImages = [remiCongrats1, remiCongrats2];
 
 // Get a random image from an array
 const getRandomImage = (images: string[]) => {
@@ -251,12 +246,10 @@ export const ChallengeCompletionCelebrationDialog = ({
   const message = getDayMessage(dayNumber, currentStreak, username, isPerfectWeek, totalChallengesCompleted);
   const isDay7Complete = dayNumber === 7 || totalChallengesCompleted === 7;
 
-  // Pick random Remi image - Celebrating for days 1-6, Congrats for day 7
+  // Pick random Remi Celebrating image
   const remiImage = useMemo(() => {
-    return isDay7Complete 
-      ? getRandomImage(remiCongratsImages) 
-      : getRandomImage(remiCelebratingImages);
-  }, [isDay7Complete]);
+    return getRandomImage(remiCelebratingImages);
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
