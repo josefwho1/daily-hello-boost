@@ -288,11 +288,13 @@ const Vault = () => {
                       <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
                         {index + 1}
                       </span>
-                      <div>
+                      <div className="space-y-1">
                         <p className="font-medium text-foreground text-sm">
                           {challenge.title}
                         </p>
                         <p className="text-xs text-muted-foreground">{challenge.description}</p>
+                        <p className="text-xs italic text-suggestion">💡 {challenge.suggestion}</p>
+                        <p className="text-xs text-muted-foreground/80">📝 {challenge.tips}</p>
                       </div>
                     </div>
                   ))}

@@ -7,54 +7,54 @@ export const challenges: Challenge[] = [
     title: "First Hello",
     description: "Smile + say \"Hello / Hey / Good morning\" to one stranger",
     icon: "👋",
-    tips: "\"Hello\" \"Hey\" \"Good morning\""
+    tips: "Don't forget to smile :)"
   },
   {
     id: 2,
     day: 2,
     title: "Well Wishes",
-    description: "Wish one stranger a great day / evening / weekend (\"Hope you have a great day\" \"Enjoy your evening\".)",
+    description: "Wish one stranger a great day / evening / weekend",
     icon: "💫",
-    tips: "\"Hope you have a great day\" \"Enjoy your evening\""
+    tips: "A smile and positive tone will make this one sing"
   },
   {
     id: 3,
     day: 3,
     title: "Weather Chat",
-    description: "Share an observation about the weather to one stranger",
+    description: "Share an observation about the weather, traffic, anything to one stranger",
     icon: "💬",
-    tips: "\"Nice/terrible/strange weather today\" \"So cold this morning 🥶\""
+    tips: "Great when standing and waiting for something"
   },
   {
     id: 4,
     day: 4,
     title: "Nice Shoes",
-    description: "Give one stranger a genuine compliment (\"Love your jacket\" \"Nice shoes\")",
+    description: "Give someone a genuine compliment",
     icon: "👟",
-    tips: "\"Love your jacket\" \"Nice shoes\""
+    tips: "Clothing works best, try make sure its genuine"
   },
   {
     id: 5,
     day: 5,
     title: "How Are You?",
-    description: "Ask one stranger \"How's your day going?\"",
+    description: "Ask one stranger how their day is going.",
     icon: "🤝",
-    tips: "\"How's your day going?\" \"How are you?\""
+    tips: "Cool and casual. Staff and cashiers love getting this one"
   },
   {
     id: 6,
     day: 6,
-    title: "Name to the Face",
-    description: "Ask one stranger their name (& remember it) \"Hi, I'm Remi, nice to meet you - whats your name?\" PS: log it in here straight away so you don't forget 🦝",
+    title: "Taking Names",
+    description: "Get the name of someone new (& remember it) PS: log it in here straight away so you don't forget 🦝",
     icon: "🙏",
-    tips: "\"Hi, I'm [name], nice to meet you - what's your name?\""
+    tips: "After a positive hello, try introducing yourself first"
   },
   {
     id: 7,
     day: 7,
     title: "Getting Personal",
-    description: "Ask one stranger one follow-up question (where they're from / what they do for fun / what they are up to today)",
+    description: "Ask someone a personal question to get to know them, anything at all",
     icon: "🎉",
-    tips: "\"Where are you from?\" \"What do you do for fun?\" \"What are you up to today?\""
+    tips: "Start with a hello, if you get good reception, try to get to know them"
   }
 ];

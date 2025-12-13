@@ -15,6 +15,7 @@ interface DayChallengeRevealDialogProps {
   challengeTitle: string;
   challengeDescription: string;
   challengeSuggestion?: string;
+  challengeTips?: string;
   onAccept: () => void;
 }
 
@@ -35,6 +36,7 @@ export const DayChallengeRevealDialog = ({
   challengeTitle,
   challengeDescription,
   challengeSuggestion,
+  challengeTips,
   onAccept,
 }: DayChallengeRevealDialogProps) => {
   const messageIndex = Math.min(dayNumber - 1, remiDailyMessages.length - 1);
@@ -67,6 +69,11 @@ export const DayChallengeRevealDialog = ({
           {challengeSuggestion && (
             <p className="text-xs italic text-suggestion">
               💡 {challengeSuggestion}
+            </p>
+          )}
+          {challengeTips && (
+            <p className="text-xs text-muted-foreground/80">
+              📝 {challengeTips}
             </p>
           )}
         </div>
