@@ -14,7 +14,7 @@ import { XpProgressBar } from "@/components/XpProgressBar";
 import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { ProfilePictureSelector, getProfilePictureSrc } from "@/components/ProfilePictureSelector";
-import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Bell, Camera, Instagram, Globe, Mail, Sun, Moon, Monitor } from "lucide-react";
+import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Bell, Camera, Instagram, Globe, Mail, Sun, Moon, Monitor, Smartphone, Share, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -50,6 +50,7 @@ const Profile = () => {
   const [pendingMode, setPendingMode] = useState<string | null>(null);
   const [showProfilePictureSelector, setShowProfilePictureSelector] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [showInstallSteps, setShowInstallSteps] = useState(false);
 
   // Fetch profile picture from profiles table
   useEffect(() => {
@@ -432,6 +433,44 @@ const Profile = () => {
               />
             </div>
           </div>
+        </Card>
+
+        {/* Add to Home Screen */}
+        <Card className="p-5 mb-4 rounded-2xl">
+          <button
+            onClick={() => setShowInstallSteps(!showInstallSteps)}
+            className="w-full flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <Smartphone className="text-primary w-5 h-5" />
+              <h3 className="font-semibold text-foreground">Add One Hello to your home screen</h3>
+            </div>
+            {showInstallSteps ? (
+              <ChevronUp className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+          
+          {showInstallSteps && (
+            <div className="mt-4 space-y-3 pl-8">
+              <div className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary flex-shrink-0">1</span>
+                <p className="text-sm text-muted-foreground">Open this site in Chrome or Safari</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary flex-shrink-0">2</span>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground">Tap the share icon</p>
+                  <Share className="w-4 h-4 text-muted-foreground" />
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary flex-shrink-0">3</span>
+                <p className="text-sm text-muted-foreground">Select "Add to Home Screen"</p>
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Appearance */}
