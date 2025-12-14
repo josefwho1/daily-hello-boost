@@ -2,73 +2,63 @@ export interface RemisChallenge {
   id: number;
   title: string;
   description: string;
+  suggestion: string;
 }
 
 export const remisWeeklyChallenges: RemisChallenge[] = [
   {
     id: 1,
-    title: "Fit Checkkkk",
-    description: "Ask for an opinion on your outfit"
+    title: "Future Friend",
+    description: "Get the contact of someone new and suggest to go for a coffee, walk or bite to eat",
+    suggestion: "You seem cool - want to grab a coffee sometime?"
   },
   {
     id: 2,
-    title: "Learn & Repeat",
-    description: "Get someone's name and use it during your interaction"
+    title: "Forget & Forgive",
+    description: "Ask for someone's name that you should already know",
+    suggestion: "I'm so sorry, I've forgotten your name, I'm Remi"
   },
   {
     id: 3,
-    title: "Shameless Plug",
-    description: "Name drop One Hello and use it as an excuse to meet someone. 'Hey I'm doing this challenge where I'm trying to meet new people, it's called One Hello'"
+    title: "Old Flame",
+    description: "Reach out to someone (friend, family or colleague) that you haven't spoken to in a while. (You can use your phone for this one)",
+    suggestion: "Hey X, it's been a while - how have you been?"
   },
   {
     id: 4,
-    title: "Jokester",
-    description: "Make someone laugh by telling them a joke"
+    title: "Free Coffee",
+    description: "Buy someone a coffee, tis the season of giving.",
+    suggestion: "Pre-pay for the person behind you in line"
   },
   {
     id: 5,
-    title: "Aliens",
-    description: "Ask someone whether they believe in aliens?"
+    title: "Neighborino",
+    description: "Introduce yourself to a neighbour you've never met properly and get their name",
+    suggestion: "Hey, I think we're neighbours, wanted to introduce myself..."
   },
   {
     id: 6,
-    title: "Opposites Attract",
-    description: "Get the name of someone from the opposite gender"
-  },
-  {
-    id: 7,
-    title: "Old Timer",
-    description: "Get the name of someone older than you"
-  },
-  {
-    id: 8,
-    title: "Forget & Forgive",
-    description: "Ask for someone's name that you should already know"
-  },
-  {
-    id: 9,
     title: "Name to the Face",
-    description: "Get the name of someone you've seen before but never met, maybe at your coffee spot, gym or work place"
-  },
-  {
-    id: 10,
-    title: "Photo Please",
-    description: "Ask someone to take a photo of you. Tag #onehello"
-  },
-  {
-    id: 11,
-    title: "High Five",
-    description: "Get a high five from a stranger"
+    description: "Introduce yourself to someone you've seen many times before but never got their name",
+    suggestion: "Hey I see you around all the time, I'm Remi"
   }
 ];
 
-// Get this week's challenge - resets every Sunday at midnight
+// Reference date: Monday Dec 8, 2025 = "Future Friend" (index 0)
+// Week of Dec 15, 2025 = "Forget & Forgive" (index 1)
+// Week of Dec 22, 2025 = "Old Flame" (index 2) etc.
+const REFERENCE_DATE = new Date(Date.UTC(2025, 11, 8)); // Dec 8, 2025 (Monday)
+
+// Get this week's challenge - resets every Monday at midnight UTC
 export const getThisWeeksChallenge = (): RemisChallenge => {
   const now = new Date();
-  // Get the ISO week number of the year
-  const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const days = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
-  const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
-  const index = weekNumber % remisWeeklyChallenges.length;
+  
+  // Calculate weeks since reference date
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const weeksSinceReference = Math.floor((now.getTime() - REFERENCE_DATE.getTime()) / msPerWeek);
+  
+  // Handle dates before reference (loop backwards)
+  const index = ((weeksSinceReference % remisWeeklyChallenges.length) + remisWeeklyChallenges.length) % remisWeeklyChallenges.length;
+  
   return remisWeeklyChallenges[index];
 };
