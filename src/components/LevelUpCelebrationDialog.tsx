@@ -1,11 +1,23 @@
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { getRankFromLevel, formatXp, getXpProgress } from "@/lib/xpSystem";
-import remiCelebrating from "@/assets/remi-celebrating.webp";
 import { Trophy } from "lucide-react";
+
+// Remi Celebrating images
+import remiCelebrating1 from "@/assets/remi-celebrating-1.webp";
+import remiCelebrating2 from "@/assets/remi-celebrating-2.webp";
+import remiCelebrating3 from "@/assets/remi-celebrating-3.webp";
+import remiCelebrating4 from "@/assets/remi-celebrating-4.webp";
+
+const remiCelebratingImages = [remiCelebrating1, remiCelebrating2, remiCelebrating3, remiCelebrating4];
+
+const getRandomImage = (images: string[]) => {
+  return images[Math.floor(Math.random() * images.length)];
+};
 
 interface LevelUpCelebrationDialogProps {
   open: boolean;
@@ -20,6 +32,7 @@ export const LevelUpCelebrationDialog = ({
   newLevel, 
   totalXp 
 }: LevelUpCelebrationDialogProps) => {
+  const [celebratingImage] = useState(() => getRandomImage(remiCelebratingImages));
   const rank = getRankFromLevel(newLevel);
   const progress = getXpProgress(totalXp, newLevel);
 
@@ -30,7 +43,7 @@ export const LevelUpCelebrationDialog = ({
           {/* Remi celebrating */}
           <div className="relative inline-block mb-4">
             <img 
-              src={remiCelebrating} 
+              src={celebratingImage} 
               alt="Remi celebrating" 
               className="w-28 h-auto max-h-28 mx-auto object-contain"
             />
