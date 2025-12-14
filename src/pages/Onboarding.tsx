@@ -273,7 +273,10 @@ export default function Onboarding() {
             <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <img src={welcomeRemiImage} alt="Remi waving" className="w-64 h-auto max-h-64 mx-auto object-contain animate-bounce-soft" />
               <div className="space-y-3">
-                <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
+                <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello</h1>
+                <p className="text-muted-foreground leading-relaxed">
+                  Hello, I'm Remi. Your Reminder Raccoon & companion.
+                </p>
                 <p className="text-muted-foreground leading-relaxed">
                   This is a place to meet new people, build confidence & have fun - one simple hello at a time.
                 </p>
