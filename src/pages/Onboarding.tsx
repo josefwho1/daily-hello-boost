@@ -27,6 +27,7 @@ import remiCurious4 from "@/assets/remi-curious-4.webp";
 // Remi Surprised images - for specific onboarding screens
 import remiSurprised1 from "@/assets/remi-surprised-1.webp";
 import remiSurprised2 from "@/assets/remi-surprised-2.webp";
+import remiCongrats3 from "@/assets/remi-congrats-3.webp";
 
 const remiWavingImages = [remiWaving1, remiWaving2, remiWaving3, remiWaving4];
 const remiCuriousImages = [remiCurious1, remiCurious2, remiCurious3, remiCurious4];
@@ -253,7 +254,7 @@ export default function Onboarding() {
     }
   };
 
-  const totalSteps = 11; // 5 profile questions + 6 intro screens
+  const totalSteps = 12; // 5 profile questions + 7 intro screens
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -666,8 +667,51 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 10: Your first reward (Orbs) */}
+          {/* Step 10: Before you start... */}
           {step === 10 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <img 
+                  src={remiCongrats3} 
+                  alt="Remi thumbs up" 
+                  className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
+                />
+                <h2 className="text-2xl font-bold text-foreground mb-4">
+                  Before you start…
+                </h2>
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
+                  <p>
+                    Not everyone will hear you — and that's okay.<br />
+                    Don't take it personally.
+                  </p>
+                  <p>
+                    Stay safe and trust your instincts.<br />
+                    This is meant to be fun, light and a little challenging.
+                  </p>
+                  <p>
+                    The goal isn't perfect conversations.<br />
+                    It's simply to show you what can happen when you say hello more.
+                  </p>
+                  <p>
+                    You might be surprised 🙂
+                  </p>
+                </div>
+              </div>
+
+              <Button onClick={() => setStep(11)} className="w-full" size="lg">
+                I understand
+              </Button>
+              <button 
+                onClick={() => setStep(9)}
+                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
+              >
+                Back
+              </button>
+            </div>
+          )}
+
+          {/* Step 11: Your first reward (Orbs) */}
+          {step === 11 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img src={remiHoldingOrb} alt="Remi with Orb" className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" />
@@ -684,11 +728,11 @@ export default function Onboarding() {
                 </div>
               </div>
 
-              <Button onClick={() => setStep(11)} className="w-full" size="lg">
+              <Button onClick={() => setStep(12)} className="w-full" size="lg">
                 I love Orbs
               </Button>
               <button 
-                onClick={() => setStep(9)}
+                onClick={() => setStep(10)}
                 className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
@@ -696,8 +740,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 11: Your first challenge */}
-          {step === 11 && (
+          {/* Step 12: Your first challenge */}
+          {step === 12 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img src={challengeRemiImage} alt="Remi" className="w-24 h-auto max-h-24 mx-auto mb-4 object-contain" />
@@ -722,7 +766,7 @@ export default function Onboarding() {
                 {isSubmitting ? 'Starting...' : "Let's go"}
               </Button>
               <button 
-                onClick={() => setStep(10)}
+                onClick={() => setStep(11)}
                 className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
