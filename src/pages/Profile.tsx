@@ -251,8 +251,8 @@ const Profile = () => {
         </div>
 
         {/* Profile Card */}
-        <Card className="p-6 mb-4 rounded-2xl">
-          <div className="flex items-center gap-4 mb-6">
+        <Card className="p-4 mb-4 rounded-2xl">
+          <div className="flex items-center gap-3">
             <button 
               onClick={() => setShowProfilePictureSelector(true)}
               className="relative w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden group"
