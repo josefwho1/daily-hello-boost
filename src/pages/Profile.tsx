@@ -353,16 +353,14 @@ const Profile = () => {
                     )}>
                       <Icon className="w-5 h-5" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className={cn(
-                          "font-medium",
-                          isSelected ? "text-primary" : "text-foreground"
-                        )}>
-                          {mode.label}
-                        </span>
-                      </div>
-                      <span className="text-sm text-muted-foreground">{mode.description}</span>
+                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                      <span className={cn(
+                        "font-medium",
+                        isSelected ? "text-primary" : "text-foreground"
+                      )}>
+                        {mode.label}
+                      </span>
+                      <span className="text-sm text-muted-foreground">• {mode.description}</span>
                     </div>
                     {isSelected && (
                       <Check className="w-5 h-5 text-primary flex-shrink-0" />
