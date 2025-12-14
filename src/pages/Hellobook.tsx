@@ -1,12 +1,46 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, Trophy, MessageCircle, Calendar, Pencil } from "lucide-react";
+import { Search, Sparkles, Trophy, MessageCircle, Calendar, Pencil, ChevronDown, ChevronUp } from "lucide-react";
 import { useHelloLogs, HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { toast } from "sonner";
 import hellobookIcon from "@/assets/hellobook-icon.webp";
 import EditHelloDialog from "@/components/EditHelloDialog";
+
+// Expandable text component for long notes
+const ExpandableText = ({ text }: { text: string }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const needsExpansion = text.length > 80;
+
+  if (!needsExpansion) {
+    return <p className="text-sm text-muted-foreground mt-2">{text}</p>;
+  }
+
+  return (
+    <div className="mt-2">
+      <p className={`text-sm text-muted-foreground ${!isExpanded ? 'line-clamp-2' : ''}`}>
+        {text}
+      </p>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 mt-1 transition-colors"
+      >
+        {isExpanded ? (
+          <>
+            <ChevronUp className="w-3 h-3" />
+            Show less
+          </>
+        ) : (
+          <>
+            <ChevronDown className="w-3 h-3" />
+            Read more
+          </>
+        )}
+      </button>
+    </div>
+  );
+};
 
 // Helper to check if it's a 7-day onboarding challenge type
 const isOnboardingChallenge = (helloType: string | null) => {
@@ -200,11 +234,7 @@ const Hellobook = () => {
                       </div>
 
                       {/* Notes */}
-                      {log.notes && (
-                        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                          {log.notes}
-                        </p>
-                      )}
+                      {log.notes && <ExpandableText text={log.notes} />}
                     </div>
                   </div>
                 </Card>
