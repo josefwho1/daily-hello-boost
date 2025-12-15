@@ -325,12 +325,38 @@ Deno.serve(async (req) => {
 
       // Determine which email to send based on phase
       if (user.current_phase === 'onboarding' && user.onboarding_email_opt_in) {
-        const day = user.current_day || 1
-        if (day >= 1 && day <= 7 && onboardingTemplates[day]) {
+        // For onboarding, find the next day email they haven't received yet
+        // Get all onboarding emails already sent to this user
+        const { data: sentOnboardingEmails } = await supabase
+          .from('email_logs')
+          .select('template_key')
+          .eq('user_id', user.user_id)
+          .like('template_key', 'onboarding_day_%')
+        
+        const sentDays = new Set(
+          (sentOnboardingEmails || []).map(log => {
+            const match = log.template_key.match(/onboarding_day_(\d+)/)
+            return match ? parseInt(match[1]) : 0
+          })
+        )
+        
+        // Find the next day to send (1-7 that hasn't been sent yet)
+        let nextDay = 0
+        for (let d = 1; d <= 7; d++) {
+          if (!sentDays.has(d)) {
+            nextDay = d
+            break
+          }
+        }
+        
+        if (nextDay >= 1 && nextDay <= 7 && onboardingTemplates[nextDay]) {
           shouldSend = true
-          subject = onboardingTemplates[day].subject
-          html = onboardingTemplates[day].html.replace('{{username}}', username)
-          templateKey = `onboarding_day_${day}`
+          subject = onboardingTemplates[nextDay].subject
+          html = onboardingTemplates[nextDay].html.replace('{{username}}', username)
+          templateKey = `onboarding_day_${nextDay}`
+          console.log(`User ${user.user_id} will receive onboarding day ${nextDay} (previously sent: ${Array.from(sentDays).join(', ') || 'none'})`)
+        } else {
+          console.log(`User ${user.user_id} has received all 7 onboarding emails`)
         }
       } else if (user.current_phase === 'daily_path' && user.daily_email_opt_in) {
         // Only send if no hello logged today
