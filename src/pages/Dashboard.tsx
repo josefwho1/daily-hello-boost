@@ -267,35 +267,8 @@ export default function Dashboard() {
     setShowWeeklyOrbDialog(false);
   };
 
-  // Update daily streak based on logs
-  useEffect(() => {
-    if (!progress || progressLoading || logsLoading) return;
-    
-    const todayCount = getLogsTodayCount();
-    const today = format(new Date(), 'yyyy-MM-dd');
-    
-    if (todayCount > 0 && progress.last_completed_date && progress.last_completed_date !== today) {
-      const lastDate = new Date(progress.last_completed_date);
-      const todayDate = new Date();
-      todayDate.setHours(0, 0, 0, 0);
-      lastDate.setHours(0, 0, 0, 0);
-      
-      const diffDays = differenceInDays(todayDate, lastDate);
-      
-      if (diffDays === 1) {
-        const newDailyStreak = (progress.daily_streak || 0) + 1;
-        updateProgress({ 
-          daily_streak: newDailyStreak,
-          last_completed_date: today
-        });
-      } else if (diffDays > 1) {
-        updateProgress({ 
-          daily_streak: 1,
-          last_completed_date: today
-        });
-      }
-    }
-  }, [logs]);
+  // NOTE: Daily streak updates are handled exclusively in handleLogHello
+  // to prevent race conditions. Do not add duplicate streak logic here.
 
   const handleLogHello = async (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number }) => {
     const isFirstHelloEver = logs.length === 0 && !progress?.has_received_first_orb;
