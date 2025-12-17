@@ -88,6 +88,10 @@ export default function Onboarding() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDetectingTimezone, setIsDetectingTimezone] = useState(false);
   
+  // Skip onboarding flow state
+  const [skipOnboarding, setSkipOnboarding] = useState(false);
+  const [selectedSkipMode, setSelectedSkipMode] = useState<'daily' | 'chill' | null>(null);
+  
   // Signup form fields
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -254,7 +258,81 @@ export default function Onboarding() {
     }
   };
 
-  const totalSteps = 12; // 5 profile questions + 7 intro screens
+  const handleSkipOnboarding = async () => {
+    if (!selectedSkipMode) return;
+    
+    try {
+      setIsSubmitting(true);
+
+      const currentUserId = userId || (await supabase.auth.getUser()).data.user?.id;
+      
+      if (!currentUserId) {
+        throw new Error('No user found');
+      }
+
+      const isDaily = selectedSkipMode === 'daily';
+      
+      // Create user progress skipping onboarding, with 1 orb to start
+      const { error: progressError } = await supabase
+        .from('user_progress')
+        .upsert({
+          user_id: currentUserId,
+          why_here: selectedReasons.join(','),
+          is_onboarding_week: false,
+          onboarding_week_start: null,
+          current_day: 1,
+          current_streak: 0,
+          daily_streak: 0,
+          weekly_streak: 0,
+          mode: selectedSkipMode,
+          target_hellos_per_week: isDaily ? 7 : 5,
+          has_completed_onboarding: true,
+          onboarding_completed_at: new Date().toISOString(),
+          current_phase: isDaily ? 'daily_path' : 'chill_path',
+          orbs: 1, // Give them 1 orb to start
+          has_received_first_orb: true,
+          onboarding_email_opt_in: emailRemindersEnabled,
+          daily_email_opt_in: emailRemindersEnabled,
+          chill_email_opt_in: emailRemindersEnabled,
+          daily_path_selected_at: isDaily ? new Date().toISOString() : null,
+          chill_path_selected_at: !isDaily ? new Date().toISOString() : null
+        }, { onConflict: 'user_id' });
+
+      if (progressError) {
+        console.error('Error creating progress:', progressError);
+        throw new Error('Failed to create progress');
+      }
+
+      toast({
+        title: "You're all set!",
+        description: `${isDaily ? 'Daily' : 'Chill'} mode activated. You've got 1 Orb to start!`,
+      });
+      
+      navigate('/');
+    } catch (error) {
+      if (error instanceof Error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const totalSteps = skipOnboarding ? 7 : 12; // Shorter flow for skip, normal for full onboarding
+  
+  // Handle step progression after comfort rating
+  const handleComfortRatingContinue = () => {
+    if (comfortRating >= 7) {
+      // Show skip option for confident users
+      setStep(100); // Special step for skip option
+    } else {
+      setStep(4); // Continue normal flow
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -386,7 +464,7 @@ export default function Onboarding() {
                 <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
                   Back
                 </Button>
-                <Button onClick={() => setStep(4)} className="flex-1">
+                <Button onClick={handleComfortRatingContinue} className="flex-1">
                   Continue
                 </Button>
               </div>
@@ -770,6 +848,197 @@ export default function Onboarding() {
               </Button>
               <button 
                 onClick={() => setStep(11)}
+                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
+              >
+                Back
+              </button>
+            </div>
+          )}
+
+          {/* Step 100: Skip Onboarding Option (for 7+ comfort rating users) */}
+          {step === 100 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <img src={remiSurprised1} alt="Remi surprised" className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" />
+                <h2 className="text-2xl font-bold text-foreground mb-3">
+                  Looks like you're already pretty confident talking to strangers!
+                </h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  Would you like to skip the 7-day intro and jump straight into the full experience?
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <Button 
+                  onClick={() => {
+                    setSkipOnboarding(true);
+                    setStep(101);
+                  }} 
+                  className="w-full" 
+                  size="lg"
+                >
+                  Yes, skip the intro
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setSkipOnboarding(false);
+                    setStep(4);
+                  }} 
+                  className="w-full" 
+                  size="lg"
+                >
+                  No, I'd like the full experience
+                </Button>
+              </div>
+              
+              <button 
+                onClick={() => setStep(3)}
+                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
+              >
+                Back
+              </button>
+            </div>
+          )}
+
+          {/* Step 101: Mode Selection (for skip flow) */}
+          {step === 101 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-foreground mb-2">
+                  Choose your pace
+                </h2>
+                <p className="text-muted-foreground">
+                  Pick the mode that works best for your lifestyle.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                {/* Daily Mode */}
+                <Card 
+                  className={`p-5 cursor-pointer transition-all ${
+                    selectedSkipMode === 'daily' 
+                      ? 'border-primary bg-primary/5 ring-2 ring-primary' 
+                      : 'hover:border-primary/50'
+                  }`}
+                  onClick={() => setSelectedSkipMode('daily')}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">🔥</span>
+                    <h3 className="text-lg font-bold">Daily Mode</h3>
+                    <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">Recommended</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground italic mb-2">
+                    One Hello a Day
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Log at least 1 hello every day</li>
+                    <li>• Build a daily streak</li>
+                    <li>• Best for building powerful habits</li>
+                  </ul>
+                </Card>
+
+                {/* Chill Mode */}
+                <Card 
+                  className={`p-5 cursor-pointer transition-all ${
+                    selectedSkipMode === 'chill' 
+                      ? 'border-primary bg-primary/5 ring-2 ring-primary' 
+                      : 'hover:border-primary/50'
+                  }`}
+                  onClick={() => setSelectedSkipMode('chill')}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">🌿</span>
+                    <h3 className="text-lg font-bold">Chill Mode</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground italic mb-2">
+                    5 Hellos per Week
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Log 5 hellos any day of the week</li>
+                    <li>• Build a weekly streak</li>
+                    <li>• Perfect for busy schedules</li>
+                  </ul>
+                </Card>
+              </div>
+
+              <Button 
+                onClick={() => setStep(102)} 
+                className="w-full" 
+                size="lg"
+                disabled={!selectedSkipMode}
+              >
+                Continue
+              </Button>
+              <button 
+                onClick={() => setStep(100)}
+                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
+              >
+                Back
+              </button>
+            </div>
+          )}
+
+          {/* Step 102: Mode Confirmation + Orb Explanation (for skip flow) */}
+          {step === 102 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <img src={remiHoldingOrb} alt="Remi with Orb" className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" />
+                
+                {selectedSkipMode === 'daily' ? (
+                  <>
+                    <h2 className="text-2xl font-bold text-foreground mb-3">
+                      Daily Mode Activated! 🔥
+                    </h2>
+                    <div className="space-y-3 text-muted-foreground leading-relaxed">
+                      <p>
+                        One Hello a day keeps the awkward away.
+                      </p>
+                      <p>
+                        Log at least 1 hello every day to build your streak.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-bold text-foreground mb-3">
+                      Chill Mode Activated! 🌿
+                    </h2>
+                    <div className="space-y-3 text-muted-foreground leading-relaxed">
+                      <p>
+                        5 Hellos per week — any day, any time.
+                      </p>
+                      <p>
+                        Hit your 5 to keep your weekly streak going.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <Card className="p-4 bg-primary/5 border-primary/20">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🔮</span>
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-1">Here's 1 Orb to get you started!</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Orbs are your streak savers. Miss a {selectedSkipMode === 'daily' ? 'day' : 'week'}? 
+                      Use an Orb to protect your streak. Earn more by completing weekly challenges.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <Button 
+                onClick={handleSkipOnboarding} 
+                className="w-full" 
+                size="lg"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Setting up...' : "Let's go! ✨"}
+              </Button>
+              <button 
+                onClick={() => setStep(101)}
                 className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
               >
                 Back
