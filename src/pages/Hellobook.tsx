@@ -191,7 +191,7 @@ const Hellobook = () => {
               return (
                 <Card 
                   key={log.id} 
-                  className="p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in relative"
+                  className="p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in"
                 >
                   <div className="flex items-start gap-3">
                     {/* Type Icon */}
@@ -200,19 +200,15 @@ const Hellobook = () => {
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0 pr-8">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-foreground truncate">
-                            {log.name || "-"}
-                          </h3>
-                          <p className="text-xs text-muted-foreground">
-                            {formatTimestamp(log.created_at, true)}
-                          </p>
-                        </div>
+                    <div className="flex-1 min-w-0">
+                      {/* Top row: Name, Tags, Edit button */}
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground truncate">
+                          {log.name || "-"}
+                        </h3>
                         
                         {/* Tags */}
-                        <div className="flex flex-col gap-1 items-end flex-shrink-0">
+                        <div className="flex items-center gap-1 flex-shrink-0">
                           {ratingInfo && (
                             <span className={`text-xs px-2 py-0.5 rounded-full border whitespace-nowrap ${ratingInfo.className}`}>
                               {ratingInfo.emoji} {ratingInfo.label}
@@ -224,21 +220,26 @@ const Hellobook = () => {
                             </span>
                           )}
                         </div>
+
+                        {/* Edit button - pushed to right */}
+                        <button
+                          onClick={() => handleEditClick(log)}
+                          className="ml-auto p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
+                          aria-label="Edit hello"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
                       </div>
+
+                      {/* Timestamp */}
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {formatTimestamp(log.created_at, true)}
+                      </p>
 
                       {/* Notes */}
                       {log.notes && <ExpandableText text={log.notes} />}
                     </div>
                   </div>
-
-                  {/* Edit button - bottom right */}
-                  <button
-                    onClick={() => handleEditClick(log)}
-                    className="absolute bottom-3 right-3 p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                    aria-label="Edit hello"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
                 </Card>
               );
             })}
