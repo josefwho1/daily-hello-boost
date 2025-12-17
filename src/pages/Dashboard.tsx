@@ -186,24 +186,24 @@ export default function Dashboard() {
   // Check for missed daily streak (Daily Mode AND 7-day-starter mode)
   useEffect(() => {
     if (!progress || progressLoading || logsLoading) return;
-    
+
     // Check both daily mode and 7-day-starter mode for missed streak
     const mode = progress.mode || '7-day-starter';
     const shouldCheckDailyStreak = mode === 'daily' || mode === '7-day-starter';
     if (!shouldCheckDailyStreak) return;
-    
+
     const dailyStreak = progress.daily_streak || 0;
     const lastCompletedDate = progress.last_completed_date;
     const saveOfferedForDate = progress.save_offered_for_date;
-    const today = format(new Date(), 'yyyy-MM-dd');
-    
+    const today = getDayKeyInOffset(new Date(), tzOffset);
+
     if (dailyStreak > 0 && lastCompletedDate) {
       const lastDate = parseISO(lastCompletedDate);
-      const todayCount = getLogsTodayCount();
-      
-      if (todayCount === 0) {
-        const daysSinceLastHello = differenceInDays(new Date(), lastDate);
-        
+      const hasHelloToday = lastCompletedDate === today;
+
+      if (!hasHelloToday) {
+        const daysSinceLastHello = differenceInDays(parseISO(today), lastDate);
+
         // If more than 1 day has passed and we haven't offered save today
         if (daysSinceLastHello > 1 && saveOfferedForDate !== today) {
           setShowDailyOrbDialog(true);
@@ -211,7 +211,7 @@ export default function Dashboard() {
         }
       }
     }
-  }, [progress, progressLoading, logsLoading, logs]);
+  }, [progress, progressLoading, logsLoading, logs, tzOffset]);
 
   const handleUseDailyOrb = async () => {
     const currentOrbs = progress?.orbs || 0;
@@ -220,8 +220,8 @@ export default function Dashboard() {
       // but sets last_completed_date to yesterday so today's hello can still increment
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
-      
+      const yesterdayStr = getDayKeyInOffset(yesterday, tzOffset);
+
       await updateProgress({
         orbs: currentOrbs - 1,
         daily_streak: (progress?.daily_streak || 0) + 1,
@@ -273,15 +273,15 @@ export default function Dashboard() {
   const handleLogHello = async (data: { name?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number }) => {
     const isFirstHelloEver = logs.length === 0 && !progress?.has_received_first_orb;
     const isOnboardingChallenge = onboardingChallenges.some(c => c.title === selectedChallenge);
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const todayCount = getLogsTodayCount();
-    const isFirstHelloToday = todayCount === 0;
-    
+
+    const today = getDayKeyInOffset(new Date(), tzOffset);
+    const isFirstHelloToday = !progress?.last_completed_date || progress.last_completed_date !== today;
+
     const result = await addLog({
       ...data,
       hello_type: selectedHelloType
     });
-    
+
     if (result) {
       const previousHellosThisWeek = progress?.hellos_this_week || 0;
       const newHellosThisWeek = previousHellosThisWeek + 1;
@@ -294,21 +294,21 @@ export default function Dashboard() {
       const lastChallengeDate = progress?.last_weekly_challenge_date;
       const thisWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
       const alreadyEarnedThisWeek = lastChallengeDate && new Date(lastChallengeDate) >= thisWeekStart;
-      
+
       // XP System - check if daily counts need reset
       const lastXpResetDate = progress?.last_xp_reset_date;
       const needsXpReset = lastXpResetDate !== today;
-      
+
       let hellosToday = needsXpReset ? 0 : (progress?.hellos_today_count || 0);
       let namesToday = needsXpReset ? 0 : (progress?.names_today_count || 0);
       let notesToday = needsXpReset ? 0 : (progress?.notes_today_count || 0);
-      
+
       // Check if this completes weekly goal (for XP bonus)
       const mode = (progress?.mode === 'connect' ? 'chill' : (progress?.mode || 'daily')) as 'daily' | 'chill';
       const isChillMode = mode === 'chill' && !progress?.is_onboarding_week;
       const alreadyAchievedThisWeek = (progress as any)?.weekly_goal_achieved_this_week === true;
       const justHitWeeklyGoal = isChillMode && newHellosThisWeek >= 5 && !alreadyAchievedThisWeek;
-      
+
       // Calculate XP
       const xpResult = calculateHelloXp(
         hellosToday,
@@ -323,27 +323,22 @@ export default function Dashboard() {
         progress?.daily_streak || 0,
         progress?.weekly_streak || 0
       );
-      
+
       const currentXp = progress?.total_xp || 0;
       const newTotalXp = currentXp + xpResult.totalXp;
       const currentLevel = progress?.current_level || 1;
       const newLevel = getLevelFromXp(newTotalXp);
       const didLevelUp = newLevel > currentLevel;
-      
+
       // Calculate the new daily streak
       let newDailyStreak = progress?.daily_streak || 0;
-      
+
       if (isFirstHelloToday) {
         // First hello of the day - check if we should increment streak
         const lastDate = progress?.last_completed_date;
         if (lastDate) {
-          const lastCompletedDate = new Date(lastDate);
-          const todayDate = new Date();
-          todayDate.setHours(0, 0, 0, 0);
-          lastCompletedDate.setHours(0, 0, 0, 0);
-          
-          const diffDays = differenceInDays(todayDate, lastCompletedDate);
-          
+          const diffDays = differenceInDays(parseISO(today), parseISO(lastDate));
+
           if (diffDays <= 1) {
             // Yesterday was completed (or orb was used which sets to yesterday) - increment streak
             newDailyStreak = (progress?.daily_streak || 0) + 1;
@@ -357,7 +352,7 @@ export default function Dashboard() {
         }
       }
       // If not first hello today, keep current streak value
-      
+
       const updates: Record<string, unknown> = {
         hellos_this_week: newHellosThisWeek,
         last_completed_date: today,
