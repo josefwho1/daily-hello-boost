@@ -191,7 +191,7 @@ const Hellobook = () => {
               return (
                 <Card 
                   key={log.id} 
-                  className="p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in"
+                  className="p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in relative"
                 >
                   <div className="flex items-start gap-3">
                     {/* Type Icon */}
@@ -200,9 +200,9 @@ const Hellobook = () => {
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 pr-8">
                       <div className="flex items-start justify-between gap-2">
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-foreground truncate">
                             {log.name || "-"}
                           </h3>
@@ -211,22 +211,15 @@ const Hellobook = () => {
                           </p>
                         </div>
                         
-                        {/* Tags and Edit button on right side */}
-                        <div className="flex flex-col gap-1 items-end">
-                          <button
-                            onClick={() => handleEditClick(log)}
-                            className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                            aria-label="Edit hello"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
+                        {/* Tags */}
+                        <div className="flex flex-col gap-1 items-end flex-shrink-0">
                           {ratingInfo && (
-                            <span className={`text-xs px-2 py-0.5 rounded-full border ${ratingInfo.className}`}>
+                            <span className={`text-xs px-2 py-0.5 rounded-full border whitespace-nowrap ${ratingInfo.className}`}>
                               {ratingInfo.emoji} {ratingInfo.label}
                             </span>
                           )}
                           {difficultyInfo && (
-                            <span className={`text-xs px-2 py-0.5 rounded-full border ${difficultyInfo.className}`}>
+                            <span className={`text-xs px-2 py-0.5 rounded-full border whitespace-nowrap ${difficultyInfo.className}`}>
                               {difficultyInfo.emoji} {difficultyInfo.label}
                             </span>
                           )}
@@ -237,6 +230,15 @@ const Hellobook = () => {
                       {log.notes && <ExpandableText text={log.notes} />}
                     </div>
                   </div>
+
+                  {/* Edit button - bottom right */}
+                  <button
+                    onClick={() => handleEditClick(log)}
+                    className="absolute bottom-3 right-3 p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                    aria-label="Edit hello"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
                 </Card>
               );
             })}
