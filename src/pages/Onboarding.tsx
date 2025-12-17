@@ -979,8 +979,58 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 102: Create Account (for skip flow) */}
+          {/* Step 102: Timezone Selection (for skip flow) */}
           {step === 102 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <MapPin className="w-12 h-12 mx-auto mb-4 text-primary" />
+                <h2 className="text-2xl font-bold text-foreground mb-2">What timezone are you in?</h2>
+                <p className="text-muted-foreground">
+                  This helps us reset your streaks at midnight your time.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Your timezone</Label>
+                  <Select value={selectedTimezone} onValueChange={setSelectedTimezone}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select timezone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timezoneOptions.map((tz) => (
+                        <SelectItem key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button 
+                  variant="outline" 
+                  onClick={detectTimezone}
+                  disabled={isDetectingTimezone}
+                  className="w-full"
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  {isDetectingTimezone ? 'Detecting...' : 'Auto-detect my timezone'}
+                </Button>
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep(101)} className="flex-1">
+                  Back
+                </Button>
+                <Button onClick={() => setStep(103)} className="flex-1">
+                  Continue
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 103: Create Account (for skip flow) */}
+          {step === 103 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-foreground mb-2">Create Your Account</h2>
@@ -1035,7 +1085,7 @@ export default function Onboarding() {
               </div>
 
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(101)} className="flex-1" disabled={isSubmitting}>
+                <Button variant="outline" onClick={() => setStep(102)} className="flex-1" disabled={isSubmitting}>
                   Back
                 </Button>
                 <Button 
@@ -1078,7 +1128,7 @@ export default function Onboarding() {
 
                         setUserId(data.user.id);
                         setAccountCreated(true);
-                        setStep(103);
+                        setStep(104);
                       }
                     } catch (error) {
                       if (error instanceof z.ZodError) {
@@ -1115,8 +1165,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 103: Mode Confirmation + Orb Explanation (for skip flow) */}
-          {step === 103 && (
+          {/* Step 104: Mode Confirmation + Orb Explanation (for skip flow) */}
+          {step === 104 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img src={remiHoldingOrb} alt="Remi with Orb" className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" />
