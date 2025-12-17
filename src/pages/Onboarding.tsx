@@ -979,8 +979,144 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 102: Mode Confirmation + Orb Explanation (for skip flow) */}
+          {/* Step 102: Create Account (for skip flow) */}
           {step === 102 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-foreground mb-2">Create Your Account</h2>
+                <p className="text-muted-foreground">
+                  Just a few details and you're ready to go!
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="skip-name">Name *</Label>
+                  <Input
+                    id="skip-name"
+                    type="text"
+                    placeholder="Enter your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    maxLength={50}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="skip-email">Email *</Label>
+                  <Input
+                    id="skip-email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    maxLength={255}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="skip-password">Password *</Label>
+                  <Input
+                    id="skip-password"
+                    type="password"
+                    placeholder="Minimum 6 characters"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    maxLength={50}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Minimum 6 characters
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep(101)} className="flex-1" disabled={isSubmitting}>
+                  Back
+                </Button>
+                <Button 
+                  onClick={async () => {
+                    // Create account then go to confirmation
+                    try {
+                      const validated = signupSchema.parse({ name, email, password });
+                      setIsSubmitting(true);
+
+                      const redirectUrl = `${window.location.origin}/`;
+
+                      const { error: signUpError, data } = await supabase.auth.signUp({
+                        email: validated.email,
+                        password: validated.password,
+                        options: {
+                          emailRedirectTo: redirectUrl,
+                          data: {
+                            name: validated.name
+                          }
+                        }
+                      });
+
+                      if (signUpError) throw signUpError;
+
+                      if (data.user) {
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        
+                        const { error: profileError } = await supabase
+                          .from('profiles')
+                          .upsert({
+                            id: data.user.id,
+                            username: validated.name,
+                            timezone_preference: selectedTimezone
+                          }, { onConflict: 'id' });
+
+                        if (profileError) {
+                          console.error('Error creating profile:', profileError);
+                          throw new Error('Failed to create profile');
+                        }
+
+                        setUserId(data.user.id);
+                        setAccountCreated(true);
+                        setStep(103);
+                      }
+                    } catch (error) {
+                      if (error instanceof z.ZodError) {
+                        toast({
+                          title: "Validation Error",
+                          description: error.errors[0].message,
+                          variant: "destructive",
+                        });
+                      } else if (error instanceof Error) {
+                        if (error.message.includes('already registered')) {
+                          toast({
+                            title: "Account exists",
+                            description: "This email is already registered. Please sign in instead.",
+                            variant: "destructive",
+                          });
+                        } else {
+                          toast({
+                            title: "Error",
+                            description: error.message,
+                            variant: "destructive",
+                          });
+                        }
+                      }
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }} 
+                  className="flex-1"
+                  disabled={!name || !email || !password || password.length < 6 || isSubmitting}
+                >
+                  {isSubmitting ? 'Creating...' : 'Continue'}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 103: Mode Confirmation + Orb Explanation (for skip flow) */}
+          {step === 103 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
                 <img src={remiHoldingOrb} alt="Remi with Orb" className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" />
@@ -1037,12 +1173,6 @@ export default function Onboarding() {
               >
                 {isSubmitting ? 'Setting up...' : "Let's go! ✨"}
               </Button>
-              <button 
-                onClick={() => setStep(101)}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
-              >
-                Back
-              </button>
             </div>
           )}
 
