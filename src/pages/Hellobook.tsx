@@ -204,7 +204,7 @@ const Hellobook = () => {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <h3 className="font-semibold text-foreground truncate">
-                            {log.name || "Hello"}
+                            {log.name || "-"}
                           </h3>
                           <p className="text-xs text-muted-foreground">
                             {formatTimestamp(log.created_at, true)}
