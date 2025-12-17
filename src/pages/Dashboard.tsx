@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
+import { useTimezone } from "@/hooks/useTimezone";
 import { LogHelloDialog, HelloType } from "@/components/LogHelloDialog";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
@@ -26,15 +27,25 @@ import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
 import { calculateHelloXp, getLevelFromXp } from "@/lib/xpSystem";
 import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import logoSticker from "@/assets/one-hello-logo-tagline.svg";
 import remiMascot from "@/assets/remi-waving.webp";
 import { Sparkles } from "lucide-react";
+
+const normalizeTimezoneOffset = (offset?: string | null) => {
+  if (!offset) return "+00:00";
+  return offset.startsWith("+") || offset.startsWith("-") ? offset : `+${offset}`;
+};
+
+const getDayKeyInOffset = (date: Date, offset: string) =>
+  formatInTimeZone(date, offset, "yyyy-MM-dd");
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { progress, loading: progressLoading, updateProgress, refetch } = useUserProgress();
   const { logs, loading: logsLoading, addLog, getLogsTodayCount } = useHelloLogs();
-  
+  const { timezoneOffset } = useTimezone();
+  const tzOffset = normalizeTimezoneOffset(timezoneOffset);
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
   const [selectedHelloType, setSelectedHelloType] = useState<HelloType>('regular_hello');
