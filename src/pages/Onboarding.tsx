@@ -231,7 +231,8 @@ export default function Onboarding() {
           current_phase: 'onboarding',
           onboarding_email_opt_in: emailRemindersEnabled,
           daily_email_opt_in: emailRemindersEnabled,
-          chill_email_opt_in: emailRemindersEnabled
+          chill_email_opt_in: emailRemindersEnabled,
+          comfort_rating: comfortRating
         }, { onConflict: 'user_id' });
 
       if (progressError) {
@@ -295,7 +296,8 @@ export default function Onboarding() {
           daily_email_opt_in: emailRemindersEnabled,
           chill_email_opt_in: emailRemindersEnabled,
           daily_path_selected_at: isDaily ? new Date().toISOString() : null,
-          chill_path_selected_at: !isDaily ? new Date().toISOString() : null
+          chill_path_selected_at: !isDaily ? new Date().toISOString() : null,
+          comfort_rating: comfortRating
         }, { onConflict: 'user_id' });
 
       if (progressError) {
