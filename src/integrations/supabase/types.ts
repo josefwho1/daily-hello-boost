@@ -119,6 +119,7 @@ export type Database = {
         Row: {
           created_at: string
           difficulty_rating: number | null
+          email: string | null
           hello_type: string | null
           id: string
           name: string | null
@@ -130,6 +131,7 @@ export type Database = {
         Insert: {
           created_at?: string
           difficulty_rating?: number | null
+          email?: string | null
           hello_type?: string | null
           id?: string
           name?: string | null
@@ -141,6 +143,7 @@ export type Database = {
         Update: {
           created_at?: string
           difficulty_rating?: number | null
+          email?: string | null
           hello_type?: string | null
           id?: string
           name?: string | null
