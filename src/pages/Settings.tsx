@@ -46,10 +46,10 @@ const Settings = () => {
   // Generate timezone options from GMT-12 to GMT+12
   const timezoneOptions = [];
   for (let i = -12; i <= 12; i++) {
-    const sign = i >= 0 ? '+' : '';
+    const sign = i >= 0 ? '+' : '-';
     const hours = Math.abs(i).toString().padStart(2, '0');
     const value = `${sign}${hours}:00`;
-    const label = `GMT${sign}${i}`;
+    const label = `GMT${i >= 0 ? '+' : ''}${i}`;
     timezoneOptions.push({ value, label });
   }
 
