@@ -44,7 +44,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { progress, loading: progressLoading, updateProgress, refetch } = useUserProgress();
   const { logs, loading: logsLoading, addLog, getLogsTodayCount } = useHelloLogs();
-  const { timezoneOffset } = useTimezone();
+  const { timezoneOffset, loading: timezoneLoading } = useTimezone();
   const tzOffset = normalizeTimezoneOffset(timezoneOffset);
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
@@ -522,6 +522,9 @@ export default function Dashboard() {
 
   // Check if weekly challenge is completed this week (using user's timezone)
   const isWeeklyChallengeComplete = () => {
+    // Don't calculate until timezone is loaded
+    if (timezoneLoading) return false;
+    
     // Get current week start in user's timezone
     const nowInTz = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
     const weekStartInTz = startOfWeek(parseISO(nowInTz), { weekStartsOn: 1 }); // Monday
@@ -539,7 +542,7 @@ export default function Dashboard() {
   const thisWeeksChallenge = getThisWeeksChallenge();
   const todaysOnboardingChallenge = onboardingChallenges[currentOnboardingDay - 1];
 
-  if (progressLoading || logsLoading) {
+  if (progressLoading || logsLoading || timezoneLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
