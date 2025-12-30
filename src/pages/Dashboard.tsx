@@ -150,9 +150,10 @@ export default function Dashboard() {
     if (!progress || progressLoading || weeklyResetDone) return;
     if (progress.is_onboarding_week) return;
 
-    const now = new Date();
-    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-    const weekStartStr = weekStart.toISOString().split('T')[0];
+    // Calculate week start in user's timezone
+    const nowInTz = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
+    const weekStart = startOfWeek(parseISO(nowInTz), { weekStartsOn: 1 });
+    const weekStartStr = format(weekStart, "yyyy-MM-dd");
 
     if (progress.week_start_date) {
       const storedWeekStart = new Date(progress.week_start_date);
@@ -571,7 +572,7 @@ export default function Dashboard() {
 
         {/* Stats Bar - ALWAYS visible */}
         <StatsBar
-          hellosToday={getLogsTodayCount()}
+          hellosToday={getLogsTodayCount(tzOffset)}
           hellosThisWeek={progress.hellos_this_week || 0}
           dailyStreak={progress.daily_streak || 0}
           weeklyStreak={progress.weekly_streak || 0}
