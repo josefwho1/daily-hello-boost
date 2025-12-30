@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { formatInTimeZone } from 'date-fns-tz';
+import { startOfWeek, parseISO } from 'date-fns';
 
 export interface HelloLog {
   id: string;
@@ -126,22 +128,24 @@ export const useHelloLogs = () => {
     }
   };
 
-  const getLogsThisWeek = () => {
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    // Get Monday of current week (Monday = 1, Sunday = 0)
-    const monday = new Date(now);
-    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    monday.setDate(now.getDate() + diff);
-    monday.setHours(0, 0, 0, 0);
+  const getLogsThisWeek = (timezoneOffset: string = '+00:00') => {
+    // Calculate week start in user's timezone
+    const nowInTz = formatInTimeZone(new Date(), timezoneOffset, "yyyy-MM-dd");
+    const mondayInTz = startOfWeek(parseISO(nowInTz), { weekStartsOn: 1 });
+    const mondayStr = formatInTimeZone(mondayInTz, timezoneOffset, "yyyy-MM-dd");
 
-    return logs.filter(log => new Date(log.created_at) >= monday);
+    return logs.filter(log => {
+      const logDateInTz = formatInTimeZone(new Date(log.created_at), timezoneOffset, "yyyy-MM-dd");
+      return logDateInTz >= mondayStr;
+    });
   };
 
-  const getLogsTodayCount = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return logs.filter(log => new Date(log.created_at) >= today).length;
+  const getLogsTodayCount = (timezoneOffset: string = '+00:00') => {
+    const todayInTz = formatInTimeZone(new Date(), timezoneOffset, "yyyy-MM-dd");
+    return logs.filter(log => {
+      const logDateInTz = formatInTimeZone(new Date(log.created_at), timezoneOffset, "yyyy-MM-dd");
+      return logDateInTz === todayInTz;
+    }).length;
   };
 
   return {
@@ -152,6 +156,5 @@ export const useHelloLogs = () => {
     refetch: fetchLogs,
     getLogsThisWeek,
     getLogsTodayCount,
-    hellosThisWeek: getLogsThisWeek().length
   };
 };
