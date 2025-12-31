@@ -493,13 +493,18 @@ export default function Dashboard() {
     if (!pendingMode) return;
     
     const target = pendingMode === 'daily' ? 7 : 5;
+    const isDaily = pendingMode === 'daily';
     await updateProgress({ 
       mode: pendingMode,
       target_hellos_per_week: target,
       has_completed_onboarding: true,
       is_onboarding_week: false,
       hellos_this_week: 0,
-      week_start_date: startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0]
+      week_start_date: startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0],
+      current_phase: isDaily ? 'daily_path' : 'chill_path',
+      onboarding_completed_at: new Date().toISOString(),
+      daily_path_selected_at: isDaily ? new Date().toISOString() : null,
+      chill_path_selected_at: !isDaily ? new Date().toISOString() : null
     });
     
     setShowDailyModeConfirm(false);
