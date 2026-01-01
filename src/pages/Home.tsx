@@ -187,7 +187,9 @@ const Home = () => {
         difficulty_rating: currentDifficulty
       });
 
-      const today = new Date().toISOString();
+      // Use date-only format (YYYY-MM-DD) for consistency with Dashboard.tsx
+      // This prevents timezone parsing issues when comparing dates
+      const today = new Date().toISOString().split('T')[0];
       
       // Update streak
       if (!progress.last_completed_date) {
