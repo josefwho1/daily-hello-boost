@@ -197,7 +197,8 @@ export default function Dashboard() {
 
   // Check for missed daily streak (Daily Mode AND 7-day-starter mode)
   useEffect(() => {
-    if (!progress || progressLoading || logsLoading) return;
+    // CRITICAL: Wait for timezone to load to avoid false positives with wrong date calculation
+    if (!progress || progressLoading || logsLoading || timezoneLoading) return;
 
     // Check both daily mode and 7-day-starter mode for missed streak
     const mode = progress.mode || '7-day-starter';
@@ -210,11 +211,18 @@ export default function Dashboard() {
     const today = getDayKeyInOffset(new Date(), tzOffset);
 
     if (dailyStreak > 0 && lastCompletedDate) {
-      const lastDate = parseISO(lastCompletedDate);
-      const hasHelloToday = lastCompletedDate === today;
+      // Normalize lastCompletedDate to date-only format (handles both ISO timestamps and date-only strings)
+      const normalizedLastDate = lastCompletedDate.includes('T') 
+        ? lastCompletedDate.split('T')[0] 
+        : lastCompletedDate;
+      
+      const hasHelloToday = normalizedLastDate === today;
 
       if (!hasHelloToday) {
-        const daysSinceLastHello = differenceInDays(parseISO(today), lastDate);
+        // Use normalized date-only strings for consistent comparison
+        const lastDate = parseISO(normalizedLastDate);
+        const todayDate = parseISO(today);
+        const daysSinceLastHello = differenceInDays(todayDate, lastDate);
 
         // If more than 1 day has passed and we haven't offered save today
         if (daysSinceLastHello > 1 && saveOfferedForDate !== today) {
@@ -223,7 +231,7 @@ export default function Dashboard() {
         }
       }
     }
-  }, [progress, progressLoading, logsLoading, logs, tzOffset]);
+  }, [progress, progressLoading, logsLoading, timezoneLoading, logs, tzOffset]);
 
   const handleUseDailyOrb = async () => {
     const currentOrbs = progress?.orbs || 0;
