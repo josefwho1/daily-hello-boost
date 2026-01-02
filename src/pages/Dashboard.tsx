@@ -25,9 +25,8 @@ import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
 import { calculateHelloXp, getLevelFromXp } from "@/lib/xpSystem";
-import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
-import { formatInTimeZone } from "date-fns-tz";
+import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import logoSticker from "@/assets/one-hello-logo-tagline.svg";
 import remiMascot from "@/assets/remi-waving.webp";
 import { Sparkles } from "lucide-react";
@@ -39,6 +38,14 @@ const normalizeTimezoneOffset = (offset?: string | null) => {
 
 const getDayKeyInOffset = (date: Date, offset: string) =>
   formatInTimeZone(date, offset, "yyyy-MM-dd");
+
+const getWeekStartKeyInOffset = (date: Date, offset: string) => {
+  // Use date-fns-tz to avoid off-by-one issues when the browser timezone differs
+  // from the user's chosen offset.
+  const zonedNow = toZonedTime(date, offset);
+  const weekStart = startOfWeek(zonedNow, { weekStartsOn: 1 });
+  return formatInTimeZone(weekStart, offset, "yyyy-MM-dd");
+};
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -150,16 +157,14 @@ export default function Dashboard() {
     if (!progress || progressLoading || weeklyResetDone || timezoneLoading) return;
     if (progress.is_onboarding_week) return;
 
-    // Calculate week start in user's timezone
-    const nowInTz = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
-    const weekStart = startOfWeek(parseISO(nowInTz), { weekStartsOn: 1 });
-    const weekStartStr = format(weekStart, "yyyy-MM-dd");
+    const weekStartStr = getWeekStartKeyInOffset(new Date(), tzOffset);
 
     if (progress.week_start_date) {
-      const storedWeekStart = new Date(progress.week_start_date);
-      
+      const storedWeekStart = parseISO(progress.week_start_date);
+      const currentWeekStart = parseISO(weekStartStr);
+
       // Only reset if the stored week is BEFORE the current week start
-      if (isBefore(storedWeekStart, weekStart)) {
+      if (isBefore(storedWeekStart, currentWeekStart)) {
         const mode = progress.mode || 'daily';
         const target = mode === 'chill' ? 5 : 7;
         const targetMet = (progress.hellos_this_week || 0) >= target;
@@ -261,10 +266,7 @@ export default function Dashboard() {
   const handleUseWeeklyOrb = async () => {
     const currentOrbs = progress?.orbs || 0;
 
-    // Use user's timezone for week start to avoid off-by-one errors from toISOString()
-    const nowInTz = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
-    const weekStartInTz = startOfWeek(parseISO(nowInTz), { weekStartsOn: 1 });
-    const weekStartStr = format(weekStartInTz, "yyyy-MM-dd");
+    const weekStartStr = getWeekStartKeyInOffset(new Date(), tzOffset);
 
     if (currentOrbs > 0) {
       await updateProgress({
@@ -278,9 +280,7 @@ export default function Dashboard() {
   };
 
   const handleDeclineWeeklyOrb = async () => {
-    const nowInTz = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
-    const weekStartInTz = startOfWeek(parseISO(nowInTz), { weekStartsOn: 1 });
-    const weekStartStr = format(weekStartInTz, "yyyy-MM-dd");
+    const weekStartStr = getWeekStartKeyInOffset(new Date(), tzOffset);
 
     await updateProgress({
       weekly_streak: 0,
@@ -322,9 +322,7 @@ export default function Dashboard() {
       const thisWeekStartStr = progress?.week_start_date
         ? progress.week_start_date
         : (() => {
-            const nowInTzForWeek = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
-            const thisWeekStartInTz = startOfWeek(parseISO(nowInTzForWeek), { weekStartsOn: 1 });
-            return format(thisWeekStartInTz, "yyyy-MM-dd");
+            return getWeekStartKeyInOffset(new Date(), tzOffset);
           })();
 
       const alreadyEarnedThisWeek = !!(lastChallengeDate && lastChallengeDate >= thisWeekStartStr);
@@ -519,7 +517,7 @@ export default function Dashboard() {
       has_completed_onboarding: true,
       is_onboarding_week: false,
       hellos_this_week: 0,
-      week_start_date: startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0],
+      week_start_date: getWeekStartKeyInOffset(new Date(), tzOffset),
       current_phase: isDaily ? 'daily_path' : 'chill_path',
       onboarding_completed_at: new Date().toISOString(),
       daily_path_selected_at: isDaily ? new Date().toISOString() : null,
@@ -554,9 +552,7 @@ export default function Dashboard() {
       ? progress.week_start_date
       : (() => {
           if (timezoneLoading) return null;
-          const nowInTz = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
-          const weekStartInTz = startOfWeek(parseISO(nowInTz), { weekStartsOn: 1 }); // Monday
-          return format(weekStartInTz, "yyyy-MM-dd");
+          return getWeekStartKeyInOffset(new Date(), tzOffset);
         })();
 
     if (!weekStartStr) return false;
