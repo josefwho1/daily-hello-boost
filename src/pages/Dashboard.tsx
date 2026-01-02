@@ -25,6 +25,7 @@ import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
 import { calculateHelloXp, getLevelFromXp } from "@/lib/xpSystem";
+import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import logoSticker from "@/assets/one-hello-logo-tagline.svg";
