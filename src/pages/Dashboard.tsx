@@ -316,11 +316,18 @@ export default function Dashboard() {
       const isTodaysHello = selectedHelloType === "todays_hello";
       const currentOrbs = progress?.orbs || 0;
       const lastChallengeDate = progress?.last_weekly_challenge_date;
-      // Calculate week start in user's timezone
-      const nowInTzForWeek = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
-      const thisWeekStartInTz = startOfWeek(parseISO(nowInTzForWeek), { weekStartsOn: 1 });
-      const thisWeekStartStr = format(thisWeekStartInTz, "yyyy-MM-dd");
-      const alreadyEarnedThisWeek = lastChallengeDate && lastChallengeDate >= thisWeekStartStr;
+
+      // Prefer the stored week_start_date from user_progress (source of truth).
+      // Fallback to computing in user's timezone if it's missing.
+      const thisWeekStartStr = progress?.week_start_date
+        ? progress.week_start_date
+        : (() => {
+            const nowInTzForWeek = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
+            const thisWeekStartInTz = startOfWeek(parseISO(nowInTzForWeek), { weekStartsOn: 1 });
+            return format(thisWeekStartInTz, "yyyy-MM-dd");
+          })();
+
+      const alreadyEarnedThisWeek = !!(lastChallengeDate && lastChallengeDate >= thisWeekStartStr);
 
       // XP System - check if daily counts need reset
       const lastXpResetDate = progress?.last_xp_reset_date;
@@ -537,19 +544,31 @@ export default function Dashboard() {
     });
   };
 
-  // Check if weekly challenge is completed this week (using user's timezone)
+  // Check if weekly challenge is completed this week
+  // IMPORTANT: Use stored progress fields first (they're date-only strings in the user's timezone),
+  // because logs-based calculations can be stale during auth transitions.
   const isWeeklyChallengeComplete = () => {
-    // Don't calculate until timezone is loaded
-    if (timezoneLoading) return false;
-    
-    // Get current week start in user's timezone
-    const nowInTz = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
-    const weekStartInTz = startOfWeek(parseISO(nowInTz), { weekStartsOn: 1 }); // Monday
-    const weekStartStr = format(weekStartInTz, "yyyy-MM-dd");
-    
-    return logs.some(log => {
+    if (!progress) return false;
+
+    const weekStartStr = progress.week_start_date
+      ? progress.week_start_date
+      : (() => {
+          if (timezoneLoading) return null;
+          const nowInTz = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
+          const weekStartInTz = startOfWeek(parseISO(nowInTz), { weekStartsOn: 1 }); // Monday
+          return format(weekStartInTz, "yyyy-MM-dd");
+        })();
+
+    if (!weekStartStr) return false;
+
+    // Primary source of truth
+    if (progress.last_weekly_challenge_date) {
+      return progress.last_weekly_challenge_date >= weekStartStr;
+    }
+
+    // Fallback for older users/data
+    return logs.some((log) => {
       if (log.hello_type !== "remis_challenge") return false;
-      // Convert log date to user's timezone
       const logDateInTz = formatInTimeZone(new Date(log.created_at), tzOffset, "yyyy-MM-dd");
       return logDateInTz >= weekStartStr;
     });
