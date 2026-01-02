@@ -23,9 +23,12 @@ export const useHelloLogs = () => {
 
   useEffect(() => {
     if (!user) {
+      setLogs([]);
       setLoading(false);
       return;
     }
+
+    setLoading(true);
     fetchLogs();
   }, [user]);
 

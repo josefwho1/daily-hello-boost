@@ -50,10 +50,12 @@ export const useUserProgress = () => {
 
   useEffect(() => {
     if (!user) {
+      setProgress(null);
       setLoading(false);
       return;
     }
 
+    setLoading(true);
     fetchProgress();
   }, [user]);
 

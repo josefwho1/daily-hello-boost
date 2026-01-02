@@ -147,7 +147,7 @@ export default function Dashboard() {
   const [weeklyResetDone, setWeeklyResetDone] = useState(false);
   
   useEffect(() => {
-    if (!progress || progressLoading || weeklyResetDone) return;
+    if (!progress || progressLoading || weeklyResetDone || timezoneLoading) return;
     if (progress.is_onboarding_week) return;
 
     // Calculate week start in user's timezone
@@ -193,7 +193,7 @@ export default function Dashboard() {
         weekly_goal_achieved_this_week: false,
       });
     }
-  }, [progress, progressLoading, weeklyResetDone]);
+  }, [progress, progressLoading, weeklyResetDone, timezoneLoading, tzOffset]);
 
   // Check for missed daily streak (Daily Mode AND 7-day-starter mode)
   useEffect(() => {
@@ -260,14 +260,17 @@ export default function Dashboard() {
 
   const handleUseWeeklyOrb = async () => {
     const currentOrbs = progress?.orbs || 0;
-    const now = new Date();
-    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-    
+
+    // Use user's timezone for week start to avoid off-by-one errors from toISOString()
+    const nowInTz = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
+    const weekStartInTz = startOfWeek(parseISO(nowInTz), { weekStartsOn: 1 });
+    const weekStartStr = format(weekStartInTz, "yyyy-MM-dd");
+
     if (currentOrbs > 0) {
       await updateProgress({
         orbs: currentOrbs - 1,
         hellos_this_week: 0,
-        week_start_date: weekStart.toISOString().split('T')[0],
+        week_start_date: weekStartStr,
       });
       toast.success("✨ Orb used! Your weekly streak is protected.");
     }
@@ -275,13 +278,14 @@ export default function Dashboard() {
   };
 
   const handleDeclineWeeklyOrb = async () => {
-    const now = new Date();
-    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-    
+    const nowInTz = formatInTimeZone(new Date(), tzOffset, "yyyy-MM-dd");
+    const weekStartInTz = startOfWeek(parseISO(nowInTz), { weekStartsOn: 1 });
+    const weekStartStr = format(weekStartInTz, "yyyy-MM-dd");
+
     await updateProgress({
       weekly_streak: 0,
       hellos_this_week: 0,
-      week_start_date: weekStart.toISOString().split('T')[0],
+      week_start_date: weekStartStr,
     });
     toast.info("Your weekly streak has been reset to 0.");
     setShowWeeklyOrbDialog(false);
