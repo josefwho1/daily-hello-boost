@@ -558,12 +558,17 @@ export default function Dashboard() {
 
     if (!weekStartStr) return false;
 
-    // Primary source of truth
-    if (progress.last_weekly_challenge_date) {
-      return progress.last_weekly_challenge_date >= weekStartStr;
+    // Primary source of truth - compare date strings
+    const lastChallengeDate = progress.last_weekly_challenge_date;
+    
+    // Debug log to help diagnose the issue
+    console.log('[WeeklyChallenge] weekStartStr:', weekStartStr, 'lastChallengeDate:', lastChallengeDate, 'comparison:', lastChallengeDate && lastChallengeDate >= weekStartStr);
+
+    if (lastChallengeDate) {
+      return lastChallengeDate >= weekStartStr;
     }
 
-    // Fallback for older users/data
+    // Fallback for older users/data (no last_weekly_challenge_date set)
     return logs.some((log) => {
       if (log.hello_type !== "remis_challenge") return false;
       const logDateInTz = formatInTimeZone(new Date(log.created_at), tzOffset, "yyyy-MM-dd");
