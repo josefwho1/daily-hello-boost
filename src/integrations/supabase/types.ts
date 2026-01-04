@@ -20,7 +20,6 @@ export type Database = {
           completed_at: string
           created_at: string
           difficulty_rating: number | null
-          email: string | null
           id: string
           interaction_name: string | null
           notes: string | null
@@ -34,7 +33,6 @@ export type Database = {
           completed_at?: string
           created_at?: string
           difficulty_rating?: number | null
-          email?: string | null
           id?: string
           interaction_name?: string | null
           notes?: string | null
@@ -48,7 +46,6 @@ export type Database = {
           completed_at?: string
           created_at?: string
           difficulty_rating?: number | null
-          email?: string | null
           id?: string
           interaction_name?: string | null
           notes?: string | null
@@ -122,7 +119,6 @@ export type Database = {
         Row: {
           created_at: string
           difficulty_rating: number | null
-          email: string | null
           hello_type: string | null
           id: string
           name: string | null
@@ -134,7 +130,6 @@ export type Database = {
         Insert: {
           created_at?: string
           difficulty_rating?: number | null
-          email?: string | null
           hello_type?: string | null
           id?: string
           name?: string | null
@@ -146,7 +141,6 @@ export type Database = {
         Update: {
           created_at?: string
           difficulty_rating?: number | null
-          email?: string | null
           hello_type?: string | null
           id?: string
           name?: string | null
@@ -169,7 +163,6 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
-          email: string | null
           id: string
           name: string
           tags: string[] | null
@@ -179,7 +172,6 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
-          email?: string | null
           id?: string
           name: string
           tags?: string[] | null
@@ -189,7 +181,6 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
-          email?: string | null
           id?: string
           name?: string
           tags?: string[] | null
@@ -238,7 +229,6 @@ export type Database = {
           daily_email_opt_in: boolean | null
           daily_path_selected_at: string | null
           daily_streak: number | null
-          email: string | null
           has_completed_onboarding: boolean | null
           has_received_first_orb: boolean | null
           has_seen_welcome_messages: boolean | null
@@ -283,7 +273,6 @@ export type Database = {
           daily_email_opt_in?: boolean | null
           daily_path_selected_at?: string | null
           daily_streak?: number | null
-          email?: string | null
           has_completed_onboarding?: boolean | null
           has_received_first_orb?: boolean | null
           has_seen_welcome_messages?: boolean | null
@@ -328,7 +317,6 @@ export type Database = {
           daily_email_opt_in?: boolean | null
           daily_path_selected_at?: string | null
           daily_streak?: number | null
-          email?: string | null
           has_completed_onboarding?: boolean | null
           has_received_first_orb?: boolean | null
           has_seen_welcome_messages?: boolean | null
