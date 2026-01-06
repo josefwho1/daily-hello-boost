@@ -242,16 +242,14 @@ export default function Dashboard() {
   const handleUseDailyOrb = async () => {
     const currentOrbs = progress?.orbs || 0;
     if (currentOrbs > 0) {
-      // Using an Orb increments the streak by 1 (as if yesterday was completed)
-      // but sets last_completed_date to yesterday so today's hello can still increment
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = getDayKeyInOffset(yesterday, tzOffset);
+      // Using an Orb increments the streak by 1 and sets last_completed_date to TODAY
+      // This prevents the hello logging logic from resetting the streak when a hello is logged the same day
+      const today = getDayKeyInOffset(new Date(), tzOffset);
 
       await updateProgress({
         orbs: currentOrbs - 1,
         daily_streak: (progress?.daily_streak || 0) + 1,
-        last_completed_date: yesterdayStr
+        last_completed_date: today
       });
       toast.success("✨ Orb used! Your daily streak is protected.");
     }
