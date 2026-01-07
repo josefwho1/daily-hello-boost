@@ -192,6 +192,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          email: string | null
           id: string
           profile_picture: string | null
           timezone_preference: string | null
@@ -200,6 +201,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email?: string | null
           id: string
           profile_picture?: string | null
           timezone_preference?: string | null
@@ -208,6 +210,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email?: string | null
           id?: string
           profile_picture?: string | null
           timezone_preference?: string | null
@@ -385,7 +388,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      hello_logs_with_user: {
+        Row: {
+          difficulty_rating: number | null
+          hello_type: string | null
+          id: string | null
+          logged_at: string | null
+          name: string | null
+          notes: string | null
+          rating: string | null
+          timezone_offset: string | null
+          user_email: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hello_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
