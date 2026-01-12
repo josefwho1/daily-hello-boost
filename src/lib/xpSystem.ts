@@ -10,17 +10,17 @@ export interface RankInfo {
 }
 
 export const RANKS: RankInfo[] = [
-  { name: "New Friend", minLevel: 1, maxLevel: 9, xpThreshold: 0, color: "#FF6B35", emoji: "👋" },
-  { name: "Hello Rookie", minLevel: 10, maxLevel: 19, xpThreshold: 2000, color: "#FF6B35", emoji: "🌱" },
-  { name: "Kindaroo", minLevel: 20, maxLevel: 29, xpThreshold: 10000, color: "#FF6B35", emoji: "🦘" },
-  { name: "Social Butterfly", minLevel: 30, maxLevel: 39, xpThreshold: 30000, color: "#FF6B35", emoji: "🦋" },
-  { name: "Social Eagle", minLevel: 40, maxLevel: 49, xpThreshold: 75000, color: "#FF6B35", emoji: "🦅" },
-  { name: "Cooala", minLevel: 50, maxLevel: 59, xpThreshold: 150000, color: "#FF6B35", emoji: "🐨" },
-  { name: "Brave Heart", minLevel: 60, maxLevel: 69, xpThreshold: 350000, color: "#FF6B35", emoji: "💪" },
-  { name: "Hello Hero", minLevel: 70, maxLevel: 79, xpThreshold: 700000, color: "#FF6B35", emoji: "🦸" },
-  { name: "World Connecter", minLevel: 80, maxLevel: 89, xpThreshold: 1500000, color: "#FF6B35", emoji: "🌍" },
-  { name: "Legend Status", minLevel: 90, maxLevel: 99, xpThreshold: 3500000, color: "#FF6B35", emoji: "🏆" },
-  { name: "One Hello Immortal", minLevel: 100, maxLevel: 100, xpThreshold: 7500000, color: "#FF6B35", emoji: "✨" },
+  { name: "Hello Rookie", minLevel: 1, maxLevel: 9, xpThreshold: 0, color: "#FF6B35", emoji: "👋" },
+  { name: "Seasoned", minLevel: 10, maxLevel: 19, xpThreshold: 1000, color: "#FF6B35", emoji: "🌱" },
+  { name: "Semi Pro", minLevel: 20, maxLevel: 29, xpThreshold: 5000, color: "#FF6B35", emoji: "🎯" },
+  { name: "Social Butterfly", minLevel: 30, maxLevel: 39, xpThreshold: 20000, color: "#FF6B35", emoji: "🦋" },
+  { name: "Social Eagle", minLevel: 40, maxLevel: 49, xpThreshold: 50000, color: "#FF6B35", emoji: "🦅" },
+  { name: "Social Pterodactyl", minLevel: 50, maxLevel: 59, xpThreshold: 100000, color: "#FF6B35", emoji: "🦖" },
+  { name: "Sensei", minLevel: 60, maxLevel: 69, xpThreshold: 250000, color: "#FF6B35", emoji: "🥋" },
+  { name: "Hello Hero", minLevel: 70, maxLevel: 79, xpThreshold: 500000, color: "#FF6B35", emoji: "🦸" },
+  { name: "World Connecter", minLevel: 80, maxLevel: 89, xpThreshold: 1000000, color: "#FF6B35", emoji: "🌍" },
+  { name: "Legend Status", minLevel: 90, maxLevel: 99, xpThreshold: 2000000, color: "#FF6B35", emoji: "🏆" },
+  { name: "Immortal", minLevel: 100, maxLevel: 100, xpThreshold: 5000000, color: "#FF6B35", emoji: "✨" },
 ];
 
 // XP thresholds for each level (cumulative)
@@ -29,17 +29,17 @@ export const LEVEL_XP_THRESHOLDS: number[] = (() => {
   
   // Calculate XP needed for each level based on rank thresholds
   const rankXpRanges = [
-    { start: 1, end: 9, startXp: 0, endXp: 2000 },
-    { start: 10, end: 19, startXp: 2000, endXp: 10000 },
-    { start: 20, end: 29, startXp: 10000, endXp: 30000 },
-    { start: 30, end: 39, startXp: 30000, endXp: 75000 },
-    { start: 40, end: 49, startXp: 75000, endXp: 150000 },
-    { start: 50, end: 59, startXp: 150000, endXp: 350000 },
-    { start: 60, end: 69, startXp: 350000, endXp: 700000 },
-    { start: 70, end: 79, startXp: 700000, endXp: 1500000 },
-    { start: 80, end: 89, startXp: 1500000, endXp: 3500000 },
-    { start: 90, end: 99, startXp: 3500000, endXp: 7500000 },
-    { start: 100, end: 100, startXp: 7500000, endXp: 15000000 },
+    { start: 1, end: 9, startXp: 0, endXp: 1000 },
+    { start: 10, end: 19, startXp: 1000, endXp: 5000 },
+    { start: 20, end: 29, startXp: 5000, endXp: 20000 },
+    { start: 30, end: 39, startXp: 20000, endXp: 50000 },
+    { start: 40, end: 49, startXp: 50000, endXp: 100000 },
+    { start: 50, end: 59, startXp: 100000, endXp: 250000 },
+    { start: 60, end: 69, startXp: 250000, endXp: 500000 },
+    { start: 70, end: 79, startXp: 500000, endXp: 1000000 },
+    { start: 80, end: 89, startXp: 1000000, endXp: 2000000 },
+    { start: 90, end: 99, startXp: 2000000, endXp: 5000000 },
+    { start: 100, end: 100, startXp: 5000000, endXp: 10000000 },
   ];
 
   for (const range of rankXpRanges) {
@@ -59,7 +59,7 @@ export const LEVEL_XP_THRESHOLDS: number[] = (() => {
     thresholds[1] = thresholds[1] + 25;
   }
   
-  thresholds.push(15000000); // Level 100 completion
+  thresholds.push(10000000); // Level 100 completion
   return thresholds;
 })();
 
@@ -82,13 +82,13 @@ export const getRankFromLevel = (level: number): RankInfo => {
 };
 
 export const getXpForNextLevel = (currentLevel: number): number => {
-  if (currentLevel >= 100) return LEVEL_XP_THRESHOLDS[100] || 15000000;
+  if (currentLevel >= 100) return LEVEL_XP_THRESHOLDS[100] || 10000000;
   return LEVEL_XP_THRESHOLDS[currentLevel] || 0;
 };
 
 export const getXpProgress = (totalXp: number, currentLevel: number): { current: number; needed: number; percent: number } => {
   if (currentLevel >= 100) {
-    return { current: totalXp, needed: 15000000, percent: 100 };
+    return { current: totalXp, needed: 10000000, percent: 100 };
   }
   
   const currentLevelXp = LEVEL_XP_THRESHOLDS[currentLevel - 1] || 0;
