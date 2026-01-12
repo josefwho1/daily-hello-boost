@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { Mail, ArrowLeft, Check } from 'lucide-react';
+import { Mail, ArrowLeft, Check, KeyRound } from 'lucide-react';
 import logo from '@/assets/one-hello-logo-tagline.svg';
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email" });
@@ -17,6 +18,8 @@ export default function MagicLinkSignIn() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [verifying, setVerifying] = useState(false);
 
   const handleSendLink = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +38,7 @@ export default function MagicLinkSignIn() {
       if (error) throw error;
 
       setSent(true);
-      toast.success('Magic link sent! Check your email.');
+      toast.success('Check your email for the magic link or code!');
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
@@ -44,6 +47,34 @@ export default function MagicLinkSignIn() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otp.length !== 6) {
+      toast.error('Please enter the complete 6-digit code');
+      return;
+    }
+
+    try {
+      setVerifying(true);
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otp,
+        type: 'email',
+      });
+
+      if (error) throw error;
+
+      toast.success('Signed in successfully!');
+      navigate('/');
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+      setOtp('');
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -64,15 +95,62 @@ export default function MagicLinkSignIn() {
               </div>
               <CardTitle>Check your email!</CardTitle>
               <CardDescription className="text-base">
-                We sent a sign-in link to <span className="font-medium text-foreground">{email}</span>.
-                <span className="block mt-2">
-                  Click the link to sign in and access your hellos.
-                </span>
+                We sent a sign-in link and code to <span className="font-medium text-foreground">{email}</span>.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              {/* OTP Entry Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 justify-center text-sm text-muted-foreground">
+                  <KeyRound className="w-4 h-4" />
+                  <span>Or enter your 6-digit code</span>
+                </div>
+                
+                <div className="flex justify-center">
+                  <InputOTP
+                    maxLength={6}
+                    value={otp}
+                    onChange={setOtp}
+                    onComplete={handleVerifyOtp}
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+
+                <Button 
+                  onClick={handleVerifyOtp}
+                  className="w-full"
+                  disabled={otp.length !== 6 || verifying}
+                >
+                  {verifying ? (
+                    <span className="animate-pulse">Verifying...</span>
+                  ) : (
+                    'Verify code'
+                  )}
+                </Button>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">or</span>
+                </div>
+              </div>
+
               <Button 
-                onClick={() => setSent(false)} 
+                onClick={() => {
+                  setSent(false);
+                  setOtp('');
+                }} 
                 variant="outline" 
                 className="w-full"
               >
@@ -114,7 +192,7 @@ export default function MagicLinkSignIn() {
           <CardHeader>
             <CardTitle>Sign in</CardTitle>
             <CardDescription>
-              Enter your email and we'll send you a magic link.
+              Enter your email and we'll send you a magic link or code.
               <span className="block mt-1 font-medium text-foreground">
                 No passwords needed.
               </span>
