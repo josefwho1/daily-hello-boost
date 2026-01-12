@@ -216,32 +216,6 @@ export default function Dashboard() {
   // Check if in First Hellos mode
   const isFirstHellosMode = progress?.mode === 'first_hellos' && !progress?.has_completed_onboarding;
 
-  // Show day reveal dialog when a new day unlocks - only once per day (7-day starter only)
-  // Skip Day 1 since it's revealed during onboarding
-  useEffect(() => {
-    // Only show in 7-day-starter mode during onboarding week
-    if (progress?.mode !== '7-day-starter') return;
-    if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return;
-    if (progressLoading || logsLoading || guestLoading) return;
-    
-    // For guests, use guestProgress ID, for users use user.id
-    const uniqueId = user?.id || guestProgress?.guest_user_id;
-    if (!uniqueId) return;
-    
-    // Skip Day 1 - it's already revealed in the onboarding flow
-    if (currentOnboardingDay === 1) return;
-
-    // Check if we've already shown the reveal for this day using localStorage
-    const revealKey = `day_reveal_shown_${uniqueId}_day_${currentOnboardingDay}`;
-    const alreadyShown = localStorage.getItem(revealKey) === 'true';
-    
-    // Only show if we haven't shown it yet - don't check completion status
-    if (!alreadyShown) {
-      setShowDayReveal(true);
-      localStorage.setItem(revealKey, 'true');
-    }
-  }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode, progressLoading, logsLoading, guestLoading, user?.id, guestProgress?.guest_user_id]);
-
   // Weekly reset logic - check for missed weekly goal (Chill Mode)
   // Use a ref to prevent the effect from running multiple times
   const [weeklyResetDone, setWeeklyResetDone] = useState(false);
@@ -726,7 +700,7 @@ export default function Dashboard() {
           weeklyStreak={progress.weekly_streak || 0}
           lifetimeHellos={progress.total_hellos || logs.length}
           orbs={progress.orbs || 0}
-          mode={progress.mode as 'daily' | 'chill' | 'first_hellos' | '7-day-starter' || 'daily'}
+          mode={(progress.mode === '7-day-starter' ? 'first_hellos' : progress.mode) as 'daily' | 'chill' | 'first_hellos' || 'first_hellos'}
           isOnboardingWeek={progress.is_onboarding_week || false}
           onboardingCompleted={completedDaysCount}
           hasCompletedOnboarding={progress.has_completed_onboarding || false}
@@ -736,7 +710,7 @@ export default function Dashboard() {
         />
 
         {/* Log a Hello Button - Show above challenges for non-onboarding users */}
-        {!isFirstHellosMode && !(progress.is_onboarding_week && !progress.has_completed_onboarding && progress.mode === '7-day-starter') && (
+        {!isFirstHellosMode && progress.has_completed_onboarding && (
           <div className="mt-6">
             <LogHelloButton 
               onClick={() => {
@@ -803,70 +777,6 @@ export default function Dashboard() {
                 variant="onboarding"
               />
               <p className="text-center text-sm text-muted-foreground mt-2">For any extra Hellos</p>
-            </div>
-          </div>
-        ) : progress.is_onboarding_week && !progress.has_completed_onboarding && progress.mode === '7-day-starter' ? (
-          /* Legacy 7-Day Onboarding Challenges */
-          <div className="mt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Your 7-Day Challenge</h2>
-            </div>
-            {/* Dynamic messaging based on today's challenge completion */}
-            {completedTypes.includes(onboardingChallenges[currentOnboardingDay - 1]?.title) ? (
-              <p className="text-sm text-foreground mb-4 font-medium">
-                Nice work today! Come back tomorrow to reveal tomorrow's challenge!
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground mb-4">
-                Complete today's challenge to unlock the next
-              </p>
-            )}
-            <div className="space-y-3">
-              {onboardingChallenges.map((challenge, index) => {
-                const dayNumber = index + 1;
-                const isUnlocked = dayNumber <= currentOnboardingDay;
-                const isCompleted = completedTypes.includes(challenge.title);
-                const isTodaysChallenge = dayNumber === currentOnboardingDay;
-                const isLocked = !isUnlocked;
-                const isNextDay = dayNumber === currentOnboardingDay + 1;
-                const todaysChallengeCompleted = completedTypes.includes(onboardingChallenges[currentOnboardingDay - 1]?.title);
-                
-                // A challenge is available if: unlocked, not completed, AND (is today's OR is a missed previous day)
-                const isAvailableToComplete = isUnlocked && !isCompleted;
-                
-                return (
-                  <OnboardingChallengeCard
-                    key={challenge.id}
-                    challenge={challenge}
-                    isCompleted={isCompleted}
-                    isAvailable={isAvailableToComplete}
-                    isLocked={isLocked}
-                    isTodaysChallenge={isTodaysChallenge}
-                    isNextDay={isNextDay}
-                    hasCompletedToday={todaysChallengeCompleted}
-                    onComplete={() => {
-                      setSelectedChallenge(challenge.title);
-                      setSelectedHelloType(challenge.title as HelloType); // Use challenge title as hello_type for tracking completion
-                      setSelectedDayNumber(dayNumber);
-                      setShowLogDialog(true);
-                    }}
-                  />
-                );
-              })}
-            </div>
-
-            {/* Log a Hello Button - Show below challenges for onboarding users */}
-            <div className="mt-6">
-              <LogHelloButton 
-                onClick={() => {
-                  setSelectedChallenge(null);
-                  setSelectedHelloType('regular_hello');
-                  setShowLogDialog(true);
-                }}
-                variant="onboarding"
-              />
-              <p className="text-center text-sm text-muted-foreground mt-2">For any extra Hellos during onboarding</p>
             </div>
           </div>
         ) : (

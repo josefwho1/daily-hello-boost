@@ -122,7 +122,7 @@ export const calculateHelloXp = (
   isTodaysHello: boolean,
   isWeeklyChallenge: boolean,
   isWeeklyGoalComplete: boolean,
-  mode: 'daily' | 'chill' | '7-day-starter',
+  mode: 'daily' | 'chill' | 'first_hellos',
   dailyStreak: number,
   weeklyStreak: number
 ): XpCalculationResult => {
@@ -178,8 +178,8 @@ export const calculateHelloXp = (
   // Calculate multiplier
   let multiplier = 1;
   
-  if ((mode === 'daily' || mode === '7-day-starter') && dailyStreak > 0) {
-    // Daily mode & 7-day-starter: 1.02× per consecutive day (compounds)
+  if ((mode === 'daily' || mode === 'first_hellos') && dailyStreak > 0) {
+    // Daily mode & first_hellos: 1.02× per consecutive day (compounds)
     multiplier = Math.pow(1.02, dailyStreak - 1);
     if (multiplier > 1) {
       breakdown.push(`Daily streak (${dailyStreak} days): ×${multiplier.toFixed(2)}`);

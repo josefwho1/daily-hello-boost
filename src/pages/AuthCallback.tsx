@@ -86,7 +86,7 @@ export default function AuthCallback() {
             current_day: 1,
             is_onboarding_week: true,
             onboarding_week_start: new Date().toISOString().split('T')[0],
-            mode: '7-day-starter',
+            mode: 'first_hellos',
           });
         }
 

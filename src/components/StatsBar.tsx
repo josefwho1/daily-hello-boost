@@ -12,7 +12,7 @@ interface StatsBarProps {
   weeklyStreak: number;
   lifetimeHellos: number;
   orbs: number;
-  mode: 'daily' | 'chill' | 'first_hellos' | '7-day-starter';
+  mode: 'daily' | 'chill' | 'first_hellos';
   isOnboardingWeek: boolean;
   onboardingCompleted: number;
   hasCompletedOnboarding?: boolean;
@@ -81,7 +81,6 @@ export const StatsBar = ({
   const isDaily = mode === 'daily';
   const isFirstHellos = mode === 'first_hellos';
   const isChill = mode === 'chill';
-  const is7DayStarter = mode === '7-day-starter';
   
   // If onboarding is completed, treat as post-onboarding even if flag is stale
   const effectivelyOnboarding = (isOnboardingWeek && !hasCompletedOnboarding) || isFirstHellos;
@@ -90,12 +89,10 @@ export const StatsBar = ({
   let progressValue: number;
   let progressMax: number;
   
-  if (isFirstHellos) {
+  if (isFirstHellos || (!hasCompletedOnboarding && isOnboardingWeek)) {
+    // First Hellos mode or any onboarding user
     progressValue = firstHellosCompleted;
     progressMax = 5;
-  } else if (is7DayStarter && isOnboardingWeek && !hasCompletedOnboarding) {
-    progressValue = onboardingCompleted;
-    progressMax = 7;
   } else if (isDaily) {
     progressValue = hellosToday;
     progressMax = 1;
@@ -111,8 +108,7 @@ export const StatsBar = ({
 
   // Labels based on mode
   const getProgressLabel = () => {
-    if (isFirstHellos) return "First Hello's";
-    if (is7DayStarter && isOnboardingWeek && !hasCompletedOnboarding) return 'Your 7-Day Challenge';
+    if (isFirstHellos || (!hasCompletedOnboarding && isOnboardingWeek)) return "First Hello's";
     if (isDaily) return 'Today';
     return "Hello's This Week";
   };
