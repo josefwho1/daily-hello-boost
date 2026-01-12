@@ -7,19 +7,25 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
+import { useGuestMode } from "@/hooks/useGuestMode";
 import Dashboard from "./pages/Dashboard";
 import Hellobook from "./pages/Hellobook";
 import Vault from "./pages/Vault";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
-import SignIn from "./pages/SignIn";
+import MagicLinkSignIn from "./pages/MagicLinkSignIn";
+import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+// Routes that work for both guests and authenticated users
+const AppRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading: authLoading } = useAuth();
+  const { guestProgress, loading: guestLoading } = useGuestMode();
+
+  const loading = authLoading || guestLoading;
 
   if (loading) {
     return (
@@ -32,15 +38,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
+  // If not logged in and no guest progress, redirect to onboarding
+  if (!user && !guestProgress) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   return <>{children}</>;
 };
 
 const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
-  const { progress, loading } = useUserProgress();
+  const { user } = useAuth();
+  const { progress, loading: progressLoading } = useUserProgress();
+  const { guestProgress, loading: guestLoading } = useGuestMode();
+
+  const loading = progressLoading || guestLoading;
 
   if (loading) {
     return (
@@ -53,12 +64,18 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Allow access if:
-  // 1. User has completed onboarding (has_completed_onboarding: true)
-  // 2. User is in their 7-day challenge period (is_onboarding_week: true)
-  // Only redirect to /onboarding if neither condition is met (fresh user)
-  if (progress && !progress.has_completed_onboarding && !progress.is_onboarding_week) {
-    return <Navigate to="/onboarding" replace />;
+  // For authenticated users, check their progress
+  if (user && progress) {
+    if (!progress.has_completed_onboarding && !progress.is_onboarding_week) {
+      return <Navigate to="/onboarding" replace />;
+    }
+  }
+  
+  // For guests, check guest progress
+  if (!user && guestProgress) {
+    if (!guestProgress.has_completed_onboarding && !guestProgress.is_onboarding_week) {
+      return <Navigate to="/onboarding" replace />;
+    }
   }
 
   return <>{children}</>;
@@ -94,46 +111,47 @@ const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<AuthRedirect><Auth /></AuthRedirect>} />
-          <Route path="/signin" element={<AuthRedirect><SignIn /></AuthRedirect>} />
+          <Route path="/signin" element={<AuthRedirect><MagicLinkSignIn /></AuthRedirect>} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route 
             path="/" 
             element={
-              <ProtectedRoute>
+              <AppRoute>
                 <OnboardingCheck>
                   <Dashboard />
                 </OnboardingCheck>
-              </ProtectedRoute>
+              </AppRoute>
             } 
           />
           <Route 
             path="/hellobook" 
             element={
-              <ProtectedRoute>
+              <AppRoute>
                 <OnboardingCheck>
                   <Hellobook />
                 </OnboardingCheck>
-              </ProtectedRoute>
+              </AppRoute>
             } 
           />
           <Route 
             path="/vault" 
             element={
-              <ProtectedRoute>
+              <AppRoute>
                 <OnboardingCheck>
                   <Vault />
                 </OnboardingCheck>
-              </ProtectedRoute>
+              </AppRoute>
             } 
           />
           <Route 
             path="/profile" 
             element={
-              <ProtectedRoute>
+              <AppRoute>
                 <OnboardingCheck>
                   <Profile />
                 </OnboardingCheck>
-              </ProtectedRoute>
+              </AppRoute>
             } 
           />
           <Route path="*" element={<NotFound />} />

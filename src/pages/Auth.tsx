@@ -42,6 +42,10 @@ const Auth = () => {
             Sign In
           </Button>
         </div>
+
+        <p className="text-sm text-muted-foreground">
+          No account needed to start. Just jump in!
+        </p>
       </div>
     </div>
   );
