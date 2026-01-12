@@ -70,6 +70,7 @@ export default function AuthCallback() {
         const refreshToken = hashParams.get('refresh_token');
         const errorInHash = hashParams.get('error');
         const errorDescInHash = hashParams.get('error_description');
+        const authType = hashParams.get('type'); // 'recovery' for password reset
 
         if (errorInHash) {
           throw new Error(errorDescInHash || errorInHash);
@@ -86,7 +87,8 @@ export default function AuthCallback() {
           if (data.user) {
             // Clear the hash from URL to prevent re-processing on refresh
             window.history.replaceState(null, '', window.location.pathname);
-            await setupUserAndRedirect(data.user.id, data.user);
+            const isRecovery = authType === 'recovery';
+            await setupUserAndRedirect(data.user.id, data.user, isRecovery);
             return;
           }
         }
@@ -125,8 +127,15 @@ export default function AuthCallback() {
     return () => clearTimeout(timer);
   }, [navigate, searchParams]);
 
-  const setupUserAndRedirect = async (userId: string, user: { email?: string; user_metadata?: { name?: string } }) => {
+  const setupUserAndRedirect = async (userId: string, user: { email?: string; user_metadata?: { name?: string } }, isRecovery: boolean = false) => {
     try {
+      // If this is a password recovery flow, redirect to profile to set new password
+      if (isRecovery) {
+        toast.success('You can now set a new password.');
+        navigate('/profile?reset_password=true', { replace: true });
+        return;
+      }
+
       // Check if this user has guest data to sync
       const guestState = await getGuestState();
       

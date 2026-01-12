@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTimezone } from "@/hooks/useTimezone";
@@ -38,6 +38,7 @@ import remiMascot from "@/assets/remi-waving.webp";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { guestProgress, guestState, isGuest, dismissSavePrompt, updateProgress: updateGuestProgress } = useGuestMode();
   const { timezoneOffset, updateTimezone } = useTimezone();
@@ -80,6 +81,16 @@ const Profile = () => {
   } : null);
   
   const username = user?.user_metadata?.name || guestProgress?.username || 'Friend';
+
+  // Check if user came from password reset flow
+  useEffect(() => {
+    if (searchParams.get('reset_password') === 'true' && user) {
+      setShowPasswordSection(true);
+      // Clear the query param
+      setSearchParams({}, { replace: true });
+      toast.info('Enter your new password below.');
+    }
+  }, [searchParams, user, setSearchParams]);
 
   // Fetch profile picture from profiles table
   useEffect(() => {

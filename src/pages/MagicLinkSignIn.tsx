@@ -16,7 +16,7 @@ const emailSchema = z.string().trim().email({ message: "Please enter a valid ema
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
-type AuthMode = 'choose' | 'magic-link' | 'password';
+type AuthMode = 'choose' | 'magic-link' | 'password' | 'forgot-password';
 
 export default function MagicLinkSignIn() {
   const navigate = useNavigate();
@@ -31,6 +31,7 @@ export default function MagicLinkSignIn() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [authMode, setAuthMode] = useState<AuthMode>('choose');
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -175,6 +176,31 @@ export default function MagicLinkSignIn() {
     }
   };
 
+  const handleForgotPassword = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    
+    try {
+      const validatedEmail = emailSchema.parse(email);
+      setLoading(true);
+      setPasswordError(null);
+
+      const { error } = await supabase.auth.resetPasswordForEmail(validatedEmail, {
+        redirectTo: getAuthCallbackUrl(),
+      });
+
+      if (error) throw error;
+
+      setResetEmailSent(true);
+      toast.success('Check your email for the password reset link!');
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setPasswordError(error.errors[0].message);
+      } else if (error instanceof Error) {
+        setPasswordError(error.message);
+      }
+    }
+  };
+
   // OTP verification screen (after magic link sent)
   if (sent) {
     return (
@@ -295,6 +321,129 @@ export default function MagicLinkSignIn() {
     );
   }
 
+  // Forgot password mode
+  if (authMode === 'forgot-password') {
+    // Show success screen after email sent
+    if (resetEmailSent) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
+          <div className="w-full max-w-md text-center space-y-8">
+            <img 
+              src={logo}
+              alt="One Hello" 
+              className="w-full max-w-xs mx-auto"
+            />
+            
+            <Card>
+              <CardHeader className="text-center space-y-4">
+                <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+                  <Check className="w-8 h-8 text-primary" />
+                </div>
+                <CardTitle>Check your email!</CardTitle>
+                <CardDescription className="text-base">
+                  We sent a password reset link to <span className="font-medium text-foreground">{email}</span>.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground text-center">
+                  Click the link in your email to set a new password.
+                </p>
+                <Button 
+                  onClick={() => {
+                    setAuthMode('password');
+                    setResetEmailSent(false);
+                  }} 
+                  variant="outline" 
+                  className="w-full"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to sign in
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+
+    // Email input form for forgot password
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
+        <div className="w-full max-w-md space-y-8">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setAuthMode('password');
+              setPasswordError(null);
+            }}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+
+          <img 
+            src={logo}
+            alt="One Hello" 
+            className="w-full max-w-xs mx-auto"
+          />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Reset your password</CardTitle>
+              <CardDescription>
+                Enter your email and we'll send you a link to reset your password.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">Email</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setPasswordError(null);
+                    }}
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                {/* Error message */}
+                {passwordError && (
+                  <div className="flex items-start gap-2 text-sm text-destructive">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>{passwordError}</span>
+                  </div>
+                )}
+                
+                <Button 
+                  type="submit"
+                  size="lg" 
+                  className="w-full"
+                  disabled={loading || !email}
+                >
+                  {loading ? (
+                    <span className="animate-pulse">Sending...</span>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4 mr-2" />
+                      Send reset link
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   // Password sign-in mode
   if (authMode === 'password') {
     return (
@@ -395,15 +544,29 @@ export default function MagicLinkSignIn() {
                   )}
                 </Button>
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full text-muted-foreground"
-                  onClick={() => setAuthMode('magic-link')}
-                >
-                  <Mail className="w-4 h-4 mr-2" />
-                  Use magic link instead
-                </Button>
+                <div className="flex items-center justify-between">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="text-muted-foreground p-0 h-auto text-sm"
+                    onClick={() => {
+                      setAuthMode('forgot-password');
+                      setPasswordError(null);
+                    }}
+                  >
+                    Forgot password?
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="text-muted-foreground p-0 h-auto text-sm"
+                    onClick={() => setAuthMode('magic-link')}
+                  >
+                    <Mail className="w-3 h-3 mr-1" />
+                    Use magic link
+                  </Button>
+                </div>
               </form>
             </CardContent>
           </Card>
