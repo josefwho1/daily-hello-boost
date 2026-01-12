@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { supabase } from '@/integrations/supabase/client';
+import { getAuthCallbackUrl } from '@/lib/publicUrls';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Mail, ArrowLeft, Check, KeyRound } from 'lucide-react';
@@ -31,7 +32,7 @@ export default function MagicLinkSignIn() {
       const { error } = await supabase.auth.signInWithOtp({
         email: validatedEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: getAuthCallbackUrl(),
         },
       });
 
