@@ -1,6 +1,9 @@
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Flame, Leaf } from "lucide-react";
@@ -14,15 +17,16 @@ export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogP
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent className="max-w-md mx-auto [&>button]:hidden max-h-[90vh] overflow-y-auto">
-        <div className="text-center py-4">
-          <h2 className="text-xl font-bold text-foreground mb-2">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">
             Choose Your Mode
-          </h2>
-          <p className="text-base text-muted-foreground mb-6">
+          </DialogTitle>
+          <DialogDescription className="text-base">
             Pick the pace that works best for you
-          </p>
+          </DialogDescription>
+        </DialogHeader>
           
-          <div className="space-y-4">
+        <div className="space-y-4">
             {/* Daily Mode */}
             <div className="border border-primary/20 rounded-xl p-4 bg-primary/5 text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
@@ -79,7 +83,6 @@ export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogP
               </Button>
             </div>
           </div>
-        </div>
       </DialogContent>
     </Dialog>
   );
