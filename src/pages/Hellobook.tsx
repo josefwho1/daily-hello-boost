@@ -80,10 +80,10 @@ const getTypeDisplay = (helloType: string | null) => {
   }
   if (isFirstHelloInitiation(helloType)) {
     return {
-      icon: <Sparkles className="w-5 h-5 text-violet-600" />,
+      icon: <MessageCircle className="w-5 h-5 text-green-500" />,
       label: `First Hello: ${helloType}`,
-      bgClass: "bg-violet-500/10 border-violet-500/20",
-      textClass: "text-violet-600"
+      bgClass: "bg-green-500/10 border-green-500/20",
+      textClass: "text-green-500"
     };
   }
   if (isOnboardingChallenge(helloType)) {
