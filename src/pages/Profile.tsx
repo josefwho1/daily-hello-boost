@@ -623,6 +623,18 @@ const Profile = () => {
             <p className="text-xs text-center text-muted-foreground mt-2">
               Add your email to keep your hellos safe
             </p>
+            
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-sm text-center text-muted-foreground">
+                Already have an account?{' '}
+                <button 
+                  onClick={() => navigate('/magic-link')}
+                  className="text-primary font-medium hover:underline"
+                >
+                  Sign In
+                </button>
+              </p>
+            </div>
           </Card>
         )}
 
