@@ -203,6 +203,9 @@ const Profile = () => {
   };
 
   const handleModeClick = (value: string) => {
+    // Don't show dialog if clicking the already-selected mode
+    if (value === currentMode) return;
+    
     setPendingMode(value);
     setShowModeChangeDialog(true);
   };
@@ -342,12 +345,12 @@ const Profile = () => {
         </div>
 
 
-        {/* Path - Only show after onboarding is complete */}
+        {/* Mode - Only show after onboarding is complete */}
         {progress?.has_completed_onboarding && (
           <Card className="p-5 mb-4 rounded-2xl">
             <div className="flex items-center gap-3 mb-4">
               <Route className="text-primary w-5 h-5" />
-              <h3 className="font-semibold text-foreground">Path</h3>
+              <h3 className="font-semibold text-foreground">Mode</h3>
             </div>
             
             <div className="space-y-2">
@@ -632,9 +635,9 @@ const Profile = () => {
       <Dialog open={showModeChangeDialog} onOpenChange={setShowModeChangeDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Change your path?</DialogTitle>
+            <DialogTitle>Change your mode?</DialogTitle>
             <DialogDescription className="space-y-2">
-              <p>Switching your path will affect how your progress is tracked (daily vs weekly).</p>
+              <p>Switching your mode will affect how your progress is tracked (daily vs weekly).</p>
               <p>You'll keep your stats and orbs don't worry.</p>
             </DialogDescription>
           </DialogHeader>
