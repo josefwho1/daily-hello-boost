@@ -265,10 +265,10 @@ const Profile = () => {
     setPendingMode(null);
   };
 
-  // Determine current mode - if still in onboarding week with 'normal' default, show as 7-day-starter
-  const currentMode = (progress?.is_onboarding_week && !progress?.has_completed_onboarding) 
-    ? '7-day-starter' 
-    : (progress?.mode === 'normal' ? 'chill' : (progress?.mode === 'connect' ? 'chill' : (progress?.mode || '7-day-starter')));
+  // Determine current mode - use first_hellos as default for new users
+  const currentMode = (!progress?.has_completed_onboarding) 
+    ? 'first_hellos' 
+    : (progress?.mode === 'normal' ? 'chill' : (progress?.mode === 'connect' ? 'chill' : (progress?.mode || 'first_hellos')));
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -628,7 +628,7 @@ const Profile = () => {
               <p className="text-sm text-center text-muted-foreground">
                 Already have an account?{' '}
                 <button 
-                  onClick={() => navigate('/magic-link')}
+                  onClick={() => navigate('/signin')}
                   className="text-primary font-medium hover:underline"
                 >
                   Sign In
