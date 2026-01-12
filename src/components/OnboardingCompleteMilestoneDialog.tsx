@@ -32,10 +32,13 @@ export const OnboardingCompleteMilestoneDialog = ({
             />
           </div>
           <DialogTitle className="text-2xl">
-            🎉 You did it!
+            🎉 Congratulations!
           </DialogTitle>
-          <DialogDescription className="text-center pt-2 text-base">
-            7 days, 7 hellos. You're officially part of the One Hello community.
+          <DialogDescription className="text-center pt-2 text-base space-y-2">
+            <p className="font-semibold text-foreground">Initiation complete.</p>
+            <p>You can officially turn a stranger into a friend.</p>
+            <p>Welcome to the Gaze</p>
+            <p className="text-sm">(that's what a group of raccoons is called 🦝)</p>
           </DialogDescription>
         </DialogHeader>
 
