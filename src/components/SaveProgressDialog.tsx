@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { getAuthCallbackUrl } from '@/lib/publicUrls';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { Mail, Sparkles, ArrowLeft, KeyRound, Check } from 'lucide-react';
+import { Mail, Sparkles, ArrowLeft, KeyRound, Check, RefreshCw, AlertCircle } from 'lucide-react';
 import remiWaving from '@/assets/remi-waving.webp';
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email" });
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 interface SaveProgressDialogProps {
   open: boolean;
@@ -33,6 +35,19 @@ export const SaveProgressDialog = ({
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState('');
   const [verifying, setVerifying] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Countdown timer for resend cooldown
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    
+    const timer = setInterval(() => {
+      setResendCooldown(prev => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   const handleMaybeLater = () => {
     onDismiss();
@@ -40,6 +55,7 @@ export const SaveProgressDialog = ({
     setStep('prompt');
     setEmail('');
     setOtp('');
+    setOtpError(null);
   };
 
   const handleSaveProgress = () => {
@@ -50,6 +66,7 @@ export const SaveProgressDialog = ({
     try {
       const validatedEmail = emailSchema.parse(email);
       setLoading(true);
+      setOtpError(null);
 
       const { error } = await supabase.auth.signInWithOtp({
         email: validatedEmail,
@@ -61,6 +78,7 @@ export const SaveProgressDialog = ({
       if (error) throw error;
 
       setStep('sent');
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
       toast.success('Check your email for the magic link or code!');
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -73,14 +91,44 @@ export const SaveProgressDialog = ({
     }
   };
 
+  const handleResendCode = async () => {
+    if (resendCooldown > 0) return;
+    
+    try {
+      setLoading(true);
+      setOtpError(null);
+      setOtp('');
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: getAuthCallbackUrl(),
+        },
+      });
+
+      if (error) throw error;
+
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+      toast.success('New code sent! Check your email.');
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleVerifyOtp = async () => {
     if (otp.length !== 6) {
-      toast.error('Please enter the complete 6-digit code');
+      setOtpError('Please enter the complete 6-digit code');
       return;
     }
 
     try {
       setVerifying(true);
+      setOtpError(null);
+      
       const { error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
@@ -94,7 +142,13 @@ export const SaveProgressDialog = ({
       navigate('/');
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(error.message);
+        if (error.message.includes('expired')) {
+          setOtpError('This code has expired. Please request a new one.');
+        } else if (error.message.includes('invalid') || error.message.includes('Token')) {
+          setOtpError('Invalid code. Please check and try again.');
+        } else {
+          setOtpError(error.message);
+        }
       }
       setOtp('');
     } finally {
@@ -109,6 +163,7 @@ export const SaveProgressDialog = ({
       setStep('prompt');
       setEmail('');
       setOtp('');
+      setOtpError(null);
     }, 300);
   };
 
@@ -233,7 +288,10 @@ export const SaveProgressDialog = ({
                 <InputOTP
                   maxLength={6}
                   value={otp}
-                  onChange={setOtp}
+                  onChange={(value) => {
+                    setOtp(value);
+                    setOtpError(null);
+                  }}
                   onComplete={handleVerifyOtp}
                 >
                   <InputOTPGroup>
@@ -247,6 +305,14 @@ export const SaveProgressDialog = ({
                 </InputOTP>
               </div>
 
+              {/* Error message */}
+              {otpError && (
+                <div className="flex items-center gap-2 justify-center text-sm text-destructive">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{otpError}</span>
+                </div>
+              )}
+
               <Button 
                 onClick={handleVerifyOtp}
                 className="w-full"
@@ -257,6 +323,21 @@ export const SaveProgressDialog = ({
                 ) : (
                   'Verify code'
                 )}
+              </Button>
+
+              {/* Resend button with cooldown */}
+              <Button
+                onClick={handleResendCode}
+                variant="ghost"
+                size="sm"
+                className="w-full text-muted-foreground"
+                disabled={resendCooldown > 0 || loading}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                {resendCooldown > 0 
+                  ? `Resend code in ${resendCooldown}s`
+                  : "Didn't receive it? Resend code"
+                }
               </Button>
 
               <div className="relative">
@@ -272,11 +353,12 @@ export const SaveProgressDialog = ({
                 onClick={() => {
                   setStep('email');
                   setOtp('');
+                  setOtpError(null);
                 }} 
                 variant="outline" 
                 className="w-full"
               >
-                Send to a different email
+                Use a different email
               </Button>
             </div>
           </>

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   getGuestState, 
@@ -9,109 +9,193 @@ import {
   updateGuestState 
 } from '@/lib/indexedDB';
 import { toast } from 'sonner';
+import { AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<'verifying' | 'syncing' | 'error'>('verifying');
   const [message, setMessage] = useState('Verifying your email...');
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  const hasRun = useRef(false);
 
   useEffect(() => {
+    // Prevent double execution in React strict mode
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const handleCallback = async () => {
       try {
-        // Get the session from the URL hash
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // Check for error in URL params (Supabase redirects with error in query string)
+        const errorParam = searchParams.get('error');
+        const errorDescription = searchParams.get('error_description');
         
-        if (sessionError) throw sessionError;
+        if (errorParam) {
+          throw new Error(errorDescription || errorParam);
+        }
+
+        // First, check if there's already a valid session
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
         
-        if (!session?.user) {
-          // Try to exchange the code from URL
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          const refreshToken = hashParams.get('refresh_token');
+        if (existingSession?.user) {
+          // Already have a valid session, proceed with user setup
+          await setupUserAndRedirect(existingSession.user.id, existingSession.user);
+          return;
+        }
+
+        // Check for tokens in URL hash (implicit flow)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const errorInHash = hashParams.get('error');
+        const errorDescInHash = hashParams.get('error_description');
+
+        if (errorInHash) {
+          throw new Error(errorDescInHash || errorInHash);
+        }
+
+        if (accessToken && refreshToken) {
+          // Set the session from hash tokens
+          const { data, error: setSessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
           
-          if (accessToken && refreshToken) {
-            const { error: setSessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-            
-            if (setSessionError) throw setSessionError;
-          } else {
-            throw new Error('No session found');
+          if (setSessionError) throw setSessionError;
+          
+          if (data.user) {
+            // Clear the hash from URL to prevent issues on refresh
+            window.history.replaceState(null, '', window.location.pathname);
+            await setupUserAndRedirect(data.user.id, data.user);
+            return;
           }
         }
 
-        // Get the current user
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) throw userError || new Error('No user found');
-
-        // Check if this user has guest data to sync
-        const guestState = await getGuestState();
-        
-        if (guestState && !guestState.account_linked && guestState.total_hellos_logged > 0) {
-          setStatus('syncing');
-          setMessage('Syncing your hellos to the cloud...');
+        // Check for code in query params (PKCE flow)
+        const code = searchParams.get('code');
+        if (code) {
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           
-          await syncGuestDataToCloud(user.id);
+          if (exchangeError) throw exchangeError;
+          
+          if (data.user) {
+            await setupUserAndRedirect(data.user.id, data.user);
+            return;
+          }
         }
 
-        // Ensure profile exists
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id)
-          .maybeSingle();
+        // No valid auth method found
+        throw new Error('No valid authentication found. The link may have expired.');
         
-        if (!profile) {
-          // Create profile
-          await supabase.from('profiles').insert({
-            id: user.id,
-            username: user.user_metadata?.name || 'Friend',
-            email: user.email,
-          });
-        }
-
-        // Check if user has progress
-        const { data: progress } = await supabase
-          .from('user_progress')
-          .select('id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        if (!progress) {
-          // Create initial progress
-          await supabase.from('user_progress').insert({
-            user_id: user.id,
-            current_streak: 0,
-            current_day: 1,
-            is_onboarding_week: true,
-            onboarding_week_start: new Date().toISOString().split('T')[0],
-            mode: 'first_hellos',
-          });
-        }
-
-        toast.success('Welcome! Your progress is saved.');
-        navigate('/', { replace: true });
       } catch (error) {
         console.error('Auth callback error:', error);
-        setStatus('error');
-        setMessage('Something went wrong. Please try again.');
+        const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
         
-        setTimeout(() => {
-          navigate('/auth', { replace: true });
-        }, 2000);
+        setStatus('error');
+        setMessage('Unable to sign in');
+        setErrorDetails(errorMessage);
       }
     };
 
-    handleCallback();
-  }, [navigate]);
+    // Small delay to ensure Supabase client is ready
+    const timer = setTimeout(handleCallback, 100);
+    return () => clearTimeout(timer);
+  }, [navigate, searchParams]);
+
+  const setupUserAndRedirect = async (userId: string, user: { email?: string; user_metadata?: { name?: string } }) => {
+    try {
+      // Check if this user has guest data to sync
+      const guestState = await getGuestState();
+      
+      if (guestState && !guestState.account_linked && guestState.total_hellos_logged > 0) {
+        setStatus('syncing');
+        setMessage('Syncing your hellos to the cloud...');
+        
+        await syncGuestDataToCloud(userId);
+      }
+
+      // Ensure profile exists
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (!profile) {
+        await supabase.from('profiles').insert({
+          id: userId,
+          username: user.user_metadata?.name || 'Friend',
+          email: user.email,
+        });
+      }
+
+      // Check if user has progress
+      const { data: progress } = await supabase
+        .from('user_progress')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (!progress) {
+        await supabase.from('user_progress').insert({
+          user_id: userId,
+          current_streak: 0,
+          current_day: 1,
+          is_onboarding_week: true,
+          onboarding_week_start: new Date().toISOString().split('T')[0],
+          mode: 'first_hellos',
+        });
+      }
+
+      toast.success('Welcome! Your progress is saved.');
+      navigate('/', { replace: true });
+    } catch (setupError) {
+      console.error('Setup error:', setupError);
+      // Still redirect even if setup partially fails
+      toast.success('Signed in!');
+      navigate('/', { replace: true });
+    }
+  };
+
+  const handleTryAgain = () => {
+    navigate('/signin', { replace: true });
+  };
+
+  const handleContinueAsGuest = () => {
+    navigate('/', { replace: true });
+  };
+
+  if (status === 'error') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="text-center space-y-6 max-w-sm">
+          <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
+            <AlertCircle className="w-8 h-8 text-destructive" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold text-foreground">{message}</h2>
+            {errorDetails && (
+              <p className="text-sm text-muted-foreground">{errorDetails}</p>
+            )}
+          </div>
+          <div className="space-y-3">
+            <Button onClick={handleTryAgain} className="w-full">
+              Try signing in again
+            </Button>
+            <Button onClick={handleContinueAsGuest} variant="outline" className="w-full">
+              Continue as guest
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <div className="text-center space-y-4">
-        {status !== 'error' && (
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-        )}
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
         <p className="text-muted-foreground">{message}</p>
       </div>
     </div>
@@ -153,7 +237,7 @@ async function syncGuestDataToCloud(userId: string) {
         names_today_count: guestProgress.names_today_count,
         notes_today_count: guestProgress.notes_today_count,
         last_xp_reset_date: guestProgress.last_xp_reset_date,
-        mode: guestProgress.mode,
+        mode: guestProgress.mode === '7-day-starter' ? 'first_hellos' : guestProgress.mode,
         why_here: guestProgress.why_here,
         selected_pack_id: guestProgress.selected_pack_id,
         comfort_rating: guestProgress.comfort_rating,
