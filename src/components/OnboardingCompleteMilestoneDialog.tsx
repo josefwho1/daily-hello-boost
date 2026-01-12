@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import remiMascot from "@/assets/remi-waving.webp";
+import remiCelebrating from "@/assets/remi-celebrating-3.webp";
 
 interface OnboardingCompleteMilestoneDialogProps {
   open: boolean;
@@ -26,13 +26,13 @@ export const OnboardingCompleteMilestoneDialog = ({
         <DialogHeader className="text-center">
           <div className="flex justify-center mb-4">
             <img 
-              src={remiMascot} 
+              src={remiCelebrating} 
               alt="Remi celebrating" 
               className="w-32 h-auto max-h-32 animate-bounce-soft object-contain" 
             />
           </div>
           <DialogTitle className="text-2xl">
-            🎉 Congratulations!
+            🎉 Congratulations 🎉
           </DialogTitle>
           <DialogDescription className="text-center pt-2 text-base space-y-2">
             <p className="font-semibold text-foreground">Initiation complete.</p>
