@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { supabase } from '@/integrations/supabase/client';
+import { getAuthCallbackUrl } from '@/lib/publicUrls';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Mail, Sparkles, ArrowLeft, KeyRound, Check } from 'lucide-react';
@@ -53,7 +54,7 @@ export const SaveProgressDialog = ({
       const { error } = await supabase.auth.signInWithOtp({
         email: validatedEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: getAuthCallbackUrl(),
         },
       });
 
