@@ -19,7 +19,7 @@ export const FirstOrbGiftDialog = ({ open, onClaim, username = "" }: FirstOrbGif
       <DialogContent className="max-w-sm mx-auto [&>button]:hidden">
         <div className="text-center py-4">
           <h2 className="text-xl font-bold text-foreground mb-4">
-            Congrats {displayName} on your First Hello!
+            Congrats Friend on your First Hello!
           </h2>
           
           <img 
@@ -30,21 +30,15 @@ export const FirstOrbGiftDialog = ({ open, onClaim, username = "" }: FirstOrbGif
 
           <div className="space-y-3 text-muted-foreground mb-6">
             <p>
-              As promised, here's an Orb.
+              As a reward, here's an Orb.
             </p>
             <p>
               These can be used to save your streak incase you miss a day!
             </p>
-            <p className="mt-4">
-              Come back tomorrow to reveal your next challenge.
-            </p>
-            <p>
-              I really wish you do 🦝
-            </p>
           </div>
           
           <Button onClick={onClaim} className="w-full" size="lg">
-            See you Tomorrow
+            I love Orbs
           </Button>
         </div>
       </DialogContent>
