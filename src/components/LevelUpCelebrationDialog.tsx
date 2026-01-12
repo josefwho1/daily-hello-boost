@@ -38,7 +38,7 @@ export const LevelUpCelebrationDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto [&>button]:hidden bg-background border-2 border-primary/20 overflow-hidden">
+      <DialogContent className="max-w-sm mx-auto bg-background border-2 border-primary/20 overflow-hidden">
         <div className="text-center py-6 relative z-10">
           {/* Remi celebrating */}
           <div className="relative inline-block mb-4">

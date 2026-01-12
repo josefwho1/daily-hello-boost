@@ -29,7 +29,7 @@ export const UseOrbDialog = ({
   const isDaily = type === 'daily';
   
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onDecline()}>
       <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader className="text-center">
           <div className="flex justify-center mb-4">

@@ -16,8 +16,8 @@ interface FirstOrbGiftDialogProps {
 
 export const FirstOrbGiftDialog = ({ open, onClaim, username = "" }: FirstOrbGiftDialogProps) => {
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="max-w-sm mx-auto [&>button]:hidden">
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClaim()}>
+      <DialogContent className="max-w-sm mx-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Congrats Friend on your First Hello!
