@@ -16,7 +16,7 @@ import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { ProfilePictureSelector, getProfilePictureSrc } from "@/components/ProfilePictureSelector";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
-import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Bell, Camera, Instagram, Globe, Mail, Sun, Moon, Monitor, Smartphone, Share, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Bell, Camera, Instagram, Globe, Mail, Sun, Moon, Monitor, Smartphone, Share, ChevronDown, ChevronUp, Sparkles, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -55,6 +55,16 @@ const Profile = () => {
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [showInstallSteps, setShowInstallSteps] = useState(false);
   const [showSaveProgress, setShowSaveProgress] = useState(false);
+  
+  // Password management state
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
   
   // Use cloud progress for authenticated users, guest progress otherwise
   const progress = user ? cloudProgress : (guestProgress ? {
@@ -189,6 +199,47 @@ const Profile = () => {
     } catch (error) {
       console.log("Sign out error (navigating anyway):", error);
       navigate('/auth');
+    }
+  };
+
+  const handleSavePassword = async () => {
+    setPasswordError(null);
+    setPasswordSuccess(false);
+    
+    if (!newPassword) {
+      setPasswordError("Please enter a password");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords don't match");
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      setPasswordSuccess(true);
+      setNewPassword('');
+      setConfirmPassword('');
+      toast.success("Password set successfully!");
+      
+      // Collapse the section after success
+      setTimeout(() => {
+        setShowPasswordSection(false);
+        setPasswordSuccess(false);
+      }, 2000);
+    } catch (error) {
+      if (error instanceof Error) {
+        setPasswordError(error.message);
+      }
+    } finally {
+      setIsSavingPassword(false);
     }
   };
 
@@ -545,6 +596,129 @@ const Profile = () => {
             })}
           </div>
         </Card>
+
+        {/* Password (Auth users only) */}
+        {user && (
+          <Card className="p-5 mb-4 rounded-2xl">
+            <button
+              onClick={() => {
+                setShowPasswordSection(!showPasswordSection);
+                setPasswordError(null);
+                setPasswordSuccess(false);
+                setNewPassword('');
+                setConfirmPassword('');
+              }}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <Lock className="text-primary w-5 h-5" />
+                <h3 className="font-semibold text-foreground">Password</h3>
+              </div>
+              {showPasswordSection ? (
+                <ChevronUp className="w-5 h-5 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              )}
+            </button>
+            
+            {showPasswordSection && (
+              <div className="mt-4 space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Set a password to sign in with email + password instead of magic links.
+                </p>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="new-password"
+                      type={showNewPassword ? 'text' : 'password'}
+                      placeholder="Enter new password"
+                      value={newPassword}
+                      onChange={(e) => {
+                        setNewPassword(e.target.value);
+                        setPasswordError(null);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      {showNewPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        setPasswordError(null);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Error message */}
+                {passwordError && (
+                  <div className="flex items-start gap-2 text-sm text-destructive">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>{passwordError}</span>
+                  </div>
+                )}
+
+                {/* Success message */}
+                {passwordSuccess && (
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <Check className="w-4 h-4" />
+                    <span>Password set successfully!</span>
+                  </div>
+                )}
+
+                <Button
+                  onClick={handleSavePassword}
+                  className="w-full"
+                  disabled={isSavingPassword || !newPassword || !confirmPassword}
+                >
+                  {isSavingPassword ? (
+                    <span className="animate-pulse">Saving...</span>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4 mr-2" />
+                      Set Password
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Social & Support Links */}
         <Card className="p-5 mb-4 rounded-2xl">

@@ -9,22 +9,28 @@ import { supabase } from '@/integrations/supabase/client';
 import { getAuthCallbackUrl } from '@/lib/publicUrls';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { Mail, ArrowLeft, Check, KeyRound, RefreshCw, AlertCircle } from 'lucide-react';
+import { Mail, ArrowLeft, Check, KeyRound, RefreshCw, AlertCircle, Lock, Eye, EyeOff } from 'lucide-react';
 import logo from '@/assets/one-hello-logo-tagline.svg';
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email" });
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
+type AuthMode = 'choose' | 'magic-link' | 'password';
+
 export default function MagicLinkSignIn() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [otp, setOtp] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [authMode, setAuthMode] = useState<AuthMode>('choose');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -133,6 +139,43 @@ export default function MagicLinkSignIn() {
     }
   };
 
+  const handlePasswordSignIn = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    
+    try {
+      const validatedEmail = emailSchema.parse(email);
+      setLoading(true);
+      setPasswordError(null);
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: validatedEmail,
+        password,
+      });
+
+      if (error) {
+        // Check if it's "Invalid login credentials" which could mean no password set
+        if (error.message.includes('Invalid login credentials')) {
+          setPasswordError("Invalid email or password. If you haven't set a password yet, use the magic link option.");
+        } else {
+          setPasswordError(error.message);
+        }
+        return;
+      }
+
+      toast.success('Signed in successfully!');
+      navigate('/');
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setPasswordError(error.errors[0].message);
+      } else if (error instanceof Error) {
+        setPasswordError(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // OTP verification screen (after magic link sent)
   if (sent) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
@@ -252,6 +295,222 @@ export default function MagicLinkSignIn() {
     );
   }
 
+  // Password sign-in mode
+  if (authMode === 'password') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
+        <div className="w-full max-w-md space-y-8">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setAuthMode('choose');
+              setPasswordError(null);
+              setPassword('');
+            }}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+
+          <img 
+            src={logo}
+            alt="One Hello" 
+            className="w-full max-w-xs mx-auto"
+          />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Sign in with password</CardTitle>
+              <CardDescription>
+                Enter your email and password to sign in.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handlePasswordSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setPasswordError(null);
+                      }}
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Error message */}
+                {passwordError && (
+                  <div className="flex items-start gap-2 text-sm text-destructive">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>{passwordError}</span>
+                  </div>
+                )}
+                
+                <Button 
+                  type="submit"
+                  size="lg" 
+                  className="w-full"
+                  disabled={loading || !email || !password}
+                >
+                  {loading ? (
+                    <span className="animate-pulse">Signing in...</span>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4 mr-2" />
+                      Sign in
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full text-muted-foreground"
+                  onClick={() => setAuthMode('magic-link')}
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Use magic link instead
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <p className="text-center text-sm text-muted-foreground">
+            New here?{' '}
+            <button 
+              onClick={() => navigate('/onboarding')}
+              className="text-primary hover:underline"
+            >
+              Get started
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Magic link mode
+  if (authMode === 'magic-link') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
+        <div className="w-full max-w-md space-y-8">
+          <Button
+            variant="ghost"
+            onClick={() => setAuthMode('choose')}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+
+          <img 
+            src={logo}
+            alt="One Hello" 
+            className="w-full max-w-xs mx-auto"
+          />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Sign in with magic link</CardTitle>
+              <CardDescription>
+                Enter your email and we'll send you a magic link or code.
+                <span className="block mt-1 font-medium text-foreground">
+                  No password needed.
+                </span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSendLink} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoFocus
+                    required
+                  />
+                </div>
+                
+                <Button 
+                  type="submit"
+                  size="lg" 
+                  className="w-full"
+                  disabled={loading || !email}
+                >
+                  {loading ? (
+                    <span className="animate-pulse">Sending...</span>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4 mr-2" />
+                      Send magic link
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full text-muted-foreground"
+                  onClick={() => setAuthMode('password')}
+                >
+                  <Lock className="w-4 h-4 mr-2" />
+                  Use password instead
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <p className="text-center text-sm text-muted-foreground">
+            New here?{' '}
+            <button 
+              onClick={() => navigate('/onboarding')}
+              className="text-primary hover:underline"
+            >
+              Get started
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Choose auth method (default)
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
       <div className="w-full max-w-md space-y-8">
@@ -274,43 +533,28 @@ export default function MagicLinkSignIn() {
           <CardHeader>
             <CardTitle>Sign in</CardTitle>
             <CardDescription>
-              Enter your email and we'll send you a magic link or code.
-              <span className="block mt-1 font-medium text-foreground">
-                No passwords needed.
-              </span>
+              Choose how you'd like to sign in to your account.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSendLink} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoFocus
-                  required
-                />
-              </div>
-              
-              <Button 
-                type="submit"
-                size="lg" 
-                className="w-full"
-                disabled={loading || !email}
-              >
-                {loading ? (
-                  <span className="animate-pulse">Sending...</span>
-                ) : (
-                  <>
-                    <Mail className="w-4 h-4 mr-2" />
-                    Send magic link
-                  </>
-                )}
-              </Button>
-            </form>
+          <CardContent className="space-y-4">
+            <Button 
+              onClick={() => setAuthMode('magic-link')}
+              size="lg" 
+              className="w-full"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Continue with magic link
+            </Button>
+
+            <Button 
+              onClick={() => setAuthMode('password')}
+              size="lg" 
+              variant="outline"
+              className="w-full"
+            >
+              <Lock className="w-4 h-4 mr-2" />
+              Continue with password
+            </Button>
           </CardContent>
         </Card>
 
