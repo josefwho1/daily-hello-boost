@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
+import { useGuestMode } from "@/hooks/useGuestMode";
 import { LogHelloDialog, HelloType } from "@/components/LogHelloDialog";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
@@ -21,6 +22,7 @@ import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingComple
 import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompleteDialog";
 import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationDialog";
 import { LevelUpCelebrationDialog } from "@/components/LevelUpCelebrationDialog";
+import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
@@ -50,9 +52,66 @@ const getWeekStartKeyInOffset = (date: Date, offset: string) => {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { progress, loading: progressLoading, updateProgress, refetch } = useUserProgress();
-  const { logs, loading: logsLoading, addLog, getLogsTodayCount } = useHelloLogs();
+  const { progress: cloudProgress, loading: progressLoading, updateProgress: updateCloudProgress, refetch } = useUserProgress();
+  const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, getLogsTodayCount } = useHelloLogs();
   const { timezoneOffset, loading: timezoneLoading } = useTimezone();
+  const { 
+    guestProgress, 
+    guestLogs, 
+    loading: guestLoading, 
+    updateProgress: updateGuestProgress, 
+    addLog: addGuestLog,
+    shouldShowSavePrompt,
+    dismissSavePrompt,
+    guestState,
+    isGuest
+  } = useGuestMode();
+  
+  // Unified progress and logs - works for both guest and authenticated users
+  const progress = user ? cloudProgress : (guestProgress ? {
+    current_streak: guestProgress.current_streak,
+    current_day: guestProgress.current_day,
+    last_completed_date: guestProgress.last_completed_date,
+    selected_pack_id: guestProgress.selected_pack_id,
+    mode: guestProgress.mode,
+    target_hellos_per_week: guestProgress.target_hellos_per_week,
+    hellos_this_week: guestProgress.hellos_this_week,
+    weekly_streak: guestProgress.weekly_streak,
+    daily_streak: guestProgress.daily_streak,
+    longest_streak: guestProgress.longest_streak,
+    is_onboarding_week: guestProgress.is_onboarding_week,
+    onboarding_week_start: guestProgress.onboarding_week_start,
+    week_start_date: guestProgress.week_start_date,
+    has_completed_onboarding: guestProgress.has_completed_onboarding,
+    orbs: guestProgress.orbs,
+    has_received_first_orb: guestProgress.has_received_first_orb,
+    total_hellos: guestProgress.total_hellos,
+    total_xp: guestProgress.total_xp,
+    current_level: guestProgress.current_level,
+    hellos_today_count: guestProgress.hellos_today_count,
+    names_today_count: guestProgress.names_today_count,
+    notes_today_count: guestProgress.notes_today_count,
+    last_xp_reset_date: guestProgress.last_xp_reset_date,
+  } : null);
+  
+  const logs = user ? cloudLogs : guestLogs.map(log => ({
+    ...log,
+    user_id: guestProgress?.guest_user_id || '',
+  }));
+  
+  const updateProgress = user ? updateCloudProgress : updateGuestProgress;
+  const addLog = user ? addCloudLog : async (data: Parameters<typeof addCloudLog>[0]) => {
+    const result = await addGuestLog({
+      name: data.name || null,
+      notes: data.notes || null,
+      hello_type: data.hello_type || null,
+      rating: data.rating || null,
+      difficulty_rating: data.difficulty_rating || null,
+      timezone_offset: '+00:00',
+    });
+    return result;
+  };
+
   const tzOffset = normalizeTimezoneOffset(timezoneOffset);
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
@@ -78,12 +137,15 @@ export default function Dashboard() {
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [newLevelValue, setNewLevelValue] = useState(1);
   const [pendingMode, setPendingMode] = useState<'daily' | 'chill' | null>(null);
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
 
   useEffect(() => {
     if (user) {
       setUsername(user.user_metadata?.name || 'Friend');
+    } else if (guestProgress?.username) {
+      setUsername(guestProgress.username);
     }
-  }, [user]);
+  }, [user, guestProgress?.username]);
 
   // Determine which day of onboarding the user is on
   const getOnboardingDay = () => {
@@ -133,14 +195,17 @@ export default function Dashboard() {
     // Only show in 7-day-starter mode during onboarding week
     if (progress?.mode !== '7-day-starter') return;
     if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return;
-    if (progressLoading || logsLoading) return;
-    if (!user?.id) return;
+    if (progressLoading || logsLoading || guestLoading) return;
+    
+    // For guests, use guestProgress ID, for users use user.id
+    const uniqueId = user?.id || guestProgress?.guest_user_id;
+    if (!uniqueId) return;
     
     // Skip Day 1 - it's already revealed in the onboarding flow
     if (currentOnboardingDay === 1) return;
 
     // Check if we've already shown the reveal for this day using localStorage
-    const revealKey = `day_reveal_shown_${user.id}_day_${currentOnboardingDay}`;
+    const revealKey = `day_reveal_shown_${uniqueId}_day_${currentOnboardingDay}`;
     const alreadyShown = localStorage.getItem(revealKey) === 'true';
     
     // Only show if we haven't shown it yet - don't check completion status
@@ -148,7 +213,7 @@ export default function Dashboard() {
       setShowDayReveal(true);
       localStorage.setItem(revealKey, 'true');
     }
-  }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode, progressLoading, logsLoading, user?.id]);
+  }, [currentOnboardingDay, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode, progressLoading, logsLoading, guestLoading, user?.id, guestProgress?.guest_user_id]);
 
   // Weekly reset logic - check for missed weekly goal (Chill Mode)
   // Use a ref to prevent the effect from running multiple times
@@ -452,6 +517,14 @@ export default function Dashboard() {
       if (isFirstHelloEver) {
         setShowFirstOrbGift(true);
       }
+      
+      // Show save prompt for guests after hello triggers (1, 5, 20)
+      if (isGuest && shouldShowSavePrompt()) {
+        // Delay slightly so other dialogs can show first
+        setTimeout(() => {
+          setShowSavePrompt(true);
+        }, 1000);
+      }
     }
     
     setSelectedChallenge(null);
@@ -578,7 +651,9 @@ export default function Dashboard() {
   const thisWeeksChallenge = getThisWeeksChallenge();
   const todaysOnboardingChallenge = onboardingChallenges[currentOnboardingDay - 1];
 
-  if (progressLoading || logsLoading || timezoneLoading) {
+  const isLoading = user ? (progressLoading || logsLoading || timezoneLoading) : guestLoading;
+  
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -611,7 +686,7 @@ export default function Dashboard() {
 
         {/* Stats Bar - ALWAYS visible */}
         <StatsBar
-          hellosToday={getLogsTodayCount(tzOffset)}
+          hellosToday={user ? getLogsTodayCount(tzOffset) : (progress.hellos_today_count || 0)}
           hellosThisWeek={progress.hellos_this_week || 0}
           dailyStreak={progress.daily_streak || 0}
           weeklyStreak={progress.weekly_streak || 0}
@@ -835,6 +910,14 @@ export default function Dashboard() {
         onClose={() => setShowLevelUp(false)}
         newLevel={newLevelValue}
         totalXp={progress?.total_xp || 0}
+      />
+
+      {/* Save Progress Dialog for Guests */}
+      <SaveProgressDialog
+        open={showSavePrompt}
+        onOpenChange={setShowSavePrompt}
+        onDismiss={dismissSavePrompt}
+        totalHellos={guestState?.total_hellos_logged || 0}
       />
     </div>
   );
