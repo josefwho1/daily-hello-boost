@@ -2,44 +2,40 @@ export interface FirstHello {
   id: number;
   title: string;
   description: string;
-  suggestion: string;
-  tips?: string;
+  examples: string[];
+  tip: string;
 }
 
-export const firstHellos: FirstHello[] = [
+export const fourTypesOfHello: FirstHello[] = [
   {
     id: 1,
-    title: "Simple Greeting",
-    description: "Say hello to someone nearby",
-    suggestion: "\"Hello\" \"Hey\" \"Good Morning\"",
-    tips: "A smile goes a long way!"
+    title: "Greeting",
+    description: "Say hello to someone nearby.",
+    examples: ["Hello", "Hey", "Good morning"],
+    tip: "A greeting opens the door. It's the best way to start almost any interaction."
   },
   {
     id: 2,
     title: "Observation",
-    description: "Comment on something you're both experiencing right now, the weather, the time of year, the atmosphere",
-    suggestion: "\"What a beautiful day\" \"So busy today\" \"Weather's been so cold lately 🥶\"",
-    tips: "Works great when you're both waiting for something"
+    description: "Comment on something you're both experiencing right now.",
+    examples: ["What a beautiful day.", "So busy today.", "The weather's been so cold lately 🥶"],
+    tip: "Great when waiting for something or sharing the same space."
   },
   {
     id: 3,
     title: "Compliment",
-    description: "Give someone a genuine compliment",
-    suggestion: "\"I like your shirt\" \"Nice shoes\" \"Love your jacket\"",
-    tips: "Keep it genuine and about something they chose"
+    description: "Give someone a genuine compliment.",
+    examples: ["I like your shirt.", "Nice shoes.", "Love your jacket."],
+    tip: "Compliment choices, not bodies. Clothing and accessories work great."
   },
   {
     id: 4,
     title: "Question",
-    description: "Ask someone a question",
-    suggestion: "\"How's your day going?\" \"Is this the line?\" \"What are you getting?\"",
-    tips: "Open questions work best - they invite conversation"
-  },
-  {
-    id: 5,
-    title: "Name",
-    description: "Start a conversation then get the person's name (write it down in here after so you don't forget)",
-    suggestion: "\"I'm Remi, by the way\" \"I didn't catch your name. I'm Remi\" \"Nice to meet you, I'm Remi\"",
-    tips: "Introduce yourself first - it's only fair!"
+    description: "Ask someone a simple question.",
+    examples: ["How's your day going?", "Is this the line?", "Do you know where I can find ____?"],
+    tip: "Questions can be practical or personal. Start simple."
   }
 ];
+
+// Keep backward compatibility
+export const firstHellos = fourTypesOfHello;
