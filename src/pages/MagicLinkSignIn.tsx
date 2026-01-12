@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,10 +9,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { getAuthCallbackUrl } from '@/lib/publicUrls';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { Mail, ArrowLeft, Check, KeyRound } from 'lucide-react';
+import { Mail, ArrowLeft, Check, KeyRound, RefreshCw, AlertCircle } from 'lucide-react';
 import logo from '@/assets/one-hello-logo-tagline.svg';
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email" });
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 export default function MagicLinkSignIn() {
   const navigate = useNavigate();
@@ -21,13 +23,27 @@ export default function MagicLinkSignIn() {
   const [sent, setSent] = useState(false);
   const [otp, setOtp] = useState('');
   const [verifying, setVerifying] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
-  const handleSendLink = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Countdown timer for resend cooldown
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    
+    const timer = setInterval(() => {
+      setResendCooldown(prev => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  const handleSendLink = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     
     try {
       const validatedEmail = emailSchema.parse(email);
       setLoading(true);
+      setOtpError(null);
 
       const { error } = await supabase.auth.signInWithOtp({
         email: validatedEmail,
@@ -39,6 +55,7 @@ export default function MagicLinkSignIn() {
       if (error) throw error;
 
       setSent(true);
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
       toast.success('Check your email for the magic link or code!');
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -51,14 +68,44 @@ export default function MagicLinkSignIn() {
     }
   };
 
+  const handleResendCode = async () => {
+    if (resendCooldown > 0) return;
+    
+    try {
+      setLoading(true);
+      setOtpError(null);
+      setOtp('');
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: getAuthCallbackUrl(),
+        },
+      });
+
+      if (error) throw error;
+
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+      toast.success('New code sent! Check your email.');
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleVerifyOtp = async () => {
     if (otp.length !== 6) {
-      toast.error('Please enter the complete 6-digit code');
+      setOtpError('Please enter the complete 6-digit code');
       return;
     }
 
     try {
       setVerifying(true);
+      setOtpError(null);
+      
       const { error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
@@ -71,7 +118,14 @@ export default function MagicLinkSignIn() {
       navigate('/');
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(error.message);
+        // Provide user-friendly error messages
+        if (error.message.includes('expired')) {
+          setOtpError('This code has expired. Please request a new one.');
+        } else if (error.message.includes('invalid') || error.message.includes('Token')) {
+          setOtpError('Invalid code. Please check and try again.');
+        } else {
+          setOtpError(error.message);
+        }
       }
       setOtp('');
     } finally {
@@ -104,14 +158,17 @@ export default function MagicLinkSignIn() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 justify-center text-sm text-muted-foreground">
                   <KeyRound className="w-4 h-4" />
-                  <span>Or enter your 6-digit code</span>
+                  <span>Enter your 6-digit code</span>
                 </div>
                 
                 <div className="flex justify-center">
                   <InputOTP
                     maxLength={6}
                     value={otp}
-                    onChange={setOtp}
+                    onChange={(value) => {
+                      setOtp(value);
+                      setOtpError(null);
+                    }}
                     onComplete={handleVerifyOtp}
                   >
                     <InputOTPGroup>
@@ -125,6 +182,14 @@ export default function MagicLinkSignIn() {
                   </InputOTP>
                 </div>
 
+                {/* Error message */}
+                {otpError && (
+                  <div className="flex items-center gap-2 justify-center text-sm text-destructive">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{otpError}</span>
+                  </div>
+                )}
+
                 <Button 
                   onClick={handleVerifyOtp}
                   className="w-full"
@@ -136,6 +201,21 @@ export default function MagicLinkSignIn() {
                     'Verify code'
                   )}
                 </Button>
+
+                {/* Resend button with cooldown */}
+                <Button
+                  onClick={handleResendCode}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-muted-foreground"
+                  disabled={resendCooldown > 0 || loading}
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                  {resendCooldown > 0 
+                    ? `Resend code in ${resendCooldown}s`
+                    : "Didn't receive it? Resend code"
+                  }
+                </Button>
               </div>
 
               <div className="relative">
@@ -143,7 +223,7 @@ export default function MagicLinkSignIn() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">or</span>
+                  <span className="bg-card px-2 text-muted-foreground">or click the link in your email</span>
                 </div>
               </div>
 
@@ -151,11 +231,12 @@ export default function MagicLinkSignIn() {
                 onClick={() => {
                   setSent(false);
                   setOtp('');
+                  setOtpError(null);
                 }} 
                 variant="outline" 
                 className="w-full"
               >
-                Send to a different email
+                Use a different email
               </Button>
               <Button 
                 onClick={() => navigate('/')} 
