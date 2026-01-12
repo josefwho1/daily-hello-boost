@@ -19,7 +19,7 @@ export interface HelloLog {
 
 export const useHelloLogs = () => {
   const { user } = useAuth();
-  const { isGuest, guestLogs } = useGuestMode();
+  const { isGuest, guestLogs, updateLog: updateGuestLog } = useGuestMode();
   const [logs, setLogs] = useState<HelloLog[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -125,6 +125,18 @@ export const useHelloLogs = () => {
     rating?: 'positive' | 'neutral' | 'negative' | null;
     difficulty_rating?: number | null;
   }) => {
+    // Handle guest log updates
+    if (isGuest && !user) {
+      try {
+        await updateGuestLog(id, updates);
+        setLogs(prev => prev.map(log => log.id === id ? { ...log, ...updates } : log));
+        return { id, ...updates };
+      } catch (error) {
+        console.error('Error updating guest hello log:', error);
+        return null;
+      }
+    }
+
     if (!user) return null;
 
     try {
