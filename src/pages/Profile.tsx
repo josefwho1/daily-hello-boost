@@ -39,7 +39,7 @@ import remiMascot from "@/assets/remi-waving.webp";
 const Profile = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { guestProgress, guestState, isGuest, dismissSavePrompt } = useGuestMode();
+  const { guestProgress, guestState, isGuest, dismissSavePrompt, updateProgress: updateGuestProgress } = useGuestMode();
   const { timezoneOffset, updateTimezone } = useTimezone();
   const { progress: cloudProgress, updateProgress } = useUserProgress();
   const { theme, setTheme } = useTheme();
@@ -231,20 +231,30 @@ const Profile = () => {
 
   const handleModeConfirmContinue = async () => {
     if (!pendingMode) return;
-    
+
     try {
-      await updateProgress({
+      const updates = {
         mode: pendingMode,
         target_hellos_per_week: getTargetFromMode(pendingMode),
         has_completed_onboarding: true,
         is_onboarding_week: false,
-      });
+      };
+
+      if (user) {
+        await updateProgress(updates);
+      } else {
+        await updateGuestProgress({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        });
+      }
+
       toast.success(`🎉 You're now in ${pendingMode === 'daily' ? 'Daily' : 'Chill'} Mode!`);
     } catch (error) {
       console.error("Error updating mode:", error);
       toast.error("Failed to update mode");
     }
-    
+
     setShowDailyModeConfirm(false);
     setShowChillModeConfirm(false);
     setPendingMode(null);
