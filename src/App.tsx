@@ -17,6 +17,7 @@ import MagicLinkSignIn from "./pages/MagicLinkSignIn";
 import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -153,7 +154,8 @@ const App = () => {
                 </OnboardingCheck>
               </AppRoute>
             } 
-          />
+            />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <BottomNav />
