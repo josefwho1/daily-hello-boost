@@ -1,16 +1,17 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  getGuestState, 
-  getGuestProgress, 
-  getGuestHelloLogs, 
+import {
+  getGuestState,
+  getGuestProgress,
+  getGuestHelloLogs,
   clearGuestData,
-  updateGuestState 
+  updateGuestState
 } from '@/lib/indexedDB';
 import { toast } from 'sonner';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getPublicAppOrigin } from '@/lib/publicUrls';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -18,28 +19,47 @@ export default function AuthCallback() {
   const [status, setStatus] = useState<'verifying' | 'syncing' | 'error'>('verifying');
   const [message, setMessage] = useState('Verifying your email...');
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
-  const hasRun = useRef(false);
 
   useEffect(() => {
-    // Prevent double execution in React strict mode
-    if (hasRun.current) return;
-    hasRun.current = true;
+    const canonicalOrigin = getPublicAppOrigin();
+
+    // If the callback lands on a preview/staging origin, forward to the public app origin,
+    // preserving all tokens/query params so sign-in completes on the canonical domain.
+    if (typeof window !== 'undefined' && window.location.origin !== canonicalOrigin) {
+      const target = `${canonicalOrigin}${window.location.pathname}${window.location.search}${window.location.hash}`;
+      window.location.replace(target);
+      return;
+    }
+
+    const callbackKey = `onehello:authcb:${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    // React StrictMode can mount/unmount components twice in dev, which can consume one-time
+    // auth codes twice. sessionStorage survives remounts, so we guard here.
+    if (sessionStorage.getItem(callbackKey) === '1') {
+      setMessage('Finishing sign-in...');
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) navigate('/', { replace: true });
+        else navigate('/signin', { replace: true });
+      });
+      return;
+    }
+
+    sessionStorage.setItem(callbackKey, '1');
 
     const handleCallback = async () => {
       try {
-        // Check for error in URL params (Supabase redirects with error in query string)
+        // Check for error in URL params (redirects can include error in query string)
         const errorParam = searchParams.get('error');
         const errorDescription = searchParams.get('error_description');
-        
+
         if (errorParam) {
           throw new Error(errorDescription || errorParam);
         }
 
         // First, check if there's already a valid session
         const { data: { session: existingSession } } = await supabase.auth.getSession();
-        
+
         if (existingSession?.user) {
-          // Already have a valid session, proceed with user setup
           await setupUserAndRedirect(existingSession.user.id, existingSession.user);
           return;
         }
@@ -56,16 +76,15 @@ export default function AuthCallback() {
         }
 
         if (accessToken && refreshToken) {
-          // Set the session from hash tokens
           const { data, error: setSessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           });
-          
+
           if (setSessionError) throw setSessionError;
-          
+
           if (data.user) {
-            // Clear the hash from URL to prevent issues on refresh
+            // Clear the hash from URL to prevent re-processing on refresh
             window.history.replaceState(null, '', window.location.pathname);
             await setupUserAndRedirect(data.user.id, data.user);
             return;
@@ -76,30 +95,33 @@ export default function AuthCallback() {
         const code = searchParams.get('code');
         if (code) {
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          
+
           if (exchangeError) throw exchangeError;
-          
+
           if (data.user) {
+            // Clear the query params after consuming the one-time code
+            window.history.replaceState(null, '', window.location.pathname);
             await setupUserAndRedirect(data.user.id, data.user);
             return;
           }
         }
 
-        // No valid auth method found
         throw new Error('No valid authentication found. The link may have expired.');
-        
+
       } catch (error) {
         console.error('Auth callback error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
-        
+
+        // Allow retry if we failed
+        sessionStorage.removeItem(callbackKey);
+
         setStatus('error');
         setMessage('Unable to sign in');
         setErrorDetails(errorMessage);
       }
     };
 
-    // Small delay to ensure Supabase client is ready
-    const timer = setTimeout(handleCallback, 100);
+    const timer = setTimeout(handleCallback, 50);
     return () => clearTimeout(timer);
   }, [navigate, searchParams]);
 
