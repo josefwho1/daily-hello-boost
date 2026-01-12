@@ -183,6 +183,28 @@ const Hellobook = () => {
           <h1 className="text-2xl font-bold text-foreground">Hellobook</h1>
         </div>
 
+        {/* Guest save prompt - at the top */}
+        {showGuestPrompt && (
+          <Card className="mb-6 p-4 rounded-2xl border-primary/20 bg-primary/5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Mail className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">Save your progress</p>
+                <p className="text-xs text-muted-foreground">Add your email to keep your hellos safe</p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setShowSaveDialog(true)}
+                className="rounded-xl"
+              >
+                Save
+              </Button>
+            </div>
+          </Card>
+        )}
+
         {/* Search */}
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
@@ -274,27 +296,6 @@ const Hellobook = () => {
           </div>
         )}
 
-        {/* Guest save prompt */}
-        {showGuestPrompt && (
-          <Card className="mt-6 p-4 rounded-2xl border-primary/20 bg-primary/5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Mail className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">Save your progress</p>
-                <p className="text-xs text-muted-foreground">Add your email to keep your hellos safe</p>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => setShowSaveDialog(true)}
-                className="rounded-xl"
-              >
-                Save
-              </Button>
-            </div>
-          </Card>
-        )}
       </div>
 
       <EditHelloDialog
