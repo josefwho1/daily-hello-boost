@@ -997,19 +997,19 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 103: Create Account (for skip flow) */}
+          {/* Step 103: Enter Name (for skip flow - guest friendly) */}
           {step === 103 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-2">Create Your Account</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-2">What should I call you?</h2>
                 <p className="text-muted-foreground">
-                  Just a few details and you're ready to go!
+                  No account needed. Just your name to get started!
                 </p>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="skip-name">Name *</Label>
+                  <Label htmlFor="skip-name">Your name</Label>
                   <Input
                     id="skip-name"
                     type="text"
@@ -1018,37 +1018,8 @@ export default function Onboarding() {
                     onChange={(e) => setName(e.target.value)}
                     required
                     maxLength={50}
+                    autoFocus
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="skip-email">Email *</Label>
-                  <Input
-                    id="skip-email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    maxLength={255}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="skip-password">Password *</Label>
-                  <Input
-                    id="skip-password"
-                    type="password"
-                    placeholder="Minimum 6 characters"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    maxLength={50}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Minimum 6 characters
-                  </p>
                 </div>
               </div>
 
@@ -1058,46 +1029,38 @@ export default function Onboarding() {
                 </Button>
                 <Button 
                   onClick={async () => {
-                    // Create account then go to confirmation
                     try {
-                      const validated = signupSchema.parse({ name, email, password });
+                      const validated = nameSchema.parse({ name });
                       setIsSubmitting(true);
 
-                      const redirectUrl = `${window.location.origin}/`;
-
-                      const { error: signUpError, data } = await supabase.auth.signUp({
-                        email: validated.email,
-                        password: validated.password,
-                        options: {
-                          emailRedirectTo: redirectUrl,
-                          data: {
-                            name: validated.name
-                          }
-                        }
-                      });
-
-                      if (signUpError) throw signUpError;
-
-                      if (data.user) {
-                        await new Promise(resolve => setTimeout(resolve, 300));
+                      // Check if user is already authenticated
+                      const { data: { user: existingUser } } = await supabase.auth.getUser();
+                      
+                      if (existingUser) {
+                        // User is logged in, update their profile
+                        await supabase.from('profiles').upsert({
+                          id: existingUser.id,
+                          username: validated.name,
+                          timezone_preference: selectedTimezone
+                        }, { onConflict: 'id' });
                         
-                        const { error: profileError } = await supabase
-                          .from('profiles')
-                          .upsert({
-                            id: data.user.id,
-                            username: validated.name,
-                            timezone_preference: selectedTimezone
-                          }, { onConflict: 'id' });
-
-                        if (profileError) {
-                          console.error('Error creating profile:', profileError);
-                          throw new Error('Failed to create profile');
-                        }
-
-                        setUserId(data.user.id);
+                        setUserId(existingUser.id);
                         setAccountCreated(true);
-                        setStep(104);
+                      } else {
+                        // Guest mode - create/update IndexedDB state
+                        let guestState = await getGuestState();
+                        if (!guestState) {
+                          guestState = await createGuestState();
+                          await createGuestProgress(guestState.device_id, guestState.guest_user_id);
+                        }
+                        
+                        // Update guest progress with name
+                        await updateGuestProgress({
+                          username: validated.name,
+                        });
                       }
+                      
+                      setStep(104);
                     } catch (error) {
                       if (error instanceof z.ZodError) {
                         toast({
@@ -1106,30 +1069,26 @@ export default function Onboarding() {
                           variant: "destructive",
                         });
                       } else if (error instanceof Error) {
-                        if (error.message.includes('already registered')) {
-                          toast({
-                            title: "Account exists",
-                            description: "This email is already registered. Please sign in instead.",
-                            variant: "destructive",
-                          });
-                        } else {
-                          toast({
-                            title: "Error",
-                            description: error.message,
-                            variant: "destructive",
-                          });
-                        }
+                        toast({
+                          title: "Error",
+                          description: error.message,
+                          variant: "destructive",
+                        });
                       }
                     } finally {
                       setIsSubmitting(false);
                     }
                   }} 
                   className="flex-1"
-                  disabled={!name || !email || !password || password.length < 6 || isSubmitting}
+                  disabled={!name || isSubmitting}
                 >
-                  {isSubmitting ? 'Creating...' : 'Continue'}
+                  {isSubmitting ? 'Starting...' : 'Continue'}
                 </Button>
               </div>
+              
+              <p className="text-xs text-center text-muted-foreground">
+                You can save your progress with an email anytime later.
+              </p>
             </div>
           )}
 

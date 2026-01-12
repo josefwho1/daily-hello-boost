@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useUserProgress } from "@/hooks/useUserProgress";
+import { useGuestMode } from "@/hooks/useGuestMode";
 import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,7 +15,8 @@ import { XpProgressBar } from "@/components/XpProgressBar";
 import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { ProfilePictureSelector, getProfilePictureSrc } from "@/components/ProfilePictureSelector";
-import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Bell, Camera, Instagram, Globe, Mail, Sun, Moon, Monitor, Smartphone, Share, ChevronDown, ChevronUp } from "lucide-react";
+import { SaveProgressDialog } from "@/components/SaveProgressDialog";
+import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Bell, Camera, Instagram, Globe, Mail, Sun, Moon, Monitor, Smartphone, Share, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -37,8 +39,9 @@ import remiMascot from "@/assets/remi-waving.webp";
 const Profile = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { guestProgress, guestState, isGuest, dismissSavePrompt } = useGuestMode();
   const { timezoneOffset, updateTimezone } = useTimezone();
-  const { progress, updateProgress } = useUserProgress();
+  const { progress: cloudProgress, updateProgress } = useUserProgress();
   const { theme, setTheme } = useTheme();
   
   const [isEditingName, setIsEditingName] = useState(false);
@@ -51,6 +54,22 @@ const Profile = () => {
   const [showProfilePictureSelector, setShowProfilePictureSelector] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [showInstallSteps, setShowInstallSteps] = useState(false);
+  const [showSaveProgress, setShowSaveProgress] = useState(false);
+  
+  // Use cloud progress for authenticated users, guest progress otherwise
+  const progress = user ? cloudProgress : (guestProgress ? {
+    current_level: guestProgress.current_level,
+    total_xp: guestProgress.total_xp,
+    has_completed_onboarding: guestProgress.has_completed_onboarding,
+    is_onboarding_week: guestProgress.is_onboarding_week,
+    mode: guestProgress.mode,
+    current_phase: 'onboarding',
+    onboarding_email_opt_in: true,
+    daily_email_opt_in: true,
+    chill_email_opt_in: true,
+  } : null);
+  
+  const username = user?.user_metadata?.name || guestProgress?.username || 'Friend';
 
   // Fetch profile picture from profiles table
   useEffect(() => {
@@ -578,17 +597,35 @@ const Profile = () => {
           </div>
         </Card>
 
-        {/* Sign Out */}
-        <Card className="p-5 rounded-2xl">
-          <Button
-            variant="outline"
-            className="w-full justify-center rounded-xl"
-            onClick={handleSignOut}
-          >
-            <LogOut size={16} className="mr-2" />
-            Sign Out
-          </Button>
-        </Card>
+        {/* Save Progress (Guest Only) */}
+        {isGuest && (
+          <Card className="p-5 mb-4 rounded-2xl bg-primary/5 border-primary/20">
+            <Button
+              className="w-full justify-center rounded-xl"
+              onClick={() => setShowSaveProgress(true)}
+            >
+              <Sparkles size={16} className="mr-2" />
+              Save my progress
+            </Button>
+            <p className="text-xs text-center text-muted-foreground mt-2">
+              Add your email to keep your hellos safe
+            </p>
+          </Card>
+        )}
+
+        {/* Sign Out (Auth users only) */}
+        {user && (
+          <Card className="p-5 rounded-2xl">
+            <Button
+              variant="outline"
+              className="w-full justify-center rounded-xl"
+              onClick={handleSignOut}
+            >
+              <LogOut size={16} className="mr-2" />
+              Sign Out
+            </Button>
+          </Card>
+        )}
       </div>
 
       {/* Mode Change Confirmation Dialog */}
@@ -628,6 +665,13 @@ const Profile = () => {
         selectedId={profilePicture}
         onSelect={handleProfilePictureSelect}
         userLevel={progress?.current_level || 1}
+      />
+
+      <SaveProgressDialog
+        open={showSaveProgress}
+        onOpenChange={setShowSaveProgress}
+        onDismiss={dismissSavePrompt}
+        totalHellos={guestState?.total_hellos_logged || 0}
       />
     </div>
   );
