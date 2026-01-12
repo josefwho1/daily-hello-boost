@@ -15,13 +15,16 @@ export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogP
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent className="max-w-md mx-auto [&>button]:hidden max-h-[90vh] overflow-y-auto">
         <div className="text-center py-4">
-          <h2 className="text-xl font-bold text-foreground mb-6">
-            Now choose the pace that works best for you.
+          <h2 className="text-xl font-bold text-foreground mb-2">
+            Choose Your Mode
           </h2>
+          <p className="text-base text-muted-foreground mb-6">
+            Pick the pace that works best for you
+          </p>
           
           <div className="space-y-4">
             {/* Daily Mode */}
-            <div className="border border-primary/20 rounded-xl p-4 bg-primary/5">
+            <div className="border border-primary/20 rounded-xl p-4 bg-primary/5 text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Flame className="w-5 h-5 text-orange-500" />
                 <h3 className="text-lg font-bold">Daily Mode</h3>
@@ -32,7 +35,7 @@ export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogP
                 One Hello a Day
               </p>
               
-              <ul className="text-sm text-muted-foreground space-y-1 mb-4 text-left">
+              <ul className="text-sm text-muted-foreground space-y-1 mb-4">
                 <li>• Builds powerful habits</li>
                 <li>• Daily streak + XP boosts</li>
                 <li>• Best way to stay connected</li>
@@ -49,7 +52,7 @@ export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogP
             </div>
 
             {/* Chill Mode */}
-            <div className="border border-border rounded-xl p-4">
+            <div className="border border-border rounded-xl p-4 text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Leaf className="w-5 h-5 text-green-500" />
                 <h3 className="text-lg font-bold">Chill Mode</h3>
@@ -59,7 +62,7 @@ export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogP
                 5 Hellos per Week
               </p>
               
-              <ul className="text-sm text-muted-foreground space-y-1 mb-4 text-left">
+              <ul className="text-sm text-muted-foreground space-y-1 mb-4">
                 <li>• More flexible</li>
                 <li>• Weekly streak</li>
                 <li>• Perfect for busy schedules</li>
