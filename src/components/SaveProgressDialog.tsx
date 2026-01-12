@@ -181,9 +181,6 @@ export const SaveProgressDialog = ({
               <DialogTitle className="text-xl">Save your hellos?</DialogTitle>
               <DialogDescription className="text-base leading-relaxed">
                 You've started something good. Add an email to keep your progress and come back anytime.
-                <span className="block mt-2 text-primary font-medium">
-                  No passwords. No spam.
-                </span>
               </DialogDescription>
             </DialogHeader>
             
@@ -226,9 +223,6 @@ export const SaveProgressDialog = ({
               <DialogTitle className="text-xl">Save progress</DialogTitle>
               <DialogDescription>
                 Enter your email and we'll send a sign-in link and code.
-                <span className="block mt-1 font-medium text-foreground">
-                  No passwords, ever.
-                </span>
               </DialogDescription>
             </DialogHeader>
             

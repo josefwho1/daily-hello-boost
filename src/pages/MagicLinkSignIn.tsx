@@ -610,9 +610,6 @@ export default function MagicLinkSignIn() {
               <CardTitle>Sign in with magic link</CardTitle>
               <CardDescription>
                 Enter your email and we'll send you a magic link or code.
-                <span className="block mt-1 font-medium text-foreground">
-                  No password needed.
-                </span>
               </CardDescription>
             </CardHeader>
             <CardContent>
