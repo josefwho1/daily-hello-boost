@@ -21,7 +21,7 @@ export const WeeklyChallengeCompleteDialog = ({
   orbsAwarded
 }: WeeklyChallengeCompleteDialogProps) => {
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onContinue()}>
       <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader className="text-center">
           <DialogTitle className="text-2xl text-center">

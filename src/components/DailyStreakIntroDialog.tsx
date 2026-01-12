@@ -12,8 +12,8 @@ interface DailyStreakIntroDialogProps {
 
 export const DailyStreakIntroDialog = ({ open, onContinue }: DailyStreakIntroDialogProps) => {
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="max-w-sm mx-auto [&>button]:hidden">
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onContinue()}>
+      <DialogContent className="max-w-sm mx-auto">
         <div className="text-center py-4">
           <img 
             src={remiMascot} 

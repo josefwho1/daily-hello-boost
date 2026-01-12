@@ -15,8 +15,8 @@ interface DailyModeSelectedDialogProps {
 
 export const DailyModeSelectedDialog = ({ open, onContinue }: DailyModeSelectedDialogProps) => {
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="max-w-md mx-auto [&>button]:hidden">
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onContinue()}>
+      <DialogContent className="max-w-md mx-auto">
         <DialogHeader>
           <div className="flex justify-center mb-4">
             <img

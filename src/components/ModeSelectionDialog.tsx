@@ -15,8 +15,8 @@ interface ModeSelectionDialogProps {
 
 export const ModeSelectionDialog = ({ open, onSelectMode }: ModeSelectionDialogProps) => {
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="max-w-md mx-auto [&>button]:hidden max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onSelectMode('daily')}>
+      <DialogContent className="max-w-md mx-auto max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Choose Your Mode

@@ -252,9 +252,9 @@ export const ChallengeCompletionCelebrationDialog = ({
   }, []);
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onContinue()}>
       <DialogContent 
-        className="sm:max-w-md overflow-hidden [&>button]:hidden"
+        className="sm:max-w-md overflow-hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         {/* Confetti effect */}
