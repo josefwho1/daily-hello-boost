@@ -5,6 +5,7 @@ import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { LogHelloDialog, HelloType } from "@/components/LogHelloDialog";
+import { FirstHelloCard } from "@/components/FirstHelloCard";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
 import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
@@ -23,6 +24,7 @@ import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompl
 import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationDialog";
 import { LevelUpCelebrationDialog } from "@/components/LevelUpCelebrationDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
+import { firstHellos } from "@/data/firstHellos";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
@@ -160,7 +162,7 @@ export default function Dashboard() {
 
   const currentOnboardingDay = getOnboardingDay();
 
-  // Get completed onboarding challenges from logs
+  // Get completed onboarding challenges from logs (for 7-day-starter legacy mode)
   const getCompletedOnboardingChallenges = () => {
     if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return [];
     
@@ -175,7 +177,7 @@ export default function Dashboard() {
 
   const completedTypes = getCompletedOnboardingChallenges();
   
-  // Count how many DAYS are completed (1 per day max)
+  // Count how many DAYS are completed (1 per day max) - for legacy 7-day-starter
   const getCompletedDaysCount = () => {
     let count = 0;
     for (let i = 0; i < onboardingChallenges.length; i++) {
@@ -188,6 +190,31 @@ export default function Dashboard() {
 
   const completedDaysCount = getCompletedDaysCount();
   const allOnboardingComplete = completedDaysCount >= 7;
+
+  // First Hellos mode - get completed first hellos from logs
+  const getCompletedFirstHellos = () => {
+    if (progress?.mode !== 'first_hellos' || progress?.has_completed_onboarding) return [];
+    return logs.map(log => log.hello_type).filter(Boolean);
+  };
+
+  const completedFirstHelloTypes = getCompletedFirstHellos();
+  
+  // Count completed first hellos
+  const getCompletedFirstHellosCount = () => {
+    let count = 0;
+    for (let i = 0; i < firstHellos.length; i++) {
+      if (completedFirstHelloTypes.includes(firstHellos[i].title)) {
+        count++;
+      }
+    }
+    return count;
+  };
+
+  const completedFirstHellosCount = getCompletedFirstHellosCount();
+  const allFirstHellosComplete = completedFirstHellosCount >= 5;
+
+  // Check if in First Hellos mode
+  const isFirstHellosMode = progress?.mode === 'first_hellos' && !progress?.has_completed_onboarding;
 
   // Show day reveal dialog when a new day unlocks - only once per day (7-day starter only)
   // Skip Day 1 since it's revealed during onboarding
@@ -561,10 +588,17 @@ export default function Dashboard() {
     // Only trigger in 7-day-starter mode
     if (progress?.mode !== '7-day-starter') return;
     if (allOnboardingComplete && progress?.is_onboarding_week && !progress?.has_completed_onboarding) {
-      // Show milestone first, then mode selection
       setShowMilestone(true);
     }
   }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode]);
+
+  // Check if all 5 First Hellos are complete - show mode selection
+  useEffect(() => {
+    if (progress?.mode !== 'first_hellos') return;
+    if (allFirstHellosComplete && !progress?.has_completed_onboarding) {
+      setShowMilestone(true);
+    }
+  }, [allFirstHellosComplete, progress?.has_completed_onboarding, progress?.mode]);
 
   const handleModeSelect = async (mode: 'daily' | 'chill') => {
     setPendingMode(mode);
@@ -692,16 +726,17 @@ export default function Dashboard() {
           weeklyStreak={progress.weekly_streak || 0}
           lifetimeHellos={progress.total_hellos || logs.length}
           orbs={progress.orbs || 0}
-          mode={mode}
+          mode={progress.mode as 'daily' | 'chill' | 'first_hellos' | '7-day-starter' || 'daily'}
           isOnboardingWeek={progress.is_onboarding_week || false}
           onboardingCompleted={completedDaysCount}
           hasCompletedOnboarding={progress.has_completed_onboarding || false}
           currentLevel={progress.current_level || 1}
           totalXp={progress.total_xp || 0}
+          firstHellosCompleted={completedFirstHellosCount}
         />
 
         {/* Log a Hello Button - Show above challenges for non-onboarding users */}
-        {!(progress.is_onboarding_week && !progress.has_completed_onboarding) && (
+        {!isFirstHellosMode && !(progress.is_onboarding_week && !progress.has_completed_onboarding && progress.mode === '7-day-starter') && (
           <div className="mt-6">
             <LogHelloButton 
               onClick={() => {
@@ -713,8 +748,65 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Onboarding Week Challenges - only show if in onboarding AND hasn't completed it */}
-        {progress.is_onboarding_week && !progress.has_completed_onboarding ? (
+        {/* First Hellos Mode - New sequential challenge system */}
+        {isFirstHellosMode ? (
+          <div className="mt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">First Hello's</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              {completedFirstHellosCount === 0 
+                ? "Complete each challenge to unlock the next"
+                : completedFirstHellosCount < 5
+                ? `${completedFirstHellosCount}/5 completed - keep going!`
+                : "Amazing! You've completed all First Hello's!"}
+            </p>
+            <div className="space-y-3">
+              {firstHellos.map((challenge, index) => {
+                const isCompleted = completedFirstHelloTypes.includes(challenge.title);
+                // Sequential unlock: challenge is unlocked if all previous are completed
+                const previousCompleted = index === 0 || firstHellos.slice(0, index).every(
+                  prev => completedFirstHelloTypes.includes(prev.title)
+                );
+                const isLocked = !previousCompleted;
+                const isCurrent = previousCompleted && !isCompleted;
+                const isAvailable = previousCompleted && !isCompleted;
+                
+                return (
+                  <FirstHelloCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    isCompleted={isCompleted}
+                    isAvailable={isAvailable}
+                    isLocked={isLocked}
+                    isCurrent={isCurrent}
+                    onComplete={() => {
+                      setSelectedChallenge(challenge.title);
+                      setSelectedHelloType(challenge.title as HelloType);
+                      setSelectedDayNumber(index + 1);
+                      setShowLogDialog(true);
+                    }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Log a Hello Button - Show below for extra hellos */}
+            <div className="mt-6">
+              <LogHelloButton 
+                onClick={() => {
+                  setSelectedChallenge(null);
+                  setSelectedHelloType('regular_hello');
+                  setShowLogDialog(true);
+                }}
+                variant="onboarding"
+              />
+              <p className="text-center text-sm text-muted-foreground mt-2">For any extra Hellos</p>
+            </div>
+          </div>
+        ) : progress.is_onboarding_week && !progress.has_completed_onboarding && progress.mode === '7-day-starter' ? (
+          /* Legacy 7-Day Onboarding Challenges */
           <div className="mt-6">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-5 h-5 text-primary" />

@@ -12,12 +12,13 @@ interface StatsBarProps {
   weeklyStreak: number;
   lifetimeHellos: number;
   orbs: number;
-  mode: 'daily' | 'chill';
+  mode: 'daily' | 'chill' | 'first_hellos' | '7-day-starter';
   isOnboardingWeek: boolean;
   onboardingCompleted: number;
   hasCompletedOnboarding?: boolean;
   currentLevel?: number;
   totalXp?: number;
+  firstHellosCompleted?: number;
 }
 
 // Circular progress component for level
@@ -74,21 +75,35 @@ export const StatsBar = ({
   onboardingCompleted,
   hasCompletedOnboarding = false,
   currentLevel = 1,
-  totalXp = 0
+  totalXp = 0,
+  firstHellosCompleted = 0
 }: StatsBarProps) => {
   const isDaily = mode === 'daily';
+  const isFirstHellos = mode === 'first_hellos';
+  const isChill = mode === 'chill';
+  const is7DayStarter = mode === '7-day-starter';
   
   // If onboarding is completed, treat as post-onboarding even if flag is stale
-  const effectivelyOnboarding = isOnboardingWeek && !hasCompletedOnboarding;
+  const effectivelyOnboarding = (isOnboardingWeek && !hasCompletedOnboarding) || isFirstHellos;
   
-  // During onboarding (7-day starter), show progress out of 7
-  const progressValue = effectivelyOnboarding 
-    ? onboardingCompleted 
-    : isDaily 
-      ? hellosToday // Daily mode: show actual count (can exceed 1)
-      : hellosThisWeek; // Chill mode: show X/5
+  // Determine progress values based on mode
+  let progressValue: number;
+  let progressMax: number;
   
-  const progressMax = effectivelyOnboarding ? 7 : isDaily ? 1 : 5;
+  if (isFirstHellos) {
+    progressValue = firstHellosCompleted;
+    progressMax = 5;
+  } else if (is7DayStarter && isOnboardingWeek && !hasCompletedOnboarding) {
+    progressValue = onboardingCompleted;
+    progressMax = 7;
+  } else if (isDaily) {
+    progressValue = hellosToday;
+    progressMax = 1;
+  } else {
+    progressValue = hellosThisWeek;
+    progressMax = 5;
+  }
+  
   const progressPercent = Math.min((progressValue / progressMax) * 100, 100);
 
   // Get XP progress for level circle
@@ -96,7 +111,8 @@ export const StatsBar = ({
 
   // Labels based on mode
   const getProgressLabel = () => {
-    if (effectivelyOnboarding) return 'Your 7-Day Challenge';
+    if (isFirstHellos) return "First Hello's";
+    if (is7DayStarter && isOnboardingWeek && !hasCompletedOnboarding) return 'Your 7-Day Challenge';
     if (isDaily) return 'Today';
     return "Hello's This Week";
   };

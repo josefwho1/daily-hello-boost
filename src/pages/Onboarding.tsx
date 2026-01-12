@@ -1,71 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { getGuestState, createGuestState, getGuestProgress, createGuestProgress, updateGuestProgress } from "@/lib/indexedDB";
-import { z } from "zod";
-import logoText from "@/assets/one-hello-logo-text.png";
-import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
+import { getGuestState, createGuestState, createGuestProgress, updateGuestProgress } from "@/lib/indexedDB";
 
-// Remi Waving images - for welcome/onboarding and challenge cards
+// Remi Waving images
 import remiWaving1 from "@/assets/remi-waving-1.webp";
 import remiWaving2 from "@/assets/remi-waving-2.webp";
 import remiWaving3 from "@/assets/remi-waving-3.webp";
 import remiWaving4 from "@/assets/remi-waving-4.webp";
 
-// Remi Curious images - for comfort rating screen
-import remiCurious1 from "@/assets/remi-curious-1.webp";
-import remiCurious2 from "@/assets/remi-curious-2.webp";
-import remiCurious3 from "@/assets/remi-curious-3.webp";
-import remiCurious4 from "@/assets/remi-curious-4.webp";
-
-// Remi Surprised images - for specific onboarding screens
-import remiSurprised1 from "@/assets/remi-surprised-1.webp";
-import remiSurprised2 from "@/assets/remi-surprised-2.webp";
-import remiCongrats3 from "@/assets/remi-congrats-3.webp";
-
 const remiWavingImages = [remiWaving1, remiWaving2, remiWaving3, remiWaving4];
-const remiCuriousImages = [remiCurious1, remiCurious2, remiCurious3, remiCurious4];
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { MapPin } from "lucide-react";
-
-const nameSchema = z.object({
-  name: z.string().trim().min(1, { message: "First name is required" }).max(50, { message: "Name must be less than 50 characters" }),
-});
-
-const whyHereOptions = [
-  { id: "confidence", label: "Build confidence" },
-  { id: "meet-people", label: "To meet new people" },
-  { id: "fun", label: "For fun" },
-  { id: "social-anxiety", label: "Reduce social anxiety" },
-  { id: "comfort-zone", label: "Get out of my comfort zone" },
-  { id: "community", label: "To feel more connected in my community" },
-  { id: "habit", label: "To build a new habit" },
-  { id: "curious", label: "Just curious" }
-];
-
-// Generate timezone options from GMT-12 to GMT+14
-const timezoneOptions: { value: string; label: string }[] = [];
-for (let i = -12; i <= 14; i++) {
-  const sign = i >= 0 ? '+' : '';
-  const hours = Math.abs(i).toString().padStart(2, '0');
-  const value = `${sign}${hours}:00`;
-  const label = `GMT${sign}${i}`;
-  timezoneOptions.push({ value, label });
-}
 
 // Get a random image from an array
 const getRandomImage = (images: string[]) => {
@@ -76,83 +22,31 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
-  const [comfortRating, setComfortRating] = useState(5);
-  
-  // Random Remi images - memoized to stay consistent during session
-  const [welcomeRemiImage] = useState(() => getRandomImage(remiWavingImages));
-  const [curiousRemiImage] = useState(() => getRandomImage(remiCuriousImages));
-  const [challengeRemiImage] = useState(() => getRandomImage(remiWavingImages));
-  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
-  const [selectedTimezone, setSelectedTimezone] = useState("+00:00");
-  const [emailRemindersEnabled, setEmailRemindersEnabled] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDetectingTimezone, setIsDetectingTimezone] = useState(false);
   
-  // Skip onboarding flow state
-  const [skipOnboarding, setSkipOnboarding] = useState(false);
-  const [selectedSkipMode, setSelectedSkipMode] = useState<'daily' | 'chill' | null>(null);
-  
-  // Signup form fields
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // Random Remi image - consistent during session
+  const [welcomeRemiImage] = useState(() => getRandomImage(remiWavingImages));
 
-  // Auto-detect timezone on mount
-  useEffect(() => {
-    detectTimezone();
-  }, []);
-
-  const detectTimezone = () => {
+  const handleCompleteIntro = async () => {
     try {
-      setIsDetectingTimezone(true);
-      const offset = new Date().getTimezoneOffset();
-      const hours = Math.floor(Math.abs(offset) / 60);
-      const sign = offset <= 0 ? '+' : '-';
-      const formattedOffset = `${sign}${hours.toString().padStart(2, '0')}:00`;
-      
-      // Find the closest matching timezone option
-      const matchingTz = timezoneOptions.find(tz => tz.value === formattedOffset);
-      if (matchingTz) {
-        setSelectedTimezone(matchingTz.value);
-      }
-    } catch (error) {
-      console.error("Error detecting timezone:", error);
-    } finally {
-      setIsDetectingTimezone(false);
-    }
-  };
-
-  const handleReasonToggle = (id: string) => {
-    setSelectedReasons(prev => 
-      prev.includes(id) 
-        ? prev.filter(r => r !== id)
-        : [...prev, id]
-    );
-  };
-
-  // Track if account was created
-  const [accountCreated, setAccountCreated] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  // Continue to next step after entering name (guest mode - no account required)
-  const handleContinueWithName = async () => {
-    try {
-      const validated = nameSchema.parse({ name });
       setIsSubmitting(true);
 
       // Check if user is already authenticated
       const { data: { user: existingUser } } = await supabase.auth.getUser();
       
       if (existingUser) {
-        // User is logged in, update their profile
-        await supabase.from('profiles').upsert({
-          id: existingUser.id,
-          username: validated.name,
-          timezone_preference: selectedTimezone
-        }, { onConflict: 'id' });
-        
-        setUserId(existingUser.id);
-        setAccountCreated(true);
+        // User is logged in, initialize their progress for First Hellos
+        await supabase.from('user_progress').upsert({
+          user_id: existingUser.id,
+          is_onboarding_week: true,
+          current_day: 1,
+          current_streak: 0,
+          mode: 'first_hellos',
+          has_completed_onboarding: false,
+          current_phase: 'first_hellos',
+          orbs: 0,
+          has_received_first_orb: false,
+        }, { onConflict: 'user_id' });
       } else {
         // Guest mode - create/update IndexedDB state
         let guestState = await getGuestState();
@@ -161,171 +55,31 @@ export default function Onboarding() {
           await createGuestProgress(guestState.device_id, guestState.guest_user_id);
         }
         
-        // Update guest progress with name
+        // Update guest progress for First Hellos
         await updateGuestProgress({
-          username: validated.name,
-        });
-      }
-      
-      setStep(6); // Proceed to next onboarding step
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation Error",
-          description: error.errors[0].message,
-          variant: "destructive",
-        });
-      } else if (error instanceof Error) {
-        // Handle "User already registered" specifically
-        if (error.message.includes('already registered')) {
-          toast({
-            title: "Account exists",
-            description: "This email is already registered. Please sign in instead.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleCompleteOnboarding = async () => {
-    try {
-      setIsSubmitting(true);
-
-      const currentUserId = userId || (await supabase.auth.getUser()).data.user?.id;
-      
-      if (!currentUserId) {
-        throw new Error('No user found');
-      }
-
-      // Create user progress with onboarding data
-      const { error: progressError } = await supabase
-        .from('user_progress')
-        .upsert({
-          user_id: currentUserId,
-          why_here: selectedReasons.join(','),
           is_onboarding_week: true,
-          onboarding_week_start: new Date().toISOString().split('T')[0],
           current_day: 1,
-          current_streak: 0,
-          mode: '7-day-starter',
-          target_hellos_per_week: 7,
+          mode: 'first_hellos',
           has_completed_onboarding: false,
-          current_phase: 'onboarding',
-          onboarding_email_opt_in: emailRemindersEnabled,
-          daily_email_opt_in: emailRemindersEnabled,
-          chill_email_opt_in: emailRemindersEnabled,
-          comfort_rating: comfortRating
-        }, { onConflict: 'user_id' });
-
-      if (progressError) {
-        console.error('Error creating progress:', progressError);
-        throw new Error('Failed to create progress');
-      }
-
-      toast({
-        title: "Let's go!",
-        description: `Your 7-day journey begins now!`,
-      });
-      
-      navigate('/');
-    } catch (error) {
-      if (error instanceof Error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
+          orbs: 0,
+          has_received_first_orb: false,
         });
       }
+
+      navigate('/');
+    } catch (error) {
+      console.error('Error completing intro:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleSkipOnboarding = async () => {
-    if (!selectedSkipMode) return;
-    
-    try {
-      setIsSubmitting(true);
-
-      const currentUserId = userId || (await supabase.auth.getUser()).data.user?.id;
-      
-      if (!currentUserId) {
-        throw new Error('No user found');
-      }
-
-      const isDaily = selectedSkipMode === 'daily';
-      
-      // Create user progress skipping onboarding, with 1 orb to start
-      const { error: progressError } = await supabase
-        .from('user_progress')
-        .upsert({
-          user_id: currentUserId,
-          why_here: selectedReasons.join(','),
-          is_onboarding_week: false,
-          onboarding_week_start: null,
-          current_day: 1,
-          current_streak: 0,
-          daily_streak: 0,
-          weekly_streak: 0,
-          mode: selectedSkipMode,
-          target_hellos_per_week: isDaily ? 7 : 5,
-          has_completed_onboarding: true,
-          onboarding_completed_at: new Date().toISOString(),
-          current_phase: isDaily ? 'daily_path' : 'chill_path',
-          orbs: 1, // Give them 1 orb to start
-          has_received_first_orb: true,
-          onboarding_email_opt_in: emailRemindersEnabled,
-          daily_email_opt_in: emailRemindersEnabled,
-          chill_email_opt_in: emailRemindersEnabled,
-          daily_path_selected_at: isDaily ? new Date().toISOString() : null,
-          chill_path_selected_at: !isDaily ? new Date().toISOString() : null,
-          comfort_rating: comfortRating
-        }, { onConflict: 'user_id' });
-
-      if (progressError) {
-        console.error('Error creating progress:', progressError);
-        throw new Error('Failed to create progress');
-      }
-
-      toast({
-        title: "You're all set!",
-        description: `${isDaily ? 'Daily' : 'Chill'} mode activated. You've got 1 Orb to start!`,
-      });
-      
-      navigate('/');
-    } catch (error) {
-      if (error instanceof Error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const totalSteps = skipOnboarding ? 7 : 12; // Shorter flow for skip, normal for full onboarding
-  
-  // Handle step progression after comfort rating
-  const handleComfortRatingContinue = () => {
-    if (comfortRating >= 7) {
-      // Show skip option for confident users
-      setStep(100); // Special step for skip option
-    } else {
-      setStep(4); // Continue normal flow
-    }
-  };
+  const totalSteps = 4;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -339,24 +93,31 @@ export default function Onboarding() {
 
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          {/* Step 1: Welcome - Introduce Remi */}
+          {/* Screen 1: Welcome */}
           {step === 1 && (
             <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <img src={welcomeRemiImage} alt="Remi waving" className="w-64 h-auto max-h-64 mx-auto object-contain animate-bounce-soft" />
-              <div className="space-y-3">
-                <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello</h1>
+              <img 
+                src={welcomeRemiImage} 
+                alt="Remi waving" 
+                className="w-64 h-auto max-h-64 mx-auto object-contain animate-bounce-soft" 
+              />
+              <div className="space-y-4">
+                <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
                 <p className="text-muted-foreground leading-relaxed">
-                  Hello, I'm Remi. Your Reminder Raccoon & companion.
+                  Hello, I'm Remi. Your Reminder Raccoon, companion & guide.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  This is a place to meet new people, build confidence & have fun - one simple hello at a time.
+                  This is a place to encourage real human connection.
+                </p>
+                <p className="text-lg font-medium text-primary">
+                  One Hello at a time.
                 </p>
               </div>
               <Button onClick={() => setStep(2)} className="w-full" size="lg">
                 Continue
               </Button>
               <button 
-                onClick={() => navigate('/signin')}
+                onClick={() => navigate('/magic-link')}
                 className="text-sm text-muted-foreground hover:text-primary underline"
               >
                 I already have an account
@@ -364,795 +125,95 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 2: Why are you joining? */}
+          {/* Screen 2: How it works */}
           {step === 2 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-2">Why are you joining One Hello?</h2>
-                <p className="text-muted-foreground">Select all that apply</p>
+            <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="space-y-4">
+                <h1 className="text-2xl font-bold text-foreground">How it works</h1>
+                <p className="text-muted-foreground leading-relaxed">
+                  Every social interaction needs to start from somewhere.
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                  Here you will get ideas, reminders and encouragement on how to start conversations with strangers, reconnect with old friends & make the world a warmer place.
+                </p>
               </div>
-              
-              <div className="space-y-3">
-                {whyHereOptions.map((option) => (
-                  <Card 
-                    key={option.id}
-                    className={`p-4 cursor-pointer transition-all ${
-                      selectedReasons.includes(option.id) 
-                        ? 'border-primary bg-primary/5' 
-                        : 'hover:border-primary/50'
-                    }`}
-                    onClick={() => handleReasonToggle(option.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Checkbox 
-                        checked={selectedReasons.includes(option.id)}
-                        onCheckedChange={() => handleReasonToggle(option.id)}
-                      />
-                      <Label className="cursor-pointer flex-1">{option.label}</Label>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
                   Back
                 </Button>
-                <Button 
-                  onClick={() => setStep(3)} 
-                  className="flex-1"
-                  disabled={selectedReasons.length === 0}
-                >
-                  Continue
+                <Button onClick={() => setStep(3)} className="flex-1" size="lg">
+                  I'm In
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 3: Comfort Rating */}
+          {/* Screen 3: What users felt */}
           {step === 3 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <img src={remiCurious4} alt="Remi curious" className="w-32 h-auto max-h-32 mx-auto object-contain mb-4" />
-                <h2 className="text-2xl font-bold text-foreground mb-2">How comfortable do you feel talking to strangers?</h2>
-                <p className="text-sm text-muted-foreground italic">
-                  (i.e. friends you haven't met yet 🦝)
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm text-muted-foreground px-1">
-                  <span>1 ← Terrified</span>
-                  <span>Totally natural → 10</span>
-                </div>
+            <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="space-y-6">
+                <h1 className="text-2xl font-bold text-foreground">What users felt after only 7 days</h1>
                 
-                <div className="grid grid-cols-10 gap-1">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                    <button
-                      key={num}
-                      onClick={() => setComfortRating(num)}
-                      className={`aspect-square rounded-lg font-semibold text-sm transition-all ${
-                        comfortRating === num
-                          ? 'bg-primary text-primary-foreground scale-110'
-                          : 'bg-muted hover:bg-muted/80 text-foreground'
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ))}
+                <div className="space-y-4">
+                  <div className="bg-success/10 rounded-lg p-4">
+                    <p className="text-4xl font-bold text-success">100%</p>
+                    <p className="text-muted-foreground">saw a positive improvement in their week</p>
+                  </div>
+                  
+                  <div className="bg-primary/10 rounded-lg p-4">
+                    <p className="text-4xl font-bold text-primary">93%</p>
+                    <p className="text-muted-foreground">felt more confident</p>
+                  </div>
+                  
+                  <div className="bg-accent/20 rounded-lg p-4">
+                    <p className="text-4xl font-bold text-accent-foreground">86%</p>
+                    <p className="text-muted-foreground">felt more connected</p>
+                  </div>
                 </div>
-
-                <p className="text-center text-sm text-muted-foreground">
-                  {comfortRating <= 2 && "(heart races, I avoid it)"}
-                  {(comfortRating === 3 || comfortRating === 4) && "(quite nervous, I don't like to)"}
-                  {(comfortRating === 5 || comfortRating === 6) && "(a bit nervous but manageable)"}
-                  {comfortRating === 7 && "(pretty comfortable)"}
-                  {comfortRating === 8 && "(comfortable)"}
-                  {comfortRating === 9 && "(super comfortable)"}
-                  {comfortRating === 10 && "(no problem at all)"}
-                </p>
               </div>
-
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
                   Back
                 </Button>
-                <Button onClick={handleComfortRatingContinue} className="flex-1">
-                  Continue
+                <Button onClick={() => setStep(4)} className="flex-1" size="lg">
+                  Let's do it
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 4: Timezone Selection */}
+          {/* Screen 4: First Hello's Initiation */}
           {step === 4 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <MapPin className="w-12 h-12 mx-auto mb-4 text-primary" />
-                <h2 className="text-2xl font-bold text-foreground mb-2">What timezone are you in?</h2>
-                <p className="text-muted-foreground">
-                  This helps us reset your streaks at midnight your time.
+            <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <img 
+                src={welcomeRemiImage} 
+                alt="Remi" 
+                className="w-48 h-auto max-h-48 mx-auto object-contain" 
+              />
+              <div className="space-y-4">
+                <h1 className="text-2xl font-bold text-foreground">First Hello's</h1>
+                <p className="text-muted-foreground leading-relaxed">
+                  I'll guide you through your First Hello's
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                  These will introduce different ways to say hello and start conversations with people.
                 </p>
               </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Your timezone</Label>
-                  <Select value={selectedTimezone} onValueChange={setSelectedTimezone}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select timezone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timezoneOptions.map((tz) => (
-                        <SelectItem key={tz.value} value={tz.value}>
-                          {tz.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button 
-                  variant="outline" 
-                  onClick={detectTimezone}
-                  disabled={isDetectingTimezone}
-                  className="w-full"
-                >
-                  <MapPin className="w-4 h-4 mr-2" />
-                  {isDetectingTimezone ? 'Detecting...' : 'Auto-detect my timezone'}
-                </Button>
-              </div>
-
-              {/* Email Reminders Toggle */}
-              <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 pr-4">
-                    <Label className="text-foreground font-medium">Daily reminders</Label>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      One email per day to help you finish the 7-day challenge
-                    </p>
-                  </div>
-                  <Switch
-                    checked={emailRemindersEnabled}
-                    onCheckedChange={setEmailRemindersEnabled}
-                  />
-                </div>
-              </Card>
-
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
                   Back
                 </Button>
-                <Button onClick={() => setStep(5)} className="flex-1">
-                  Continue
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 5: Enter Name (Guest-friendly) */}
-          {step === 5 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-2">What should I call you?</h2>
-                <p className="text-muted-foreground">
-                  No account needed. Just your name to get started!
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Your name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Enter your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    maxLength={50}
-                    autoFocus
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(4)} className="flex-1" disabled={isSubmitting}>
-                  Back
-                </Button>
                 <Button 
-                  onClick={handleContinueWithName} 
-                  className="flex-1"
-                  disabled={!name || isSubmitting}
-                >
-                  {isSubmitting ? 'Starting...' : 'Continue'}
-                </Button>
-              </div>
-              
-              <p className="text-xs text-center text-muted-foreground">
-                You can save your progress with an email anytime later.
-              </p>
-            </div>
-          )}
-
-          {/* Step 6: Your journey starts here */}
-          {step === 6 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <img 
-                  src={remiSurprised1} 
-                  alt="Remi surprised" 
-                  className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
-                />
-                <h2 className="text-2xl font-bold text-foreground mb-3 italic">Your journey starts here.</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  For your first week, I'll guide you through one small action each day.
-                </p>
-                <p className="text-muted-foreground leading-relaxed mt-3">
-                  Progressively getting more challenging.
-                </p>
-              </div>
-
-              <Button onClick={() => setStep(7)} className="w-full" size="lg">
-                Okay, tell me more
-              </Button>
-              <button 
-                onClick={() => setStep(5)}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
-              >
-                Back
-              </button>
-            </div>
-          )}
-
-          {/* Step 7: The Purpose */}
-          {step === 7 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <img 
-                  src={remiCurious1} 
-                  alt="Remi curious" 
-                  className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
-                />
-                <h2 className="text-2xl font-bold text-foreground mb-3">
-                  The Purpose
-                </h2>
-                <div className="space-y-4 text-muted-foreground leading-relaxed">
-                  <p>
-                    These challenges are designed to get you out in the real world.
-                  </p>
-                  <p>
-                    Interacting with new people, strangers & friends you haven't met yet.
-                  </p>
-                </div>
-              </div>
-
-              <Button onClick={() => setStep(8)} className="w-full" size="lg">
-                I'm In
-              </Button>
-              <button 
-                onClick={() => setStep(6)}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
-              >
-                Back
-              </button>
-            </div>
-          )}
-
-          {/* Step 8: What to expect */}
-          {step === 8 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-              <img 
-                  src={remiWaving3} 
-                  alt="Remi waving" 
-                  className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
-                />
-                <h2 className="text-2xl font-bold text-foreground mb-3">
-                  What to expect
-                </h2>
-                <div className="space-y-4 text-muted-foreground leading-relaxed">
-                  <p>
-                    Every morning, I'll reveal a new Hello.
-                  </p>
-                  <p>
-                    You'll complete it anytime that day.
-                  </p>
-                  <p>
-                    Don't forget to log it inside here so I know you've done it 🦝
-                  </p>
-                </div>
-              </div>
-
-              <Button onClick={() => setStep(9)} className="w-full" size="lg">
-                Sounds good
-              </Button>
-              <button 
-                onClick={() => setStep(7)}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
-              >
-                Back
-              </button>
-            </div>
-          )}
-
-          {/* Step 9: What you can achieve */}
-          {step === 9 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <img 
-                  src={remiSurprised2} 
-                  alt="Remi excited" 
-                  className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
-                />
-                <h2 className="text-2xl font-bold text-foreground mb-6">
-                  What you can achieve in 7 days
-                </h2>
-                <div className="space-y-4">
-                  <Card className="p-4 bg-primary/5 border-primary/20">
-                    <p className="text-3xl font-bold text-primary">100%</p>
-                    <p className="text-muted-foreground">saw a positive improvement in their week</p>
-                  </Card>
-                  <Card className="p-4 bg-primary/5 border-primary/20">
-                    <p className="text-3xl font-bold text-primary">93%</p>
-                    <p className="text-muted-foreground">felt more confident</p>
-                  </Card>
-                  <Card className="p-4 bg-primary/5 border-primary/20">
-                    <p className="text-3xl font-bold text-primary">86%</p>
-                    <p className="text-muted-foreground">felt more connected to their community</p>
-                  </Card>
-                </div>
-              </div>
-
-              <Button onClick={() => setStep(10)} className="w-full" size="lg">
-                Let's do it
-              </Button>
-              <button 
-                onClick={() => setStep(8)}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
-              >
-                Back
-              </button>
-            </div>
-          )}
-
-          {/* Step 10: Before you start... */}
-          {step === 10 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <img 
-                  src={remiCongrats3} 
-                  alt="Remi thumbs up" 
-                  className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" 
-                />
-                <h2 className="text-2xl font-bold text-foreground mb-4">
-                  Before you start…
-                </h2>
-                <div className="space-y-4 text-muted-foreground leading-relaxed">
-                  <p>
-                    Not everyone will hear you — and that's okay.<br />
-                    Don't take it personally.
-                  </p>
-                  <p>
-                    Stay safe and trust your instincts.<br />
-                    This is meant to be fun, light and a little challenging.
-                  </p>
-                  <p>
-                    The goal isn't perfect conversations.<br />
-                    It's simply to show you what can happen when you say hello more.
-                  </p>
-                  <p>
-                    You might be surprised 🙂
-                  </p>
-                </div>
-              </div>
-
-              <Button onClick={() => setStep(11)} className="w-full" size="lg">
-                I understand
-              </Button>
-              <button 
-                onClick={() => setStep(9)}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
-              >
-                Back
-              </button>
-            </div>
-          )}
-
-          {/* Step 11: Your first reward (Orbs) */}
-          {step === 11 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <img src={remiHoldingOrb} alt="Remi with Orb" className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" />
-                <h2 className="text-2xl font-bold text-foreground mb-3 italic">
-                  Complete Day 1 to earn your first Orb.
-                </h2>
-                <div className="space-y-3 text-muted-foreground leading-relaxed">
-                  <p>
-                    Orbs are your streak savers — a magical hello for when life gets busy.
-                  </p>
-                  <p>
-                    You'll get your first Orb after finishing your First Hello.
-                  </p>
-                </div>
-              </div>
-
-              <Button onClick={() => setStep(12)} className="w-full" size="lg">
-                I love Orbs
-              </Button>
-              <button 
-                onClick={() => setStep(10)}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
-              >
-                Back
-              </button>
-            </div>
-          )}
-
-          {/* Step 12: Your first challenge */}
-          {step === 12 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <img src={challengeRemiImage} alt="Remi" className="w-24 h-auto max-h-24 mx-auto mb-4 object-contain" />
-                <p className="text-sm text-primary font-medium mb-2">Day 1</p>
-                <h2 className="text-2xl font-bold text-foreground mb-4">First Hello</h2>
-                <Card className="p-6 bg-primary/5 border-primary/20">
-                  <p className="text-lg text-foreground leading-relaxed">
-                    "Smile and say hello to a stranger today."
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-3">
-                    Log it in the app once you're done to receive your reward.
-                  </p>
-                </Card>
-              </div>
-
-              <Button 
-                onClick={handleCompleteOnboarding} 
-                className="w-full" 
-                size="lg"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Starting...' : "Let's go"}
-              </Button>
-              <button 
-                onClick={() => setStep(11)}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
-              >
-                Back
-              </button>
-            </div>
-          )}
-
-          {/* Step 100: Skip Onboarding Option (for 7+ comfort rating users) */}
-          {step === 100 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <img src={remiSurprised1} alt="Remi surprised" className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" />
-                <h2 className="text-2xl font-bold text-foreground mb-3">
-                  Looks like you're already pretty confident talking to strangers!
-                </h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  Would you like to skip the 7-day intro and jump straight into the full experience?
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <Button 
-                  onClick={() => {
-                    setSkipOnboarding(true);
-                    setStep(101);
-                  }} 
-                  className="w-full" 
+                  onClick={handleCompleteIntro} 
+                  className="flex-1" 
                   size="lg"
+                  disabled={isSubmitting}
                 >
-                  Yes, skip the intro
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setSkipOnboarding(false);
-                    setStep(4);
-                  }} 
-                  className="w-full" 
-                  size="lg"
-                >
-                  No, I'd like the full experience
-                </Button>
-              </div>
-              
-              <button 
-                onClick={() => setStep(3)}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
-              >
-                Back
-              </button>
-            </div>
-          )}
-
-          {/* Step 101: Mode Selection (for skip flow) */}
-          {step === 101 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-2">
-                  Choose your pace
-                </h2>
-                <p className="text-muted-foreground">
-                  Pick the mode that works best for your lifestyle.
-                </p>
-              </div>
-              
-              <div className="space-y-4">
-                {/* Daily Mode */}
-                <Card 
-                  className={`p-5 cursor-pointer transition-all ${
-                    selectedSkipMode === 'daily' 
-                      ? 'border-primary bg-primary/5 ring-2 ring-primary' 
-                      : 'hover:border-primary/50'
-                  }`}
-                  onClick={() => setSelectedSkipMode('daily')}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">🔥</span>
-                    <h3 className="text-lg font-bold">Daily Mode</h3>
-                    <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">Recommended</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground italic mb-2">
-                    One Hello a Day
-                  </p>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Log at least 1 hello every day</li>
-                    <li>• Build a daily streak</li>
-                    <li>• Best for building powerful habits</li>
-                  </ul>
-                </Card>
-
-                {/* Chill Mode */}
-                <Card 
-                  className={`p-5 cursor-pointer transition-all ${
-                    selectedSkipMode === 'chill' 
-                      ? 'border-primary bg-primary/5 ring-2 ring-primary' 
-                      : 'hover:border-primary/50'
-                  }`}
-                  onClick={() => setSelectedSkipMode('chill')}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">🌿</span>
-                    <h3 className="text-lg font-bold">Chill Mode</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground italic mb-2">
-                    5 Hellos per Week
-                  </p>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Log 5 hellos any day of the week</li>
-                    <li>• Build a weekly streak</li>
-                    <li>• Perfect for busy schedules</li>
-                  </ul>
-                </Card>
-              </div>
-
-              <Button 
-                onClick={() => setStep(102)} 
-                className="w-full" 
-                size="lg"
-                disabled={!selectedSkipMode}
-              >
-                Continue
-              </Button>
-              <button 
-                onClick={() => setStep(100)}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary underline"
-              >
-                Back
-              </button>
-            </div>
-          )}
-
-          {/* Step 102: Timezone Selection (for skip flow) */}
-          {step === 102 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <MapPin className="w-12 h-12 mx-auto mb-4 text-primary" />
-                <h2 className="text-2xl font-bold text-foreground mb-2">What timezone are you in?</h2>
-                <p className="text-muted-foreground">
-                  This helps us reset your streaks at midnight your time.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Your timezone</Label>
-                  <Select value={selectedTimezone} onValueChange={setSelectedTimezone}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select timezone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timezoneOptions.map((tz) => (
-                        <SelectItem key={tz.value} value={tz.value}>
-                          {tz.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button 
-                  variant="outline" 
-                  onClick={detectTimezone}
-                  disabled={isDetectingTimezone}
-                  className="w-full"
-                >
-                  <MapPin className="w-4 h-4 mr-2" />
-                  {isDetectingTimezone ? 'Detecting...' : 'Auto-detect my timezone'}
-                </Button>
-              </div>
-
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(101)} className="flex-1">
-                  Back
-                </Button>
-                <Button onClick={() => setStep(103)} className="flex-1">
-                  Continue
+                  {isSubmitting ? "Loading..." : "Let's begin"}
                 </Button>
               </div>
             </div>
           )}
-
-          {/* Step 103: Enter Name (for skip flow - guest friendly) */}
-          {step === 103 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-2">What should I call you?</h2>
-                <p className="text-muted-foreground">
-                  No account needed. Just your name to get started!
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="skip-name">Your name</Label>
-                  <Input
-                    id="skip-name"
-                    type="text"
-                    placeholder="Enter your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    maxLength={50}
-                    autoFocus
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(102)} className="flex-1" disabled={isSubmitting}>
-                  Back
-                </Button>
-                <Button 
-                  onClick={async () => {
-                    try {
-                      const validated = nameSchema.parse({ name });
-                      setIsSubmitting(true);
-
-                      // Check if user is already authenticated
-                      const { data: { user: existingUser } } = await supabase.auth.getUser();
-                      
-                      if (existingUser) {
-                        // User is logged in, update their profile
-                        await supabase.from('profiles').upsert({
-                          id: existingUser.id,
-                          username: validated.name,
-                          timezone_preference: selectedTimezone
-                        }, { onConflict: 'id' });
-                        
-                        setUserId(existingUser.id);
-                        setAccountCreated(true);
-                      } else {
-                        // Guest mode - create/update IndexedDB state
-                        let guestState = await getGuestState();
-                        if (!guestState) {
-                          guestState = await createGuestState();
-                          await createGuestProgress(guestState.device_id, guestState.guest_user_id);
-                        }
-                        
-                        // Update guest progress with name
-                        await updateGuestProgress({
-                          username: validated.name,
-                        });
-                      }
-                      
-                      setStep(104);
-                    } catch (error) {
-                      if (error instanceof z.ZodError) {
-                        toast({
-                          title: "Validation Error",
-                          description: error.errors[0].message,
-                          variant: "destructive",
-                        });
-                      } else if (error instanceof Error) {
-                        toast({
-                          title: "Error",
-                          description: error.message,
-                          variant: "destructive",
-                        });
-                      }
-                    } finally {
-                      setIsSubmitting(false);
-                    }
-                  }} 
-                  className="flex-1"
-                  disabled={!name || isSubmitting}
-                >
-                  {isSubmitting ? 'Starting...' : 'Continue'}
-                </Button>
-              </div>
-              
-              <p className="text-xs text-center text-muted-foreground">
-                You can save your progress with an email anytime later.
-              </p>
-            </div>
-          )}
-
-          {/* Step 104: Mode Confirmation + Orb Explanation (for skip flow) */}
-          {step === 104 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center">
-                <img src={remiHoldingOrb} alt="Remi with Orb" className="w-32 h-auto max-h-32 mx-auto mb-4 object-contain" />
-                
-                {selectedSkipMode === 'daily' ? (
-                  <>
-                    <h2 className="text-2xl font-bold text-foreground mb-3">
-                      Daily Mode Activated! 🔥
-                    </h2>
-                    <div className="space-y-3 text-muted-foreground leading-relaxed">
-                      <p>
-                        One Hello a day keeps the awkward away.
-                      </p>
-                      <p>
-                        Log at least 1 hello every day to build your streak.
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-2xl font-bold text-foreground mb-3">
-                      Chill Mode Activated! 🌿
-                    </h2>
-                    <div className="space-y-3 text-muted-foreground leading-relaxed">
-                      <p>
-                        5 Hellos per week — any day, any time.
-                      </p>
-                      <p>
-                        Hit your 5 to keep your weekly streak going.
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <Card className="p-4 bg-primary/5 border-primary/20">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🔮</span>
-                  <div>
-                    <h4 className="font-semibold text-foreground mb-1">Here's 1 Orb to get you started!</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Orbs are your streak savers. Miss a {selectedSkipMode === 'daily' ? 'day' : 'week'}? 
-                      Use an Orb to protect your streak. Earn more by completing weekly challenges.
-                    </p>
-                  </div>
-                </div>
-              </Card>
-
-              <Button 
-                onClick={handleSkipOnboarding} 
-                className="w-full" 
-                size="lg"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Setting up...' : "Let's go! ✨"}
-              </Button>
-            </div>
-          )}
-
         </div>
       </div>
     </div>
