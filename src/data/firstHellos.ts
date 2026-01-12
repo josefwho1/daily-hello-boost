@@ -34,6 +34,13 @@ export const fourTypesOfHello: FirstHello[] = [
     description: "Ask someone a simple question.",
     examples: ["How's your day going?", "Is this the line?", "Do you know where I can find ____?"],
     tip: "Questions can be practical or personal. Start simple."
+  },
+  {
+    id: 5,
+    title: "Get a Name",
+    description: "Using any type of Hello, start a conversation then get the person's name (write it down so you don't forget).",
+    examples: ["I'm Remi, by the way", "I didn't catch your name. I'm Remi", "Nice to meet you, I'm Remi"],
+    tip: "Names are like magic, they turn a stranger into a friend."
   }
 ];
 
