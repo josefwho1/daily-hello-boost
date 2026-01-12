@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { getGuestState, createGuestState, getGuestProgress, createGuestProgress, updateGuestProgress } from "@/lib/indexedDB";
 import { z } from "zod";
 import logoText from "@/assets/one-hello-logo-text.png";
 import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
@@ -40,10 +42,8 @@ import {
 } from "@/components/ui/select";
 import { MapPin } from "lucide-react";
 
-const signupSchema = z.object({
+const nameSchema = z.object({
   name: z.string().trim().min(1, { message: "First name is required" }).max(50, { message: "Name must be less than 50 characters" }),
-  email: z.string().trim().email({ message: "Invalid email address" }).max(255, { message: "Email must be less than 255 characters" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }).max(50, { message: "Password must be less than 50 characters" }),
 });
 
 const whyHereOptions = [
@@ -134,49 +134,40 @@ export default function Onboarding() {
   const [accountCreated, setAccountCreated] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
-  const handleCreateAccount = async () => {
+  // Continue to next step after entering name (guest mode - no account required)
+  const handleContinueWithName = async () => {
     try {
-      const validated = signupSchema.parse({ name, email, password });
+      const validated = nameSchema.parse({ name });
       setIsSubmitting(true);
 
-      const redirectUrl = `${window.location.origin}/`;
-
-      const { error: signUpError, data } = await supabase.auth.signUp({
-        email: validated.email,
-        password: validated.password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            name: validated.name
-          }
-        }
-      });
-
-      if (signUpError) throw signUpError;
-
-      // Wait for user to be set, then create profile
-      if (data.user) {
-        // Small delay to let auth complete
-        await new Promise(resolve => setTimeout(resolve, 300));
+      // Check if user is already authenticated
+      const { data: { user: existingUser } } = await supabase.auth.getUser();
+      
+      if (existingUser) {
+        // User is logged in, update their profile
+        await supabase.from('profiles').upsert({
+          id: existingUser.id,
+          username: validated.name,
+          timezone_preference: selectedTimezone
+        }, { onConflict: 'id' });
         
-        // First, CREATE the profile (upsert to handle edge cases)
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert({
-            id: data.user.id,
-            username: validated.name,
-            timezone_preference: selectedTimezone
-          }, { onConflict: 'id' });
-
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-          throw new Error('Failed to create profile');
-        }
-
-        setUserId(data.user.id);
+        setUserId(existingUser.id);
         setAccountCreated(true);
-        setStep(6); // Proceed to next onboarding step
+      } else {
+        // Guest mode - create/update IndexedDB state
+        let guestState = await getGuestState();
+        if (!guestState) {
+          guestState = await createGuestState();
+          await createGuestProgress(guestState.device_id, guestState.guest_user_id);
+        }
+        
+        // Update guest progress with name
+        await updateGuestProgress({
+          username: validated.name,
+        });
       }
+      
+      setStep(6); // Proceed to next onboarding step
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -539,19 +530,19 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 5: Create Account */}
+          {/* Step 5: Enter Name (Guest-friendly) */}
           {step === 5 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-2">Create Your Account</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-2">What should I call you?</h2>
                 <p className="text-muted-foreground">
-                  Just a few details and you're ready to go!
+                  No account needed. Just your name to get started!
                 </p>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="name">Your name</Label>
                   <Input
                     id="name"
                     type="text"
@@ -560,37 +551,8 @@ export default function Onboarding() {
                     onChange={(e) => setName(e.target.value)}
                     required
                     maxLength={50}
+                    autoFocus
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    maxLength={255}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password *</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Minimum 6 characters"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    maxLength={50}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Minimum 6 characters
-                  </p>
                 </div>
               </div>
 
@@ -599,13 +561,17 @@ export default function Onboarding() {
                   Back
                 </Button>
                 <Button 
-                  onClick={handleCreateAccount} 
+                  onClick={handleContinueWithName} 
                   className="flex-1"
-                  disabled={!name || !email || !password || password.length < 6 || isSubmitting}
+                  disabled={!name || isSubmitting}
                 >
-                  {isSubmitting ? 'Creating...' : 'Continue'}
+                  {isSubmitting ? 'Starting...' : 'Continue'}
                 </Button>
               </div>
+              
+              <p className="text-xs text-center text-muted-foreground">
+                You can save your progress with an email anytime later.
+              </p>
             </div>
           )}
 
