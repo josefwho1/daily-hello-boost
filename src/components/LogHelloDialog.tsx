@@ -17,10 +17,11 @@ const getRandomLoggingImage = () => {
   return remiLoggingImages[Math.floor(Math.random() * remiLoggingImages.length)];
 };
 
-// Includes regular types + onboarding challenge titles for tracking completion
+// Includes regular types + onboarding challenge titles + First Hello initiation types for tracking completion
 export type HelloType = 'regular_hello' | 'todays_hello' | 'remis_challenge' | 
   'First Hello' | 'Well Wishes' | 'Observation' | 'Nice Shoes' | 
-  'How Are You?' | 'Name to the Face' | 'Getting Personal';
+  'How Are You?' | 'Name to the Face' | 'Getting Personal' |
+  'Greeting' | 'Compliment' | 'Question' | 'Get a Name';
 
 interface LogHelloDialogProps {
   open: boolean;

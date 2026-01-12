@@ -54,6 +54,12 @@ const isOnboardingChallenge = (helloType: string | null) => {
   return helloType && onboardingTypes.includes(helloType);
 };
 
+// Helper to check if it's a First Hello initiation type (4 Types of Hello)
+const isFirstHelloInitiation = (helloType: string | null) => {
+  const firstHelloTypes = ['Greeting', 'Observation', 'Compliment', 'Question', 'Get a Name'];
+  return helloType && firstHelloTypes.includes(helloType);
+};
+
 // Get icon and styling based on hello type
 const getTypeDisplay = (helloType: string | null) => {
   if (helloType === 'todays_hello') {
@@ -70,6 +76,14 @@ const getTypeDisplay = (helloType: string | null) => {
       label: "Weekly Challenge",
       bgClass: "bg-amber-500/10 border-amber-500/20",
       textClass: "text-amber-600"
+    };
+  }
+  if (isFirstHelloInitiation(helloType)) {
+    return {
+      icon: <Sparkles className="w-5 h-5 text-violet-600" />,
+      label: `First Hello: ${helloType}`,
+      bgClass: "bg-violet-500/10 border-violet-500/20",
+      textClass: "text-violet-600"
     };
   }
   if (isOnboardingChallenge(helloType)) {
