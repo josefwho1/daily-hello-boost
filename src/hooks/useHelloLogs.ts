@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useGuestMode } from './useGuestMode';
 import { formatInTimeZone } from 'date-fns-tz';
 import { startOfWeek, parseISO } from 'date-fns';
 
@@ -18,10 +19,29 @@ export interface HelloLog {
 
 export const useHelloLogs = () => {
   const { user } = useAuth();
+  const { isGuest, guestLogs } = useGuestMode();
   const [logs, setLogs] = useState<HelloLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // If guest, use guest logs from IndexedDB
+    if (isGuest && !user) {
+      const formattedGuestLogs: HelloLog[] = guestLogs.map(log => ({
+        id: log.id,
+        user_id: 'guest',
+        name: log.name || null,
+        notes: log.notes || null,
+        hello_type: log.hello_type || null,
+        rating: (log.rating as 'positive' | 'neutral' | 'negative' | null) || null,
+        difficulty_rating: log.difficulty_rating || null,
+        created_at: log.created_at,
+        timezone_offset: log.timezone_offset || '+00:00'
+      }));
+      setLogs(formattedGuestLogs);
+      setLoading(false);
+      return;
+    }
+
     if (!user) {
       setLogs([]);
       setLoading(false);
@@ -30,7 +50,7 @@ export const useHelloLogs = () => {
 
     setLoading(true);
     fetchLogs();
-  }, [user]);
+  }, [user, isGuest, guestLogs]);
 
   const fetchLogs = async () => {
     if (!user) {

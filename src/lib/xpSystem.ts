@@ -10,7 +10,7 @@ export interface RankInfo {
 }
 
 export const RANKS: RankInfo[] = [
-  { name: "Hello Rookie", minLevel: 1, maxLevel: 9, xpThreshold: 0, color: "#FF6B35", emoji: "👋" },
+  { name: "New Friend", minLevel: 1, maxLevel: 9, xpThreshold: 0, color: "#FF6B35", emoji: "👋" },
   { name: "Seasoned", minLevel: 10, maxLevel: 19, xpThreshold: 300, color: "#FF6B35", emoji: "🌱" },
   { name: "Semi Pro", minLevel: 20, maxLevel: 29, xpThreshold: 1000, color: "#FF6B35", emoji: "🎯" },
   { name: "Social Butterfly", minLevel: 30, maxLevel: 39, xpThreshold: 2000, color: "#FF6B35", emoji: "🦋" },

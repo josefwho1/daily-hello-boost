@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, Trophy, MessageCircle, Calendar, Pencil, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Sparkles, Trophy, MessageCircle, Calendar, Pencil, ChevronDown, ChevronUp, Mail } from "lucide-react";
 import { useHelloLogs, HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
+import { useAuth } from "@/hooks/useAuth";
+import { useGuestMode } from "@/hooks/useGuestMode";
 import { toast } from "sonner";
 import hellobookIcon from "@/assets/hellobook-icon.webp";
 import EditHelloDialog from "@/components/EditHelloDialog";
-
+import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 // Expandable text component for long notes
 const ExpandableText = ({ text }: { text: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -89,10 +92,14 @@ const getTypeDisplay = (helloType: string | null) => {
 const Hellobook = () => {
   const { logs, loading, updateLog } = useHelloLogs();
   const { formatTimestamp } = useTimezone();
+  const { user } = useAuth();
+  const { isGuest } = useGuestMode();
   const [searchQuery, setSearchQuery] = useState("");
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
 
+  const showGuestPrompt = isGuest && !user && logs.length > 0;
   const handleEditClick = (log: HelloLog) => {
     setEditingLog(log);
     setIsEditDialogOpen(true);
@@ -252,6 +259,28 @@ const Hellobook = () => {
             <p>📖 {logs.length} hello{logs.length !== 1 ? 's' : ''} in your book</p>
           </div>
         )}
+
+        {/* Guest save prompt */}
+        {showGuestPrompt && (
+          <Card className="mt-6 p-4 rounded-2xl border-primary/20 bg-primary/5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Mail className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">Save your progress</p>
+                <p className="text-xs text-muted-foreground">Add your email to keep your hellos safe</p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setShowSaveDialog(true)}
+                className="rounded-xl"
+              >
+                Save
+              </Button>
+            </div>
+          </Card>
+        )}
       </div>
 
       <EditHelloDialog
@@ -259,6 +288,12 @@ const Hellobook = () => {
         onOpenChange={setIsEditDialogOpen}
         log={editingLog}
         onSave={handleSaveEdit}
+      />
+
+      <SaveProgressDialog
+        open={showSaveDialog}
+        onOpenChange={setShowSaveDialog}
+        onDismiss={() => setShowSaveDialog(false)}
       />
     </div>
   );
