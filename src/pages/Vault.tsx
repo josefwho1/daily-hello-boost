@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight, Lock, Sparkles, Globe, Lightbulb, Heart, Briefcase } from "lucide-react";
+import { ChevronRight, Lock, Sparkles, Globe, Lightbulb, MessageCircle } from "lucide-react";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
+import { fourTypesOfHello } from "@/data/firstHellos";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useAuth } from "@/hooks/useAuth";
 import { PackUnlockCelebrationDialog } from "@/components/PackUnlockCelebrationDialog";
@@ -91,7 +92,6 @@ const Vault = () => {
   } | null>(null);
 
   const currentLevel = progress?.current_level || 1;
-  const hasCompletedOnboarding = progress?.has_completed_onboarding || false;
 
   // Check if packs are unlocked
   const isTipsUnlocked = currentLevel >= TIPS_UNLOCK_LEVEL;
@@ -142,7 +142,62 @@ const Vault = () => {
 
         {/* Sections */}
         <div className="space-y-3">
-          {/* Remi's Top Tips - FIRST (Unlocks at Level 3) */}
+          {/* The 4 Types of Hello - FIRST (Always unlocked) */}
+          <Card 
+            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
+            onClick={() => toggleSection('4types')}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-green-500" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">The 4 Types of Hello</h3>
+                  <p className="text-xs text-muted-foreground">Master the basics</p>
+                </div>
+              </div>
+              <ChevronRight 
+                className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
+                  expandedSection === '4types' ? 'rotate-90' : ''
+                }`} 
+              />
+            </div>
+            
+            {expandedSection === '4types' && (
+              <div className="mt-4 space-y-3 animate-fade-in">
+                {fourTypesOfHello.map((hello, index) => (
+                  <div 
+                    key={hello.id}
+                    className="p-3 bg-muted/50 rounded-xl"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-600 font-bold text-sm flex-shrink-0">
+                        {index + 1}
+                      </span>
+                      <div className="space-y-2">
+                        <p className="font-semibold text-foreground">{hello.title}</p>
+                        <p className="text-sm text-muted-foreground">{hello.description}</p>
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-foreground/70">Examples:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {hello.examples.map((example, i) => (
+                              <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                                "{example}"
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground/80 italic">💡 {hello.tip}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* Remi's Top Tips - SECOND (Unlocks at Level 3) */}
           {isTipsUnlocked ? (
             <Card 
               className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
@@ -198,7 +253,7 @@ const Vault = () => {
             </Card>
           )}
 
-          {/* Hello in 50 Languages - SECOND (Unlocks at Level 8) */}
+          {/* Hello in 50 Languages - THIRD (Unlocks at Level 8) */}
           {isLanguagesUnlocked ? (
             <Card 
               className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
@@ -255,68 +310,51 @@ const Vault = () => {
             </Card>
           )}
 
-          {/* The Original 7-Day Challenge - THIRD */}
-          {hasCompletedOnboarding ? (
-            <Card 
-              className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
-              onClick={() => toggleSection('7day')}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">The Original 7-Day Challenge</h3>
-                    <p className="text-xs text-muted-foreground">7 ways to break the ice</p>
-                  </div>
+          {/* The Original 7-Day Challenge - FOURTH (Always unlocked) */}
+          <Card 
+            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
+            onClick={() => toggleSection('7day')}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-primary" />
                 </div>
-                <ChevronRight 
-                  className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
-                    expandedSection === '7day' ? 'rotate-90' : ''
-                  }`} 
-                />
+                <div>
+                  <h3 className="font-semibold text-foreground">The Original 7-Day Challenge</h3>
+                  <p className="text-xs text-muted-foreground">7 ways to break the ice</p>
+                </div>
               </div>
-              
-              {expandedSection === '7day' && (
-                <div className="mt-4 space-y-2 animate-fade-in">
-                  {onboardingChallenges.map((challenge, index) => (
-                    <div 
-                      key={challenge.id}
-                      className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl"
-                    >
-                      <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                        {index + 1}
-                      </span>
-                      <div className="space-y-1">
-                        <p className="font-medium text-foreground text-sm">
-                          {challenge.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{challenge.description}</p>
-                        <p className="text-xs italic text-suggestion">💡 {challenge.suggestion}</p>
-                        <p className="text-xs text-muted-foreground/80">📝 {challenge.tips}</p>
-                      </div>
+              <ChevronRight 
+                className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
+                  expandedSection === '7day' ? 'rotate-90' : ''
+                }`} 
+              />
+            </div>
+            
+            {expandedSection === '7day' && (
+              <div className="mt-4 space-y-2 animate-fade-in">
+                {onboardingChallenges.map((challenge, index) => (
+                  <div 
+                    key={challenge.id}
+                    className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl"
+                  >
+                    <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                      {index + 1}
+                    </span>
+                    <div className="space-y-1">
+                      <p className="font-medium text-foreground text-sm">
+                        {challenge.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{challenge.description}</p>
+                      <p className="text-xs italic text-suggestion">💡 {challenge.suggestion}</p>
+                      <p className="text-xs text-muted-foreground/80">📝 {challenge.tips}</p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          ) : (
-            <Card className="p-4 rounded-2xl opacity-60">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center">
-                    <Lock className="w-5 h-5 text-muted-foreground" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-muted-foreground">The Original 7-Day Challenge</h3>
-                    <p className="text-xs text-muted-foreground">Complete all 7 days to unlock</p>
-                  </div>
-                </div>
-                <Lock className="w-5 h-5 text-muted-foreground" />
+                ))}
               </div>
-            </Card>
-          )}
+            )}
+          </Card>
 
           {/* More Packs Coming Soon - FOURTH */}
           <Card className="p-4 rounded-2xl opacity-60">

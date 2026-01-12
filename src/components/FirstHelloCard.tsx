@@ -115,9 +115,9 @@ export const FirstHelloCard = ({
               <p className="text-sm text-muted-foreground">{challenge.description}</p>
               {isAvailable && !isCompleted && (
                 <>
-                  <p className="text-xs italic text-suggestion">💡 {challenge.suggestion}</p>
-                  {challenge.tips && (
-                    <p className="text-xs text-muted-foreground/80">📝 {challenge.tips}</p>
+                  <p className="text-xs italic text-suggestion">💡 {challenge.examples.join(' • ')}</p>
+                  {challenge.tip && (
+                    <p className="text-xs text-muted-foreground/80">📝 {challenge.tip}</p>
                   )}
                 </>
               )}
