@@ -591,6 +591,14 @@ export default function Dashboard() {
     
     const target = pendingMode === 'daily' ? 7 : 5;
     const isDaily = pendingMode === 'daily';
+    
+    // Award 50 XP bonus for completing First Hellos
+    const FIRST_HELLOS_COMPLETE_BONUS = 50;
+    const currentTotalXp = progress?.total_xp || 0;
+    const newTotalXp = currentTotalXp + FIRST_HELLOS_COMPLETE_BONUS;
+    const oldLevel = progress?.current_level || getLevelFromXp(currentTotalXp);
+    const newLevel = getLevelFromXp(newTotalXp);
+    
     await updateProgress({ 
       mode: pendingMode,
       target_hellos_per_week: target,
@@ -601,13 +609,21 @@ export default function Dashboard() {
       current_phase: isDaily ? 'daily_path' : 'chill_path',
       onboarding_completed_at: new Date().toISOString(),
       daily_path_selected_at: isDaily ? new Date().toISOString() : null,
-      chill_path_selected_at: !isDaily ? new Date().toISOString() : null
+      chill_path_selected_at: !isDaily ? new Date().toISOString() : null,
+      total_xp: newTotalXp,
+      current_level: newLevel
     });
     
     setShowDailyModeConfirm(false);
     setShowChillModeConfirm(false);
     setPendingMode(null);
-    toast.success(`🎉 You're now in ${pendingMode === 'daily' ? 'Daily' : 'Chill'} Mode!`);
+    toast.success(`🎉 You're now in ${pendingMode === 'daily' ? 'Daily' : 'Chill'} Mode! (+${FIRST_HELLOS_COMPLETE_BONUS} XP)`);
+    
+    // Check for level up
+    if (newLevel > oldLevel) {
+      setNewLevelValue(newLevel);
+      setShowLevelUp(true);
+    }
   };
 
   // Check if today's hello is completed
