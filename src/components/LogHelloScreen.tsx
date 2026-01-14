@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, Mic, Square, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import remiLogging1 from "@/assets/remi-logging-1.webp";
@@ -190,50 +189,38 @@ export const LogHelloScreen = ({
       
       {/* Content - scrollable */}
       <div className="flex-1 p-6 space-y-5 overflow-y-auto">
-        {/* Dictate Button */}
-        <div className="flex justify-center">
-          <Button
-            type="button"
-            variant={isRecording ? "destructive" : "outline"}
-            size="lg"
-            className="gap-2 px-6"
-            onClick={isRecording ? stopRecording : startRecording}
-            disabled={isProcessing}
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Processing...
-              </>
-            ) : isRecording ? (
-              <>
-                <Square className="w-5 h-5" />
-                Stop Recording
-              </>
-            ) : (
-              <>
-                <Mic className="w-5 h-5" />
-                Dictate Notes
-              </>
-            )}
-          </Button>
-        </div>
-        
-        {isRecording && (
-          <p className="text-center text-sm text-muted-foreground animate-pulse">
-            🎙️ Recording... Speak now and tap Stop when done
-          </p>
-        )}
-
         <div className="space-y-2">
           <Label htmlFor="name">Name (optional)</Label>
-          <Input
-            id="name"
-            placeholder="Did you catch their name?"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="text-base"
-          />
+          <div className="flex gap-2">
+            <Input
+              id="name"
+              placeholder="Did you catch their name?"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="text-base flex-1"
+            />
+            <Button
+              type="button"
+              variant={isRecording ? "destructive" : "outline"}
+              size="icon"
+              className="flex-shrink-0 h-10 w-10"
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : isRecording ? (
+                <Square className="w-5 h-5" />
+              ) : (
+                <Mic className="w-5 h-5" />
+              )}
+            </Button>
+          </div>
+          {isRecording && (
+            <p className="text-sm text-muted-foreground animate-pulse">
+              🎙️ Recording... Tap stop when done
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -247,34 +234,9 @@ export const LogHelloScreen = ({
           />
         </div>
 
-        <div className="space-y-3">
-          <Label>How did it feel? (optional)</Label>
-          <RadioGroup 
-            value={rating} 
-            onValueChange={(value) => setRating(value as 'positive' | 'neutral' | 'negative')}
-            className="flex flex-row gap-2"
-          >
-            <div className="flex-1 flex items-center justify-center gap-1.5 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-              <RadioGroupItem value="positive" id="positive" className="sr-only" />
-              <Label htmlFor="positive" className="cursor-pointer text-center text-sm">😊 Positive</Label>
-            </div>
-            <div className="flex-1 flex items-center justify-center gap-1.5 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-              <RadioGroupItem value="neutral" id="neutral" className="sr-only" />
-              <Label htmlFor="neutral" className="cursor-pointer text-center text-sm">😐 Neutral</Label>
-            </div>
-            <div className="flex-1 flex items-center justify-center gap-1.5 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-              <RadioGroupItem value="negative" id="negative" className="sr-only" />
-              <Label htmlFor="negative" className="cursor-pointer text-center text-sm">😔 Negative</Label>
-            </div>
-          </RadioGroup>
-        </div>
-      </div>
-
-      {/* Footer - fixed at bottom */}
-      <div className="p-4 border-t border-border flex-shrink-0 bg-background">
         <Button 
           onClick={handleSubmit} 
-          className="w-full h-12 text-lg" 
+          className="w-full h-12 text-lg mt-4" 
           disabled={isLogging || isRecording || isProcessing}
         >
           {isLogging ? "Logging..." : "Log Hello! 👋"}
