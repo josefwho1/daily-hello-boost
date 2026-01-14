@@ -19,15 +19,20 @@ type AnimationPhase = 'intro' | 'orb_reveal' | 'explanation';
 
 export const FirstOrbGiftDialog = ({ open, onClaim, username = "" }: FirstOrbGiftDialogProps) => {
   const [phase, setPhase] = useState<AnimationPhase>('intro');
+  const [showSkip, setShowSkip] = useState(false);
 
   // Reset state when dialog opens
   useEffect(() => {
     if (open) {
       setPhase('intro');
+      setShowSkip(false);
+      // Show skip button after 1 second
+      const skipTimer = setTimeout(() => setShowSkip(true), 1000);
       // Transition through phases
       const timer1 = setTimeout(() => setPhase('orb_reveal'), 1500);
       const timer2 = setTimeout(() => setPhase('explanation'), 3000);
       return () => {
+        clearTimeout(skipTimer);
         clearTimeout(timer1);
         clearTimeout(timer2);
       };
@@ -73,6 +78,20 @@ export const FirstOrbGiftDialog = ({ open, onClaim, username = "" }: FirstOrbGif
       >
         <div className="flex flex-col items-center justify-center min-h-screen px-6 py-8 relative overflow-hidden">
           
+          {/* Skip button */}
+          <AnimatePresence>
+            {showSkip && phase !== 'explanation' && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClaim}
+                className="absolute top-4 right-4 text-sm text-muted-foreground hover:text-foreground transition-colors z-10"
+              >
+                Skip →
+              </motion.button>
+            )}
+          </AnimatePresence>
           {/* Floating particles */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {phase !== 'intro' && [...Array(15)].map((_, i) => (
