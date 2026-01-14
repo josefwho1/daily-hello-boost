@@ -155,6 +155,29 @@ export default function Dashboard() {
     }
   }, [user, guestProgress?.username]);
 
+  // Fix for existing users who completed first hello but have streak 0
+  useEffect(() => {
+    const fixStreakIfNeeded = async () => {
+      if (!progress) return;
+      
+      // If user has logs but daily_streak is 0, fix it
+      const hasLogs = logs.length > 0;
+      const streakIsZero = (progress.daily_streak || 0) === 0;
+      
+      if (hasLogs && streakIsZero) {
+        const today = new Date().toISOString().split('T')[0];
+        await updateProgress({
+          daily_streak: 1,
+          current_streak: 1,
+          last_completed_date: progress.last_completed_date || today,
+          total_hellos: logs.length,
+        });
+      }
+    };
+    
+    fixStreakIfNeeded();
+  }, [progress?.daily_streak, logs.length]);
+
   // Determine which day of onboarding the user is on
   const getOnboardingDay = () => {
     if (!progress?.onboarding_week_start) return 1;
