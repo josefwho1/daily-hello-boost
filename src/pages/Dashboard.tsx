@@ -617,13 +617,18 @@ export default function Dashboard() {
     }
   }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode]);
 
-  // Check if all 5 First Hellos are complete - show mode selection
+  // Check if all 5 First Hellos are complete - show mode selection and award bonus orb
   useEffect(() => {
     if (progress?.mode !== 'first_hellos') return;
     if (allFirstHellosComplete && !progress?.has_completed_onboarding) {
+      // Award bonus orb for completing initiation (if not already at max)
+      const currentOrbs = progress?.orbs || 0;
+      if (currentOrbs < 3) {
+        updateProgress({ orbs: Math.min(currentOrbs + 1, 3) });
+      }
       setShowMilestone(true);
     }
-  }, [allFirstHellosComplete, progress?.has_completed_onboarding, progress?.mode]);
+  }, [allFirstHellosComplete, progress?.has_completed_onboarding, progress?.mode, progress?.orbs, updateProgress]);
 
   const handleModeSelect = async (mode: 'daily' | 'chill') => {
     setPendingMode(mode);
