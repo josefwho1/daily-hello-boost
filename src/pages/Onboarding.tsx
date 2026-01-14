@@ -5,27 +5,28 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getGuestState, createGuestState, createGuestProgress, updateGuestProgress } from "@/lib/indexedDB";
 
-// Remi Waving images
-import remiWaving1 from "@/assets/remi-waving-1.webp";
+// Remi images
+import remiWaving from "@/assets/remi-waving.webp";
 import remiWaving2 from "@/assets/remi-waving-2.webp";
-import remiWaving3 from "@/assets/remi-waving-3.webp";
 import remiWaving4 from "@/assets/remi-waving-4.webp";
+import remiCurious1 from "@/assets/remi-curious-1.webp";
+import remiSurprised1 from "@/assets/remi-surprised-1.webp";
+import remiCongrats3 from "@/assets/remi-congrats-3.webp";
 
-const remiWavingImages = [remiWaving1, remiWaving2, remiWaving3, remiWaving4];
-
-// Get a random image from an array
-const getRandomImage = (images: string[]) => {
-  return images[Math.floor(Math.random() * images.length)];
-};
+export type OnboardingStep = 
+  | 'welcome'           // Screen 1
+  | 'how_it_works'      // Screen 2
+  | 'stats'             // Screen 3
+  | 'initiation'        // Screen 4
+  | 'first_hello_intro' // Screen 5 - Are you in public?
+  | 'public_yes'        // Yes branch
+  | 'public_no';        // No branch - also used for "no one around"
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState<OnboardingStep>('welcome');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Random Remi image - consistent during session
-  const [welcomeRemiImage] = useState(() => getRandomImage(remiWavingImages));
 
   const handleCompleteIntro = async () => {
     try {
@@ -46,6 +47,8 @@ export default function Onboarding() {
           current_phase: 'first_hellos',
           orbs: 0,
           has_received_first_orb: false,
+          // Track that we're in guided onboarding
+          onboarding_week_start: new Date().toISOString(),
         }, { onConflict: 'user_id' });
       } else {
         // Guest mode - create/update IndexedDB state
@@ -63,6 +66,7 @@ export default function Onboarding() {
           has_completed_onboarding: false,
           orbs: 0,
           has_received_first_orb: false,
+          onboarding_week_start: new Date().toISOString(),
         });
       }
 
@@ -79,7 +83,239 @@ export default function Onboarding() {
     }
   };
 
-  const totalSteps = 4;
+  const renderScreen = () => {
+    switch (step) {
+      // Screen 1 - Welcome
+      case 'welcome':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiWaving4} 
+              alt="Remi waving" 
+              className="w-64 h-auto max-h-64 mx-auto object-contain animate-bounce-soft" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
+              <p className="text-muted-foreground leading-relaxed">
+                Hello, I'm Remi. Your Reminder Raccoon, companion & guide.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                This is a place to create real human connection.
+              </p>
+              <p className="text-lg font-medium text-primary">
+                One Hello at a time.
+              </p>
+            </div>
+            <Button onClick={() => setStep('how_it_works')} className="w-full" size="lg">
+              Hello Remi 👋
+            </Button>
+            <button 
+              onClick={() => navigate('/auth')}
+              className="text-sm text-muted-foreground hover:text-primary underline"
+            >
+              I already have an account
+            </button>
+          </div>
+        );
+
+      // Screen 2 - How it works
+      case 'how_it_works':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiCurious1} 
+              alt="Remi curious" 
+              className="w-64 h-auto max-h-64 mx-auto object-contain" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold text-foreground">How it works</h1>
+              <p className="text-muted-foreground leading-relaxed">
+                Every social interaction needs to start from somewhere.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                We give you challenges, reminders and encouragement to start conversations with strangers, connect with friends & make the world a warmer place.
+              </p>
+            </div>
+            <Button onClick={() => setStep('stats')} className="w-full" size="lg">
+              I'm In
+            </Button>
+          </div>
+        );
+
+      // Screen 3 - Stats
+      case 'stats':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiSurprised1} 
+              alt="Remi surprised" 
+              className="w-64 h-auto max-h-64 mx-auto object-contain" 
+            />
+            <div className="space-y-6">
+              <h1 className="text-2xl font-bold text-foreground">What users felt after only 7 days</h1>
+              
+              <div className="space-y-4">
+                <div className="bg-success/10 rounded-xl p-4">
+                  <p className="text-4xl font-bold text-success">100%</p>
+                  <p className="text-muted-foreground">saw a positive improvement in their week</p>
+                </div>
+                
+                <div className="bg-primary/10 rounded-xl p-4">
+                  <p className="text-4xl font-bold text-primary">93%</p>
+                  <p className="text-muted-foreground">felt more confident</p>
+                </div>
+                
+                <div className="bg-accent/20 rounded-xl p-4">
+                  <p className="text-4xl font-bold text-accent-foreground">86%</p>
+                  <p className="text-muted-foreground">felt more connected</p>
+                </div>
+              </div>
+            </div>
+            <Button onClick={() => setStep('initiation')} className="w-full" size="lg">
+              Let's do it
+            </Button>
+          </div>
+        );
+
+      // Screen 4 - Initiation
+      case 'initiation':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiCongrats3} 
+              alt="Remi celebrating" 
+              className="w-64 h-auto max-h-64 mx-auto object-contain" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold text-foreground">Introduction</h1>
+              <p className="text-muted-foreground leading-relaxed">
+                I'll guide you through your First Hello's
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                These will introduce different ways to say hello and start conversations.
+              </p>
+            </div>
+            <Button onClick={() => setStep('first_hello_intro')} className="w-full" size="lg">
+              Let's begin
+            </Button>
+          </div>
+        );
+
+      // Screen 5 - First Hello Intro (Are you in public?)
+      case 'first_hello_intro':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiWaving} 
+              alt="Remi waving" 
+              className="w-64 h-auto max-h-64 mx-auto object-contain" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold text-foreground">First Hello</h1>
+              <p className="text-muted-foreground leading-relaxed">
+                Let's begin with your First Hello.
+              </p>
+              <p className="text-lg font-medium text-foreground">
+                Are you in a public place?
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => setStep('public_yes')} 
+                className="flex-1" 
+                size="lg"
+              >
+                Yes
+              </Button>
+              <Button 
+                onClick={() => setStep('public_no')} 
+                variant="outline"
+                className="flex-1" 
+                size="lg"
+              >
+                No
+              </Button>
+            </div>
+          </div>
+        );
+
+      // Yes branch - Do it now
+      case 'public_yes':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiWaving4} 
+              alt="Remi waving" 
+              className="w-64 h-auto max-h-64 mx-auto object-contain animate-bounce-soft" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold text-foreground">Great.</h1>
+              <p className="text-muted-foreground leading-relaxed text-lg">
+                Smile, look up & say Hello to the first stranger you see.
+              </p>
+            </div>
+            <Button 
+              onClick={handleCompleteIntro} 
+              className="w-full" 
+              size="lg"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Loading..." : "I did it"}
+            </Button>
+            <button 
+              onClick={() => setStep('public_no')}
+              className="text-sm text-muted-foreground hover:text-primary underline"
+            >
+              there is no one around me
+            </button>
+          </div>
+        );
+
+      // No branch - Come back later
+      case 'public_no':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiWaving2} 
+              alt="Remi waving" 
+              className="w-64 h-auto max-h-64 mx-auto object-contain" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold text-foreground">No worries.</h1>
+              <p className="text-muted-foreground leading-relaxed">
+                Your first challenge is to say Hello to a stranger.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Don't forget to smile 🙂
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Once you do it, come back and log it in here.
+              </p>
+            </div>
+            <Button 
+              onClick={handleCompleteIntro} 
+              className="w-full" 
+              size="lg"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Loading..." : "Got it, I'll be back."}
+            </Button>
+          </div>
+        );
+    }
+  };
+
+  // Calculate progress for progress bar
+  const getProgress = () => {
+    const steps: OnboardingStep[] = ['welcome', 'how_it_works', 'stats', 'initiation', 'first_hello_intro', 'public_yes', 'public_no'];
+    const index = steps.indexOf(step);
+    // Normalize to show progress through 5 main screens
+    if (step === 'welcome') return 1/5;
+    if (step === 'how_it_works') return 2/5;
+    if (step === 'stats') return 3/5;
+    if (step === 'initiation') return 4/5;
+    return 1; // first_hello_intro and branches are the final step
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -87,133 +323,13 @@ export default function Onboarding() {
       <div className="fixed top-0 left-0 right-0 h-1 bg-muted z-50">
         <div 
           className="h-full bg-primary transition-all duration-300"
-          style={{ width: `${(step / totalSteps) * 100}%` }}
+          style={{ width: `${getProgress() * 100}%` }}
         />
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          {/* Screen 1: Welcome */}
-          {step === 1 && (
-            <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <img 
-                src={welcomeRemiImage} 
-                alt="Remi waving" 
-                className="w-64 h-auto max-h-64 mx-auto object-contain animate-bounce-soft" 
-              />
-              <div className="space-y-4">
-                <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
-                <p className="text-muted-foreground leading-relaxed">
-                  Hello, I'm Remi. Your Reminder Raccoon, companion & guide.
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  This is a place to encourage real human connection.
-                </p>
-                <p className="text-lg font-medium text-primary">
-                  One Hello at a time.
-                </p>
-              </div>
-              <Button onClick={() => setStep(2)} className="w-full" size="lg">
-                Continue
-              </Button>
-              <button 
-                onClick={() => navigate('/magic-link')}
-                className="text-sm text-muted-foreground hover:text-primary underline"
-              >
-                I already have an account
-              </button>
-            </div>
-          )}
-
-          {/* Screen 2: How it works */}
-          {step === 2 && (
-            <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="space-y-4">
-                <h1 className="text-2xl font-bold text-foreground">How it works</h1>
-                <p className="text-muted-foreground leading-relaxed">
-                  Every social interaction needs to start from somewhere.
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  Here you will get ideas, reminders and encouragement on how to start conversations with strangers, reconnect with old friends & make the world a warmer place.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
-                  Back
-                </Button>
-                <Button onClick={() => setStep(3)} className="flex-1" size="lg">
-                  I'm In
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Screen 3: What users felt */}
-          {step === 3 && (
-            <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-foreground">What users felt after only 7 days</h1>
-                
-                <div className="space-y-4">
-                  <div className="bg-success/10 rounded-lg p-4">
-                    <p className="text-4xl font-bold text-success">100%</p>
-                    <p className="text-muted-foreground">saw a positive improvement in their week</p>
-                  </div>
-                  
-                  <div className="bg-primary/10 rounded-lg p-4">
-                    <p className="text-4xl font-bold text-primary">93%</p>
-                    <p className="text-muted-foreground">felt more confident</p>
-                  </div>
-                  
-                  <div className="bg-accent/20 rounded-lg p-4">
-                    <p className="text-4xl font-bold text-accent-foreground">86%</p>
-                    <p className="text-muted-foreground">felt more connected</p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
-                  Back
-                </Button>
-                <Button onClick={() => setStep(4)} className="flex-1" size="lg">
-                  Let's do it
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Screen 4: First Hello's Initiation */}
-          {step === 4 && (
-            <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <img 
-                src={welcomeRemiImage} 
-                alt="Remi" 
-                className="w-48 h-auto max-h-48 mx-auto object-contain" 
-              />
-              <div className="space-y-4">
-                <h1 className="text-2xl font-bold text-foreground">First Hello's</h1>
-                <p className="text-muted-foreground leading-relaxed">
-                  I'll guide you through your First Hello's
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  These will introduce different ways to say hello and start conversations with people.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
-                  Back
-                </Button>
-                <Button 
-                  onClick={handleCompleteIntro} 
-                  className="flex-1" 
-                  size="lg"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Loading..." : "Let's begin"}
-                </Button>
-              </div>
-            </div>
-          )}
+          {renderScreen()}
         </div>
       </div>
     </div>

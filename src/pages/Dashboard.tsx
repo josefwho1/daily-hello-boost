@@ -24,6 +24,8 @@ import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompl
 import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationDialog";
 import { LevelUpCelebrationDialog } from "@/components/LevelUpCelebrationDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
+import { FirstHelloInstructionDialog, FirstHelloPhase } from "@/components/FirstHelloInstructionDialog";
+import { FirstHelloRatingDialog } from "@/components/FirstHelloRatingDialog";
 import { firstHellos } from "@/data/firstHellos";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
@@ -140,6 +142,12 @@ export default function Dashboard() {
   const [newLevelValue, setNewLevelValue] = useState(1);
   const [pendingMode, setPendingMode] = useState<'daily' | 'chill' | null>(null);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
+  
+  // First Hello instruction dialog states
+  const [showFirstHelloRating, setShowFirstHelloRating] = useState(false);
+  const [showFirstHelloInstruction, setShowFirstHelloInstruction] = useState(false);
+  const [firstHelloPhase, setFirstHelloPhase] = useState<FirstHelloPhase>('observation_intro');
+  const [lastCompletedFirstHello, setLastCompletedFirstHello] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -504,6 +512,26 @@ export default function Dashboard() {
         if (!isFirstHelloEver) {
           // Days 2-7: show the normal celebration dialog
           setShowCelebration(true);
+        }
+      } else if (progress?.mode === 'first_hellos' && !progress?.has_completed_onboarding) {
+        // First Hellos mode - show guided instruction dialogs
+        const justCompletedType = selectedHelloType;
+        setLastCompletedFirstHello(justCompletedType);
+        
+        if (justCompletedType === 'Greeting') {
+          // First hello complete - show rating dialog
+          setShowFirstHelloRating(true);
+        } else if (justCompletedType === 'Observation') {
+          setFirstHelloPhase('compliment_intro');
+          setShowFirstHelloInstruction(true);
+        } else if (justCompletedType === 'Compliment') {
+          setFirstHelloPhase('question_intro');
+          setShowFirstHelloInstruction(true);
+        } else if (justCompletedType === 'Question') {
+          setFirstHelloPhase('getname_intro');
+          setShowFirstHelloInstruction(true);
+        } else if (justCompletedType === 'Get a Name') {
+          // All 5 complete - will trigger milestone via useEffect
         }
       } else if (justHitWeeklyGoal) {
         // Show weekly goal celebration in Chill mode
@@ -936,6 +964,30 @@ export default function Dashboard() {
         onOpenChange={setShowSavePrompt}
         onDismiss={dismissSavePrompt}
         totalHellos={guestState?.total_hellos_logged || 0}
+      />
+
+      {/* First Hello Rating Dialog */}
+      <FirstHelloRatingDialog
+        open={showFirstHelloRating}
+        onRate={(rating) => {
+          setShowFirstHelloRating(false);
+          setFirstHelloPhase('observation_intro');
+          setShowFirstHelloInstruction(true);
+        }}
+      />
+
+      {/* First Hello Instruction Dialogs */}
+      <FirstHelloInstructionDialog
+        open={showFirstHelloInstruction}
+        onContinue={() => {
+          setShowFirstHelloInstruction(false);
+          // If all complete phase, show mode selection
+          if (firstHelloPhase === 'all_complete') {
+            setShowModeSelection(true);
+          }
+        }}
+        phase={firstHelloPhase}
+        username={username}
       />
     </div>
   );
