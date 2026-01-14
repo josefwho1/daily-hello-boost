@@ -22,14 +22,19 @@ export const OnboardingCompleteMilestoneDialog = ({
   onContinue,
 }: OnboardingCompleteMilestoneDialogProps) => {
   const [phase, setPhase] = useState<AnimationPhase>('celebration');
+  const [showSkip, setShowSkip] = useState(false);
 
   // Reset and run animation sequence
   useEffect(() => {
     if (open) {
       setPhase('celebration');
+      setShowSkip(false);
+      // Show skip button after 1 second
+      const skipTimer = setTimeout(() => setShowSkip(true), 1000);
       const timer1 = setTimeout(() => setPhase('orb_reward'), 2500);
       const timer2 = setTimeout(() => setPhase('welcome'), 5000);
       return () => {
+        clearTimeout(skipTimer);
         clearTimeout(timer1);
         clearTimeout(timer2);
       };
@@ -80,6 +85,20 @@ export const OnboardingCompleteMilestoneDialog = ({
       >
         <div className="flex flex-col items-center justify-center min-h-screen px-6 py-8 relative overflow-hidden">
           
+          {/* Skip button */}
+          <AnimatePresence>
+            {showSkip && phase !== 'welcome' && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onContinue}
+                className="absolute top-4 right-4 text-sm text-muted-foreground hover:text-foreground transition-colors z-10"
+              >
+                Skip →
+              </motion.button>
+            )}
+          </AnimatePresence>
           {/* Floating particles */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {[...Array(20)].map((_, i) => (

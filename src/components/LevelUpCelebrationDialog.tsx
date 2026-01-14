@@ -39,6 +39,7 @@ export const LevelUpCelebrationDialog = ({
   const [phase, setPhase] = useState<AnimationPhase>('loading');
   const [progressPercent, setProgressPercent] = useState(0);
   const [displayedLevel, setDisplayedLevel] = useState(newLevel - 1);
+  const [showSkip, setShowSkip] = useState(false);
   
   const previousLevel = newLevel - 1;
   const rank = getRankFromLevel(newLevel);
@@ -96,6 +97,10 @@ export const LevelUpCelebrationDialog = ({
       setPhase('loading');
       setProgressPercent(0);
       setDisplayedLevel(previousLevel);
+      setShowSkip(false);
+      // Show skip button after 1 second
+      const skipTimer = setTimeout(() => setShowSkip(true), 1000);
+      return () => clearTimeout(skipTimer);
     }
   }, [open, previousLevel]);
 
@@ -142,6 +147,20 @@ export const LevelUpCelebrationDialog = ({
       >
         <div className="flex flex-col items-center justify-center min-h-screen px-6 py-8 relative">
           
+          {/* Skip button */}
+          <AnimatePresence>
+            {showSkip && phase !== 'celebration' && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+                className="absolute top-4 right-4 text-sm text-muted-foreground hover:text-foreground transition-colors z-10"
+              >
+                Skip →
+              </motion.button>
+            )}
+          </AnimatePresence>
           {/* Floating particles background */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {phase === 'celebration' && (
