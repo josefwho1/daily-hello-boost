@@ -449,6 +449,7 @@ export default function Onboarding() {
               className="w-40 h-auto max-h-40 mx-auto object-contain" 
             />
             <div className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">Great Work!</h2>
               <p className="text-muted-foreground leading-relaxed">
                 Now lets add some conversation starters.
               </p>
