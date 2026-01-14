@@ -617,18 +617,23 @@ export default function Dashboard() {
     }
   }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode]);
 
+  // Track if we've already awarded the initiation orb this session to prevent duplicates
+  const [hasAwardedInitiationOrb, setHasAwardedInitiationOrb] = useState(false);
+
   // Check if all 5 First Hellos are complete - show mode selection and award bonus orb
   useEffect(() => {
     if (progress?.mode !== 'first_hellos') return;
-    if (allFirstHellosComplete && !progress?.has_completed_onboarding) {
-      // Award bonus orb for completing initiation (if not already at max)
-      const currentOrbs = progress?.orbs || 0;
-      if (currentOrbs < 3) {
-        updateProgress({ orbs: Math.min(currentOrbs + 1, 3) });
-      }
-      setShowMilestone(true);
+    if (!allFirstHellosComplete || progress?.has_completed_onboarding) return;
+    if (hasAwardedInitiationOrb) return;
+    
+    // Award bonus orb for completing initiation (if not already at max)
+    const currentOrbs = progress?.orbs || 0;
+    if (currentOrbs < 3) {
+      setHasAwardedInitiationOrb(true);
+      updateProgress({ orbs: Math.min(currentOrbs + 1, 3) });
     }
-  }, [allFirstHellosComplete, progress?.has_completed_onboarding, progress?.mode, progress?.orbs, updateProgress]);
+    setShowMilestone(true);
+  }, [allFirstHellosComplete, progress?.has_completed_onboarding, progress?.mode, hasAwardedInitiationOrb, updateProgress, progress?.orbs]);
 
   const handleModeSelect = async (mode: 'daily' | 'chill') => {
     setPendingMode(mode);
