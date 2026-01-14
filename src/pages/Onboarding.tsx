@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getGuestState, createGuestState, createGuestProgress, updateGuestProgress, addGuestHelloLog } from "@/lib/indexedDB";
+import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
 
 // Remi images
 import remiWaving from "@/assets/remi-waving.webp";
@@ -31,6 +32,7 @@ export default function Onboarding() {
   const { toast } = useToast();
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showFirstOrbGift, setShowFirstOrbGift] = useState(false);
 
   // Initialize user/guest progress without logging a hello
   const initializeProgress = async () => {
@@ -117,6 +119,8 @@ export default function Onboarding() {
       setIsSubmitting(true);
       await initializeProgress();
       await logGreetingHello();
+      // Award first orb
+      await awardFirstOrb();
       setStep('greeting_complete');
     } catch (error) {
       console.error('Error completing greeting:', error);
@@ -128,6 +132,29 @@ export default function Onboarding() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Award the first orb after the first hello
+  const awardFirstOrb = async () => {
+    const { data: { user: existingUser } } = await supabase.auth.getUser();
+    
+    if (existingUser) {
+      await supabase.from('user_progress').update({
+        orbs: 1,
+        has_received_first_orb: true
+      }).eq('user_id', existingUser.id);
+    } else {
+      await updateGuestProgress({
+        orbs: 1,
+        has_received_first_orb: true
+      });
+    }
+  };
+
+  // Handle claiming first orb from dialog
+  const handleClaimFirstOrb = () => {
+    setShowFirstOrbGift(false);
+    setStep('observation_intro');
   };
 
   // Handle "No" or "Got it, I'll be back" - just init and go to dashboard
@@ -386,14 +413,14 @@ export default function Onboarding() {
             <p className="text-lg text-foreground font-medium">How was that?</p>
             <div className="flex flex-col gap-3">
               <Button 
-                onClick={() => setStep('observation_intro')} 
+                onClick={() => setShowFirstOrbGift(true)} 
                 className="w-full" 
                 size="lg"
               >
                 😍 Loved it
               </Button>
               <Button 
-                onClick={() => setStep('observation_intro')} 
+                onClick={() => setShowFirstOrbGift(true)} 
                 className="w-full" 
                 size="lg"
                 variant="outline"
@@ -401,7 +428,7 @@ export default function Onboarding() {
                 💪 Easy money
               </Button>
               <Button 
-                onClick={() => setStep('observation_intro')} 
+                onClick={() => setShowFirstOrbGift(true)} 
                 className="w-full" 
                 size="lg"
                 variant="outline"
@@ -476,6 +503,12 @@ export default function Onboarding() {
           {renderScreen()}
         </div>
       </div>
+
+      {/* First Orb Gift Dialog */}
+      <FirstOrbGiftDialog
+        open={showFirstOrbGift}
+        onClaim={handleClaimFirstOrb}
+      />
     </div>
   );
 }

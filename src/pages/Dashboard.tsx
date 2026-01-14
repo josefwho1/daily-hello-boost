@@ -19,7 +19,7 @@ import { StatsBar } from "@/components/StatsBar";
 import { LogHelloButton } from "@/components/LogHelloButton";
 import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
 import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
-import { OnboardingCompleteMilestoneScreen } from "@/components/OnboardingCompleteMilestoneScreen";
+import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingCompleteMilestoneDialog";
 import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompleteDialog";
 import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationDialog";
 import { LevelUpCelebrationDialog } from "@/components/LevelUpCelebrationDialog";
@@ -565,8 +565,9 @@ export default function Dashboard() {
         setShowWeeklyChallengeComplete(true);
       }
 
-      // Day 1 shows the consolidated FirstOrbGiftDialog instead of multiple popups
-      if (isFirstHelloEver) {
+      // First orb is now handled in onboarding flow, not here
+      // This is kept as a fallback for edge cases only
+      if (isFirstHelloEver && !progress?.has_received_first_orb) {
         setShowFirstOrbGift(true);
       }
       
@@ -751,14 +752,8 @@ export default function Dashboard() {
 
   if (!progress) return null;
 
-  // Full-screen screens for onboarding flow (replace dialogs)
-  if (showMilestone) {
-    return (
-      <OnboardingCompleteMilestoneScreen
-        onContinue={handleMilestoneContinue}
-      />
-    );
-  }
+  // Full-screen milestone dialog for onboarding completion (with orb ceremony)
+  // Now uses a dialog overlay instead of replacing the whole page
 
   if (showModeSelection) {
     return (
@@ -980,6 +975,11 @@ export default function Dashboard() {
         open={showFirstOrbGift}
         onClaim={handleClaimFirstOrb}
         username={username}
+      />
+
+      <OnboardingCompleteMilestoneDialog
+        open={showMilestone}
+        onContinue={handleMilestoneContinue}
       />
 
       <ComeBackTomorrowDialog
