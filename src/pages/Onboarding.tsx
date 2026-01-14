@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getGuestState, createGuestState, createGuestProgress, updateGuestProgress, addGuestHelloLog } from "@/lib/indexedDB";
-import { FirstHelloRatingDialog } from "@/components/FirstHelloRatingDialog";
-import { FirstHelloInstructionDialog } from "@/components/FirstHelloInstructionDialog";
 
 // Remi images
 import remiWaving from "@/assets/remi-waving.webp";
@@ -13,7 +11,9 @@ import remiWaving2 from "@/assets/remi-waving-2.webp";
 import remiWaving4 from "@/assets/remi-waving-4.webp";
 import remiCurious1 from "@/assets/remi-curious-1.webp";
 import remiSurprised1 from "@/assets/remi-surprised-1.webp";
+import remiCongrats1 from "@/assets/remi-congrats-1.webp";
 import remiCongrats3 from "@/assets/remi-congrats-3.webp";
+import remiCelebrating1 from "@/assets/remi-celebrating-1.webp";
 
 export type OnboardingStep = 
   | 'welcome'           // Screen 1
@@ -22,17 +22,15 @@ export type OnboardingStep =
   | 'initiation'        // Screen 4
   | 'first_hello_intro' // Screen 5 - Are you in public?
   | 'public_yes'        // Yes branch
-  | 'public_no';        // No branch - also used for "no one around"
+  | 'public_no'         // No branch - also used for "no one around"
+  | 'greeting_complete' // After "I did it" - rating screen
+  | 'observation_intro'; // Intro to next challenge
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Dialog states for "I did it" flow
-  const [showRatingDialog, setShowRatingDialog] = useState(false);
-  const [showObservationIntro, setShowObservationIntro] = useState(false);
 
   // Initialize user/guest progress without logging a hello
   const initializeProgress = async () => {
@@ -77,14 +75,12 @@ export default function Onboarding() {
     const { data: { user: existingUser } } = await supabase.auth.getUser();
     
     if (existingUser) {
-      // Log to Supabase for authenticated users
       await supabase.from('hello_logs').insert({
         user_id: existingUser.id,
         hello_type: 'Greeting',
         timezone_offset: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
     } else {
-      // Log to IndexedDB for guests
       await addGuestHelloLog({
         name: null,
         notes: null,
@@ -100,15 +96,9 @@ export default function Onboarding() {
   const handleDidIt = async () => {
     try {
       setIsSubmitting(true);
-      
-      // Initialize progress first
       await initializeProgress();
-      
-      // Log the Greeting hello
       await logGreetingHello();
-      
-      // Show the rating dialog
-      setShowRatingDialog(true);
+      setStep('greeting_complete');
     } catch (error) {
       console.error('Error completing greeting:', error);
       toast({
@@ -119,19 +109,6 @@ export default function Onboarding() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Handle rating selection
-  const handleRating = (rating: 'loved' | 'easy' | 'nogood') => {
-    setShowRatingDialog(false);
-    // Show the observation intro dialog
-    setShowObservationIntro(true);
-  };
-
-  // Handle observation intro continue - navigate to dashboard
-  const handleObservationIntroContinue = () => {
-    setShowObservationIntro(false);
-    navigate('/');
   };
 
   // Handle "No" or "Got it, I'll be back" - just init and go to dashboard
@@ -371,15 +348,97 @@ export default function Onboarding() {
             </Button>
           </div>
         );
+
+      // Greeting Complete - Rating Screen
+      case 'greeting_complete':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiCongrats1} 
+              alt="Remi celebrating" 
+              className="w-40 h-auto max-h-40 mx-auto object-contain" 
+            />
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-foreground">Congratulations!</h1>
+              <p className="text-sm font-bold text-primary tracking-wide">
+                FIRST HELLO COMPLETE
+              </p>
+            </div>
+            <p className="text-lg text-foreground font-medium">How was that?</p>
+            <div className="flex flex-col gap-3">
+              <Button 
+                onClick={() => setStep('observation_intro')} 
+                className="w-full" 
+                size="lg"
+              >
+                😍 Loved it
+              </Button>
+              <Button 
+                onClick={() => setStep('observation_intro')} 
+                className="w-full" 
+                size="lg"
+                variant="outline"
+              >
+                💪 Easy money
+              </Button>
+              <Button 
+                onClick={() => setStep('observation_intro')} 
+                className="w-full" 
+                size="lg"
+                variant="outline"
+              >
+                😬 No good
+              </Button>
+            </div>
+          </div>
+        );
+
+      // Observation Intro - Next challenge teaser
+      case 'observation_intro':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiCelebrating1} 
+              alt="Remi celebrating" 
+              className="w-40 h-auto max-h-40 mx-auto object-contain" 
+            />
+            <div className="space-y-4">
+              <p className="text-muted-foreground leading-relaxed">
+                Now lets add some conversation starters.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                First up, make an <span className="font-semibold text-foreground">Observation</span>.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Think the weather, atmosphere, vibes etc.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Anything you are experiencing in a shared space.
+              </p>
+              <p className="text-sm text-primary italic">
+                "What a beautiful day" "Long line hey" "Love the vibe in here"
+              </p>
+            </div>
+            <Button 
+              onClick={() => navigate('/')} 
+              className="w-full" 
+              size="lg"
+            >
+              Let's do it
+            </Button>
+          </div>
+        );
     }
   };
 
   // Calculate progress for progress bar
   const getProgress = () => {
-    if (step === 'welcome') return 1/5;
-    if (step === 'how_it_works') return 2/5;
-    if (step === 'stats') return 3/5;
-    if (step === 'initiation') return 4/5;
+    if (step === 'welcome') return 1/7;
+    if (step === 'how_it_works') return 2/7;
+    if (step === 'stats') return 3/7;
+    if (step === 'initiation') return 4/7;
+    if (step === 'first_hello_intro' || step === 'public_yes' || step === 'public_no') return 5/7;
+    if (step === 'greeting_complete') return 6/7;
     return 1;
   };
 
@@ -398,19 +457,6 @@ export default function Onboarding() {
           {renderScreen()}
         </div>
       </div>
-
-      {/* Rating Dialog - "How was that?" */}
-      <FirstHelloRatingDialog
-        open={showRatingDialog}
-        onRate={handleRating}
-      />
-
-      {/* Observation Intro Dialog */}
-      <FirstHelloInstructionDialog
-        open={showObservationIntro}
-        onContinue={handleObservationIntroContinue}
-        phase="observation_intro"
-      />
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { FirstHelloCard } from "@/components/FirstHelloCard";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
 import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
-import { ModeSelectionDialog } from "@/components/ModeSelectionDialog";
+import { ModeSelectionScreen } from "@/components/ModeSelectionScreen";
 import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { UseOrbDialog } from "@/components/UseOrbDialog";
@@ -19,13 +19,12 @@ import { StatsBar } from "@/components/StatsBar";
 import { LogHelloButton } from "@/components/LogHelloButton";
 import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
 import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
-import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingCompleteMilestoneDialog";
+import { OnboardingCompleteMilestoneScreen } from "@/components/OnboardingCompleteMilestoneScreen";
 import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompleteDialog";
 import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationDialog";
 import { LevelUpCelebrationDialog } from "@/components/LevelUpCelebrationDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
-import { FirstHelloInstructionDialog, FirstHelloPhase } from "@/components/FirstHelloInstructionDialog";
-import { FirstHelloRatingDialog } from "@/components/FirstHelloRatingDialog";
+import { FirstHelloInstructionScreen, FirstHelloPhase } from "@/components/FirstHelloInstructionScreen";
 import { firstHellos } from "@/data/firstHellos";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
@@ -143,8 +142,7 @@ export default function Dashboard() {
   const [pendingMode, setPendingMode] = useState<'daily' | 'chill' | null>(null);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   
-  // First Hello instruction dialog states
-  const [showFirstHelloRating, setShowFirstHelloRating] = useState(false);
+  // First Hello instruction screen states
   const [showFirstHelloInstruction, setShowFirstHelloInstruction] = useState(false);
   const [firstHelloPhase, setFirstHelloPhase] = useState<FirstHelloPhase>('observation_intro');
   const [lastCompletedFirstHello, setLastCompletedFirstHello] = useState<string | null>(null);
@@ -519,8 +517,9 @@ export default function Dashboard() {
         setLastCompletedFirstHello(justCompletedType);
         
         if (justCompletedType === 'Greeting') {
-          // First hello complete - show rating dialog
-          setShowFirstHelloRating(true);
+          // First hello complete - show observation intro screen
+          setFirstHelloPhase('observation_intro');
+          setShowFirstHelloInstruction(true);
         } else if (justCompletedType === 'Observation') {
           setFirstHelloPhase('compliment_intro');
           setShowFirstHelloInstruction(true);
@@ -718,6 +717,38 @@ export default function Dashboard() {
 
   if (!progress) return null;
 
+  // Full-screen screens for onboarding flow (replace dialogs)
+  if (showMilestone) {
+    return (
+      <OnboardingCompleteMilestoneScreen
+        onContinue={handleMilestoneContinue}
+      />
+    );
+  }
+
+  if (showModeSelection) {
+    return (
+      <ModeSelectionScreen
+        onSelectMode={handleModeSelect}
+      />
+    );
+  }
+
+  if (showFirstHelloInstruction) {
+    return (
+      <FirstHelloInstructionScreen
+        phase={firstHelloPhase}
+        username={username}
+        onContinue={() => {
+          setShowFirstHelloInstruction(false);
+          if (firstHelloPhase === 'all_complete') {
+            setShowModeSelection(true);
+          }
+        }}
+      />
+    );
+  }
+
   const mode = (progress.mode === 'connect' ? 'chill' : (progress.mode || 'daily')) as 'daily' | 'chill';
   const targetHellos = mode === 'chill' ? 5 : 7;
 
@@ -892,11 +923,6 @@ export default function Dashboard() {
         totalChallengesCompleted={getCompletedOnboardingChallenges().length + 1}
       />
 
-      <OnboardingCompleteMilestoneDialog
-        open={showMilestone}
-        onContinue={handleMilestoneContinue}
-      />
-
       <FirstOrbGiftDialog
         open={showFirstOrbGift}
         onClaim={handleClaimFirstOrb}
@@ -906,11 +932,6 @@ export default function Dashboard() {
       <ComeBackTomorrowDialog
         open={showComeBackTomorrow}
         onContinue={() => setShowComeBackTomorrow(false)}
-      />
-
-      <ModeSelectionDialog
-        open={showModeSelection}
-        onSelectMode={handleModeSelect}
       />
 
       <DailyModeSelectedDialog
@@ -967,28 +988,6 @@ export default function Dashboard() {
       />
 
       {/* First Hello Rating Dialog */}
-      <FirstHelloRatingDialog
-        open={showFirstHelloRating}
-        onRate={(rating) => {
-          setShowFirstHelloRating(false);
-          setFirstHelloPhase('observation_intro');
-          setShowFirstHelloInstruction(true);
-        }}
-      />
-
-      {/* First Hello Instruction Dialogs */}
-      <FirstHelloInstructionDialog
-        open={showFirstHelloInstruction}
-        onContinue={() => {
-          setShowFirstHelloInstruction(false);
-          // If all complete phase, show mode selection
-          if (firstHelloPhase === 'all_complete') {
-            setShowModeSelection(true);
-          }
-        }}
-        phase={firstHelloPhase}
-        username={username}
-      />
     </div>
   );
 }
