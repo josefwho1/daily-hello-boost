@@ -59,10 +59,28 @@ export const LogHelloScreen = ({
     ? `Complete: ${challengeTitle}` 
     : "Log Your Hello!";
 
-  const startRecording = useCallback(async () => {
+  const getSupportedAudioMimeType = () => {
+    if (typeof MediaRecorder === "undefined" || !MediaRecorder.isTypeSupported) return undefined;
+
+    const candidates = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/ogg;codecs=opus",
+      "audio/mp4",
+    ];
+
+    return candidates.find((t) => MediaRecorder.isTypeSupported(t));
+  };
+
+  const startRecording = useCallback(async (): Promise<boolean> => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+
+      const mimeType = getSupportedAudioMimeType();
+      const mediaRecorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
+
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
@@ -73,29 +91,44 @@ export const LogHelloScreen = ({
       };
 
       mediaRecorder.onstop = async () => {
-        stream.getTracks().forEach(track => track.stop());
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        await processAudio(audioBlob);
+        stream.getTracks().forEach((track) => track.stop());
+
+        const finalMimeType = mediaRecorder.mimeType || mimeType || "audio/webm";
+        const extension = finalMimeType.includes("mp4") ? "mp4" : "webm";
+        const audioBlob = new Blob(chunksRef.current, { type: finalMimeType });
+
+        await processAudio(audioBlob, `recording.${extension}`);
       };
 
       mediaRecorder.start();
       setIsRecording(true);
+      return true;
     } catch (error) {
       console.error("Error starting recording:", error);
       toast.error("Could not access microphone. Please check permissions.");
+      return false;
     }
   }, []);
 
   // Auto-start recording if requested
   useEffect(() => {
-    if (autoStartRecording && !hasAutoStarted && !isRecording && !isProcessing) {
-      setHasAutoStarted(true);
-      // Small delay to ensure component is mounted
-      const timer = setTimeout(() => {
-        startRecording();
-      }, 300);
-      return () => clearTimeout(timer);
+    if (!autoStartRecording) {
+      setHasAutoStarted(false);
+      return;
     }
+
+    if (hasAutoStarted || isRecording || isProcessing) return;
+
+    let cancelled = false;
+    (async () => {
+      // Call immediately (no timeout) so mobile browsers are more likely to treat this as user-initiated.
+      const ok = await startRecording();
+      if (!cancelled && ok) setHasAutoStarted(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [autoStartRecording, hasAutoStarted, isRecording, isProcessing, startRecording]);
 
   const stopRecording = () => {
@@ -105,12 +138,12 @@ export const LogHelloScreen = ({
     }
   };
 
-  const processAudio = async (audioBlob: Blob) => {
+  const processAudio = async (audioBlob: Blob, filename = "recording.webm") => {
     setIsProcessing(true);
     try {
       // Step 1: Transcribe audio
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
+      formData.append('audio', audioBlob, filename);
 
       const transcribeResponse = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe-audio`,
@@ -150,19 +183,19 @@ export const LogHelloScreen = ({
 
       if (!extractResponse.ok) {
         // Fallback: put everything in notes
-        setNotes(prev => prev ? `${prev}\n${transcribedText}` : transcribedText);
+        setNotes((prev) => (prev ? `${prev}\n${transcribedText}` : transcribedText));
         toast.success("Transcription added to notes!");
         return;
       }
 
       const extracted = await extractResponse.json();
-      
+
       // Update fields
       if (extracted.name && !name) {
         setName(extracted.name);
       }
       if (extracted.notes) {
-        setNotes(prev => prev ? `${prev}\n${extracted.notes}` : extracted.notes);
+        setNotes((prev) => (prev ? `${prev}\n${extracted.notes}` : extracted.notes));
       }
 
       toast.success("Voice notes added!");
@@ -245,7 +278,7 @@ export const LogHelloScreen = ({
             placeholder="Describe who you met, location, how it felt or any details you might want to remember :)"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="min-h-24 text-base"
+            className="min-h-28 text-base"
           />
         </div>
 
