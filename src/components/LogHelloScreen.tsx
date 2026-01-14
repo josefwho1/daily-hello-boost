@@ -71,7 +71,7 @@ export const LogHelloScreen = ({
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="p-4 flex items-center gap-3 border-b border-border">
+      <div className="p-4 flex items-center gap-3 border-b border-border flex-shrink-0">
         <Button variant="ghost" size="icon" onClick={onBack}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
@@ -79,8 +79,8 @@ export const LogHelloScreen = ({
         <h1 className="text-xl font-bold text-foreground">{screenTitle}</h1>
       </div>
       
-      {/* Content */}
-      <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+      {/* Content - scrollable */}
+      <div className="flex-1 p-6 space-y-5 overflow-y-auto">
         <div className="space-y-2">
           <Label htmlFor="name">Name (optional)</Label>
           <Input
@@ -99,7 +99,7 @@ export const LogHelloScreen = ({
             placeholder="Describe who you met, location, how it felt or any details you might want to remember :)"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="min-h-32 text-base"
+            className="min-h-24 text-base"
           />
         </div>
 
@@ -108,29 +108,29 @@ export const LogHelloScreen = ({
           <RadioGroup 
             value={rating} 
             onValueChange={(value) => setRating(value as 'positive' | 'neutral' | 'negative')}
-            className="flex flex-col gap-3"
+            className="flex flex-row gap-2"
           >
-            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-              <RadioGroupItem value="positive" id="positive" />
-              <Label htmlFor="positive" className="cursor-pointer flex-1 text-base">😊 Positive</Label>
+            <div className="flex-1 flex items-center justify-center gap-1.5 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+              <RadioGroupItem value="positive" id="positive" className="sr-only" />
+              <Label htmlFor="positive" className="cursor-pointer text-center text-sm">😊 Positive</Label>
             </div>
-            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-              <RadioGroupItem value="neutral" id="neutral" />
-              <Label htmlFor="neutral" className="cursor-pointer flex-1 text-base">😐 Neutral</Label>
+            <div className="flex-1 flex items-center justify-center gap-1.5 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+              <RadioGroupItem value="neutral" id="neutral" className="sr-only" />
+              <Label htmlFor="neutral" className="cursor-pointer text-center text-sm">😐 Neutral</Label>
             </div>
-            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-              <RadioGroupItem value="negative" id="negative" />
-              <Label htmlFor="negative" className="cursor-pointer flex-1 text-base">😔 Negative</Label>
+            <div className="flex-1 flex items-center justify-center gap-1.5 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+              <RadioGroupItem value="negative" id="negative" className="sr-only" />
+              <Label htmlFor="negative" className="cursor-pointer text-center text-sm">😔 Negative</Label>
             </div>
           </RadioGroup>
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="p-6 border-t border-border">
+      {/* Footer - fixed at bottom */}
+      <div className="p-4 border-t border-border flex-shrink-0 bg-background">
         <Button 
           onClick={handleSubmit} 
-          className="w-full h-14 text-lg" 
+          className="w-full h-12 text-lg" 
           disabled={isLogging}
         >
           {isLogging ? "Logging..." : "Log Hello! 👋"}
