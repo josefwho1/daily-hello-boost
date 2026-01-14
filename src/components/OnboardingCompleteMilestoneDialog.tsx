@@ -79,11 +79,11 @@ export const OnboardingCompleteMilestoneDialog = ({
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent 
-        className="max-w-full w-full h-full max-h-full sm:max-w-full sm:rounded-none border-none bg-gradient-to-b from-background via-background to-primary/10 overflow-hidden p-0 m-0 [&>button]:hidden"
+        className="max-w-full w-full h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] sm:max-w-full sm:rounded-none border-none bg-gradient-to-b from-background via-background to-primary/10 overflow-hidden p-0 m-0 top-0 translate-y-0 [&>button]:hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <div className="flex flex-col items-center justify-center min-h-screen px-6 py-8 relative overflow-hidden">
+        <div className="flex flex-col items-center justify-center h-full px-6 py-8 relative overflow-hidden">
           
           {/* Skip button */}
           <AnimatePresence>
