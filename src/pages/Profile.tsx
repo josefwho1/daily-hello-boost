@@ -6,6 +6,7 @@ import { useTimezone } from "@/hooks/useTimezone";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useTheme } from "@/hooks/useTheme";
+import { clearGuestData } from "@/lib/indexedDB";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -56,6 +57,7 @@ const Profile = () => {
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [showInstallSteps, setShowInstallSteps] = useState(false);
   const [showSaveProgress, setShowSaveProgress] = useState(false);
+  const [showGuestSignOutConfirm, setShowGuestSignOutConfirm] = useState(false);
   
   // Password management state
   const [showPasswordSection, setShowPasswordSection] = useState(false);
@@ -210,6 +212,17 @@ const Profile = () => {
     } catch (error) {
       console.log("Sign out error (navigating anyway):", error);
       navigate('/auth');
+    }
+  };
+
+  const handleGuestSignOut = async () => {
+    try {
+      await clearGuestData();
+      toast.success("Signed out successfully");
+      navigate('/onboarding');
+    } catch (error) {
+      console.error("Error clearing guest data:", error);
+      navigate('/onboarding');
     }
   };
 
@@ -823,6 +836,23 @@ const Profile = () => {
           </Card>
         )}
 
+        {/* Sign Out (Guest users) */}
+        {isGuest && (
+          <Card className="p-5 mb-4 rounded-2xl">
+            <Button
+              variant="outline"
+              className="w-full justify-center rounded-xl text-destructive hover:text-destructive"
+              onClick={() => setShowGuestSignOutConfirm(true)}
+            >
+              <LogOut size={16} className="mr-2" />
+              Sign Out
+            </Button>
+            <p className="text-xs text-center text-muted-foreground mt-2">
+              ⚠️ Your data will be lost without saving your email
+            </p>
+          </Card>
+        )}
+
         {/* Sign Out (Auth users only) */}
         {user && (
           <Card className="p-5 rounded-2xl">
@@ -883,6 +913,37 @@ const Profile = () => {
         onDismiss={dismissSavePrompt}
         totalHellos={guestState?.total_hellos_logged || 0}
       />
+
+      {/* Guest Sign Out Confirmation Dialog */}
+      <Dialog open={showGuestSignOutConfirm} onOpenChange={setShowGuestSignOutConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-destructive" />
+              Sign out without saving?
+            </DialogTitle>
+            <DialogDescription className="space-y-2 pt-2">
+              <p>You haven't linked an email to your account yet.</p>
+              <p className="font-medium text-destructive">All your progress and data will be permanently lost.</p>
+              <p>Are you sure you want to sign out?</p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowGuestSignOutConfirm(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                setShowGuestSignOutConfirm(false);
+                handleGuestSignOut();
+              }}
+            >
+              Sign Out Anyway
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
