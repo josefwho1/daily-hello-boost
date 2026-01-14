@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -59,19 +59,7 @@ export const LogHelloScreen = ({
     ? `Complete: ${challengeTitle}` 
     : "Log Your Hello!";
 
-  // Auto-start recording if requested
-  useEffect(() => {
-    if (autoStartRecording && !hasAutoStarted && !isRecording && !isProcessing) {
-      setHasAutoStarted(true);
-      // Small delay to ensure component is mounted
-      const timer = setTimeout(() => {
-        startRecording();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [autoStartRecording, hasAutoStarted, isRecording, isProcessing]);
-
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
@@ -96,7 +84,19 @@ export const LogHelloScreen = ({
       console.error("Error starting recording:", error);
       toast.error("Could not access microphone. Please check permissions.");
     }
-  };
+  }, []);
+
+  // Auto-start recording if requested
+  useEffect(() => {
+    if (autoStartRecording && !hasAutoStarted && !isRecording && !isProcessing) {
+      setHasAutoStarted(true);
+      // Small delay to ensure component is mounted
+      const timer = setTimeout(() => {
+        startRecording();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [autoStartRecording, hasAutoStarted, isRecording, isProcessing, startRecording]);
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
