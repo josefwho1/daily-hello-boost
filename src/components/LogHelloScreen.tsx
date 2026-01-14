@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,13 +32,15 @@ interface LogHelloScreenProps {
   }) => Promise<void>;
   challengeTitle?: string | null;
   helloType?: HelloType;
+  autoStartRecording?: boolean;
 }
 
 export const LogHelloScreen = ({ 
   onBack, 
   onLog, 
   challengeTitle,
-  helloType = 'regular_hello'
+  helloType = 'regular_hello',
+  autoStartRecording = false
 }: LogHelloScreenProps) => {
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
@@ -46,6 +48,7 @@ export const LogHelloScreen = ({
   const [isLogging, setIsLogging] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasAutoStarted, setHasAutoStarted] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -55,6 +58,18 @@ export const LogHelloScreen = ({
   const screenTitle = challengeTitle 
     ? `Complete: ${challengeTitle}` 
     : "Log Your Hello!";
+
+  // Auto-start recording if requested
+  useEffect(() => {
+    if (autoStartRecording && !hasAutoStarted && !isRecording && !isProcessing) {
+      setHasAutoStarted(true);
+      // Small delay to ensure component is mounted
+      const timer = setTimeout(() => {
+        startRecording();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [autoStartRecording, hasAutoStarted, isRecording, isProcessing]);
 
   const startRecording = async () => {
     try {
