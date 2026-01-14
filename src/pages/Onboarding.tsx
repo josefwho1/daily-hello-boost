@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { getGuestState, createGuestState, createGuestProgress, updateGuestProgress } from "@/lib/indexedDB";
+import { getGuestState, createGuestState, createGuestProgress, updateGuestProgress, addGuestHelloLog } from "@/lib/indexedDB";
+import { FirstHelloRatingDialog } from "@/components/FirstHelloRatingDialog";
+import { FirstHelloInstructionDialog } from "@/components/FirstHelloInstructionDialog";
 
 // Remi images
 import remiWaving from "@/assets/remi-waving.webp";
@@ -27,49 +29,116 @@ export default function Onboarding() {
   const { toast } = useToast();
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Dialog states for "I did it" flow
+  const [showRatingDialog, setShowRatingDialog] = useState(false);
+  const [showObservationIntro, setShowObservationIntro] = useState(false);
 
+  // Initialize user/guest progress without logging a hello
+  const initializeProgress = async () => {
+    const { data: { user: existingUser } } = await supabase.auth.getUser();
+    
+    if (existingUser) {
+      await supabase.from('user_progress').upsert({
+        user_id: existingUser.id,
+        is_onboarding_week: true,
+        current_day: 1,
+        current_streak: 0,
+        mode: 'first_hellos',
+        has_completed_onboarding: false,
+        current_phase: 'first_hellos',
+        orbs: 0,
+        has_received_first_orb: false,
+        onboarding_week_start: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+      return { isGuest: false, userId: existingUser.id };
+    } else {
+      let guestState = await getGuestState();
+      if (!guestState) {
+        guestState = await createGuestState();
+        await createGuestProgress(guestState.device_id, guestState.guest_user_id);
+      }
+      
+      await updateGuestProgress({
+        is_onboarding_week: true,
+        current_day: 1,
+        mode: 'first_hellos',
+        has_completed_onboarding: false,
+        orbs: 0,
+        has_received_first_orb: false,
+        onboarding_week_start: new Date().toISOString(),
+      });
+      return { isGuest: true, guestState };
+    }
+  };
+
+  // Log the Greeting hello
+  const logGreetingHello = async () => {
+    const { data: { user: existingUser } } = await supabase.auth.getUser();
+    
+    if (existingUser) {
+      // Log to Supabase for authenticated users
+      await supabase.from('hello_logs').insert({
+        user_id: existingUser.id,
+        hello_type: 'Greeting',
+        timezone_offset: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+    } else {
+      // Log to IndexedDB for guests
+      await addGuestHelloLog({
+        name: null,
+        notes: null,
+        hello_type: 'Greeting',
+        rating: null,
+        difficulty_rating: null,
+        timezone_offset: '+00:00',
+      });
+    }
+  };
+
+  // Handle "I did it" - log greeting and show rating
+  const handleDidIt = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      // Initialize progress first
+      await initializeProgress();
+      
+      // Log the Greeting hello
+      await logGreetingHello();
+      
+      // Show the rating dialog
+      setShowRatingDialog(true);
+    } catch (error) {
+      console.error('Error completing greeting:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle rating selection
+  const handleRating = (rating: 'loved' | 'easy' | 'nogood') => {
+    setShowRatingDialog(false);
+    // Show the observation intro dialog
+    setShowObservationIntro(true);
+  };
+
+  // Handle observation intro continue - navigate to dashboard
+  const handleObservationIntroContinue = () => {
+    setShowObservationIntro(false);
+    navigate('/');
+  };
+
+  // Handle "No" or "Got it, I'll be back" - just init and go to dashboard
   const handleCompleteIntro = async () => {
     try {
       setIsSubmitting(true);
-
-      // Check if user is already authenticated
-      const { data: { user: existingUser } } = await supabase.auth.getUser();
-      
-      if (existingUser) {
-        // User is logged in, initialize their progress for First Hellos
-        await supabase.from('user_progress').upsert({
-          user_id: existingUser.id,
-          is_onboarding_week: true,
-          current_day: 1,
-          current_streak: 0,
-          mode: 'first_hellos',
-          has_completed_onboarding: false,
-          current_phase: 'first_hellos',
-          orbs: 0,
-          has_received_first_orb: false,
-          // Track that we're in guided onboarding
-          onboarding_week_start: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
-      } else {
-        // Guest mode - create/update IndexedDB state
-        let guestState = await getGuestState();
-        if (!guestState) {
-          guestState = await createGuestState();
-          await createGuestProgress(guestState.device_id, guestState.guest_user_id);
-        }
-        
-        // Update guest progress for First Hellos
-        await updateGuestProgress({
-          is_onboarding_week: true,
-          current_day: 1,
-          mode: 'first_hellos',
-          has_completed_onboarding: false,
-          orbs: 0,
-          has_received_first_orb: false,
-          onboarding_week_start: new Date().toISOString(),
-        });
-      }
-
+      await initializeProgress();
       navigate('/');
     } catch (error) {
       console.error('Error completing intro:', error);
@@ -255,7 +324,7 @@ export default function Onboarding() {
               </p>
             </div>
             <Button 
-              onClick={handleCompleteIntro} 
+              onClick={handleDidIt} 
               className="w-full" 
               size="lg"
               disabled={isSubmitting}
@@ -307,14 +376,11 @@ export default function Onboarding() {
 
   // Calculate progress for progress bar
   const getProgress = () => {
-    const steps: OnboardingStep[] = ['welcome', 'how_it_works', 'stats', 'initiation', 'first_hello_intro', 'public_yes', 'public_no'];
-    const index = steps.indexOf(step);
-    // Normalize to show progress through 5 main screens
     if (step === 'welcome') return 1/5;
     if (step === 'how_it_works') return 2/5;
     if (step === 'stats') return 3/5;
     if (step === 'initiation') return 4/5;
-    return 1; // first_hello_intro and branches are the final step
+    return 1;
   };
 
   return (
@@ -332,6 +398,19 @@ export default function Onboarding() {
           {renderScreen()}
         </div>
       </div>
+
+      {/* Rating Dialog - "How was that?" */}
+      <FirstHelloRatingDialog
+        open={showRatingDialog}
+        onRate={handleRating}
+      />
+
+      {/* Observation Intro Dialog */}
+      <FirstHelloInstructionDialog
+        open={showObservationIntro}
+        onContinue={handleObservationIntroContinue}
+        phase="observation_intro"
+      />
     </div>
   );
 }
