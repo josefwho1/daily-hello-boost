@@ -4,7 +4,7 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
-import { LogHelloDialog, HelloType } from "@/components/LogHelloDialog";
+import { LogHelloScreen, HelloType } from "@/components/LogHelloScreen";
 import { FirstHelloCard } from "@/components/FirstHelloCard";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
@@ -772,6 +772,22 @@ export default function Dashboard() {
     );
   }
 
+  // Full-screen Log Hello
+  if (showLogDialog) {
+    return (
+      <LogHelloScreen
+        onBack={() => {
+          setShowLogDialog(false);
+          setSelectedChallenge(null);
+          setSelectedHelloType('regular_hello');
+        }}
+        onLog={handleLogHello}
+        challengeTitle={selectedChallenge}
+        helloType={selectedHelloType}
+      />
+    );
+  }
+
   const mode = (progress.mode === 'connect' ? 'chill' : (progress.mode || 'daily')) as 'daily' | 'chill';
   const targetHellos = mode === 'chill' ? 5 : 7;
 
@@ -909,19 +925,6 @@ export default function Dashboard() {
       </div>
 
       {/* Dialogs */}
-      <LogHelloDialog 
-        open={showLogDialog}
-        onOpenChange={(open) => {
-          setShowLogDialog(open);
-          if (!open) {
-            setSelectedChallenge(null);
-            setSelectedHelloType('regular_hello');
-          }
-        }}
-        onLog={handleLogHello}
-        challengeTitle={selectedChallenge}
-        helloType={selectedHelloType}
-      />
 
       {todaysOnboardingChallenge && (
         <DayChallengeRevealDialog

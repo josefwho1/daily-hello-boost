@@ -22,7 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { InstructionsCarousel } from "@/components/InstructionsCarousel";
 import { AddPersonDialog } from "@/components/AddPersonDialog";
 import { UserPlus, Plus } from "lucide-react";
-import { LogHelloDialog } from "@/components/LogHelloDialog";
+import { LogHelloScreen } from "@/components/LogHelloScreen";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
 
 const Home = () => {
@@ -240,6 +240,25 @@ const Home = () => {
   }
 
   if (!progress) return null;
+
+  // Full-screen Log Hello Screen
+  if (showLogHelloDialog) {
+    return (
+      <LogHelloScreen
+        onBack={() => setShowLogHelloDialog(false)}
+        helloType="regular_hello"
+        onLog={async (data) => {
+          await addHelloLog({
+            name: data.name,
+            notes: data.notes,
+            rating: data.rating,
+            hello_type: 'regular_hello'
+          });
+          toast.success("Hello logged!");
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -519,22 +538,6 @@ const Home = () => {
       <AddPersonDialog 
         open={isAddPersonOpen} 
         onOpenChange={setIsAddPersonOpen}
-      />
-
-      <LogHelloDialog
-        open={showLogHelloDialog}
-        onOpenChange={setShowLogHelloDialog}
-        helloType="regular_hello"
-        onLog={async (data) => {
-          await addHelloLog({
-            name: data.name,
-            notes: data.notes,
-            rating: data.rating,
-            difficulty_rating: data.difficulty_rating,
-            hello_type: 'regular_hello'
-          });
-          toast.success("Hello logged!");
-        }}
       />
     </div>
   );
