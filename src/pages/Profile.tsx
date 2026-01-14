@@ -219,10 +219,11 @@ const Profile = () => {
     try {
       await clearGuestData();
       toast.success("Signed out successfully");
-      navigate('/onboarding');
+      // Force a full page reload to clear all in-memory state
+      window.location.href = '/onboarding';
     } catch (error) {
       console.error("Error clearing guest data:", error);
-      navigate('/onboarding');
+      window.location.href = '/onboarding';
     }
   };
 
