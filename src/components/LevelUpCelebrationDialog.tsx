@@ -147,7 +147,7 @@ export const LevelUpCelebrationDialog = ({
       >
         <div className="flex flex-col items-center justify-center h-full px-6 py-8 relative">
           
-          {/* Skip button */}
+          {/* Skip button - bottom right */}
           <AnimatePresence>
             {showSkip && phase !== 'celebration' && (
               <motion.button
@@ -155,7 +155,7 @@ export const LevelUpCelebrationDialog = ({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={onClose}
-                className="absolute top-4 right-4 text-sm text-muted-foreground hover:text-foreground transition-colors z-10"
+                className="absolute bottom-4 right-4 text-sm text-muted-foreground hover:text-foreground transition-colors z-10"
               >
                 Skip →
               </motion.button>
