@@ -134,8 +134,12 @@ export const LevelUpCelebrationDialog = ({
   }, [open, newLevel, playCelebrationSound, triggerVibration]);
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-full w-full h-full max-h-full sm:max-w-full sm:rounded-none border-none bg-gradient-to-b from-background via-background to-primary/10 overflow-hidden p-0 m-0">
+    <Dialog open={open} onOpenChange={() => {}}>
+      <DialogContent 
+        className="max-w-full w-full h-full max-h-full sm:max-w-full sm:rounded-none border-none bg-gradient-to-b from-background via-background to-primary/10 overflow-hidden p-0 m-0 [&>button]:hidden"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <div className="flex flex-col items-center justify-center min-h-screen px-6 py-8 relative">
           
           {/* Floating particles background */}
