@@ -141,6 +141,7 @@ export default function Dashboard() {
   const [newLevelValue, setNewLevelValue] = useState(1);
   const [pendingMode, setPendingMode] = useState<'daily' | 'chill' | null>(null);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [autoStartRecording, setAutoStartRecording] = useState(false);
   
   // First Hello instruction screen states
   const [showFirstHelloInstruction, setShowFirstHelloInstruction] = useState(false);
@@ -780,10 +781,12 @@ export default function Dashboard() {
           setShowLogDialog(false);
           setSelectedChallenge(null);
           setSelectedHelloType('regular_hello');
+          setAutoStartRecording(false);
         }}
         onLog={handleLogHello}
         challengeTitle={selectedChallenge}
         helloType={selectedHelloType}
+        autoStartRecording={autoStartRecording}
       />
     );
   }
@@ -830,6 +833,13 @@ export default function Dashboard() {
               onClick={() => {
                 setSelectedChallenge(null);
                 setSelectedHelloType('regular_hello');
+                setAutoStartRecording(false);
+                setShowLogDialog(true);
+              }}
+              onDictateClick={() => {
+                setSelectedChallenge(null);
+                setSelectedHelloType('regular_hello');
+                setAutoStartRecording(true);
                 setShowLogDialog(true);
               }}
             />
@@ -886,6 +896,13 @@ export default function Dashboard() {
                 onClick={() => {
                   setSelectedChallenge(null);
                   setSelectedHelloType('regular_hello');
+                  setAutoStartRecording(false);
+                  setShowLogDialog(true);
+                }}
+                onDictateClick={() => {
+                  setSelectedChallenge(null);
+                  setSelectedHelloType('regular_hello');
+                  setAutoStartRecording(true);
                   setShowLogDialog(true);
                 }}
                 variant="onboarding"
