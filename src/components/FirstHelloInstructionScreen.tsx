@@ -46,7 +46,7 @@ export const FirstHelloInstructionScreen = ({
       case 'observation_intro':
         return {
           image: remiCelebrating1,
-          title: null,
+          title: "Great Work!",
           body: (
             <>
               <p className="text-muted-foreground leading-relaxed">
