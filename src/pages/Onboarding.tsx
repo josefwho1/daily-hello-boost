@@ -70,9 +70,10 @@ export default function Onboarding() {
     }
   };
 
-  // Log the Greeting hello
+  // Log the Greeting hello and update streak to 1
   const logGreetingHello = async () => {
     const { data: { user: existingUser } } = await supabase.auth.getUser();
+    const today = new Date().toISOString().split('T')[0];
     
     if (existingUser) {
       await supabase.from('hello_logs').insert({
@@ -80,6 +81,15 @@ export default function Onboarding() {
         hello_type: 'Greeting',
         timezone_offset: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
+      
+      // Update daily streak to 1 after first hello
+      await supabase.from('user_progress').update({
+        daily_streak: 1,
+        current_streak: 1,
+        last_completed_date: today,
+        total_hellos: 1,
+        hellos_this_week: 1,
+      }).eq('user_id', existingUser.id);
     } else {
       await addGuestHelloLog({
         name: null,
@@ -88,6 +98,15 @@ export default function Onboarding() {
         rating: null,
         difficulty_rating: null,
         timezone_offset: '+00:00',
+      });
+      
+      // Update daily streak to 1 after first hello for guest
+      await updateGuestProgress({
+        daily_streak: 1,
+        current_streak: 1,
+        last_completed_date: today,
+        total_hellos: 1,
+        hellos_this_week: 1,
       });
     }
   };
