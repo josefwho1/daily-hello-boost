@@ -34,7 +34,7 @@ import { calculateHelloXp, getLevelFromXp } from "@/lib/xpSystem";
 import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
-import logoSticker from "@/assets/one-hello-logo-tagline.svg";
+
 import remiMascot from "@/assets/remi-waving.webp";
 import { Sparkles } from "lucide-react";
 
@@ -847,10 +847,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-6">
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <img src={logoSticker} alt="One Hello" className="h-32" />
-        </div>
 
         {/* Greeting - Centered */}
         <div className="text-center mb-6">
