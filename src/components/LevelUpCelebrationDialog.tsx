@@ -192,87 +192,83 @@ export const LevelUpCelebrationDialog = ({
             )}
           </div>
 
-          {/* Remi Image - on top during loading/leveling phases */}
-          {phase !== 'celebration' && (
-            <motion.div 
-              className="mb-4"
-              initial={{ scale: 0, rotate: -10 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", damping: 10, stiffness: 100 }}
-            >
-              <img 
-                src={celebratingImage} 
-                alt="Remi celebrating" 
-                className="w-28 h-auto max-h-28 mx-auto object-contain"
-              />
-            </motion.div>
-          )}
+          {/* Remi Image - Always on top */}
+          <motion.div 
+            className="mb-2"
+            initial={{ scale: 0, rotate: -10 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", damping: 10, stiffness: 100 }}
+          >
+            <img 
+              src={celebratingImage} 
+              alt="Remi celebrating" 
+              className="w-28 h-auto max-h-28 mx-auto object-contain"
+            />
+          </motion.div>
 
-          {/* Level Badge - Below Remi, hidden during celebration */}
-          {phase !== 'celebration' && (
+          {/* Level Badge - Always below Remi */}
+          <motion.div 
+            className="relative mb-4"
+            animate={phase === 'leveling' ? {
+              scale: [1, 1.2, 0.9, 1.1, 1],
+              rotate: [0, -5, 5, -3, 3, 0],
+            } : {}}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+          >
             <motion.div 
-              className="relative mb-4"
+              className="w-24 h-24 rounded-full flex items-center justify-center text-primary-foreground font-bold text-4xl shadow-2xl relative"
+              style={{ 
+                backgroundColor: phase === 'celebration' ? rank.color : previousRank.color,
+                boxShadow: `0 0 ${phase === 'leveling' ? '60px' : '30px'} ${phase === 'celebration' ? rank.color : previousRank.color}50`
+              }}
               animate={phase === 'leveling' ? {
-                scale: [1, 1.2, 0.9, 1.1, 1],
-                rotate: [0, -5, 5, -3, 3, 0],
+                boxShadow: [
+                  `0 0 30px ${previousRank.color}50`,
+                  `0 0 80px ${rank.color}80`,
+                  `0 0 40px ${rank.color}60`
+                ]
               } : {}}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
+              transition={{ duration: 0.6 }}
             >
-              <motion.div 
-                className="w-24 h-24 rounded-full flex items-center justify-center text-primary-foreground font-bold text-4xl shadow-2xl relative"
-                style={{ 
-                  backgroundColor: previousRank.color,
-                  boxShadow: `0 0 ${phase === 'leveling' ? '60px' : '30px'} ${previousRank.color}50`
-                }}
-                animate={phase === 'leveling' ? {
-                  boxShadow: [
-                    `0 0 30px ${previousRank.color}50`,
-                    `0 0 80px ${rank.color}80`,
-                    `0 0 40px ${rank.color}60`
-                  ]
-                } : {}}
-                transition={{ duration: 0.6 }}
-              >
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={displayedLevel}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 2, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {displayedLevel}
-                  </motion.span>
-                </AnimatePresence>
-                
-                {/* Sparkle effects during leveling */}
-                {phase === 'leveling' && (
-                  <>
-                    {[...Array(8)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        className="absolute"
-                        style={{
-                          top: '50%',
-                          left: '50%',
-                        }}
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{
-                          scale: [0, 1, 0],
-                          opacity: [0, 1, 0],
-                          x: [0, Math.cos(i * 45 * Math.PI / 180) * 80],
-                          y: [0, Math.sin(i * 45 * Math.PI / 180) * 80],
-                        }}
-                        transition={{ duration: 0.8, delay: i * 0.05 }}
-                      >
-                        <Sparkles className="w-6 h-6 text-yellow-400" />
-                      </motion.div>
-                    ))}
-                  </>
-                )}
-              </motion.div>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={displayedLevel}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 2, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {displayedLevel}
+                </motion.span>
+              </AnimatePresence>
+              
+              {/* Sparkle effects during leveling */}
+              {phase === 'leveling' && (
+                <>
+                  {[...Array(8)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute"
+                      style={{
+                        top: '50%',
+                        left: '50%',
+                      }}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{
+                        scale: [0, 1, 0],
+                        opacity: [0, 1, 0],
+                        x: [0, Math.cos(i * 45 * Math.PI / 180) * 80],
+                        y: [0, Math.sin(i * 45 * Math.PI / 180) * 80],
+                      }}
+                      transition={{ duration: 0.8, delay: i * 0.05 }}
+                    >
+                      <Sparkles className="w-6 h-6 text-yellow-400" />
+                    </motion.div>
+                  ))}
+                </>
+              )}
             </motion.div>
-          )}
+          </motion.div>
 
           {/* Progress bar section */}
           <div className="w-full max-w-xs mb-8">
@@ -331,19 +327,6 @@ export const LevelUpCelebrationDialog = ({
                   animate={{ opacity: 1, y: 0 }}
                   className="text-center"
                 >
-                  {/* Remi celebrating */}
-                  <motion.div 
-                    className="relative inline-block mb-4"
-                    initial={{ scale: 0, rotate: -10 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: "spring", damping: 10, stiffness: 100 }}
-                  >
-                    <img 
-                      src={celebratingImage} 
-                      alt="Remi celebrating" 
-                      className="w-32 h-auto max-h-32 mx-auto object-contain"
-                    />
-                  </motion.div>
 
                   <motion.h2 
                     className="text-3xl font-bold text-foreground mb-2"
