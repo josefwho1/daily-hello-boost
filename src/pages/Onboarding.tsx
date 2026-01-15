@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -15,9 +15,11 @@ import remiSurprised1 from "@/assets/remi-surprised-1.webp";
 import remiCongrats1 from "@/assets/remi-congrats-1.webp";
 import remiCongrats3 from "@/assets/remi-congrats-3.webp";
 import remiCelebrating1 from "@/assets/remi-celebrating-1.webp";
+import remiShakingHand from "@/assets/remi-shaking-hand.webp";
 
 export type OnboardingStep = 
-  | 'welcome'           // Screen 1
+  | 'welcome'           // Screen 1 - Name input
+  | 'greeting'          // Screen 1b - Nice to meet you animation
   | 'how_it_works'      // Screen 2
   | 'stats'             // Screen 3
   | 'initiation'        // Screen 4
@@ -33,6 +35,36 @@ export default function Onboarding() {
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showFirstOrbGift, setShowFirstOrbGift] = useState(false);
+  const [userName, setUserName] = useState('');
+
+  // Save username and auto-advance from greeting to how_it_works
+  useEffect(() => {
+    if (step === 'greeting' && userName.trim()) {
+      // Save the username to guest progress
+      const saveUserName = async () => {
+        const guestState = await getGuestState();
+        if (guestState) {
+          await updateGuestProgress({ username: userName.trim() });
+        } else {
+          // For authenticated users, this will be handled later
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.from('user_progress').update({ 
+              username: userName.trim() 
+            }).eq('user_id', user.id);
+          }
+        }
+      };
+      saveUserName();
+
+      // Auto-continue to how_it_works after 2.5 seconds
+      const timer = setTimeout(() => {
+        setStep('how_it_works');
+      }, 2500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [step, userName]);
 
   // Initialize user/guest progress without logging a hello
   const initializeProgress = async () => {
@@ -177,7 +209,7 @@ export default function Onboarding() {
 
   const renderScreen = () => {
     switch (step) {
-      // Screen 1 - Welcome
+      // Screen 1 - Welcome with name input
       case 'welcome':
         return (
           <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -192,14 +224,33 @@ export default function Onboarding() {
                 Hello, I'm Remi. Your Reminder Raccoon, companion & guide.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                This is a place to create real human connection.
+                This is a place to encourage real human connection.
               </p>
               <p className="text-lg font-medium text-primary">
                 One Hello at a time.
               </p>
             </div>
-            <Button onClick={() => setStep('how_it_works')} className="w-full" size="lg">
-              Hello Remi 👋
+            <div className="space-y-2">
+              <label htmlFor="userName" className="text-sm font-medium text-foreground">
+                What's your name?
+              </label>
+              <input
+                id="userName"
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Enter your name"
+                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                autoComplete="given-name"
+              />
+            </div>
+            <Button 
+              onClick={() => setStep('greeting')} 
+              className="w-full" 
+              size="lg"
+              disabled={!userName.trim()}
+            >
+              Continue
             </Button>
             <button 
               onClick={() => navigate('/auth')}
@@ -207,6 +258,23 @@ export default function Onboarding() {
             >
               I already have an account
             </button>
+          </div>
+        );
+
+      // Screen 1b - Greeting animation (auto-advances via useEffect)
+      case 'greeting':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in zoom-in duration-500">
+            <img 
+              src={remiShakingHand} 
+              alt="Remi shaking hand" 
+              className="w-64 h-auto max-h-64 mx-auto object-contain animate-pulse" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold text-foreground">
+                Nice to meet you, {userName.trim()}!
+              </h1>
+            </div>
           </div>
         );
 
