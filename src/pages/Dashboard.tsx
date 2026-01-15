@@ -13,6 +13,7 @@ import { ModeSelectionScreen } from "@/components/ModeSelectionScreen";
 import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { UseOrbDialog } from "@/components/UseOrbDialog";
+import { StreakSaverDialog, StreakSaverScenario } from "@/components/StreakSaverDialog";
 import { TodaysHelloCard } from "@/components/TodaysHelloCard";
 import { RemisWeeklyChallengeCard } from "@/components/RemisWeeklyChallengeCard";
 import { StatsBar } from "@/components/StatsBar";
@@ -128,8 +129,11 @@ export default function Dashboard() {
   const [showModeSelection, setShowModeSelection] = useState(false);
   const [showDailyModeConfirm, setShowDailyModeConfirm] = useState(false);
   const [showChillModeConfirm, setShowChillModeConfirm] = useState(false);
-  const [showDailyOrbDialog, setShowDailyOrbDialog] = useState(false);
   const [showWeeklyOrbDialog, setShowWeeklyOrbDialog] = useState(false);
+  const [showStreakSaverDialog, setShowStreakSaverDialog] = useState(false);
+  const [streakSaverScenario, setStreakSaverScenario] = useState<StreakSaverScenario>('can_save');
+  const [missedDays, setMissedDays] = useState(0);
+  const [previousStreak, setPreviousStreak] = useState(0);
   const [showDayReveal, setShowDayReveal] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showMilestone, setShowMilestone] = useState(false);
@@ -297,7 +301,7 @@ export default function Dashboard() {
     }
   }, [progress, progressLoading, weeklyResetDone, timezoneLoading, tzOffset]);
 
-  // Check for missed daily streak (Daily Mode AND 7-day-starter mode)
+  // Check for missed daily streak with 48-hour (2 missed days) grace period
   useEffect(() => {
     // CRITICAL: Wait for timezone to load to avoid false positives with wrong date calculation
     if (!progress || progressLoading || logsLoading || timezoneLoading) return;
@@ -311,9 +315,11 @@ export default function Dashboard() {
     const lastCompletedDate = progress.last_completed_date;
     const saveOfferedForDate = progress.save_offered_for_date;
     const today = getDayKeyInOffset(new Date(), tzOffset);
+    const currentOrbs = progress.orbs || 0;
 
+    // Only show dialog if user has a streak to save
     if (dailyStreak > 0 && lastCompletedDate) {
-      // Normalize lastCompletedDate to date-only format (handles both ISO timestamps and date-only strings)
+      // Normalize lastCompletedDate to date-only format
       const normalizedLastDate = lastCompletedDate.includes('T') 
         ? lastCompletedDate.split('T')[0] 
         : lastCompletedDate;
@@ -321,41 +327,80 @@ export default function Dashboard() {
       const hasHelloToday = normalizedLastDate === today;
 
       if (!hasHelloToday) {
-        // Use normalized date-only strings for consistent comparison
         const lastDate = parseISO(normalizedLastDate);
         const todayDate = parseISO(today);
         const daysSinceLastHello = differenceInDays(todayDate, lastDate);
 
-        // If more than 1 day has passed and we haven't offered save today
-        if (daysSinceLastHello > 1 && saveOfferedForDate !== today) {
-          setShowDailyOrbDialog(true);
-          updateProgress({ save_offered_for_date: today });
+        // Only show dialog if we haven't already offered today
+        if (saveOfferedForDate !== today) {
+          setMissedDays(daysSinceLastHello);
+          setPreviousStreak(dailyStreak);
+
+          if (daysSinceLastHello >= 3) {
+            // Too late to save - streak must reset (fresh start)
+            setStreakSaverScenario('fresh_start');
+            setShowStreakSaverDialog(true);
+            updateProgress({ save_offered_for_date: today });
+          } else if (daysSinceLastHello >= 1) {
+            // Within 48-hour grace period (1-2 missed days)
+            if (currentOrbs > 0) {
+              // User can save their streak
+              setStreakSaverScenario('can_save');
+              setShowStreakSaverDialog(true);
+              updateProgress({ save_offered_for_date: today });
+            } else {
+              // No orbs - streak resets, but gift an orb
+              setStreakSaverScenario('no_orbs');
+              setShowStreakSaverDialog(true);
+              updateProgress({ save_offered_for_date: today });
+            }
+          }
         }
       }
     }
   }, [progress, progressLoading, logsLoading, timezoneLoading, logs, tzOffset]);
 
-  const handleUseDailyOrb = async () => {
+  // Handle using an orb to save streak
+  const handleStreakSaverUseOrb = async () => {
     const currentOrbs = progress?.orbs || 0;
     if (currentOrbs > 0) {
-      // Using an Orb increments the streak by 1 and sets last_completed_date to TODAY
-      // This prevents the hello logging logic from resetting the streak when a hello is logged the same day
       const today = getDayKeyInOffset(new Date(), tzOffset);
-
+      
+      // Consume 1 orb, keep streak intact, set last_completed_date to today
+      // This does NOT count as a real hello - no XP, no hello count increase
       await updateProgress({
         orbs: currentOrbs - 1,
-        daily_streak: (progress?.daily_streak || 0) + 1,
-        last_completed_date: today
+        last_completed_date: today,
+        // Keep current streak - don't increment, just preserve
       });
-      toast.success("✨ Orb used! Your daily streak is protected.");
+      toast.success("✨ Orb used! Your streak is saved.");
     }
-    setShowDailyOrbDialog(false);
+    setShowStreakSaverDialog(false);
   };
 
-  const handleDeclineDailyOrb = async () => {
+  // Handle letting streak reset (user choice)
+  const handleStreakSaverLetReset = async () => {
     await updateProgress({ daily_streak: 0 });
-    toast.info("Your daily streak has been reset to 0.");
-    setShowDailyOrbDialog(false);
+    toast.info("Your streak has been reset. Start fresh today!");
+    setShowStreakSaverDialog(false);
+  };
+
+  // Handle accepting gift orb when no orbs available
+  const handleStreakSaverAcceptGift = async () => {
+    const currentOrbs = progress?.orbs || 0;
+    await updateProgress({ 
+      daily_streak: 0,
+      orbs: Math.min(currentOrbs + 1, 3) // Gift 1 orb, max 3
+    });
+    toast.success("🎁 You received a gift orb! Use it to save your next streak.");
+    setShowStreakSaverDialog(false);
+  };
+
+  // Handle fresh start (streak was too far gone)
+  const handleStreakSaverFreshStart = async () => {
+    await updateProgress({ daily_streak: 0 });
+    toast.info("Fresh start! Let's build your streak again.");
+    setShowStreakSaverDialog(false);
   };
 
   const handleUseWeeklyOrb = async () => {
@@ -997,12 +1042,18 @@ export default function Dashboard() {
         onContinue={handleModeConfirmContinue}
       />
 
-      <UseOrbDialog
-        open={showDailyOrbDialog}
-        onUseOrb={handleUseDailyOrb}
-        onDecline={handleDeclineDailyOrb}
-        type="daily"
+      {/* Streak Saver Dialog - handles all scenarios */}
+      <StreakSaverDialog
+        open={showStreakSaverDialog}
+        onClose={() => setShowStreakSaverDialog(false)}
+        scenario={streakSaverScenario}
         orbsAvailable={progress?.orbs || 0}
+        missedDays={missedDays}
+        previousStreak={previousStreak}
+        onUseOrb={handleStreakSaverUseOrb}
+        onLetReset={handleStreakSaverLetReset}
+        onAcceptGift={handleStreakSaverAcceptGift}
+        onFreshStart={handleStreakSaverFreshStart}
       />
 
       <UseOrbDialog
