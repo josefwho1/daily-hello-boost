@@ -302,7 +302,7 @@ export const updateGuestHelloLog = async (id: string, updates: Partial<GuestHell
   });
 };
 
-// Clear all guest data (after syncing to cloud)
+// Clear all guest data (after syncing to cloud or on sign out)
 export const clearGuestData = async (): Promise<void> => {
   const db = await openDB();
   
@@ -313,7 +313,12 @@ export const clearGuestData = async (): Promise<void> => {
     transaction.objectStore('guest_progress').clear();
     transaction.objectStore('hello_logs').clear();
     
-    transaction.oncomplete = () => resolve();
+    transaction.oncomplete = () => {
+      // Close the database connection and clear the cached instance
+      db.close();
+      dbInstance = null;
+      resolve();
+    };
     transaction.onerror = () => reject(transaction.error);
   });
 };
