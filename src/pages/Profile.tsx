@@ -41,7 +41,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const { guestProgress, guestState, isGuest, dismissSavePrompt, updateProgress: updateGuestProgress } = useGuestMode();
+  const { guestProgress, guestState, isGuest, dismissSavePrompt, updateProgress: updateGuestProgress, refetch: refetchGuestData } = useGuestMode();
   const { timezoneOffset, updateTimezone } = useTimezone();
   const { progress: cloudProgress, updateProgress } = useUserProgress();
   const { theme, setTheme } = useTheme();
@@ -93,6 +93,13 @@ const Profile = () => {
       toast.info('Enter your new password below.');
     }
   }, [searchParams, user, setSearchParams]);
+
+  // Refetch guest data on mount to get latest username from onboarding
+  useEffect(() => {
+    if (isGuest) {
+      refetchGuestData();
+    }
+  }, [isGuest, refetchGuestData]);
 
   // Fetch profile picture from profiles table
   useEffect(() => {
