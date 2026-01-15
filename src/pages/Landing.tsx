@@ -13,7 +13,7 @@ const Index = () => {
         <img 
           src={logo} 
           alt="One Hello" 
-          className="h-12 mx-auto"
+          className="h-24 sm:h-32 mx-auto"
         />
         
         {/* Remi mascot */}
