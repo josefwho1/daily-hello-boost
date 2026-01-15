@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame, Users, Heart, Calendar, Trophy, Sparkles } from "lucide-react";
+import { Flame, Users, Heart, Calendar, Trophy, Sparkles, Hand } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface CommunityStats {
@@ -116,15 +116,15 @@ const Community = () => {
             
             <Card className="bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
               <CardContent className="pt-4 pb-4 text-center">
-                <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosToday)}</p>
-                <p className="text-sm text-muted-foreground">hellos today</p>
+                <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosThisWeek)}</p>
+                <p className="text-sm text-muted-foreground">hellos this week</p>
               </CardContent>
             </Card>
             
             <Card className="bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
               <CardContent className="pt-4 pb-4 text-center">
-                <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosThisWeek)}</p>
-                <p className="text-sm text-muted-foreground">hellos this week</p>
+                <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosToday)}</p>
+                <p className="text-sm text-muted-foreground">hellos today</p>
               </CardContent>
             </Card>
           </div>
@@ -132,10 +132,6 @@ const Community = () => {
 
         {/* Section 2: Challenges */}
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-foreground flex items-center justify-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            Challenges
-          </h2>
 
           {/* Today's Hello Card */}
           <Card className="bg-gradient-to-br from-primary/5 to-transparent border-primary/10">
@@ -261,7 +257,7 @@ const Community = () => {
                         <span className="text-sm font-medium text-foreground">{leader.displayName}</span>
                       </div>
                       <div className="flex items-center gap-1 text-primary">
-                        <Heart className="w-4 h-4" />
+                        <Hand className="w-4 h-4" />
                         <span className="font-semibold">{leader.hellosThisWeek}</span>
                       </div>
                     </div>
