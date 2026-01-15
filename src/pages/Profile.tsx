@@ -422,30 +422,24 @@ const Profile = () => {
           </div>
         </Card>
 
-        {/* Save Progress (Guest Only) - Moved here after profile card */}
+        {/* Save Progress (Guest Only) - Matches Hellobook style */}
         {isGuest && (
-          <Card className="p-5 mb-4 rounded-2xl bg-primary/5 border-primary/20">
-            <Button
-              className="w-full justify-center rounded-xl"
-              onClick={() => setShowSaveProgress(true)}
-            >
-              <Sparkles size={16} className="mr-2" />
-              Save my progress
-            </Button>
-            <p className="text-xs text-center text-muted-foreground mt-2">
-              Add your email to keep your hellos safe
-            </p>
-            
-            <div className="mt-4 pt-4 border-t border-border">
-              <p className="text-sm text-center text-muted-foreground">
-                Already have an account?{' '}
-                <button 
-                  onClick={() => navigate('/signin')}
-                  className="text-primary font-medium hover:underline"
-                >
-                  Sign In
-                </button>
-              </p>
+          <Card className="mb-4 p-4 rounded-2xl border-primary/20 bg-primary/5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Mail size={20} className="text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">Save your progress</p>
+                <p className="text-xs text-muted-foreground">Add your email to keep your hellos safe</p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setShowSaveProgress(true)}
+                className="rounded-xl"
+              >
+                Save
+              </Button>
             </div>
           </Card>
         )}

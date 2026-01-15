@@ -205,6 +205,21 @@ export const SaveProgressDialog = ({
             <p className="text-xs text-center text-muted-foreground mt-2">
               You can keep using One Hello without signing up.
             </p>
+
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-sm text-center text-muted-foreground">
+                Already have an account?{' '}
+                <button 
+                  onClick={() => {
+                    handleClose();
+                    navigate('/signin');
+                  }}
+                  className="text-primary font-medium hover:underline"
+                >
+                  Sign In
+                </button>
+              </p>
+            </div>
           </>
         )}
 
