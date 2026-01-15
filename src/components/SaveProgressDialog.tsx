@@ -282,8 +282,11 @@ export const SaveProgressDialog = ({
               </div>
               <DialogTitle className="text-xl">Check your email!</DialogTitle>
               <DialogDescription className="text-base">
-                We sent a sign-in link and code to <span className="font-medium text-foreground">{email}</span>.
+                We sent a sign-in link and 6-digit code to <span className="font-medium text-foreground">{email}</span>.
               </DialogDescription>
+              <p className="text-xs text-muted-foreground mt-2">
+                📬 Can't find it? Check your junk or spam folder.
+              </p>
             </DialogHeader>
             
             {/* OTP Entry Section */}
