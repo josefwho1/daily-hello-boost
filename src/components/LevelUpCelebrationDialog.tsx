@@ -192,9 +192,25 @@ export const LevelUpCelebrationDialog = ({
             )}
           </div>
 
-          {/* Level Badge - Always visible */}
+          {/* Remi Image - on top during loading/leveling phases */}
+          {phase !== 'celebration' && (
+            <motion.div 
+              className="mb-4"
+              initial={{ scale: 0, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", damping: 10, stiffness: 100 }}
+            >
+              <img 
+                src={celebratingImage} 
+                alt="Remi celebrating" 
+                className="w-28 h-auto max-h-28 mx-auto object-contain"
+              />
+            </motion.div>
+          )}
+
+          {/* Level Badge - Below Remi */}
           <motion.div 
-            className="relative mb-8"
+            className="relative mb-4"
             animate={phase === 'leveling' ? {
               scale: [1, 1.2, 0.9, 1.1, 1],
               rotate: [0, -5, 5, -3, 3, 0],
@@ -202,7 +218,7 @@ export const LevelUpCelebrationDialog = ({
             transition={{ duration: 0.6, ease: "easeInOut" }}
           >
             <motion.div 
-              className="w-32 h-32 rounded-full flex items-center justify-center text-primary-foreground font-bold text-5xl shadow-2xl relative"
+              className="w-24 h-24 rounded-full flex items-center justify-center text-primary-foreground font-bold text-4xl shadow-2xl relative"
               style={{ 
                 backgroundColor: phase === 'celebration' ? rank.color : previousRank.color,
                 boxShadow: `0 0 ${phase === 'leveling' ? '60px' : '30px'} ${phase === 'celebration' ? rank.color : previousRank.color}50`
