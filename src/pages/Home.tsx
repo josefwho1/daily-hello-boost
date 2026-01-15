@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import logo from "@/assets/one-hello-logo-sticker.png";
+
 import { isSameDayInTimezone, getDaysDifferenceInTimezone, getDateInUserTimezone } from "@/lib/timezone";
 import { format } from "date-fns";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -266,7 +266,7 @@ const Home = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="text-center">
-            <img src={logo} alt="One Hello" className="w-72 mx-auto" />
+            
             <h1 className="text-2xl font-bold text-foreground mb-2">
               Hello <span className="text-primary">{username}</span>
             </h1>
