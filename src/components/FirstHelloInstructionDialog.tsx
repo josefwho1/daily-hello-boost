@@ -140,9 +140,9 @@ export const FirstHelloInstructionDialog = ({
           title: null,
           body: (
             <>
-              <p className="text-muted-foreground leading-relaxed">
+              <h2 className="text-xl font-semibold text-foreground">
                 You're on a roll!
-              </p>
+              </h2>
               <p className="text-muted-foreground leading-relaxed mt-3">
                 Last one, it's time to start <span className="font-semibold text-foreground">taking names</span>.
               </p>
