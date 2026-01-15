@@ -16,6 +16,7 @@ import Auth from "./pages/Auth";
 import MagicLinkSignIn from "./pages/MagicLinkSignIn";
 import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
+import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -131,6 +132,16 @@ const App = () => {
               <AppRoute>
                 <OnboardingCheck>
                   <Hellobook />
+                </OnboardingCheck>
+              </AppRoute>
+            } 
+          />
+          <Route 
+            path="/community" 
+            element={
+              <AppRoute>
+                <OnboardingCheck>
+                  <Community />
                 </OnboardingCheck>
               </AppRoute>
             } 
