@@ -226,10 +226,10 @@ const Profile = () => {
     try {
       await supabase.auth.signOut({ scope: 'local' });
       toast.success("Signed out successfully");
-      navigate('/auth');
+      window.location.href = 'https://app.onehello.io';
     } catch (error) {
       console.log("Sign out error (navigating anyway):", error);
-      navigate('/auth');
+      window.location.href = 'https://app.onehello.io';
     }
   };
 
@@ -237,11 +237,11 @@ const Profile = () => {
     try {
       await clearGuestData();
       toast.success("Signed out successfully");
-      // Force a full page reload to clear all in-memory state
-      window.location.href = '/onboarding';
+      // Redirect to landing page
+      window.location.href = 'https://app.onehello.io';
     } catch (error) {
       console.error("Error clearing guest data:", error);
-      window.location.href = '/onboarding';
+      window.location.href = 'https://app.onehello.io';
     }
   };
 
