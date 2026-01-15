@@ -66,10 +66,10 @@ All colors MUST be HSL.
     --background: 23 62% 19%; /* #502a13 - dark warm brown */
     --foreground: 5 100% 97%; /* #fff3f4 - light coral for text */
 
-    --card: 23 50% 15%;
+    --card: 23 50% 16%;
     --card-foreground: 5 100% 97%;
 
-    --popover: 23 50% 15%;
+    --popover: 23 50% 16%;
     --popover-foreground: 5 100% 97%;
 
     --primary: 16 100% 62%; /* #ff6f3b - primary orange */
@@ -87,7 +87,7 @@ All colors MUST be HSL.
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 23 40% 28%;
+    --border: 23 35% 24%;
     --input: 23 40% 22%;
     --ring: 16 100% 62%;
 
