@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import remiWaving from "@/assets/remi-waving-4.webp";
+import remiWaving from "@/assets/remi-waving.webp";
 import logo from "@/assets/one-hello-logo-tagline.svg";
 
 const Index = () => {
@@ -23,14 +23,6 @@ const Index = () => {
           className="w-48 h-auto mx-auto animate-bounce-soft"
         />
         
-        {/* Welcome text */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">Welcome to One Hello!</h1>
-          <p className="text-muted-foreground">
-            Build real human connections, one hello at a time.
-          </p>
-        </div>
-        
         {/* Action buttons */}
         <div className="space-y-3 pt-4">
           <Button 
@@ -49,6 +41,11 @@ const Index = () => {
             Sign In
           </Button>
         </div>
+        
+        {/* Bottom text */}
+        <p className="text-sm text-muted-foreground pt-4">
+          No account needed to start. Just jump in!
+        </p>
       </div>
     </div>
   );
