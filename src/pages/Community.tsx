@@ -8,12 +8,13 @@ interface CommunityStats {
     totalHellos: number;
     totalNames: number;
     hellosThisWeek: number;
+    hellosToday: number;
     weeklyChallengeCompletions: number;
     weeklyChallenge: { title: string; description: string };
   };
   todayStats: {
     hellosToday: number;
-    usersToday: number;
+    usersCompletedTodaysHello: number;
     dailyChallenge: { title: string; description: string };
   };
   leaderboards: {
@@ -88,12 +89,12 @@ const Community = () => {
             <Users className="w-6 h-6 text-primary" />
             Community
           </h1>
-          <p className="text-muted-foreground text-sm">Together, we're making the world friendlier</p>
+          <p className="text-muted-foreground text-sm">Hello's from around the world</p>
         </div>
 
         {/* Section 1: Collective Impact */}
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-foreground flex items-center justify-center gap-2">
             <Heart className="w-5 h-5 text-primary" />
             Collective Impact
           </h2>
@@ -113,7 +114,14 @@ const Community = () => {
               </CardContent>
             </Card>
             
-            <Card className="col-span-2 bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
+            <Card className="bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
+              <CardContent className="pt-4 pb-4 text-center">
+                <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosToday)}</p>
+                <p className="text-sm text-muted-foreground">hellos today</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
               <CardContent className="pt-4 pb-4 text-center">
                 <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosThisWeek)}</p>
                 <p className="text-sm text-muted-foreground">hellos this week</p>
@@ -135,35 +143,33 @@ const Community = () => {
               <div className="flex items-center gap-1 text-primary">
                 <Trophy className="w-4 h-4" />
                 <span className="text-sm font-semibold">{formatNumber(stats.collectiveImpact.weeklyChallengeCompletions)}</span>
-                <span className="text-xs text-muted-foreground">users completed</span>
+                <span className="text-xs text-muted-foreground">users completed this week</span>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Section 2: Today's Stats */}
+        {/* Section 2: Today's Hello */}
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-foreground flex items-center justify-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />
-            Today's Stats
+            Today's Hello
           </h2>
           
-          <Card className="bg-card">
-            <CardContent className="pt-4">
-              <div className="flex justify-between items-center mb-3">
-                <div className="text-center flex-1">
-                  <p className="text-2xl font-bold text-primary">{formatNumber(stats.todayStats.hellosToday)}</p>
-                  <p className="text-xs text-muted-foreground">hellos today</p>
-                </div>
-                <div className="w-px h-12 bg-border" />
-                <div className="text-center flex-1">
-                  <p className="text-2xl font-bold text-foreground">{formatNumber(stats.todayStats.usersToday)}</p>
-                  <p className="text-xs text-muted-foreground">people said hello</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-border">
-                <p className="text-xs text-muted-foreground mb-1">Today's Hello</p>
-                <p className="text-sm font-medium text-foreground">{stats.todayStats.dailyChallenge.title}</p>
+          {/* Today's Hello Card (similar style to weekly challenge) */}
+          <Card className="bg-gradient-to-br from-primary/5 to-transparent border-primary/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Heart className="w-4 h-4 text-primary" />
+                {stats.todayStats.dailyChallenge.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-xs text-muted-foreground mb-2">{stats.todayStats.dailyChallenge.description}</p>
+              <div className="flex items-center gap-1 text-primary">
+                <Trophy className="w-4 h-4" />
+                <span className="text-sm font-semibold">{formatNumber(stats.todayStats.usersCompletedTodaysHello)}</span>
+                <span className="text-xs text-muted-foreground">users completed today</span>
               </div>
             </CardContent>
           </Card>
@@ -171,7 +177,7 @@ const Community = () => {
 
         {/* Section 3: Community Leaders */}
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-foreground flex items-center justify-center gap-2">
             <Trophy className="w-5 h-5 text-primary" />
             Community Leaders
           </h2>
