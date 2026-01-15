@@ -278,7 +278,7 @@ const Hellobook = () => {
                       </div>
 
                       {/* Timestamp */}
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">
                         {formatTimestamp(log.created_at, true)}
                       </p>
 
