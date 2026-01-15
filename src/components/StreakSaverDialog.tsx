@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -40,10 +42,20 @@ export const StreakSaverDialog = ({
   onAcceptGift,
   onFreshStart,
 }: StreakSaverDialogProps) => {
+  const [isConsuming, setIsConsuming] = useState(false);
+
+  const handleUseOrb = () => {
+    setIsConsuming(true);
+    // Wait for animation to complete before calling onUseOrb
+    setTimeout(() => {
+      onUseOrb();
+      setIsConsuming(false);
+    }, 1200);
+  };
   
   if (scenario === 'can_save') {
     return (
-      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && !isConsuming && onClose()}>
         <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
           <DialogHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -57,9 +69,66 @@ export const StreakSaverDialog = ({
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex items-center justify-center gap-3 py-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
-            <img src={orbImage} alt="Orb" className="w-6 h-6 object-contain" />
-            <span className="font-medium">Orbs available: {orbsAvailable}</span>
+          <div className="flex items-center justify-center gap-3 py-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg relative overflow-hidden">
+            <AnimatePresence mode="wait">
+              {isConsuming ? (
+                <motion.div
+                  key="consuming"
+                  className="flex items-center justify-center gap-3"
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <motion.img 
+                    src={orbImage} 
+                    alt="Orb" 
+                    className="w-10 h-10 object-contain"
+                    initial={{ scale: 1, opacity: 1 }}
+                    animate={{ 
+                      scale: [1, 1.5, 1.8, 0],
+                      opacity: [1, 1, 0.8, 0],
+                      rotate: [0, 180, 360],
+                      filter: ["brightness(1)", "brightness(1.5)", "brightness(2)", "brightness(3)"]
+                    }}
+                    transition={{ 
+                      duration: 1,
+                      ease: "easeOut"
+                    }}
+                  />
+                  <motion.span 
+                    className="font-medium text-primary"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    Saving your streak... ✨
+                  </motion.span>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="available"
+                  className="flex items-center justify-center gap-3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <motion.img 
+                    src={orbImage} 
+                    alt="Orb" 
+                    className="w-6 h-6 object-contain"
+                    animate={{ 
+                      scale: [1, 1.1, 1],
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  />
+                  <span className="font-medium">Orbs available: {orbsAvailable}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <DialogFooter className="flex gap-2 sm:gap-2">
@@ -67,15 +136,28 @@ export const StreakSaverDialog = ({
               variant="outline"
               className="flex-1"
               onClick={onLetReset}
+              disabled={isConsuming}
             >
               Let it reset
             </Button>
             <Button
               className="flex-1"
-              onClick={onUseOrb}
+              onClick={handleUseOrb}
+              disabled={isConsuming}
             >
-              <img src={orbImage} alt="Orb" className="w-4 h-4 mr-2 object-contain" />
-              Use 1 orb (Save streak)
+              {isConsuming ? (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  Saving...
+                </motion.span>
+              ) : (
+                <>
+                  <img src={orbImage} alt="Orb" className="w-4 h-4 mr-2 object-contain" />
+                  Use 1 orb (Save streak)
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
