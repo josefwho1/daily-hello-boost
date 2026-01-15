@@ -219,8 +219,11 @@ export default function MagicLinkSignIn() {
               </div>
               <CardTitle>Check your email!</CardTitle>
               <CardDescription className="text-base">
-                We sent a sign-in link and code to <span className="font-medium text-foreground">{email}</span>.
+                We sent a sign-in link and 6-digit code to <span className="font-medium text-foreground">{email}</span>.
               </CardDescription>
+              <p className="text-xs text-muted-foreground mt-2">
+                📬 Can't find it? Check your junk or spam folder.
+              </p>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* OTP Entry Section */}
@@ -343,6 +346,9 @@ export default function MagicLinkSignIn() {
                 <CardDescription className="text-base">
                   We sent a password reset link to <span className="font-medium text-foreground">{email}</span>.
                 </CardDescription>
+                <p className="text-xs text-muted-foreground mt-2">
+                  📬 Can't find it? Check your junk or spam folder.
+                </p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground text-center">
