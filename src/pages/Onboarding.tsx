@@ -40,18 +40,30 @@ export default function Onboarding() {
   // Save username and auto-advance from greeting to how_it_works
   useEffect(() => {
     if (step === 'greeting' && userName.trim()) {
-      // Save the username to guest progress
+      // Save the username to the appropriate storage
       const saveUserName = async () => {
         const guestState = await getGuestState();
         if (guestState) {
+          // For guest users, save to local guest progress
           await updateGuestProgress({ username: userName.trim() });
         } else {
-          // For authenticated users, this will be handled later
+          // For authenticated users, save to both profiles and user_progress tables
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
+            // Update profiles table (for display)
+            await supabase.from('profiles').update({ 
+              username: userName.trim() 
+            }).eq('id', user.id);
+            
+            // Update user_progress table
             await supabase.from('user_progress').update({ 
               username: userName.trim() 
             }).eq('user_id', user.id);
+            
+            // Also update auth user metadata so it persists
+            await supabase.auth.updateUser({
+              data: { name: userName.trim() }
+            });
           }
         }
       };
