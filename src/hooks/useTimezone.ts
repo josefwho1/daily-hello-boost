@@ -66,6 +66,14 @@ export const useTimezone = () => {
     const offsetMinutes = (sign === '+' ? 1 : -1) * (hours * 60 + minutes);
     const localDate = new Date(date.getTime() + offsetMinutes * 60000);
     
+    if (includeDay) {
+      // Format: "Day of week, time, date" (e.g., "Monday, 14:30, 15 Jan 2025")
+      const weekday = localDate.toLocaleString('en-GB', { weekday: 'long' });
+      const time = localDate.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = localDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      return `${weekday}, ${time}, ${dateStr}`;
+    }
+    
     const options: Intl.DateTimeFormatOptions = {
       day: '2-digit',
       month: 'short',
@@ -73,10 +81,6 @@ export const useTimezone = () => {
       hour: '2-digit',
       minute: '2-digit',
     };
-
-    if (includeDay) {
-      options.weekday = 'long';
-    }
     
     return localDate.toLocaleString('en-GB', options);
   };
