@@ -16,6 +16,7 @@ import Auth from "./pages/Auth";
 import MagicLinkSignIn from "./pages/MagicLinkSignIn";
 import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
+import Landing from "./pages/Landing";
 import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -112,6 +113,7 @@ const App = () => {
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/landing" element={<Landing />} />
           <Route path="/auth" element={<AuthRedirect><Auth /></AuthRedirect>} />
           <Route path="/signin" element={<AuthRedirect><MagicLinkSignIn /></AuthRedirect>} />
           <Route path="/auth/callback" element={<AuthCallback />} />

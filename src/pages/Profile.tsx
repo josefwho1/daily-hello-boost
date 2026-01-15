@@ -227,10 +227,10 @@ const Profile = () => {
       await supabase.auth.signOut({ scope: 'local' });
       toast.success("Signed out successfully");
       // Redirect to landing page
-      window.location.href = '/';
+      window.location.href = '/landing';
     } catch (error) {
       console.log("Sign out error (navigating anyway):", error);
-      window.location.href = '/';
+      window.location.href = '/landing';
     }
   };
 
@@ -239,10 +239,10 @@ const Profile = () => {
       await clearGuestData();
       toast.success("Signed out successfully");
       // Redirect to landing page with full reload to clear all state
-      window.location.href = '/';
+      window.location.href = '/landing';
     } catch (error) {
       console.error("Error clearing guest data:", error);
-      window.location.href = '/';
+      window.location.href = '/landing';
     }
   };
 
