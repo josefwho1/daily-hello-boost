@@ -26,8 +26,8 @@ export const BottomNav = () => {
   const location = useLocation();
   const [lastClicked, setLastClicked] = useState<string | null>(null);
   
-  // Hide nav on auth and onboarding pages
-  if (location.pathname === '/auth' || location.pathname === '/onboarding') {
+  // Hide nav on auth, onboarding, and landing pages
+  if (location.pathname === '/auth' || location.pathname === '/onboarding' || location.pathname === '/landing') {
     return null;
   }
 
