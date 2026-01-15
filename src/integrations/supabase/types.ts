@@ -232,6 +232,7 @@ export type Database = {
           daily_email_opt_in: boolean | null
           daily_path_selected_at: string | null
           daily_streak: number | null
+          email_unsubscribed: boolean | null
           has_completed_onboarding: boolean | null
           has_received_first_orb: boolean | null
           has_seen_welcome_messages: boolean | null
@@ -241,6 +242,7 @@ export type Database = {
           is_onboarding_week: boolean | null
           last_completed_date: string | null
           last_hello_at: string | null
+          last_reengagement_email_at: string | null
           last_weekly_challenge_date: string | null
           last_xp_reset_date: string | null
           longest_streak: number | null
@@ -251,8 +253,11 @@ export type Database = {
           onboarding_email_opt_in: boolean | null
           onboarding_week_start: string | null
           orbs: number | null
+          reengagement_email_index: number | null
           save_offered_for_date: string | null
           selected_pack_id: string
+          streak_1day_email_sent_for_date: string | null
+          streak_2day_email_sent_for_date: string | null
           target_hellos_per_week: number | null
           total_hellos: number | null
           total_xp: number | null
@@ -262,6 +267,7 @@ export type Database = {
           week_start_date: string | null
           weekly_goal_achieved_this_week: boolean | null
           weekly_streak: number | null
+          welcome_email_sent: boolean | null
           why_here: string | null
         }
         Insert: {
@@ -276,6 +282,7 @@ export type Database = {
           daily_email_opt_in?: boolean | null
           daily_path_selected_at?: string | null
           daily_streak?: number | null
+          email_unsubscribed?: boolean | null
           has_completed_onboarding?: boolean | null
           has_received_first_orb?: boolean | null
           has_seen_welcome_messages?: boolean | null
@@ -285,6 +292,7 @@ export type Database = {
           is_onboarding_week?: boolean | null
           last_completed_date?: string | null
           last_hello_at?: string | null
+          last_reengagement_email_at?: string | null
           last_weekly_challenge_date?: string | null
           last_xp_reset_date?: string | null
           longest_streak?: number | null
@@ -295,8 +303,11 @@ export type Database = {
           onboarding_email_opt_in?: boolean | null
           onboarding_week_start?: string | null
           orbs?: number | null
+          reengagement_email_index?: number | null
           save_offered_for_date?: string | null
           selected_pack_id?: string
+          streak_1day_email_sent_for_date?: string | null
+          streak_2day_email_sent_for_date?: string | null
           target_hellos_per_week?: number | null
           total_hellos?: number | null
           total_xp?: number | null
@@ -306,6 +317,7 @@ export type Database = {
           week_start_date?: string | null
           weekly_goal_achieved_this_week?: boolean | null
           weekly_streak?: number | null
+          welcome_email_sent?: boolean | null
           why_here?: string | null
         }
         Update: {
@@ -320,6 +332,7 @@ export type Database = {
           daily_email_opt_in?: boolean | null
           daily_path_selected_at?: string | null
           daily_streak?: number | null
+          email_unsubscribed?: boolean | null
           has_completed_onboarding?: boolean | null
           has_received_first_orb?: boolean | null
           has_seen_welcome_messages?: boolean | null
@@ -329,6 +342,7 @@ export type Database = {
           is_onboarding_week?: boolean | null
           last_completed_date?: string | null
           last_hello_at?: string | null
+          last_reengagement_email_at?: string | null
           last_weekly_challenge_date?: string | null
           last_xp_reset_date?: string | null
           longest_streak?: number | null
@@ -339,8 +353,11 @@ export type Database = {
           onboarding_email_opt_in?: boolean | null
           onboarding_week_start?: string | null
           orbs?: number | null
+          reengagement_email_index?: number | null
           save_offered_for_date?: string | null
           selected_pack_id?: string
+          streak_1day_email_sent_for_date?: string | null
+          streak_2day_email_sent_for_date?: string | null
           target_hellos_per_week?: number | null
           total_hellos?: number | null
           total_xp?: number | null
@@ -350,6 +367,7 @@ export type Database = {
           week_start_date?: string | null
           weekly_goal_achieved_this_week?: boolean | null
           weekly_streak?: number | null
+          welcome_email_sent?: boolean | null
           why_here?: string | null
         }
         Relationships: [
