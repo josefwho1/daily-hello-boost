@@ -131,6 +131,11 @@ const Vault = () => {
   return (
     <div className="min-h-screen bg-background pb-32">
       <div className="max-w-md mx-auto px-4 py-6">
+        {/* Easter Egg Discovery Message */}
+        <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-xl text-center animate-fade-in">
+          <p className="text-sm font-medium text-primary">✨ You found Remi's Vault!</p>
+        </div>
+
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <img src={vaultIcon} alt="Vault" className="w-12 h-12 object-contain" />

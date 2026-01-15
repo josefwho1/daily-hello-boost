@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { toast } from "sonner";
 import hellobookIcon from "@/assets/hellobook-icon.webp";
+import vaultIcon from "@/assets/vault-icon.webp";
 import EditHelloDialog from "@/components/EditHelloDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 // Expandable text component for long notes
@@ -104,6 +106,7 @@ const getTypeDisplay = (helloType: string | null) => {
 };
 
 const Hellobook = () => {
+  const navigate = useNavigate();
   const { logs, loading, updateLog } = useHelloLogs();
   const { formatTimestamp } = useTimezone();
   const { user } = useAuth();
@@ -296,6 +299,20 @@ const Hellobook = () => {
           </div>
         )}
 
+        {/* Vault Easter Egg */}
+        <div className="mt-8 flex justify-end">
+          <button
+            onClick={() => navigate('/vault')}
+            className="opacity-40 hover:opacity-100 transition-opacity duration-300"
+            aria-label="Open Remi's Vault"
+          >
+            <img 
+              src={vaultIcon} 
+              alt="Vault" 
+              className="w-10 h-10 object-contain"
+            />
+          </button>
+        </div>
       </div>
 
       <EditHelloDialog
