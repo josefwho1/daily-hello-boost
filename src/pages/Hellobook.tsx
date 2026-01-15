@@ -300,7 +300,7 @@ const Hellobook = () => {
         )}
 
         {/* Vault Easter Egg */}
-        <div className="mt-8 flex justify-end">
+        <div className="mt-4 mb-2 flex justify-center">
           <button
             onClick={() => navigate('/vault')}
             className="opacity-40 hover:opacity-100 transition-opacity duration-300"
