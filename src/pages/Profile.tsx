@@ -161,7 +161,7 @@ const Profile = () => {
   };
 
   const handleStartEditName = () => {
-    setEditName(user?.user_metadata?.name || '');
+    setEditName(user?.user_metadata?.name || guestProgress?.username || '');
     setIsEditingName(true);
   };
 
@@ -183,19 +183,30 @@ const Profile = () => {
 
     setIsSavingName(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: { name: editName.trim() }
-      });
+      if (isGuest) {
+        // For guest users, update the local guest progress
+        await updateGuestProgress({
+          username: editName.trim(),
+          updated_at: new Date().toISOString(),
+        });
+        toast.success("Name updated successfully");
+        setIsEditingName(false);
+      } else {
+        // For authenticated users, update via Supabase
+        const { error } = await supabase.auth.updateUser({
+          data: { name: editName.trim() }
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      await supabase
-        .from('profiles')
-        .update({ username: editName.trim() })
-        .eq('id', user?.id);
+        await supabase
+          .from('profiles')
+          .update({ username: editName.trim() })
+          .eq('id', user?.id);
 
-      toast.success("Name updated successfully");
-      setIsEditingName(false);
+        toast.success("Name updated successfully");
+        setIsEditingName(false);
+      }
     } catch (error) {
       console.error("Error updating name:", error);
       toast.error("Failed to update name");
@@ -405,7 +416,7 @@ const Profile = () => {
               ) : (
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-bold text-foreground">
-                    {user?.user_metadata?.name || 'Friend'}
+                    {user?.user_metadata?.name || guestProgress?.username || 'Friend'}
                   </h2>
                   <Button
                     size="icon"
