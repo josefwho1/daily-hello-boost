@@ -10,167 +10,123 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const CRON_SECRET = Deno.env.get('CRON_SECRET')
 
-interface UserForEmail {
-  user_id: string
-  email: string
-  username: string
-  current_phase: string
-  onboarding_email_opt_in: boolean
-  daily_email_opt_in: boolean
-  chill_email_opt_in: boolean
-  current_day: number
-  hellos_today_count: number
-  hellos_this_week: number
-  timezone_preference: string
+// Re-engagement email subject lines (chronological sequence)
+const REENGAGEMENT_SUBJECTS = [
+  "One hello could change your life, plus it's free 🤷‍♂️",
+  "100% of users feel a positive improvement in their week",
+  "93% of users felt more confidence after just 7 days",
+  "Hope you're having a great day, I wonder what could make it even better 👀",
+  "Raccoon to human - do we have a pulse 🥺",
+  "Saying Hello can be tough, but not for you, right? 👀",
+  "{{username}}, I miss you. Quick hello for old times sake?",
+  "I feel like your spam filter is doing me dirty",
+  "BooOOoOo its ghostttt Remiii, come say hello?",
+  "ItttsssSSssssS TIME, for the UF… Uh I mean One Hello 👀",
+  "Help me out, Zero Hello's doesn't have the same ring to it",
+  "Hi it's Romi, Remi's brother, just saying Hello",
+  "Confession, Romi was me 😭 Forgive me",
+  "I once won a free jetski because I said hello",
+  "Confession 2.0 - I did not win a Jetski 🥲",
+  "FREE JETSKI GIVEAWAY?!",
+  "Confession 3.0 - I still don't have a jetski smh 😔",
+  "DESPERATION TACTIC - did it work? 🦝",
+  "I'm NGL I'm starting to lose hope 🥲",
+  "I DARE YOU to say one hello today 🦝",
+  "Do NOT use the One Hello App 👀",
+  "One Goodbye 🫡 It's been a pleasure I will leave you be (for now)",
+  "IM BACK HAHAHA - One Hello time? 🙏",
+  "Ok ok I'm done for reallsssss",
+  "👀",
+  "I'll always remember you (Remember Raccoon) 🦝"
+]
+
+// Email template wrapper
+function createEmailHtml(bodyContent: string, username: string, unsubscribeUrl: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Hello</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #fdf8f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fdf8f5; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" style="max-width: 520px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden;">
+          <tr>
+            <td style="padding: 32px 32px 24px 32px;">
+              ${bodyContent}
+              
+              <!-- CTA Button -->
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="https://daily-hello-boost.lovable.app" style="display: inline-block; background-color: #ff6f3b; color: white; padding: 14px 36px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Open One Hello</a>
+              </div>
+              
+              <!-- Signature -->
+              <p style="text-align: center; margin: 24px 0 0 0; color: #502a13; font-size: 15px;">— Remi 🦝</p>
+            </td>
+          </tr>
+          
+          <!-- Social Links -->
+          <tr>
+            <td style="padding: 20px 32px; background-color: #faf5f2; text-align: center; border-top: 1px solid #f0e6df;">
+              <p style="margin: 0 0 12px 0; color: #666; font-size: 13px;">Follow us</p>
+              <a href="https://www.instagram.com/onehelloapp/" style="color: #ff6f3b; text-decoration: none; margin: 0 12px; font-size: 14px;">Instagram</a>
+              <a href="https://www.tiktok.com/@onehelloapp" style="color: #ff6f3b; text-decoration: none; margin: 0 12px; font-size: 14px;">TikTok</a>
+            </td>
+          </tr>
+          
+          <!-- Unsubscribe -->
+          <tr>
+            <td style="padding: 16px 32px 24px 32px; text-align: center; background-color: #faf5f2;">
+              <p style="margin: 0; color: #999; font-size: 11px; line-height: 1.5;">
+                You are receiving these emails because you are subscribed to One Hello reminders.<br>
+                <a href="${unsubscribeUrl}" style="color: #999; text-decoration: underline;">Unsubscribe</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`
 }
 
-// CTA button style
-const ctaButton = `
-  <div style="text-align: center; margin: 24px 0;">
-    <a href="https://app.onehello.io" style="display: inline-block; background-color: #ff6f3b; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">Open One Hello</a>
-  </div>
-`
-
-// Remi signature (text only)
-const remiSignature = `
-  <div style="text-align: center; margin-top: 24px;">
-    <p style="margin: 0; color: #502a13;">— Remi 🦝</p>
-  </div>
-`
-
-// Email templates
-const onboardingTemplates: Record<number, { subject: string; html: string }> = {
-  1: {
-    subject: "Day 1 is live 👋 Your first hello is waiting",
-    html: `
-      <h2>Hey there!</h2>
-      <p>Your Day 1 challenge is ready: <strong>Say hello to a stranger today.</strong></p>
-      <p>It can be anyone — a barista, someone in the elevator, a person walking by. Just a simple "Hi" or "Hello" is all it takes.</p>
-      <p>Once you've done it, open the app and log your hello. You can add their name if you caught it, and any notes you want to remember.</p>
-      <p>Complete this and earn your first Orb 🔮</p>
-      ${ctaButton}
-      <p>You've got this!</p>
-      ${remiSignature}
-    `
-  },
-  2: {
-    subject: "Day 2: send some good energy out today ✨",
-    html: `
-      <h2>Day 2 Challenge</h2>
-      <p>Today's challenge: <strong>Wish someone well.</strong></p>
-      <p>Examples:</p>
-      <ul>
-        <li>"Have a great day!"</li>
-        <li>"Hope your week goes well!"</li>
-        <li>"Good luck with that!"</li>
-      </ul>
-      <p>A small well-wish goes further than people realise. Log it when you're done!</p>
-      ${ctaButton}
-      ${remiSignature}
-    `
-  },
-  3: {
-    subject: "Day 3: go one step beyond hello 🌟",
-    html: `
-      <h2>Day 3 Challenge</h2>
-      <p>Today's challenge: <strong>Ask someone how their day is going.</strong></p>
-      <p>This takes your hello one step deeper. Try:</p>
-      <ul>
-        <li>"How's your day going?"</li>
-        <li>"Having a good day?"</li>
-        <li>"How are things?"</li>
-      </ul>
-      <p>You might be surprised how much people appreciate being asked. Log it when done!</p>
-      ${ctaButton}
-      ${remiSignature}
-    `
-  },
-  4: {
-    subject: "Day 4: compliment someone today 💫",
-    html: `
-      <h2>Day 4 Challenge</h2>
-      <p>Today's challenge: <strong>Give someone a genuine compliment.</strong></p>
-      <p>Ideas:</p>
-      <ul>
-        <li>"I love your jacket!"</li>
-        <li>"That's a great bag!"</li>
-        <li>"Your energy is awesome today!"</li>
-      </ul>
-      <p>A genuine compliment can change someone's whole day. You're building confidence with every hello!</p>
-      ${ctaButton}
-      ${remiSignature}
-    `
-  },
-  5: {
-    subject: "Day 5: talk about something around you 🌤️",
-    html: `
-      <h2>Day 5 Challenge</h2>
-      <p>Today's challenge: <strong>Comment on something in your environment.</strong></p>
-      <p>Examples:</p>
-      <ul>
-        <li>"Beautiful weather today, hey?"</li>
-        <li>"This coffee smells amazing!"</li>
-        <li>"Love what they've done with this place!"</li>
-      </ul>
-      <p>Observations are natural ice-breakers. They give people an easy way to respond.</p>
-      ${ctaButton}
-      ${remiSignature}
-    `
-  },
-  6: {
-    subject: "Day 6: turn a stranger into someone familiar 📝",
-    html: `
-      <h2>Day 6 Challenge</h2>
-      <p>Today's challenge: <strong>Learn someone's name.</strong></p>
-      <p>Names are magic. When you know someone's name, they're no longer a stranger.</p>
-      <p>Try:</p>
-      <ul>
-        <li>"I'm [your name], by the way!"</li>
-        <li>"What's your name?"</li>
-        <li>"I didn't catch your name?"</li>
-      </ul>
-      <p>Log their name in the app so you don't forget. You just turned a stranger into someone familiar!</p>
-      ${ctaButton}
-      ${remiSignature}
-    `
-  },
-  7: {
-    subject: "Day 7: you made it — one last hello 🎉",
-    html: `
-      <h2>Day 7 — The Final Challenge!</h2>
-      <p>You've come so far! Today's challenge: <strong>Ask someone a personal question.</strong></p>
-      <p>Go a little deeper:</p>
-      <ul>
-        <li>"What do you do for fun?"</li>
-        <li>"What's something exciting happening in your life?"</li>
-        <li>"What are you working on?"</li>
-      </ul>
-      <p>Complete this and you'll unlock the next phase of your One Hello journey. You've got this!</p>
-      ${ctaButton}
-      ${remiSignature}
-    `
-  }
-}
-
-const dailyPathTemplate = {
-  subject: "Have you said your hello yet today? 👀",
-  html: `
-    <h2>Quick check-in!</h2>
-    <p>Just a friendly nudge — have you logged your hello today?</p>
-    <p>One hello a day keeps your streak alive. If life gets in the way, you can always use an Orb to save it 🔮</p>
-    ${ctaButton}
-    ${remiSignature}
+// Email body templates
+function getWelcomeBody(username: string): string {
+  return `
+    <h1 style="margin: 0 0 16px 0; color: #1a1a1a; font-size: 24px; font-weight: 600;">Welcome to One Hello! 🦝</h1>
+    <p style="margin: 0; color: #444; font-size: 15px; line-height: 1.6;">
+      Hey ${username}! So glad you're here. Ready to say your first hello?
+    </p>
   `
 }
 
-const chillPathTemplate = {
-  subject: "Tiny nudge: you still have hellos left this week 🌱",
-  html: (hellosThisWeek: number) => `
-    <h2>Weekly progress check</h2>
-    <p>You're at <strong>${hellosThisWeek}/5 hellos</strong> this week.</p>
-    <p>No pressure — you've got flexibility! Just wanted to make sure you don't miss your weekly goal.</p>
-    ${ctaButton}
-    ${remiSignature}
+function getStreak1DayBody(username: string): string {
+  return `
+    <p style="margin: 0; color: #444; font-size: 15px; line-height: 1.6;">
+      Hey ${username}, I've got your back. Your streak is safe for now!
+    </p>
+  `
+}
+
+function getStreak2DayBody(username: string): string {
+  return `
+    <p style="margin: 0; color: #444; font-size: 15px; line-height: 1.6;">
+      ${username}, your streak is still alive... but barely. One hello and you're back!
+    </p>
+  `
+}
+
+function getReengagementBody(username: string): string {
+  return `
+    <p style="margin: 0; color: #444; font-size: 15px; line-height: 1.6;">
+      ${username}, one small hello can make a big difference. Give it a try?
+    </p>
   `
 }
 
@@ -188,7 +144,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Remi from One Hello <remi@onehello.io>',
+        from: 'Remi 🦝 <remi@onehello.io>',
         to: [to],
         subject,
         html,
@@ -213,7 +169,6 @@ function getUserLocalHour(timezoneOffset: string): number {
   const now = new Date()
   const utcHour = now.getUTCHours()
   
-  // Parse timezone offset like "+05:30" or "-08:00"
   const match = timezoneOffset.match(/([+-])(\d{2}):(\d{2})/)
   if (!match) return utcHour
   
@@ -228,9 +183,9 @@ function getUserLocalHour(timezoneOffset: string): number {
   return localHour
 }
 
-function isWeekday(): boolean {
-  const day = new Date().getUTCDay()
-  return day >= 1 && day <= 5
+function daysBetween(date1: Date, date2: Date): number {
+  const oneDay = 24 * 60 * 60 * 1000
+  return Math.floor(Math.abs(date1.getTime() - date2.getTime()) / oneDay)
 }
 
 Deno.serve(async (req) => {
@@ -238,7 +193,65 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // Verify authorization
+  // Check for welcome email trigger (POST request from frontend)
+  const url = new URL(req.url)
+  const action = url.searchParams.get('action')
+  
+  if (action === 'send-welcome') {
+    try {
+      const { user_id } = await req.json()
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+      
+      // Get user data
+      const { data: authUser } = await supabase.auth.admin.getUserById(user_id)
+      if (!authUser?.user?.email) {
+        return new Response(JSON.stringify({ error: 'No email found' }), { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        })
+      }
+      
+      const { data: progress } = await supabase
+        .from('user_progress')
+        .select('welcome_email_sent, email_unsubscribed, username')
+        .eq('user_id', user_id)
+        .single()
+      
+      if (progress?.welcome_email_sent || progress?.email_unsubscribed) {
+        return new Response(JSON.stringify({ message: 'Welcome email already sent or user unsubscribed' }), { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        })
+      }
+      
+      const username = progress?.username || 'Friend'
+      const unsubscribeUrl = `https://daily-hello-boost.lovable.app/settings?unsubscribe=true`
+      const html = createEmailHtml(getWelcomeBody(username), username, unsubscribeUrl)
+      
+      const sent = await sendEmail(authUser.user.email, "Welcome to One Hello 🦝", html)
+      
+      if (sent) {
+        await supabase.from('user_progress').update({ welcome_email_sent: true }).eq('user_id', user_id)
+        await supabase.from('email_logs').insert({
+          user_id,
+          email_type: 'welcome',
+          template_key: 'welcome',
+          sent_at: new Date().toISOString()
+        })
+      }
+      
+      return new Response(JSON.stringify({ success: sent }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      })
+    } catch (error) {
+      console.error('Error sending welcome email:', error)
+      return new Response(JSON.stringify({ error: 'Failed to send welcome email' }), { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      })
+    }
+  }
+
+  // Cron job logic - verify authorization
   const authHeader = req.headers.get('Authorization')
   const expectedAuth = `Bearer ${CRON_SECRET}`
   
@@ -254,21 +267,27 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     
     console.log('Starting email notification check...')
+    const now = new Date()
+    const todayStr = now.toISOString().split('T')[0]
 
-    // Get all users with their email preferences
+    // Get all users with their progress
     const { data: users, error: usersError } = await supabase
       .from('user_progress')
       .select(`
         user_id,
-        current_phase,
-        onboarding_email_opt_in,
-        daily_email_opt_in,
-        chill_email_opt_in,
-        current_day,
-        hellos_today_count,
-        hellos_this_week,
-        mode
+        username,
+        current_streak,
+        daily_streak,
+        last_hello_at,
+        last_completed_date,
+        email_unsubscribed,
+        welcome_email_sent,
+        reengagement_email_index,
+        last_reengagement_email_at,
+        streak_1day_email_sent_for_date,
+        streak_2day_email_sent_for_date
       `)
+      .eq('email_unsubscribed', false)
 
     if (usersError) {
       console.error('Error fetching users:', usersError)
@@ -280,109 +299,121 @@ Deno.serve(async (req) => {
     let emailsSent = 0
 
     for (const user of users || []) {
-      // Get user's email and profile info
+      // Get user's email and timezone
       const { data: authUser } = await supabase.auth.admin.getUserById(user.user_id)
       if (!authUser?.user?.email) {
-        console.log(`No email for user ${user.user_id}`)
         continue
       }
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('username, timezone_preference')
+        .select('timezone_preference')
         .eq('id', user.user_id)
         .single()
 
       const timezone = profile?.timezone_preference || '+00:00'
       const localHour = getUserLocalHour(timezone)
       
-      // Only send emails around 8am local time (7-9am window)
-      if (localHour < 7 || localHour > 9) {
+      // Only send emails around 8-10am local time
+      if (localHour < 8 || localHour > 10) {
         continue
       }
 
-      const email = authUser.user.email
-      const username = profile?.username || 'Friend'
-
-      // Check if we already sent an email today
-      const today = new Date().toISOString().split('T')[0]
+      // Check if we already sent any email today
       const { data: existingLog } = await supabase
         .from('email_logs')
         .select('id')
         .eq('user_id', user.user_id)
-        .gte('sent_at', `${today}T00:00:00Z`)
+        .gte('sent_at', `${todayStr}T00:00:00Z`)
         .limit(1)
 
       if (existingLog && existingLog.length > 0) {
-        console.log(`Already sent email to ${user.user_id} today`)
         continue
       }
 
+      const email = authUser.user.email
+      const username = user.username || 'Friend'
+      const unsubscribeUrl = `https://daily-hello-boost.lovable.app/settings?unsubscribe=true`
+      
       let shouldSend = false
       let subject = ''
-      let html = ''
+      let bodyContent = ''
       let templateKey = ''
 
-      // Determine which email to send based on phase
-      if (user.current_phase === 'onboarding' && user.onboarding_email_opt_in) {
-        // For onboarding, find the next day email they haven't received yet
-        // Get all onboarding emails already sent to this user
-        const { data: sentOnboardingEmails } = await supabase
-          .from('email_logs')
-          .select('template_key')
-          .eq('user_id', user.user_id)
-          .like('template_key', 'onboarding_day_%')
+      // Calculate days since last activity
+      const lastActivity = user.last_hello_at ? new Date(user.last_hello_at) : null
+      const daysSinceActivity = lastActivity ? daysBetween(now, lastActivity) : 999
+
+      // Priority 1: Streak-at-risk emails (override all other logic)
+      const hasActiveStreak = (user.current_streak || 0) > 0 || (user.daily_streak || 0) > 0
+      
+      if (hasActiveStreak) {
+        // 1 day of inactivity
+        if (daysSinceActivity === 1 && user.streak_1day_email_sent_for_date !== todayStr) {
+          shouldSend = true
+          subject = "I've saved your streak (for now) 🔥"
+          bodyContent = getStreak1DayBody(username)
+          templateKey = 'streak_1day'
+          
+          // Update the tracking
+          await supabase.from('user_progress').update({
+            streak_1day_email_sent_for_date: todayStr
+          }).eq('user_id', user.user_id)
+        }
+        // 2 days of inactivity
+        else if (daysSinceActivity === 2 && user.streak_2day_email_sent_for_date !== todayStr) {
+          shouldSend = true
+          subject = "Your streak is hanging on 🦝"
+          bodyContent = getStreak2DayBody(username)
+          templateKey = 'streak_2day'
+          
+          await supabase.from('user_progress').update({
+            streak_2day_email_sent_for_date: todayStr
+          }).eq('user_id', user.user_id)
+        }
+        // After 2 days, stop streak-related emails
+      }
+      
+      // Priority 2: Re-engagement emails (if no streak or >2 days inactive)
+      if (!shouldSend && (!hasActiveStreak || daysSinceActivity > 2)) {
+        const reengagementIndex = user.reengagement_email_index || 0
         
-        const sentDays = new Set(
-          (sentOnboardingEmails || []).map(log => {
-            const match = log.template_key.match(/onboarding_day_(\d+)/)
-            return match ? parseInt(match[1]) : 0
-          })
-        )
-        
-        // Find the next day to send (1-7 that hasn't been sent yet)
-        let nextDay = 0
-        for (let d = 1; d <= 7; d++) {
-          if (!sentDays.has(d)) {
-            nextDay = d
-            break
-          }
+        // Check if we've sent all 26 emails
+        if (reengagementIndex >= REENGAGEMENT_SUBJECTS.length) {
+          continue // Stop sending
         }
         
-        if (nextDay >= 1 && nextDay <= 7 && onboardingTemplates[nextDay]) {
+        // Check 48 hours since last activity before starting
+        // And 2 days between re-engagement emails
+        const lastReengagement = user.last_reengagement_email_at ? new Date(user.last_reengagement_email_at) : null
+        const daysSinceLastReengagement = lastReengagement ? daysBetween(now, lastReengagement) : 999
+        
+        const shouldSendReengagement = 
+          daysSinceActivity >= 2 && // 48 hours after last activity
+          (reengagementIndex === 0 || daysSinceLastReengagement >= 2) // 2 days between emails
+        
+        if (shouldSendReengagement) {
           shouldSend = true
-          subject = onboardingTemplates[nextDay].subject
-          html = onboardingTemplates[nextDay].html.replace('{{username}}', username)
-          templateKey = `onboarding_day_${nextDay}`
-          console.log(`User ${user.user_id} will receive onboarding day ${nextDay} (previously sent: ${Array.from(sentDays).join(', ') || 'none'})`)
-        } else {
-          console.log(`User ${user.user_id} has received all 7 onboarding emails`)
-        }
-      } else if (user.current_phase === 'daily_path' && user.daily_email_opt_in) {
-        // Only send if no hello logged today
-        if ((user.hellos_today_count || 0) === 0) {
-          shouldSend = true
-          subject = dailyPathTemplate.subject
-          html = dailyPathTemplate.html
-          templateKey = 'daily_path_reminder'
-        }
-      } else if (user.current_phase === 'chill_path' && user.chill_email_opt_in) {
-        // Only send Mon-Fri if under 5 hellos this week
-        if (isWeekday() && (user.hellos_this_week || 0) < 5) {
-          shouldSend = true
-          subject = chillPathTemplate.subject
-          html = chillPathTemplate.html(user.hellos_this_week || 0)
-          templateKey = 'chill_path_reminder'
+          subject = REENGAGEMENT_SUBJECTS[reengagementIndex].replace('{{username}}', username)
+          bodyContent = getReengagementBody(username)
+          templateKey = `reengagement_${reengagementIndex + 1}`
+          
+          // Update tracking
+          await supabase.from('user_progress').update({
+            reengagement_email_index: reengagementIndex + 1,
+            last_reengagement_email_at: now.toISOString()
+          }).eq('user_id', user.user_id)
         }
       }
 
       if (shouldSend) {
+        const html = createEmailHtml(bodyContent, username, unsubscribeUrl)
         const sent = await sendEmail(email, subject, html)
+        
         if (sent) {
-          // Log the email
           await supabase.from('email_logs').insert({
             user_id: user.user_id,
-            email_type: user.current_phase,
+            email_type: templateKey.includes('streak') ? 'streak' : 'reengagement',
             template_key: templateKey,
             sent_at: new Date().toISOString()
           })

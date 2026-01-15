@@ -179,6 +179,20 @@ export default function AuthCallback() {
         });
       }
 
+      // Send welcome email for new users
+      try {
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notifications?action=send-welcome`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ user_id: userId }),
+        });
+      } catch (emailError) {
+        console.log('Welcome email trigger failed (non-blocking):', emailError);
+      }
+
       toast.success('Welcome! Your progress is saved.');
       navigate('/', { replace: true });
     } catch (setupError) {

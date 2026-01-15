@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTimezone } from "@/hooks/useTimezone";
@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { LogOut, Clock, Target, User, Pencil, Check, X, Flame, Calendar, Sparkles, Sun, Moon, Monitor } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { LogOut, Clock, Target, User, Pencil, Check, X, Flame, Calendar, Sparkles, Sun, Moon, Monitor, Bell, Mail } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -32,6 +33,7 @@ import { cn } from "@/lib/utils";
 
 const Settings = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { timezoneOffset, updateTimezone } = useTimezone();
   const { progress, updateProgress } = useUserProgress();
@@ -42,6 +44,36 @@ const Settings = () => {
   const [isSavingName, setIsSavingName] = useState(false);
   const [showModeChangeDialog, setShowModeChangeDialog] = useState(false);
   const [pendingMode, setPendingMode] = useState<string | null>(null);
+
+  // Handle unsubscribe URL parameter
+  useEffect(() => {
+    const unsubscribe = searchParams.get('unsubscribe');
+    if (unsubscribe === 'true' && progress && !(progress as any).email_unsubscribed) {
+      handleUnsubscribe();
+    }
+  }, [searchParams, progress]);
+
+  const handleUnsubscribe = async () => {
+    try {
+      await updateProgress({ email_unsubscribed: true } as any);
+      toast.success("You've been unsubscribed from email notifications");
+      // Clear the URL parameter
+      navigate('/settings', { replace: true });
+    } catch (error) {
+      console.error("Error unsubscribing:", error);
+      toast.error("Failed to unsubscribe");
+    }
+  };
+
+  const handleEmailToggle = async (checked: boolean) => {
+    try {
+      await updateProgress({ email_unsubscribed: !checked } as any);
+      toast.success(checked ? "Email notifications enabled" : "Email notifications disabled");
+    } catch (error) {
+      console.error("Error updating email preference:", error);
+      toast.error("Failed to update preference");
+    }
+  };
 
   // Generate timezone options from GMT-12 to GMT+12
   const timezoneOptions = [];
@@ -377,6 +409,27 @@ const Settings = () => {
                   </button>
                 );
               })}
+            </div>
+          </div>
+        </Card>
+
+        {/* Email Notifications */}
+        <Card className="p-6 mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            <Mail className="text-primary" size={24} />
+            <h2 className="text-lg font-semibold text-foreground">Email Notifications</h2>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm text-foreground">Email reminders</Label>
+                <p className="text-xs text-muted-foreground">Get friendly nudges from Remi 🦝</p>
+              </div>
+              <Switch
+                checked={!(progress as any)?.email_unsubscribed}
+                onCheckedChange={handleEmailToggle}
+              />
             </div>
           </div>
         </Card>
