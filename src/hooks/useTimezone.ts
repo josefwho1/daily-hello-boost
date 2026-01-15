@@ -67,11 +67,11 @@ export const useTimezone = () => {
     const localDate = new Date(date.getTime() + offsetMinutes * 60000);
     
     if (includeDay) {
-      // Format: "Day of week, time, date" (e.g., "Monday, 14:30, 15 Jan 2025")
+      // Format: "Day of week time, date" (e.g., "Monday 14:30, 15 Jan 2025")
       const weekday = localDate.toLocaleString('en-GB', { weekday: 'long' });
       const time = localDate.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' });
       const dateStr = localDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-      return `${weekday}, ${time}, ${dateStr}`;
+      return `${weekday} ${time}, ${dateStr}`;
     }
     
     const options: Intl.DateTimeFormatOptions = {
