@@ -42,29 +42,34 @@ export default function Onboarding() {
     if (step === 'greeting' && userName.trim()) {
       // Save the username to the appropriate storage
       const saveUserName = async () => {
-        const guestState = await getGuestState();
-        if (guestState) {
-          // For guest users, save to local guest progress
-          await updateGuestProgress({ username: userName.trim() });
-        } else {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
           // For authenticated users, save to both profiles and user_progress tables
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            // Update profiles table (for display)
-            await supabase.from('profiles').update({ 
-              username: userName.trim() 
-            }).eq('id', user.id);
-            
-            // Update user_progress table
-            await supabase.from('user_progress').update({ 
-              username: userName.trim() 
-            }).eq('user_id', user.id);
-            
-            // Also update auth user metadata so it persists
-            await supabase.auth.updateUser({
-              data: { name: userName.trim() }
-            });
+          // Update profiles table (for display)
+          await supabase.from('profiles').update({ 
+            username: userName.trim() 
+          }).eq('id', user.id);
+          
+          // Update user_progress table
+          await supabase.from('user_progress').update({ 
+            username: userName.trim() 
+          }).eq('user_id', user.id);
+          
+          // Also update auth user metadata so it persists
+          await supabase.auth.updateUser({
+            data: { name: userName.trim() }
+          });
+        } else {
+          // For guest users - ensure guest state and progress exist first
+          let guestState = await getGuestState();
+          if (!guestState) {
+            // Create guest state and progress if they don't exist yet
+            guestState = await createGuestState();
+            await createGuestProgress(guestState.device_id, guestState.guest_user_id);
           }
+          // Now save the username to guest progress
+          await updateGuestProgress({ username: userName.trim() });
         }
       };
       saveUserName();
