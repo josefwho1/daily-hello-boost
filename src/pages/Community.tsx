@@ -76,8 +76,8 @@ const Community = () => {
     );
   }
 
-  const formatNumber = (num: number) => {
-    return num.toLocaleString();
+  const formatNumber = (num: number | undefined | null) => {
+    return (num ?? 0).toLocaleString();
   };
 
   return (
