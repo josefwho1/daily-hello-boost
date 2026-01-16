@@ -154,10 +154,15 @@ export default function AuthCallback() {
         .maybeSingle();
       
       if (!profile) {
+        // Auto-detect browser timezone for new users
+        const { detectBrowserTimezoneOffset } = await import('@/lib/timezone');
+        const detectedTimezone = detectBrowserTimezoneOffset();
+        
         await supabase.from('profiles').insert({
           id: userId,
           username: user.user_metadata?.name || 'Friend',
           email: user.email,
+          timezone_preference: detectedTimezone,
         });
       }
 
@@ -169,12 +174,17 @@ export default function AuthCallback() {
         .maybeSingle();
       
       if (!progress) {
+        // Use browser-detected timezone for date calculation
+        const { detectBrowserTimezoneOffset, getDayKeyInOffset } = await import('@/lib/timezone');
+        const detectedOffset = detectBrowserTimezoneOffset();
+        const today = getDayKeyInOffset(new Date(), detectedOffset);
+        
         await supabase.from('user_progress').insert({
           user_id: userId,
           current_streak: 0,
           current_day: 1,
           is_onboarding_week: true,
-          onboarding_week_start: new Date().toISOString().split('T')[0],
+          onboarding_week_start: today,
           mode: 'first_hellos',
         });
       }
