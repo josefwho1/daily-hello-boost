@@ -4,6 +4,7 @@ import { useAuth } from './useAuth';
 import { useGuestMode } from './useGuestMode';
 import { formatInTimeZone } from 'date-fns-tz';
 import { startOfWeek, parseISO } from 'date-fns';
+import { normalizeTimezoneOffset } from '@/lib/timezone';
 
 export interface HelloLog {
   id: string;
@@ -93,7 +94,7 @@ export const useHelloLogs = () => {
         .eq('id', user.id)
         .maybeSingle();
 
-      const timezoneOffset = profile?.timezone_preference || '+00:00';
+      const timezoneOffset = normalizeTimezoneOffset(profile?.timezone_preference);
 
       const { data, error } = await supabase
         .from('hello_logs')

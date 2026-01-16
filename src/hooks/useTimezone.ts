@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { detectBrowserTimezoneOffset, normalizeTimezoneOffset } from '@/lib/timezone';
 
 export const useTimezone = () => {
   const { user } = useAuth();
-  const [timezoneOffset, setTimezoneOffset] = useState<string>('+00:00');
+  // Initialize with browser-detected timezone instead of hardcoded UTC
+  const [timezoneOffset, setTimezoneOffset] = useState<string>(detectBrowserTimezoneOffset());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTimezone = async () => {
       if (!user) {
+        // For non-authenticated users, use browser-detected timezone
+        setTimezoneOffset(detectBrowserTimezoneOffset());
         setLoading(false);
         return;
       }
@@ -22,11 +26,33 @@ export const useTimezone = () => {
           .single();
 
         if (error) throw error;
+        
         if (data?.timezone_preference) {
-          setTimezoneOffset(data.timezone_preference);
+          // Normalize the stored timezone to handle malformed data
+          const normalized = normalizeTimezoneOffset(data.timezone_preference);
+          setTimezoneOffset(normalized);
+          
+          // If the stored value was malformed, update it in the database
+          if (normalized !== data.timezone_preference) {
+            console.log(`Fixing malformed timezone: "${data.timezone_preference}" -> "${normalized}"`);
+            await supabase
+              .from('profiles')
+              .update({ timezone_preference: normalized })
+              .eq('id', user.id);
+          }
+        } else {
+          // No timezone set - use browser detection and save it
+          const detected = detectBrowserTimezoneOffset();
+          setTimezoneOffset(detected);
+          await supabase
+            .from('profiles')
+            .update({ timezone_preference: detected })
+            .eq('id', user.id);
         }
       } catch (error) {
         console.error('Error fetching timezone:', error);
+        // Fall back to browser detection on error
+        setTimezoneOffset(detectBrowserTimezoneOffset());
       } finally {
         setLoading(false);
       }

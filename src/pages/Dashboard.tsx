@@ -38,20 +38,15 @@ import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import remiMascot from "@/assets/remi-waving.webp";
 import { Sparkles } from "lucide-react";
 
-const normalizeTimezoneOffset = (offset?: string | null) => {
-  if (!offset) return "+00:00";
-  return offset.startsWith("+") || offset.startsWith("-") ? offset : `+${offset}`;
-};
-
-const getDayKeyInOffset = (date: Date, offset: string) =>
-  formatInTimeZone(date, offset, "yyyy-MM-dd");
+import { normalizeTimezoneOffset, getDayKeyInOffset } from "@/lib/timezone";
 
 const getWeekStartKeyInOffset = (date: Date, offset: string) => {
   // Use date-fns-tz to avoid off-by-one issues when the browser timezone differs
   // from the user's chosen offset.
-  const zonedNow = toZonedTime(date, offset);
+  const normalizedOffset = normalizeTimezoneOffset(offset);
+  const zonedNow = toZonedTime(date, normalizedOffset);
   const weekStart = startOfWeek(zonedNow, { weekStartsOn: 1 });
-  return formatInTimeZone(weekStart, offset, "yyyy-MM-dd");
+  return formatInTimeZone(weekStart, normalizedOffset, "yyyy-MM-dd");
 };
 
 export default function Dashboard() {
@@ -170,7 +165,7 @@ export default function Dashboard() {
       const streakIsZero = (progress.daily_streak || 0) === 0;
       
       if (hasLogs && streakIsZero) {
-        const today = new Date().toISOString().split('T')[0];
+        const today = getDayKeyInOffset(new Date(), tzOffset);
         await updateProgress({
           daily_streak: 1,
           current_streak: 1,

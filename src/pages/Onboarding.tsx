@@ -124,13 +124,17 @@ export default function Onboarding() {
   // Log the Greeting hello and update streak to 1
   const logGreetingHello = async () => {
     const { data: { user: existingUser } } = await supabase.auth.getUser();
-    const today = new Date().toISOString().split('T')[0];
+    
+    // Import timezone utilities
+    const { detectBrowserTimezoneOffset, getDayKeyInOffset } = await import('@/lib/timezone');
+    const detectedOffset = detectBrowserTimezoneOffset();
+    const today = getDayKeyInOffset(new Date(), detectedOffset);
     
     if (existingUser) {
       await supabase.from('hello_logs').insert({
         user_id: existingUser.id,
         hello_type: 'Greeting',
-        timezone_offset: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezone_offset: detectedOffset,
       });
       
       // Update daily streak to 1 after first hello
@@ -141,6 +145,11 @@ export default function Onboarding() {
         total_hellos: 1,
         hellos_this_week: 1,
       }).eq('user_id', existingUser.id);
+      
+      // Also update profile timezone if not set
+      await supabase.from('profiles').update({
+        timezone_preference: detectedOffset,
+      }).eq('id', existingUser.id);
     } else {
       await addGuestHelloLog({
         name: null,
@@ -148,7 +157,7 @@ export default function Onboarding() {
         hello_type: 'Greeting',
         rating: null,
         difficulty_rating: null,
-        timezone_offset: '+00:00',
+        timezone_offset: detectedOffset,
       });
       
       // Update daily streak to 1 after first hello for guest

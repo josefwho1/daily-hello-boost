@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { isSameDayInTimezone, getDaysDifferenceInTimezone, getDateInUserTimezone } from "@/lib/timezone";
+import { isSameDayInTimezone, getDaysDifferenceInTimezone, getDateInUserTimezone, getDayKeyInOffset, detectBrowserTimezoneOffset } from "@/lib/timezone";
 import { format } from "date-fns";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
@@ -187,9 +187,9 @@ const Home = () => {
         difficulty_rating: currentDifficulty
       });
 
-      // Use date-only format (YYYY-MM-DD) for consistency with Dashboard.tsx
-      // This prevents timezone parsing issues when comparing dates
-      const today = new Date().toISOString().split('T')[0];
+      // Use timezone-aware date calculation for consistency
+      const tzOffset = detectBrowserTimezoneOffset();
+      const today = getDayKeyInOffset(new Date(), tzOffset);
       
       // Update streak
       if (!progress.last_completed_date) {
@@ -199,7 +199,7 @@ const Home = () => {
           last_completed_date: today
         });
       } else {
-        const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date());
+        const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date(), tzOffset);
         
         if (daysDiff === 1) {
           const newStreak = progress.current_streak + 1;
