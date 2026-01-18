@@ -35,7 +35,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const { timezoneOffset, updateTimezone } = useTimezone();
+  const { timezoneOffset, updateTimezone, loading: timezoneLoading } = useTimezone();
   const { progress, updateProgress } = useUserProgress();
   
   
@@ -352,9 +352,13 @@ const Settings = () => {
           
           <div className="space-y-2">
             <Label className="text-sm text-muted-foreground">Select your timezone</Label>
-            <Select value={timezoneOffset} onValueChange={handleTimezoneChange}>
+            <Select 
+              value={timezoneLoading ? undefined : timezoneOffset} 
+              onValueChange={handleTimezoneChange}
+              disabled={timezoneLoading}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Select timezone" />
+                <SelectValue placeholder={timezoneLoading ? "Loading..." : "Select timezone"} />
               </SelectTrigger>
               <SelectContent>
                 {timezoneOptions.map((tz) => (
@@ -364,6 +368,9 @@ const Settings = () => {
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              {timezoneLoading ? "Loading..." : `Current offset: ${timezoneOffset}`}
+            </p>
           </div>
         </Card>
 
