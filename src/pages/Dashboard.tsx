@@ -38,7 +38,7 @@ import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import remiMascot from "@/assets/remi-waving.webp";
 import { Sparkles } from "lucide-react";
 
-import { normalizeTimezoneOffset, getDayKeyInOffset } from "@/lib/timezone";
+import { normalizeTimezoneOffset, getDayKeyInOffset, getDayKeyDifference, getYesterdayKeyInOffset } from "@/lib/timezone";
 
 const getWeekStartKeyInOffset = (date: Date, offset: string) => {
   // Use date-fns-tz to avoid off-by-one issues when the browser timezone differs
@@ -322,9 +322,9 @@ export default function Dashboard() {
       const hasHelloToday = normalizedLastDate === today;
 
       if (!hasHelloToday) {
-        const lastDate = parseISO(normalizedLastDate);
-        const todayDate = parseISO(today);
-        const daysSinceLastHello = differenceInDays(todayDate, lastDate);
+        // Use stable day-key arithmetic instead of parseISO/differenceInDays 
+        // to avoid browser timezone drift issues
+        const daysSinceLastHello = getDayKeyDifference(normalizedLastDate, today);
 
         // Only show dialog if we haven't already offered today
         if (saveOfferedForDate !== today) {
@@ -359,13 +359,14 @@ export default function Dashboard() {
   const handleStreakSaverUseOrb = async () => {
     const currentOrbs = progress?.orbs || 0;
     if (currentOrbs > 0) {
-      const today = getDayKeyInOffset(new Date(), tzOffset);
+      // Set last_completed_date to YESTERDAY so the next real hello can increment the streak
+      const yesterday = getYesterdayKeyInOffset(new Date(), tzOffset);
       
-      // Consume 1 orb, keep streak intact, set last_completed_date to today
+      // Consume 1 orb, keep streak intact, set last_completed_date to yesterday
       // This does NOT count as a real hello - no XP, no hello count increase
       await updateProgress({
         orbs: currentOrbs - 1,
-        last_completed_date: today,
+        last_completed_date: yesterday,
         // Keep current streak - don't increment, just preserve
       });
       toast.success("✨ Orb used! Your streak is saved.");
@@ -504,7 +505,12 @@ export default function Dashboard() {
         // First hello of the day - check if we should increment streak
         const lastDate = progress?.last_completed_date;
         if (lastDate) {
-          const diffDays = differenceInDays(parseISO(today), parseISO(lastDate));
+          // Normalize to date-only format
+          const normalizedLastDate = lastDate.includes('T') 
+            ? lastDate.split('T')[0] 
+            : lastDate;
+          // Use stable day-key arithmetic instead of parseISO/differenceInDays
+          const diffDays = getDayKeyDifference(normalizedLastDate, today);
 
           if (diffDays <= 1) {
             // Yesterday was completed (or orb was used which sets to yesterday) - increment streak

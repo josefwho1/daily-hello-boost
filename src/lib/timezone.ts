@@ -83,3 +83,25 @@ export const getDaysDifferenceInTimezone = (date1: Date | string, date2: Date | 
   
   return Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
 };
+
+/**
+ * Calculate the difference in days between two YYYY-MM-DD strings.
+ * Uses pure arithmetic to avoid any browser timezone issues.
+ */
+export const getDayKeyDifference = (dayKey1: string, dayKey2: string): number => {
+  // Parse YYYY-MM-DD strings directly as UTC to avoid timezone issues
+  const d1 = new Date(dayKey1 + 'T00:00:00Z');
+  const d2 = new Date(dayKey2 + 'T00:00:00Z');
+  return Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+/**
+ * Get yesterday's date key given a reference date and offset.
+ */
+export const getYesterdayKeyInOffset = (date: Date, offset: string): string => {
+  const normalizedOffset = normalizeTimezoneOffset(offset);
+  const zonedDate = toZonedTime(date, normalizedOffset);
+  const yesterday = new Date(zonedDate);
+  yesterday.setDate(yesterday.getDate() - 1);
+  return formatInTimeZone(yesterday, normalizedOffset, "yyyy-MM-dd");
+};

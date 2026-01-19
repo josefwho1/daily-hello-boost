@@ -42,7 +42,7 @@ const Profile = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { guestProgress, guestState, isGuest, dismissSavePrompt, updateProgress: updateGuestProgress, refetch: refetchGuestData } = useGuestMode();
-  const { timezoneOffset, updateTimezone } = useTimezone();
+  const { timezoneOffset, updateTimezone, autoDetect, updateAutoDetect, loading: timezoneLoading } = useTimezone();
   const { progress: cloudProgress, updateProgress } = useUserProgress();
   
   
@@ -133,13 +133,13 @@ const Profile = () => {
     }
   };
 
-  // Generate timezone options
+  // Generate timezone options with proper ±HH:MM format
   const timezoneOptions = [];
   for (let i = -12; i <= 12; i++) {
-    const sign = i >= 0 ? '+' : '';
+    const sign = i >= 0 ? '+' : '-';
     const hours = Math.abs(i).toString().padStart(2, '0');
     const value = `${sign}${hours}:00`;
-    const label = `GMT${sign}${i}`;
+    const label = `GMT${i >= 0 ? '+' : ''}${i}`;
     timezoneOptions.push({ value, label });
   }
 
@@ -294,6 +294,16 @@ const Profile = () => {
     } catch (error) {
       console.error("Error updating timezone:", error);
       toast.error("Failed to update timezone");
+    }
+  };
+
+  const handleAutoDetectChange = async (enabled: boolean) => {
+    try {
+      await updateAutoDetect(enabled);
+      toast.success(enabled ? "Auto-detect enabled" : "Auto-detect disabled");
+    } catch (error) {
+      console.error("Error updating auto-detect:", error);
+      toast.error("Failed to update setting");
     }
   };
 
@@ -528,18 +538,40 @@ const Profile = () => {
             <h3 className="font-semibold text-foreground">Timezone</h3>
           </div>
           
-          <Select value={timezoneOffset} onValueChange={handleTimezoneChange}>
-            <SelectTrigger className="rounded-xl">
-              <SelectValue placeholder="Select timezone" />
-            </SelectTrigger>
-            <SelectContent>
-              {timezoneOptions.map((tz) => (
-                <SelectItem key={tz.value} value={tz.value}>
-                  {tz.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-foreground">Auto-detect timezone</Label>
+                <p className="text-xs text-muted-foreground">
+                  {autoDetect ? `Detected: ${timezoneOffset}` : 'Set manually below'}
+                </p>
+              </div>
+              <Switch
+                checked={autoDetect}
+                onCheckedChange={handleAutoDetectChange}
+                disabled={timezoneLoading}
+              />
+            </div>
+            
+            {!autoDetect && (
+              <Select 
+                value={timezoneOffset} 
+                onValueChange={handleTimezoneChange}
+                disabled={timezoneLoading}
+              >
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue placeholder={timezoneLoading ? "Loading..." : "Select timezone"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {timezoneOptions.map((tz) => (
+                    <SelectItem key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
         </Card>
 
         {/* Email Notifications */}

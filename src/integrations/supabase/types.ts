@@ -195,6 +195,7 @@ export type Database = {
           email: string | null
           id: string
           profile_picture: string | null
+          timezone_auto_detect: boolean
           timezone_preference: string | null
           updated_at: string
           username: string
@@ -204,6 +205,7 @@ export type Database = {
           email?: string | null
           id: string
           profile_picture?: string | null
+          timezone_auto_detect?: boolean
           timezone_preference?: string | null
           updated_at?: string
           username: string
@@ -213,6 +215,7 @@ export type Database = {
           email?: string | null
           id?: string
           profile_picture?: string | null
+          timezone_auto_detect?: boolean
           timezone_preference?: string | null
           updated_at?: string
           username?: string
