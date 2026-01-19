@@ -13,6 +13,7 @@ import hellobookIcon from "@/assets/hellobook-icon.webp";
 import vaultIcon from "@/assets/vault-icon.webp";
 import EditHelloDialog from "@/components/EditHelloDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
+import { HellobookStats } from "@/components/HellobookStats";
 // Expandable text component for long notes
 const ExpandableText = ({ text }: { text: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -108,7 +109,7 @@ const getTypeDisplay = (helloType: string | null) => {
 const Hellobook = () => {
   const navigate = useNavigate();
   const { logs, loading, updateLog } = useHelloLogs();
-  const { formatTimestamp } = useTimezone();
+  const { formatTimestamp, timezoneOffset } = useTimezone();
   const { user } = useAuth();
   const { isGuest } = useGuestMode();
   const [searchQuery, setSearchQuery] = useState("");
@@ -207,6 +208,9 @@ const Hellobook = () => {
             </div>
           </Card>
         )}
+
+        {/* Stats Snapshot */}
+        <HellobookStats logs={logs} timezoneOffset={timezoneOffset} />
 
         {/* Search */}
         <div className="relative mb-6">
