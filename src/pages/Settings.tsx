@@ -35,7 +35,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const { timezoneOffset, updateTimezone, loading: timezoneLoading } = useTimezone();
+  const { timezoneOffset, updateTimezone, autoDetect, updateAutoDetect, loading: timezoneLoading } = useTimezone();
   const { progress, updateProgress } = useUserProgress();
   
   
@@ -350,27 +350,49 @@ const Settings = () => {
             <h2 className="text-lg font-semibold text-foreground">Timezone</h2>
           </div>
           
-          <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">Select your timezone</Label>
-            <Select 
-              value={timezoneLoading ? undefined : timezoneOffset} 
-              onValueChange={handleTimezoneChange}
-              disabled={timezoneLoading}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={timezoneLoading ? "Loading..." : "Select timezone"} />
-              </SelectTrigger>
-              <SelectContent>
-                {timezoneOptions.map((tz) => (
-                  <SelectItem key={tz.value} value={tz.value}>
-                    {tz.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              {timezoneLoading ? "Loading..." : `Current offset: ${timezoneOffset}`}
-            </p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm text-foreground">Auto-detect timezone</Label>
+                <p className="text-xs text-muted-foreground">
+                  {autoDetect ? `Detected: ${timezoneOffset}` : 'Set manually below'}
+                </p>
+              </div>
+              <Switch
+                checked={autoDetect}
+                onCheckedChange={async (checked) => {
+                  try {
+                    await updateAutoDetect(checked);
+                    toast.success(checked ? "Auto-detect enabled" : "Auto-detect disabled");
+                  } catch (error) {
+                    toast.error("Failed to update setting");
+                  }
+                }}
+                disabled={timezoneLoading}
+              />
+            </div>
+            
+            {!autoDetect && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Select your timezone</Label>
+                <Select 
+                  value={timezoneLoading ? undefined : timezoneOffset} 
+                  onValueChange={handleTimezoneChange}
+                  disabled={timezoneLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={timezoneLoading ? "Loading..." : "Select timezone"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timezoneOptions.map((tz) => (
+                      <SelectItem key={tz.value} value={tz.value}>
+                        {tz.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
         </Card>
 

@@ -7,6 +7,7 @@ export const useTimezone = () => {
   const { user } = useAuth();
   // Initialize with browser-detected timezone instead of hardcoded UTC
   const [timezoneOffset, setTimezoneOffset] = useState<string>(detectBrowserTimezoneOffset());
+  const [autoDetect, setAutoDetect] = useState<boolean>(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -14,6 +15,7 @@ export const useTimezone = () => {
       if (!user) {
         // For non-authenticated users, use browser-detected timezone
         setTimezoneOffset(detectBrowserTimezoneOffset());
+        setAutoDetect(true);
         setLoading(false);
         return;
       }
@@ -21,14 +23,29 @@ export const useTimezone = () => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('timezone_preference')
+          .select('timezone_preference, timezone_auto_detect')
           .eq('id', user.id)
           .single();
 
         if (error) throw error;
         
-        if (data?.timezone_preference) {
-          // Normalize the stored timezone to handle malformed data
+        const isAutoDetect = data?.timezone_auto_detect !== false; // default true
+        setAutoDetect(isAutoDetect);
+        
+        if (isAutoDetect) {
+          // Auto-detect mode: always use browser timezone and save it
+          const detected = detectBrowserTimezoneOffset();
+          setTimezoneOffset(detected);
+          
+          // Update in DB if different
+          if (data?.timezone_preference !== detected) {
+            await supabase
+              .from('profiles')
+              .update({ timezone_preference: detected })
+              .eq('id', user.id);
+          }
+        } else if (data?.timezone_preference) {
+          // Manual mode: use stored timezone
           const normalized = normalizeTimezoneOffset(data.timezone_preference);
           setTimezoneOffset(normalized);
           
@@ -73,6 +90,27 @@ export const useTimezone = () => {
     setTimezoneOffset(newOffset);
   };
 
+  const updateAutoDetect = async (enabled: boolean) => {
+    if (!user) throw new Error('User not authenticated');
+
+    const updates: Record<string, unknown> = { timezone_auto_detect: enabled };
+    
+    // If enabling auto-detect, also update the timezone to current browser value
+    if (enabled) {
+      const detected = detectBrowserTimezoneOffset();
+      updates.timezone_preference = detected;
+      setTimezoneOffset(detected);
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id);
+
+    if (error) throw error;
+    setAutoDetect(enabled);
+  };
+
   const getUserTimezoneOffset = () => {
     return timezoneOffset;
   };
@@ -113,8 +151,10 @@ export const useTimezone = () => {
 
   return {
     timezoneOffset,
+    autoDetect,
     loading,
     updateTimezone,
+    updateAutoDetect,
     getUserTimezoneOffset,
     formatTimestamp,
   };
