@@ -27,16 +27,12 @@ interface EditHelloDialogProps {
 const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogProps) => {
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
-  const [rating, setRating] = useState<'positive' | 'neutral' | 'negative' | null>(null);
-  const [difficultyRating, setDifficultyRating] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (log) {
       setName(log.name || "");
       setNotes(log.notes || "");
-      setRating(log.rating);
-      setDifficultyRating(log.difficulty_rating);
     }
   }, [log]);
 
@@ -47,9 +43,7 @@ const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogPro
     setIsSubmitting(true);
     const result = await onSave(log.id, {
       name: name || null,
-      notes: notes || null,
-      rating,
-      difficulty_rating: difficultyRating
+      notes: notes || null
     });
 
     if (result) {
@@ -58,11 +52,6 @@ const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogPro
     setIsSubmitting(false);
   };
 
-  const difficultyOptions = [
-    { value: 1, label: 'Easy', emoji: '😌' },
-    { value: 2, label: 'Just right', emoji: '👍' },
-    { value: 3, label: 'Hard', emoji: '💪' },
-  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -92,29 +81,6 @@ const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogPro
               onChange={(e) => setNotes(e.target.value)}
               className="rounded-xl min-h-[80px]"
             />
-          </div>
-
-
-          {/* Difficulty Selection */}
-          <div className="space-y-2">
-            <Label>How difficult was it?</Label>
-            <div className="flex gap-2">
-              {difficultyOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setDifficultyRating(difficultyRating === option.value ? null : option.value)}
-                  className={`flex-1 py-2 px-3 rounded-xl border transition-all text-sm ${
-                    difficultyRating === option.value
-                      ? 'bg-primary/20 border-primary text-primary'
-                      : 'bg-card border-border text-muted-foreground hover:border-primary/50'
-                  }`}
-                >
-                  <span className="mr-1">{option.emoji}</span>
-                  {option.label}
-                </button>
-              ))}
-            </div>
           </div>
 
           <DialogFooter className="gap-2">
