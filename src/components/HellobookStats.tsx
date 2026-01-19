@@ -1,8 +1,6 @@
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Trophy, Users, Calendar, TrendingUp, Star } from "lucide-react";
-import { formatInTimeZone } from "date-fns-tz";
-import { normalizeTimezoneOffset } from "@/lib/timezone";
+import { Sparkles, Trophy, Users, Calendar, Star } from "lucide-react";
 
 interface HelloLog {
   id: string;
@@ -36,15 +34,6 @@ export const HellobookStats = ({ logs, timezoneOffset }: HellobookStatsProps) =>
     const todaysHelloCount = logs.filter(log => log.hello_type === 'todays_hello').length;
     const remisWeeklyCount = logs.filter(log => log.hello_type === 'remis_challenge').length;
     
-    // Most hellos in one day
-    const offset = normalizeTimezoneOffset(timezoneOffset);
-    const dayCountMap = new Map<string, number>();
-    logs.forEach(log => {
-      const dayKey = formatInTimeZone(new Date(log.created_at), offset, 'yyyy-MM-dd');
-      dayCountMap.set(dayKey, (dayCountMap.get(dayKey) || 0) + 1);
-    });
-    const mostInOneDay = Math.max(0, ...Array.from(dayCountMap.values()));
-    
     // Hello of the Day - random log with both name AND notes
     const logsWithNameAndNotes = logs.filter(log => 
       log.name && log.name.trim() && log.notes && log.notes.trim()
@@ -63,7 +52,6 @@ export const HellobookStats = ({ logs, timezoneOffset }: HellobookStatsProps) =>
       namesRemembered,
       todaysHelloCount,
       remisWeeklyCount,
-      mostInOneDay,
       helloOfTheDay
     };
   }, [logs, timezoneOffset]);
@@ -71,56 +59,41 @@ export const HellobookStats = ({ logs, timezoneOffset }: HellobookStatsProps) =>
   if (logs.length === 0) return null;
 
   return (
-    <div className="space-y-4 mb-6">
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Total Hellos */}
-        <Card className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-          <div className="flex items-center gap-2 mb-1">
-            <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted-foreground">Total Hellos</span>
+    <div className="space-y-3 mb-4">
+      {/* Compact Stats Row */}
+      <div className="grid grid-cols-4 gap-2">
+        <Card className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <div className="flex flex-col items-center text-center">
+            <Calendar className="w-3.5 h-3.5 text-primary mb-0.5" />
+            <p className="text-lg font-bold text-foreground leading-none">{stats.totalHellos}</p>
+            <span className="text-[10px] text-muted-foreground">Hellos</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{stats.totalHellos}</p>
         </Card>
         
-        {/* Names Remembered */}
-        <Card className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/20">
-          <div className="flex items-center gap-2 mb-1">
-            <Users className="w-4 h-4 text-emerald-600" />
-            <span className="text-xs text-muted-foreground">Names Remembered</span>
+        <Card className="p-2 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/20">
+          <div className="flex flex-col items-center text-center">
+            <Users className="w-3.5 h-3.5 text-emerald-600 mb-0.5" />
+            <p className="text-lg font-bold text-foreground leading-none">{stats.namesRemembered}</p>
+            <span className="text-[10px] text-muted-foreground">Names</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{stats.namesRemembered}</p>
         </Card>
         
-        {/* Today's Hello Count */}
-        <Card className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted-foreground">Today's Hello</span>
+        <Card className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <div className="flex flex-col items-center text-center">
+            <Sparkles className="w-3.5 h-3.5 text-primary mb-0.5" />
+            <p className="text-lg font-bold text-foreground leading-none">{stats.todaysHelloCount}</p>
+            <span className="text-[10px] text-muted-foreground">Daily</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{stats.todaysHelloCount}</p>
         </Card>
         
-        {/* Remi's Weekly Count */}
-        <Card className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
-          <div className="flex items-center gap-2 mb-1">
-            <Trophy className="w-4 h-4 text-amber-600" />
-            <span className="text-xs text-muted-foreground">Weekly Challenges</span>
+        <Card className="p-2 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
+          <div className="flex flex-col items-center text-center">
+            <Trophy className="w-3.5 h-3.5 text-amber-600 mb-0.5" />
+            <p className="text-lg font-bold text-foreground leading-none">{stats.remisWeeklyCount}</p>
+            <span className="text-[10px] text-muted-foreground">Weekly</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{stats.remisWeeklyCount}</p>
         </Card>
       </div>
-      
-      {/* Most in One Day */}
-      <Card className="p-4 rounded-2xl border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-primary" />
-            <span className="text-sm text-muted-foreground">Most hellos in one day</span>
-          </div>
-          <span className="text-xl font-bold text-foreground">{stats.mostInOneDay}</span>
-        </div>
-      </Card>
       
       {/* Hello of the Day */}
       {stats.helloOfTheDay && (
