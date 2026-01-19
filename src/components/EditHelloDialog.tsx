@@ -58,12 +58,6 @@ const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogPro
     setIsSubmitting(false);
   };
 
-  const ratingOptions = [
-    { value: 'positive' as const, label: 'Positive', emoji: '😊' },
-    { value: 'neutral' as const, label: 'Neutral', emoji: '😐' },
-    { value: 'negative' as const, label: 'Negative', emoji: '😔' },
-  ];
-
   const difficultyOptions = [
     { value: 1, label: 'Easy', emoji: '😌' },
     { value: 2, label: 'Just right', emoji: '👍' },
@@ -100,27 +94,6 @@ const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogPro
             />
           </div>
 
-          {/* Rating Selection */}
-          <div className="space-y-2">
-            <Label>How did it feel?</Label>
-            <div className="flex gap-2">
-              {ratingOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setRating(rating === option.value ? null : option.value)}
-                  className={`flex-1 py-2 px-3 rounded-xl border transition-all text-sm ${
-                    rating === option.value
-                      ? 'bg-primary/20 border-primary text-primary'
-                      : 'bg-card border-border text-muted-foreground hover:border-primary/50'
-                  }`}
-                >
-                  <span className="mr-1">{option.emoji}</span>
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Difficulty Selection */}
           <div className="space-y-2">
