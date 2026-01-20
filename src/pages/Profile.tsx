@@ -271,6 +271,9 @@ const Profile = () => {
         throw new Error(response.error.message || "Failed to delete account");
       }
 
+      // Sign out the user after successful deletion
+      await supabase.auth.signOut({ scope: 'local' });
+      
       toast.success("Account deleted successfully");
       // Redirect to landing page
       window.location.href = '/landing';
