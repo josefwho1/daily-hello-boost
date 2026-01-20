@@ -637,7 +637,10 @@ export default function Onboarding() {
                 Next up: make someone's day.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Give a genuine compliment. Clothing or accessories work great.
+                Give a genuine compliment.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Clothing or accessories work great.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Come back once you've done it.
@@ -738,7 +741,7 @@ export default function Onboarding() {
                 You can officially turn a stranger into a friend.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Welcome to the Gaze
+                Welcome to the <span className="font-bold">Gaze</span>
               </p>
               <p className="text-sm text-primary italic">
                 (that's what a group of raccoons is called 🦝)
