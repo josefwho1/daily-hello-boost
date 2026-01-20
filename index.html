@@ -3,17 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="shortcut icon" href="/favicon.ico" />
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/webp" sizes="32x32" href="/icons/favicon-32.webp" />
+    <link rel="icon" type="image/webp" sizes="16x16" href="/icons/favicon-16.webp" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    
     <title>One Hello - Build Confidence Through Connection</title>
     <meta name="description" content="One Hello - The social app that actually helps you socialise." />
     <meta name="author" content="One Hello" />
 
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#fff3f4" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="theme-color" content="#2b1f1a" />
     
     <!-- iOS PWA Support -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -31,13 +33,10 @@
     <!-- Inline theme script to prevent flash of wrong theme -->
     <script>
       (function() {
-        var theme = localStorage.getItem('onehello-theme') || 'system';
-        var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        if (isDark) {
-          document.documentElement.classList.add('dark');
-          var meta = document.querySelector('meta[name="theme-color"]');
-          if (meta) meta.setAttribute('content', '#502a13');
-        }
+        // Always apply dark mode
+        document.documentElement.classList.add('dark');
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', '#2b1f1a');
       })();
     </script>
   </head>
