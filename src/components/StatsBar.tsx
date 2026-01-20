@@ -98,7 +98,7 @@ export const StatsBar = ({
     progressMax = 1;
   } else {
     progressValue = hellosThisWeek;
-    progressMax = 5;
+    progressMax = 3; // Chill mode target is 3 hellos per week
   }
   
   const progressPercent = Math.min((progressValue / progressMax) * 100, 100);
