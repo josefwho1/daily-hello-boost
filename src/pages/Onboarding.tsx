@@ -38,6 +38,41 @@ export type OnboardingStep =
   | 'question_done'     // After question complete - name intro
   | 'initiation_complete'; // After all 5 First Hellos complete
 
+// Map each step to its image, and the next step's image for preloading
+const stepImageMap: Record<OnboardingStep, string | null> = {
+  'welcome': remiWaving4,
+  'greeting': remiShakingHand,
+  'how_it_works': remiCurious1,
+  'stats': remiSurprised1,
+  'initiation': remiCongrats3,
+  'first_hello_intro': remiWaving,
+  'public_yes': onboardingFirsthello,
+  'public_no': onboardingFirsthello,
+  'greeting_complete': remiCongrats1,
+  'observation_intro': onboardingObservation,
+  'observation_done': onboardingCompliment,
+  'compliment_done': onboardingQuestion,
+  'question_done': onboardingName,
+  'initiation_complete': remiCongrats1,
+};
+
+// Define the next step for each step (for preloading)
+const nextStepMap: Partial<Record<OnboardingStep, OnboardingStep | OnboardingStep[]>> = {
+  'welcome': 'greeting',
+  'greeting': 'how_it_works',
+  'how_it_works': 'stats',
+  'stats': 'initiation',
+  'initiation': 'first_hello_intro',
+  'first_hello_intro': ['public_yes', 'public_no'], // Could go either way
+  'public_yes': 'greeting_complete',
+  'public_no': 'greeting_complete', // Will also need this when user returns
+  'greeting_complete': 'observation_intro',
+  'observation_intro': 'observation_done',
+  'observation_done': 'compliment_done',
+  'compliment_done': 'question_done',
+  'question_done': 'initiation_complete',
+};
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -45,6 +80,22 @@ export default function Onboarding() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showFirstOrbGift, setShowFirstOrbGift] = useState(false);
   const [userName, setUserName] = useState('');
+
+  // Preload next screen's image when current step changes
+  useEffect(() => {
+    const nextStep = nextStepMap[step];
+    if (!nextStep) return;
+
+    const stepsToPreload = Array.isArray(nextStep) ? nextStep : [nextStep];
+    
+    stepsToPreload.forEach((s) => {
+      const imageSrc = stepImageMap[s];
+      if (imageSrc) {
+        const img = new Image();
+        img.src = imageSrc;
+      }
+    });
+  }, [step]);
 
   // Save username and auto-advance from greeting to how_it_works
   useEffect(() => {
