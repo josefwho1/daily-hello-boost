@@ -331,25 +331,26 @@ export default function Dashboard() {
           setMissedDays(daysSinceLastHello);
           setPreviousStreak(dailyStreak);
 
-          if (daysSinceLastHello >= 3) {
-            // Too late to save - streak must reset (fresh start)
+          // CRITICAL FIX: d=1 means yesterday (still safe), d>=2 means missed days
+          // Only prompt when d >= 2 (missed at least 1 full day)
+          if (daysSinceLastHello >= 4) {
+            // Too late to save - missed 3+ days, streak must reset
             setStreakSaverScenario('fresh_start');
             setShowStreakSaverDialog(true);
             updateProgress({ save_offered_for_date: today });
-          } else if (daysSinceLastHello >= 1) {
-            // Within 48-hour grace period (1-2 missed days)
+          } else if (daysSinceLastHello >= 2) {
+            // Within 2-day forgiveness window (d=2 or d=3 means missed 1-2 days)
             if (currentOrbs > 0) {
-              // User can save their streak
               setStreakSaverScenario('can_save');
               setShowStreakSaverDialog(true);
               updateProgress({ save_offered_for_date: today });
             } else {
-              // No orbs - streak resets, but gift an orb
               setStreakSaverScenario('no_orbs');
               setShowStreakSaverDialog(true);
               updateProgress({ save_offered_for_date: today });
             }
           }
+          // If d === 1, do nothing - user logged yesterday, still safe today
         }
       }
     }
