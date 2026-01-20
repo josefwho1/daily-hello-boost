@@ -17,7 +17,7 @@ import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { ProfilePictureSelector, getProfilePictureSrc } from "@/components/ProfilePictureSelector";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
-import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Bell, Camera, Instagram, Globe, Mail, Smartphone, Share, ChevronDown, ChevronUp, Sparkles, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Bell, Camera, Instagram, Globe, Mail, Smartphone, Share, ChevronDown, ChevronUp, Sparkles, Lock, Eye, EyeOff, AlertCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -68,6 +68,10 @@ const Profile = () => {
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
+  
+  // Delete account state
+  const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   
   // Use cloud progress for authenticated users, guest progress otherwise
   const progress = user ? cloudProgress : (guestProgress ? {
@@ -243,6 +247,39 @@ const Profile = () => {
     } catch (error) {
       console.error("Error clearing guest data:", error);
       window.location.href = '/landing';
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    
+    setIsDeletingAccount(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("You must be logged in to delete your account");
+        return;
+      }
+
+      const response = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to delete account");
+      }
+
+      toast.success("Account deleted successfully");
+      // Redirect to landing page
+      window.location.href = '/landing';
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast.error("Failed to delete account. Please try again.");
+    } finally {
+      setIsDeletingAccount(false);
+      setShowDeleteAccountConfirm(false);
     }
   };
 
@@ -844,9 +881,9 @@ const Profile = () => {
           </Card>
         )}
 
-        {/* Sign Out (Auth users only) */}
+        {/* Sign Out & Delete Account (Auth users only) */}
         {user && (
-          <Card className="p-5 rounded-2xl">
+          <Card className="p-5 rounded-2xl space-y-3">
             <Button
               variant="outline"
               className="w-full justify-center rounded-xl"
@@ -854,6 +891,14 @@ const Profile = () => {
             >
               <LogOut size={16} className="mr-2" />
               Sign Out
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-center rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => setShowDeleteAccountConfirm(true)}
+            >
+              <Trash2 size={16} className="mr-2" />
+              Delete My Account
             </Button>
           </Card>
         )}
@@ -931,6 +976,34 @@ const Profile = () => {
               }}
             >
               Sign Out Anyway
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={showDeleteAccountConfirm} onOpenChange={setShowDeleteAccountConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-destructive" />
+              Delete your account?
+            </DialogTitle>
+            <DialogDescription className="space-y-2 pt-2">
+              <p>This action cannot be undone.</p>
+              <p className="font-medium text-destructive">All your progress, hellos, and data will be permanently deleted.</p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowDeleteAccountConfirm(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteAccount}
+              disabled={isDeletingAccount}
+            >
+              {isDeletingAccount ? "Deleting..." : "Delete Account"}
             </Button>
           </DialogFooter>
         </DialogContent>
