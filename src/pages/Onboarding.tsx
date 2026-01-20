@@ -8,26 +8,35 @@ import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
 
 // Remi images
 import remiWaving from "@/assets/remi-waving.webp";
-import remiWaving2 from "@/assets/remi-waving-2.webp";
 import remiWaving4 from "@/assets/remi-waving-4.webp";
 import remiCurious1 from "@/assets/remi-curious-1.webp";
 import remiSurprised1 from "@/assets/remi-surprised-1.webp";
 import remiCongrats1 from "@/assets/remi-congrats-1.webp";
 import remiCongrats3 from "@/assets/remi-congrats-3.webp";
-import remiCelebrating1 from "@/assets/remi-celebrating-1.webp";
 import remiShakingHand from "@/assets/remi-shaking-hand.webp";
+
+// New onboarding images
+import onboardingFirsthello from "@/assets/onboarding-firsthello.webp";
+import onboardingObservation from "@/assets/onboarding-observation.webp";
+import onboardingCompliment from "@/assets/onboarding-compliment.webp";
+import onboardingQuestion from "@/assets/onboarding-question.webp";
+import onboardingName from "@/assets/onboarding-name.webp";
 
 export type OnboardingStep = 
   | 'welcome'           // Screen 1 - Name input
   | 'greeting'          // Screen 1b - Nice to meet you animation
   | 'how_it_works'      // Screen 2
   | 'stats'             // Screen 3
-  | 'initiation'        // Screen 4
+  | 'initiation'        // Screen 4 - Introduction
   | 'first_hello_intro' // Screen 5 - Are you in public?
   | 'public_yes'        // Yes branch
   | 'public_no'         // No branch - also used for "no one around"
   | 'greeting_complete' // After "I did it" - rating screen
-  | 'observation_intro'; // Intro to next challenge
+  | 'observation_intro' // Intro to observation challenge
+  | 'observation_done'  // After observation complete - compliment intro
+  | 'compliment_done'   // After compliment complete - question intro
+  | 'question_done'     // After question complete - name intro
+  | 'initiation_complete'; // After all 5 First Hellos complete
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -46,29 +55,24 @@ export default function Onboarding() {
         
         if (user) {
           // For authenticated users, save to both profiles and user_progress tables
-          // Update profiles table (for display)
           await supabase.from('profiles').update({ 
             username: userName.trim() 
           }).eq('id', user.id);
           
-          // Update user_progress table
           await supabase.from('user_progress').update({ 
             username: userName.trim() 
           }).eq('user_id', user.id);
           
-          // Also update auth user metadata so it persists
           await supabase.auth.updateUser({
             data: { name: userName.trim() }
           });
         } else {
-          // For guest users - ensure guest state and progress exist first
+          // For guest users
           let guestState = await getGuestState();
           if (!guestState) {
-            // Create guest state and progress if they don't exist yet
             guestState = await createGuestState();
             await createGuestProgress(guestState.device_id, guestState.guest_user_id);
           }
-          // Now save the username to guest progress
           await updateGuestProgress({ username: userName.trim() });
         }
       };
@@ -125,7 +129,6 @@ export default function Onboarding() {
   const logGreetingHello = async () => {
     const { data: { user: existingUser } } = await supabase.auth.getUser();
     
-    // Import timezone utilities
     const { detectBrowserTimezoneOffset, getDayKeyInOffset } = await import('@/lib/timezone');
     const detectedOffset = detectBrowserTimezoneOffset();
     const today = getDayKeyInOffset(new Date(), detectedOffset);
@@ -137,7 +140,6 @@ export default function Onboarding() {
         timezone_offset: detectedOffset,
       });
       
-      // Update daily streak to 1 after first hello
       await supabase.from('user_progress').update({
         daily_streak: 1,
         current_streak: 1,
@@ -146,7 +148,6 @@ export default function Onboarding() {
         hellos_this_week: 1,
       }).eq('user_id', existingUser.id);
       
-      // Also update profile timezone if not set
       await supabase.from('profiles').update({
         timezone_preference: detectedOffset,
       }).eq('id', existingUser.id);
@@ -160,7 +161,6 @@ export default function Onboarding() {
         timezone_offset: detectedOffset,
       });
       
-      // Update daily streak to 1 after first hello for guest
       await updateGuestProgress({
         daily_streak: 1,
         current_streak: 1,
@@ -177,7 +177,6 @@ export default function Onboarding() {
       setIsSubmitting(true);
       await initializeProgress();
       await logGreetingHello();
-      // Award first orb
       await awardFirstOrb();
       setStep('greeting_complete');
     } catch (error) {
@@ -233,6 +232,11 @@ export default function Onboarding() {
     }
   };
 
+  // Handle rating selection - shows orb gift
+  const handleRating = () => {
+    setShowFirstOrbGift(true);
+  };
+
   const renderScreen = () => {
     switch (step) {
       // Screen 1 - Welcome with name input
@@ -247,13 +251,7 @@ export default function Onboarding() {
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
               <p className="text-muted-foreground leading-relaxed">
-                Hello, I'm Remi. Your Reminder Raccoon, companion & guide.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                This is a place to encourage real human connection.
-              </p>
-              <p className="text-lg font-medium text-primary">
-                One Hello at a time.
+                Hello, I'm Remi. Your Reminder Raccoon
               </p>
             </div>
             <div className="space-y-2">
@@ -316,10 +314,10 @@ export default function Onboarding() {
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">How it works</h1>
               <p className="text-muted-foreground leading-relaxed">
-                Every social interaction needs to start from somewhere.
+                Every interaction starts with a hello.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                We give you challenges, reminders and encouragement to start conversations with strangers, connect with friends & make the world a warmer place.
+                We give you simple challenges and reminders to help you start conversations, connect with people, and make the world feel a little warmer.
               </p>
             </div>
             <Button onClick={() => setStep('stats')} className="w-full" size="lg">
@@ -343,7 +341,7 @@ export default function Onboarding() {
               <div className="space-y-4">
                 <div className="bg-success/10 rounded-xl p-4">
                   <p className="text-4xl font-bold text-success">100%</p>
-                  <p className="text-muted-foreground">saw a positive improvement in their week</p>
+                  <p className="text-muted-foreground">improved their week</p>
                 </div>
                 
                 <div className="bg-primary/10 rounded-xl p-4">
@@ -363,7 +361,7 @@ export default function Onboarding() {
           </div>
         );
 
-      // Screen 4 - Initiation
+      // Screen 4 - Initiation / Introduction
       case 'initiation':
         return (
           <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -375,10 +373,10 @@ export default function Onboarding() {
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Introduction</h1>
               <p className="text-muted-foreground leading-relaxed">
-                I'll guide you through your First Hello's
+                I'll guide you through five simple ways to start conversations.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                These will introduce different ways to say hello and start conversations.
+                These are skills you can use anywhere, anytime.
               </p>
             </div>
             <Button onClick={() => setStep('first_hello_intro')} className="w-full" size="lg">
@@ -402,7 +400,7 @@ export default function Onboarding() {
                 Let's begin with your First Hello.
               </p>
               <p className="text-lg font-medium text-foreground">
-                Are you in a public place?
+                Are you in a public place right now?
               </p>
             </div>
             <div className="flex gap-3">
@@ -430,14 +428,14 @@ export default function Onboarding() {
         return (
           <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <img 
-              src={remiWaving4} 
-              alt="Remi waving" 
-              className="w-64 h-auto max-h-64 mx-auto object-contain animate-bounce-soft" 
+              src={onboardingFirsthello} 
+              alt="First Hello interaction" 
+              className="w-full h-auto max-h-56 mx-auto object-contain" 
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Great.</h1>
               <p className="text-muted-foreground leading-relaxed text-lg">
-                Smile, look up & say Hello to the first stranger you see.
+                Smile, look up, and say hello to the first person you see.
               </p>
             </div>
             <Button 
@@ -462,20 +460,17 @@ export default function Onboarding() {
         return (
           <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <img 
-              src={remiWaving2} 
-              alt="Remi waving" 
-              className="w-64 h-auto max-h-64 mx-auto object-contain" 
+              src={onboardingFirsthello} 
+              alt="First Hello interaction" 
+              className="w-full h-auto max-h-56 mx-auto object-contain" 
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">No worries.</h1>
               <p className="text-muted-foreground leading-relaxed">
-                Your first challenge is to say Hello to a stranger.
+                Your first challenge is to say hello to a stranger. Don't forget to smile 🙂
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Don't forget to smile 🙂
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                Once you do it, come back and log it in here.
+                Come back and log it in here once you've done it.
               </p>
             </div>
             <Button 
@@ -507,57 +502,51 @@ export default function Onboarding() {
             <p className="text-lg text-foreground font-medium">How was that?</p>
             <div className="flex flex-col gap-3">
               <Button 
-                onClick={() => setShowFirstOrbGift(true)} 
+                onClick={handleRating} 
                 className="w-full" 
                 size="lg"
               >
                 😍 Loved it
               </Button>
               <Button 
-                onClick={() => setShowFirstOrbGift(true)} 
+                onClick={handleRating} 
                 className="w-full" 
                 size="lg"
                 variant="outline"
               >
-                💪 Easy money
+                💪 Easy
               </Button>
               <Button 
-                onClick={() => setShowFirstOrbGift(true)} 
+                onClick={handleRating} 
                 className="w-full" 
                 size="lg"
                 variant="outline"
               >
-                😬 No good
+                😤 Challenging but done
               </Button>
             </div>
           </div>
         );
 
-      // Observation Intro - Next challenge teaser
+      // Observation Intro - After first hello rating
       case 'observation_intro':
         return (
           <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <img 
-              src={remiCelebrating1} 
-              alt="Remi celebrating" 
-              className="w-40 h-auto max-h-40 mx-auto object-contain" 
+              src={onboardingObservation} 
+              alt="Observation example" 
+              className="w-full h-auto max-h-56 mx-auto object-contain" 
             />
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold text-foreground">Great Work!</h2>
+              <h1 className="text-2xl font-bold text-foreground">Boom 😎</h1>
               <p className="text-muted-foreground leading-relaxed">
-                Now lets add some conversation starters.
+                Next, comment on something you're both experiencing.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                First up, make an <span className="font-semibold text-foreground">Observation</span>.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                Think the weather, atmosphere, vibes etc.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                Anything you are experiencing in a shared space.
+                Weather, atmosphere, vibes - anything shared.
               </p>
               <p className="text-sm text-primary italic">
-                "What a beautiful day" "Long line hey" "Love the vibe in here"
+                "What a beautiful day" "Long line, hey?" "Love the vibe in here"
               </p>
             </div>
             <Button 
@@ -569,18 +558,152 @@ export default function Onboarding() {
             </Button>
           </div>
         );
+
+      // After Observation Complete - Compliment Intro
+      case 'observation_done':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={onboardingCompliment} 
+              alt="Compliment example" 
+              className="w-full h-auto max-h-56 mx-auto object-contain" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold text-foreground">Nice work</h1>
+              <p className="text-sm text-muted-foreground">knew you were a natural 🦝</p>
+              <p className="text-muted-foreground leading-relaxed">
+                Next up: make someone's day.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Give a genuine compliment. Clothing or accessories work great.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Come back once you've done it.
+              </p>
+            </div>
+            <Button 
+              onClick={() => navigate('/')} 
+              className="w-full" 
+              size="lg"
+            >
+              I'll be back 😎
+            </Button>
+          </div>
+        );
+
+      // After Compliment Complete - Question Intro
+      case 'compliment_done':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={onboardingQuestion} 
+              alt="Question example" 
+              className="w-full h-auto max-h-56 mx-auto object-contain" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold text-foreground">Great job, {userName.trim() || 'friend'}.</h1>
+              <p className="text-muted-foreground leading-relaxed">
+                Now let's add a little depth.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Ask a question to get to know someone.
+              </p>
+              <div className="text-sm text-primary italic space-y-1">
+                <p>"How are you?"</p>
+                <p>"Where are you from?"</p>
+                <p>"Got any plans for the weekend?"</p>
+              </div>
+            </div>
+            <Button 
+              onClick={() => navigate('/')} 
+              className="w-full" 
+              size="lg"
+            >
+              See you soon
+            </Button>
+          </div>
+        );
+
+      // After Question Complete - Name Intro
+      case 'question_done':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={onboardingName} 
+              alt="Getting a name example" 
+              className="w-full h-auto max-h-56 mx-auto object-contain" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold text-foreground">You're on a roll!</h1>
+              <p className="text-muted-foreground leading-relaxed">
+                Last one, it's time to start taking names.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Names are like magic, they turn strangers into friends.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Use any of the four hellos to start a conversation.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Then ask their name and save it here.
+              </p>
+            </div>
+            <Button 
+              onClick={() => navigate('/')} 
+              className="w-full" 
+              size="lg"
+            >
+              Got it, Remi.
+            </Button>
+          </div>
+        );
+
+      // Initiation Complete - All 5 First Hellos done
+      case 'initiation_complete':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiCongrats1} 
+              alt="Remi celebrating" 
+              className="w-40 h-auto max-h-40 mx-auto object-contain" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold text-foreground">🎉 Initiation Complete 🎉</h1>
+              <p className="text-muted-foreground leading-relaxed">
+                You can officially turn a stranger into a friend.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Welcome to the Gaze
+              </p>
+              <p className="text-sm text-primary italic">
+                (that's what a group of raccoons is called 🦝)
+              </p>
+              <p className="text-muted-foreground leading-relaxed mt-4">
+                Now choose how you'd like to continue your journey.
+              </p>
+            </div>
+            <Button 
+              onClick={() => navigate('/mode-selection')} 
+              className="w-full" 
+              size="lg"
+            >
+              Continue
+            </Button>
+          </div>
+        );
     }
   };
 
   // Calculate progress for progress bar
   const getProgress = () => {
-    if (step === 'welcome') return 1/7;
-    if (step === 'how_it_works') return 2/7;
-    if (step === 'stats') return 3/7;
-    if (step === 'initiation') return 4/7;
-    if (step === 'first_hello_intro' || step === 'public_yes' || step === 'public_no') return 5/7;
-    if (step === 'greeting_complete') return 6/7;
-    return 1;
+    const steps: OnboardingStep[] = [
+      'welcome', 'greeting', 'how_it_works', 'stats', 'initiation',
+      'first_hello_intro', 'public_yes', 'public_no', 'greeting_complete',
+      'observation_intro', 'observation_done', 'compliment_done', 
+      'question_done', 'initiation_complete'
+    ];
+    const index = steps.indexOf(step);
+    return Math.max(0.1, (index + 1) / steps.length);
   };
 
   return (
