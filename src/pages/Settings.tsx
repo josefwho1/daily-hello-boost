@@ -103,7 +103,7 @@ const Settings = () => {
     { 
       value: 'connect', 
       label: 'Connect Mode', 
-      description: '5 hellos per week',
+      description: '3 hellos per week',
       icon: Calendar,
       isDefault: false
     },
@@ -113,8 +113,8 @@ const Settings = () => {
     switch (mode) {
       case '7-day-starter': return 7;
       case 'daily': return 7;
-      case 'connect': return 5;
-      default: return 5;
+      case 'connect': return 3;
+      default: return 3;
     }
   };
 

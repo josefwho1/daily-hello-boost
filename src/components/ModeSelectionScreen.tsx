@@ -57,7 +57,7 @@ export const ModeSelectionScreen = ({ onSelectMode }: ModeSelectionScreenProps) 
               </div>
               
               <p className="text-sm text-muted-foreground italic mb-3">
-                5 Hellos per Week
+                3 Hellos per Week
               </p>
               
               <ul className="text-sm text-muted-foreground space-y-1 mb-4">

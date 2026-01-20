@@ -9,7 +9,7 @@ interface LogHelloButtonProps {
 
 export const LogHelloButton = ({ onClick, onDictateClick, variant = "default" }: LogHelloButtonProps) => {
   return (
-    <div className="flex gap-2">
+    <div id="any-hello-card" className="flex gap-2">
       <Button 
         onClick={onClick}
         size="lg"

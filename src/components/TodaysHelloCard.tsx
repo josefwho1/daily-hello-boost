@@ -34,7 +34,9 @@ export const TodaysHelloCard = ({
   const remiImage = getDailyRemiCurious();
 
   return (
-    <Card className={`p-5 border-primary/20 relative overflow-hidden ${
+    <Card 
+      id="todays-hello-card"
+      className={`p-5 border-primary/20 relative overflow-hidden ${
       isCompleted 
         ? 'bg-muted/50' 
         : 'bg-gradient-to-br from-primary/10 to-primary/5'

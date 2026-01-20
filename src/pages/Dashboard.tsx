@@ -26,6 +26,7 @@ import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationD
 import { LevelUpCelebrationDialog } from "@/components/LevelUpCelebrationDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { FirstHelloInstructionScreen, FirstHelloPhase } from "@/components/FirstHelloInstructionScreen";
+import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { firstHellos } from "@/data/firstHellos";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
@@ -141,6 +142,8 @@ export default function Dashboard() {
   const [pendingMode, setPendingMode] = useState<'daily' | 'chill' | null>(null);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [autoStartRecording, setAutoStartRecording] = useState(false);
+  const [showHomeTutorial, setShowHomeTutorial] = useState(false);
+  const [tutorialMode, setTutorialMode] = useState<'daily' | 'chill'>('daily');
   
   // First Hello instruction screen states
   const [showFirstHelloInstruction, setShowFirstHelloInstruction] = useState(false);
@@ -698,7 +701,7 @@ export default function Dashboard() {
   const handleModeConfirmContinue = async () => {
     if (!pendingMode) return;
     
-    const target = pendingMode === 'daily' ? 7 : 5;
+    const target = pendingMode === 'daily' ? 7 : 3;
     const isDaily = pendingMode === 'daily';
     
     // Award 50 XP bonus for completing First Hellos
@@ -725,13 +728,21 @@ export default function Dashboard() {
     
     setShowDailyModeConfirm(false);
     setShowChillModeConfirm(false);
-    setPendingMode(null);
-    toast.success(`🎉 You're now in ${pendingMode === 'daily' ? 'Daily' : 'Chill'} Mode! (+${FIRST_HELLOS_COMPLETE_BONUS} XP)`);
     
-    // Check for level up
+    // Set up tutorial
+    setTutorialMode(pendingMode);
+    setPendingMode(null);
+    
+    // Show tutorial after a brief delay for the mode confirmation to close
+    setTimeout(() => {
+      setShowHomeTutorial(true);
+    }, 300);
+    
+    // Check for level up after tutorial completes
     if (newLevel > oldLevel) {
       setNewLevelValue(newLevel);
-      setShowLevelUp(true);
+      // Delay level up to show after tutorial
+      // We'll handle this when tutorial completes
     }
   };
 
@@ -1089,7 +1100,15 @@ export default function Dashboard() {
         totalHellos={guestState?.total_hellos_logged || 0}
       />
 
-      {/* First Hello Rating Dialog */}
+      {/* Home Screen Tutorial - shows after mode selection */}
+      <HomeScreenTutorial
+        open={showHomeTutorial}
+        mode={tutorialMode}
+        onComplete={() => {
+          setShowHomeTutorial(false);
+          toast.success(`🎉 You're all set in ${tutorialMode === 'daily' ? 'Daily' : 'Chill'} Mode!`);
+        }}
+      />
     </div>
   );
 }

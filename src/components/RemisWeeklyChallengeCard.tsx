@@ -21,7 +21,9 @@ export const RemisWeeklyChallengeCard = ({
   onComplete 
 }: RemisWeeklyChallengeCardProps) => {
   return (
-    <Card className={`p-5 border-accent/20 relative overflow-hidden ${
+    <Card 
+      id="weekly-challenge-card"
+      className={`p-5 border-accent/20 relative overflow-hidden ${
       isCompleted 
         ? 'bg-muted/50' 
         : 'bg-gradient-to-br from-accent/10 to-accent/5'
