@@ -729,8 +729,43 @@ export default function Dashboard() {
         setNewLevelValue(newLevel);
       }
     } else {
-      // Chill mode still shows confirmation dialog
-      setShowChillModeConfirm(true);
+      // Chill mode - go directly to tutorial (skip confirmation dialog)
+      const target = 3;
+      
+      // Award 50 XP bonus for completing First Hellos
+      const FIRST_HELLOS_COMPLETE_BONUS = 50;
+      const currentTotalXp = progress?.total_xp || 0;
+      const newTotalXp = currentTotalXp + FIRST_HELLOS_COMPLETE_BONUS;
+      const oldLevel = progress?.current_level || getLevelFromXp(currentTotalXp);
+      const newLevel = getLevelFromXp(newTotalXp);
+      
+      await updateProgress({ 
+        mode: 'chill',
+        target_hellos_per_week: target,
+        has_completed_onboarding: true,
+        is_onboarding_week: false,
+        hellos_this_week: 0,
+        week_start_date: getWeekStartKeyInOffset(new Date(), tzOffset),
+        current_phase: 'chill_path',
+        onboarding_completed_at: new Date().toISOString(),
+        daily_path_selected_at: null,
+        chill_path_selected_at: new Date().toISOString(),
+        total_xp: newTotalXp,
+        current_level: newLevel
+      });
+      
+      setTutorialMode('chill');
+      setPendingMode(null);
+      
+      // Show tutorial after a brief delay
+      setTimeout(() => {
+        setShowHomeTutorial(true);
+      }, 300);
+      
+      // Check for level up after tutorial completes
+      if (newLevel > oldLevel) {
+        setNewLevelValue(newLevel);
+      }
     }
   };
 
