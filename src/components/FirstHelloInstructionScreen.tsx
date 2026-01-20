@@ -171,7 +171,7 @@ export const FirstHelloInstructionScreen = ({
           <img 
             src={content.image} 
             alt="Remi" 
-            className="w-64 h-auto max-h-72 mx-auto object-contain" 
+            className="w-72 h-auto max-h-80 mx-auto object-contain" 
           />
           
           {content.title && (
