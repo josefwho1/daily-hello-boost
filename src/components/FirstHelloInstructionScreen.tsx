@@ -134,7 +134,7 @@ export const FirstHelloInstructionScreen = ({
       case 'getname_intro':
         return {
           image: onboardingName,
-          title: "Name",
+          title: "Get a Name",
           subtitle: "You're on a roll, it's time to start taking names!",
           body: (
             <>
