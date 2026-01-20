@@ -298,6 +298,7 @@ export default function Onboarding() {
               src={remiWaving4} 
               alt="Remi waving" 
               className="w-64 h-auto max-h-64 mx-auto object-contain animate-bounce-soft" 
+              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
@@ -339,13 +340,14 @@ export default function Onboarding() {
       // Screen 1b - Greeting animation (auto-advances via useEffect)
       case 'greeting':
         return (
-          <div className="text-center space-y-6 animate-in fade-in zoom-in duration-500">
+          <div className="text-center space-y-6 animate-in fade-in zoom-in duration-700">
             <img 
               src={remiShakingHand} 
               alt="Remi shaking hand" 
-              className="w-64 h-auto max-h-64 mx-auto object-contain animate-pulse" 
+              className="w-64 h-auto max-h-64 mx-auto object-contain" 
+              fetchPriority="high"
             />
-            <div className="space-y-4">
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
               <h1 className="text-2xl font-bold text-foreground">
                 Nice to meet you, {userName.trim()}!
               </h1>
@@ -361,6 +363,7 @@ export default function Onboarding() {
               src={remiCurious1} 
               alt="Remi curious" 
               className="w-64 h-auto max-h-64 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">How it works</h1>
@@ -385,6 +388,7 @@ export default function Onboarding() {
               src={remiSurprised1} 
               alt="Remi surprised" 
               className="w-64 h-auto max-h-64 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-6">
               <h1 className="text-2xl font-bold text-foreground">What users felt after only 7 days</h1>
@@ -420,6 +424,7 @@ export default function Onboarding() {
               src={remiCongrats3} 
               alt="Remi celebrating" 
               className="w-64 h-auto max-h-64 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Introduction</h1>
@@ -444,6 +449,7 @@ export default function Onboarding() {
               src={remiWaving} 
               alt="Remi waving" 
               className="w-64 h-auto max-h-64 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">First Hello</h1>
@@ -482,6 +488,7 @@ export default function Onboarding() {
               src={onboardingFirsthello} 
               alt="First Hello interaction" 
               className="w-full h-auto max-h-56 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Great.</h1>
@@ -514,6 +521,7 @@ export default function Onboarding() {
               src={onboardingFirsthello} 
               alt="First Hello interaction" 
               className="w-full h-auto max-h-56 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">No worries.</h1>
@@ -543,6 +551,7 @@ export default function Onboarding() {
               src={remiCongrats1} 
               alt="Remi celebrating" 
               className="w-40 h-auto max-h-40 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-foreground">Congratulations!</h1>
@@ -587,6 +596,7 @@ export default function Onboarding() {
               src={onboardingObservation} 
               alt="Observation example" 
               className="w-full h-auto max-h-56 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Boom 😎</h1>
@@ -618,6 +628,7 @@ export default function Onboarding() {
               src={onboardingCompliment} 
               alt="Compliment example" 
               className="w-full h-auto max-h-56 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Nice work</h1>
@@ -650,6 +661,7 @@ export default function Onboarding() {
               src={onboardingQuestion} 
               alt="Question example" 
               className="w-full h-auto max-h-56 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Great job, {userName.trim() || 'friend'}.</h1>
@@ -683,6 +695,7 @@ export default function Onboarding() {
               src={onboardingName} 
               alt="Getting a name example" 
               className="w-full h-auto max-h-56 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">You're on a roll!</h1>
@@ -717,6 +730,7 @@ export default function Onboarding() {
               src={remiCongrats1} 
               alt="Remi celebrating" 
               className="w-40 h-auto max-h-40 mx-auto object-contain" 
+              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">🎉 Initiation Complete 🎉</h1>
