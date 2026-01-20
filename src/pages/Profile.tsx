@@ -153,7 +153,7 @@ const Profile = () => {
     { 
       value: 'chill', 
       label: 'Chill', 
-      description: '5 hellos per week',
+      description: '3 hellos per week',
       icon: Calendar
     },
   ];
@@ -162,8 +162,8 @@ const Profile = () => {
     switch (mode) {
       case '7-day-starter': return 7;
       case 'daily': return 7;
-      case 'chill': return 5;
-      default: return 5;
+      case 'chill': return 3;
+      default: return 3;
     }
   };
 

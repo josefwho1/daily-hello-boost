@@ -50,8 +50,8 @@ export const ChillModeSelectedDialog = ({ open, onContinue }: ChillModeSelectedD
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <p>5 Hellos per week - any day, any time.</p>
-              <p>Hit your 5 to keep your weekly streak going.</p>
+              <p>3 Hellos per week - any day, any time.</p>
+              <p>Hit your 3 to keep your weekly streak going.</p>
               <p>Miss a week? Use an Orb to save it 🔮</p>
               <p>No pressure. Just connection at your pace.</p>
             </motion.div>
