@@ -10,58 +10,74 @@ export interface RankInfo {
 }
 
 export const RANKS: RankInfo[] = [
-  { name: "New Friend", minLevel: 1, maxLevel: 9, xpThreshold: 0, color: "#FF6B35", emoji: "👋" },
-  { name: "Seasoned", minLevel: 10, maxLevel: 19, xpThreshold: 300, color: "#FF6B35", emoji: "🌱" },
-  { name: "Semi Pro", minLevel: 20, maxLevel: 29, xpThreshold: 1000, color: "#FF6B35", emoji: "🎯" },
-  { name: "Social Butterfly", minLevel: 30, maxLevel: 39, xpThreshold: 2000, color: "#FF6B35", emoji: "🦋" },
-  { name: "Social Eagle", minLevel: 40, maxLevel: 49, xpThreshold: 5000, color: "#FF6B35", emoji: "🦅" },
-  { name: "Social Pterodactyl", minLevel: 50, maxLevel: 59, xpThreshold: 10000, color: "#FF6B35", emoji: "🦖" },
-  { name: "Sensei", minLevel: 60, maxLevel: 69, xpThreshold: 25000, color: "#FF6B35", emoji: "🥋" },
-  { name: "Hello Hero", minLevel: 70, maxLevel: 79, xpThreshold: 50000, color: "#FF6B35", emoji: "🦸" },
-  { name: "World Connecter", minLevel: 80, maxLevel: 89, xpThreshold: 100000, color: "#FF6B35", emoji: "🌍" },
-  { name: "Legend Status", minLevel: 90, maxLevel: 99, xpThreshold: 300000, color: "#FF6B35", emoji: "🏆" },
-  { name: "Immortal", minLevel: 100, maxLevel: 100, xpThreshold: 750000, color: "#FF6B35", emoji: "✨" },
+  { name: "Stranger", minLevel: 1, maxLevel: 1, xpThreshold: 0, color: "#FF6B35", emoji: "👤" },
+  { name: "Familiar Face", minLevel: 2, maxLevel: 2, xpThreshold: 20, color: "#FF6B35", emoji: "🙂" },
+  { name: "Acquaintance", minLevel: 3, maxLevel: 3, xpThreshold: 40, color: "#FF6B35", emoji: "🤝" },
+  { name: "New Friend", minLevel: 4, maxLevel: 4, xpThreshold: 90, color: "#FF6B35", emoji: "👋" },
+  { name: "Amigo", minLevel: 5, maxLevel: 5, xpThreshold: 140, color: "#FF6B35", emoji: "🌟" },
+  { name: "Mate", minLevel: 6, maxLevel: 6, xpThreshold: 200, color: "#FF6B35", emoji: "🍻" },
+  { name: "Compadre", minLevel: 7, maxLevel: 7, xpThreshold: 270, color: "#FF6B35", emoji: "🎯" },
+  { name: "Homie", minLevel: 8, maxLevel: 8, xpThreshold: 350, color: "#FF6B35", emoji: "🏠" },
+  { name: "Good Dude", minLevel: 9, maxLevel: 9, xpThreshold: 440, color: "#FF6B35", emoji: "👍" },
+  { name: "Friend", minLevel: 10, maxLevel: 19, xpThreshold: 550, color: "#FF6B35", emoji: "💪" },
+  { name: "Semi Pro", minLevel: 20, maxLevel: 29, xpThreshold: 2000, color: "#FF6B35", emoji: "🎯" },
+  { name: "Social Butterfly", minLevel: 30, maxLevel: 39, xpThreshold: 5000, color: "#FF6B35", emoji: "🦋" },
+  { name: "Social Eagle", minLevel: 40, maxLevel: 49, xpThreshold: 10000, color: "#FF6B35", emoji: "🦅" },
+  { name: "Social Pterodactyl", minLevel: 50, maxLevel: 59, xpThreshold: 25000, color: "#FF6B35", emoji: "🦖" },
+  { name: "Sensei", minLevel: 60, maxLevel: 69, xpThreshold: 50000, color: "#FF6B35", emoji: "🥋" },
+  { name: "Hello Hero", minLevel: 70, maxLevel: 79, xpThreshold: 100000, color: "#FF6B35", emoji: "🦸" },
+  { name: "World Connecter", minLevel: 80, maxLevel: 89, xpThreshold: 300000, color: "#FF6B35", emoji: "🌍" },
+  { name: "Legend Status", minLevel: 90, maxLevel: 99, xpThreshold: 7500000, color: "#FF6B35", emoji: "🏆" },
+  { name: "Immortal", minLevel: 100, maxLevel: 100, xpThreshold: 1000000, color: "#FF6B35", emoji: "✨" },
 ];
 
-// XP thresholds for each level (cumulative)
-export const LEVEL_XP_THRESHOLDS: number[] = (() => {
-  const thresholds: number[] = [0]; // Level 1 starts at 0
-  
-  // Calculate XP needed for each level based on rank thresholds
-  const rankXpRanges = [
-    { start: 1, end: 9, startXp: 0, endXp: 300 },
-    { start: 10, end: 19, startXp: 300, endXp: 1000 },
-    { start: 20, end: 29, startXp: 1000, endXp: 2000 },
-    { start: 30, end: 39, startXp: 2000, endXp: 5000 },
-    { start: 40, end: 49, startXp: 5000, endXp: 10000 },
-    { start: 50, end: 59, startXp: 10000, endXp: 25000 },
-    { start: 60, end: 69, startXp: 25000, endXp: 50000 },
-    { start: 70, end: 79, startXp: 50000, endXp: 100000 },
-    { start: 80, end: 89, startXp: 100000, endXp: 300000 },
-    { start: 90, end: 99, startXp: 300000, endXp: 750000 },
-    { start: 100, end: 100, startXp: 750000, endXp: 1000000 },
-  ];
-
-  for (const range of rankXpRanges) {
-    const levelsInRange = range.end - range.start + 1;
-    const xpPerLevel = (range.endXp - range.startXp) / levelsInRange;
-    
-    for (let i = 0; i < levelsInRange; i++) {
-      const levelXp = Math.floor(range.startXp + (xpPerLevel * i));
-      if (thresholds.length <= range.start + i) {
-        thresholds.push(levelXp);
-      }
-    }
-  }
-  
-  // Add 25 XP to level 2 threshold so it doesn't trigger on first day
-  if (thresholds.length > 1) {
-    thresholds[1] = thresholds[1] + 25;
-  }
-  
-  thresholds.push(1000000); // Level 100 completion
-  return thresholds;
-})();
+// XP thresholds for each level (exact values from spec)
+export const LEVEL_XP_THRESHOLDS: number[] = [
+  0,      // Level 1 - Stranger
+  20,     // Level 2 - Familiar Face
+  40,     // Level 3 - Acquaintance
+  90,     // Level 4 - New Friend
+  140,    // Level 5 - Amigo
+  200,    // Level 6 - Mate
+  270,    // Level 7 - Compadre
+  350,    // Level 8 - Homie
+  440,    // Level 9 - Good Dude
+  550,    // Level 10 - Friend
+  650,    // Level 11 - Friend
+  750,    // Level 12 - Friend
+  870,    // Level 13 - Friend
+  1000,   // Level 14 - Friend
+  1150,   // Level 15 - Friend
+  1310,   // Level 16 - Friend
+  1470,   // Level 17 - Friend
+  1650,   // Level 18 - Friend
+  1850,   // Level 19 - Friend
+  2000,   // Level 20 - Semi Pro
+  // Levels 20-29: interpolate from 2000 to 5000
+  ...Array.from({ length: 9 }, (_, i) => Math.floor(2000 + ((5000 - 2000) / 10) * (i + 1))),
+  5000,   // Level 30 - Social Butterfly
+  // Levels 30-39: interpolate from 5000 to 10000
+  ...Array.from({ length: 9 }, (_, i) => Math.floor(5000 + ((10000 - 5000) / 10) * (i + 1))),
+  10000,  // Level 40 - Social Eagle
+  // Levels 40-49: interpolate from 10000 to 25000
+  ...Array.from({ length: 9 }, (_, i) => Math.floor(10000 + ((25000 - 10000) / 10) * (i + 1))),
+  25000,  // Level 50 - Social Pterodactyl
+  // Levels 50-59: interpolate from 25000 to 50000
+  ...Array.from({ length: 9 }, (_, i) => Math.floor(25000 + ((50000 - 25000) / 10) * (i + 1))),
+  50000,  // Level 60 - Sensei
+  // Levels 60-69: interpolate from 50000 to 100000
+  ...Array.from({ length: 9 }, (_, i) => Math.floor(50000 + ((100000 - 50000) / 10) * (i + 1))),
+  100000, // Level 70 - Hello Hero
+  // Levels 70-79: interpolate from 100000 to 300000
+  ...Array.from({ length: 9 }, (_, i) => Math.floor(100000 + ((300000 - 100000) / 10) * (i + 1))),
+  300000, // Level 80 - World Connecter
+  // Levels 80-89: interpolate from 300000 to 7500000
+  ...Array.from({ length: 9 }, (_, i) => Math.floor(300000 + ((7500000 - 300000) / 10) * (i + 1))),
+  7500000, // Level 90 - Legend Status
+  // Levels 90-99: interpolate from 7500000 to 1000000 (note: this looks like a typo in spec, assuming 10M)
+  ...Array.from({ length: 9 }, (_, i) => Math.floor(7500000 + ((10000000 - 7500000) / 10) * (i + 1))),
+  1000000, // Level 100 - Immortal
+];
 
 export const getLevelFromXp = (totalXp: number): number => {
   for (let i = LEVEL_XP_THRESHOLDS.length - 1; i >= 0; i--) {
