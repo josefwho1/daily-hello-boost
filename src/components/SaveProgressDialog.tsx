@@ -9,10 +9,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { getAuthCallbackUrl } from '@/lib/publicUrls';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { Mail, Sparkles, ArrowLeft, KeyRound, Check, RefreshCw, AlertCircle } from 'lucide-react';
+import { Mail, Sparkles, ArrowLeft, KeyRound, Check, RefreshCw, AlertCircle, Lock } from 'lucide-react';
 import remiWaving from '@/assets/remi-waving.webp';
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email" });
+const passwordSchema = z.string().min(6, { message: "Password must be at least 6 characters" });
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -30,8 +31,9 @@ export const SaveProgressDialog = ({
   totalHellos = 1 
 }: SaveProgressDialogProps) => {
   const navigate = useNavigate();
-  const [step, setStep] = useState<'prompt' | 'email' | 'sent'>('prompt');
+  const [step, setStep] = useState<'prompt' | 'email' | 'password' | 'sent'>('prompt');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState('');
   const [verifying, setVerifying] = useState(false);
@@ -54,11 +56,46 @@ export const SaveProgressDialog = ({
     onOpenChange(false);
     setStep('prompt');
     setEmail('');
+    setPassword('');
     setOtp('');
     setOtpError(null);
   };
 
   const handleSaveProgress = () => {
+    setStep('password');
+  };
+
+  const handleSignUpWithPassword = async () => {
+    try {
+      emailSchema.parse(email);
+      passwordSchema.parse(password);
+      setLoading(true);
+
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: getAuthCallbackUrl(),
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success('Account created successfully!');
+      handleClose();
+      navigate('/');
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUseMagicLink = () => {
     setStep('email');
   };
 
@@ -162,6 +199,7 @@ export const SaveProgressDialog = ({
     setTimeout(() => {
       setStep('prompt');
       setEmail('');
+      setPassword('');
       setOtp('');
       setOtpError(null);
     }, 300);
@@ -223,7 +261,7 @@ export const SaveProgressDialog = ({
           </>
         )}
 
-        {step === 'email' && (
+        {step === 'password' && (
           <>
             <DialogHeader className="space-y-2">
               <Button
@@ -235,7 +273,87 @@ export const SaveProgressDialog = ({
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back
               </Button>
-              <DialogTitle className="text-xl">Save progress</DialogTitle>
+              <DialogTitle className="text-xl">Create your account</DialogTitle>
+              <DialogDescription>
+                Enter your email and create a password.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="signup-email">Email</Label>
+                <Input
+                  id="signup-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="signup-password">Password</Label>
+                <Input
+                  id="signup-password"
+                  type="password"
+                  placeholder="At least 6 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSignUpWithPassword()}
+                />
+              </div>
+              
+              <Button 
+                onClick={handleSignUpWithPassword} 
+                size="lg" 
+                className="w-full"
+                disabled={loading || !email || !password}
+              >
+                {loading ? (
+                  <span className="animate-pulse">Creating account...</span>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4 mr-2" />
+                    Create account
+                  </>
+                )}
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">or</span>
+                </div>
+              </div>
+
+              <Button 
+                onClick={handleUseMagicLink} 
+                variant="outline" 
+                className="w-full"
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Use magic link instead
+              </Button>
+            </div>
+          </>
+        )}
+
+        {step === 'email' && (
+          <>
+            <DialogHeader className="space-y-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-fit -ml-2"
+                onClick={() => setStep('password')}
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Back
+              </Button>
+              <DialogTitle className="text-xl">Magic link</DialogTitle>
               <DialogDescription>
                 Enter your email and we'll send a sign-in link and code.
               </DialogDescription>
