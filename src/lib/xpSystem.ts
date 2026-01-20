@@ -13,13 +13,16 @@ export const RANKS: RankInfo[] = [
   { name: "Stranger", minLevel: 1, maxLevel: 1, xpThreshold: 0, color: "#FF6B35", emoji: "👤" },
   { name: "Familiar Face", minLevel: 2, maxLevel: 2, xpThreshold: 20, color: "#FF6B35", emoji: "🙂" },
   { name: "Acquaintance", minLevel: 3, maxLevel: 3, xpThreshold: 40, color: "#FF6B35", emoji: "🤝" },
-  { name: "New Friend", minLevel: 4, maxLevel: 4, xpThreshold: 90, color: "#FF6B35", emoji: "👋" },
-  { name: "Amigo", minLevel: 5, maxLevel: 5, xpThreshold: 140, color: "#FF6B35", emoji: "🌟" },
-  { name: "Mate", minLevel: 6, maxLevel: 6, xpThreshold: 200, color: "#FF6B35", emoji: "🍻" },
+  { name: "New Friend", minLevel: 4, maxLevel: 4, xpThreshold: 95, color: "#FF6B35", emoji: "👋" },
+  { name: "Amigo", minLevel: 5, maxLevel: 5, xpThreshold: 150, color: "#FF6B35", emoji: "🌟" },
+  { name: "Mate", minLevel: 6, maxLevel: 6, xpThreshold: 210, color: "#FF6B35", emoji: "🍻" },
   { name: "Compadre", minLevel: 7, maxLevel: 7, xpThreshold: 270, color: "#FF6B35", emoji: "🎯" },
   { name: "Homie", minLevel: 8, maxLevel: 8, xpThreshold: 350, color: "#FF6B35", emoji: "🏠" },
   { name: "Good Dude", minLevel: 9, maxLevel: 9, xpThreshold: 440, color: "#FF6B35", emoji: "👍" },
-  { name: "Friend", minLevel: 10, maxLevel: 19, xpThreshold: 550, color: "#FF6B35", emoji: "💪" },
+  { name: "Friend", minLevel: 10, maxLevel: 11, xpThreshold: 550, color: "#FF6B35", emoji: "💪" },
+  { name: "Good Friend", minLevel: 12, maxLevel: 14, xpThreshold: 750, color: "#FF6B35", emoji: "🤗" },
+  { name: "Great Friend", minLevel: 15, maxLevel: 17, xpThreshold: 1150, color: "#FF6B35", emoji: "⭐" },
+  { name: "Fantastic Friend", minLevel: 18, maxLevel: 19, xpThreshold: 1650, color: "#FF6B35", emoji: "🔥" },
   { name: "Semi Pro", minLevel: 20, maxLevel: 29, xpThreshold: 2000, color: "#FF6B35", emoji: "🎯" },
   { name: "Social Butterfly", minLevel: 30, maxLevel: 39, xpThreshold: 5000, color: "#FF6B35", emoji: "🦋" },
   { name: "Social Eagle", minLevel: 40, maxLevel: 49, xpThreshold: 10000, color: "#FF6B35", emoji: "🦅" },
@@ -36,45 +39,45 @@ export const LEVEL_XP_THRESHOLDS: number[] = [
   0,      // Level 1 - Stranger
   20,     // Level 2 - Familiar Face
   40,     // Level 3 - Acquaintance
-  90,     // Level 4 - New Friend
-  140,    // Level 5 - Amigo
-  200,    // Level 6 - Mate
+  95,     // Level 4 - New Friend
+  150,    // Level 5 - Amigo
+  210,    // Level 6 - Mate
   270,    // Level 7 - Compadre
   350,    // Level 8 - Homie
   440,    // Level 9 - Good Dude
   550,    // Level 10 - Friend
   650,    // Level 11 - Friend
-  750,    // Level 12 - Friend
-  870,    // Level 13 - Friend
-  1000,   // Level 14 - Friend
-  1150,   // Level 15 - Friend
-  1310,   // Level 16 - Friend
-  1470,   // Level 17 - Friend
-  1650,   // Level 18 - Friend
-  1850,   // Level 19 - Friend
+  750,    // Level 12 - Good Friend
+  870,    // Level 13 - Good Friend
+  1000,   // Level 14 - Good Friend
+  1150,   // Level 15 - Great Friend
+  1310,   // Level 16 - Great Friend
+  1470,   // Level 17 - Great Friend
+  1650,   // Level 18 - Fantastic Friend
+  1850,   // Level 19 - Fantastic Friend
   2000,   // Level 20 - Semi Pro
-  // Levels 20-29: interpolate from 2000 to 5000
+  // Levels 21-29: interpolate from 2000 to 5000
   ...Array.from({ length: 9 }, (_, i) => Math.floor(2000 + ((5000 - 2000) / 10) * (i + 1))),
   5000,   // Level 30 - Social Butterfly
-  // Levels 30-39: interpolate from 5000 to 10000
+  // Levels 31-39: interpolate from 5000 to 10000
   ...Array.from({ length: 9 }, (_, i) => Math.floor(5000 + ((10000 - 5000) / 10) * (i + 1))),
   10000,  // Level 40 - Social Eagle
-  // Levels 40-49: interpolate from 10000 to 25000
+  // Levels 41-49: interpolate from 10000 to 25000
   ...Array.from({ length: 9 }, (_, i) => Math.floor(10000 + ((25000 - 10000) / 10) * (i + 1))),
   25000,  // Level 50 - Social Pterodactyl
-  // Levels 50-59: interpolate from 25000 to 50000
+  // Levels 51-59: interpolate from 25000 to 50000
   ...Array.from({ length: 9 }, (_, i) => Math.floor(25000 + ((50000 - 25000) / 10) * (i + 1))),
   50000,  // Level 60 - Sensei
-  // Levels 60-69: interpolate from 50000 to 100000
+  // Levels 61-69: interpolate from 50000 to 100000
   ...Array.from({ length: 9 }, (_, i) => Math.floor(50000 + ((100000 - 50000) / 10) * (i + 1))),
   100000, // Level 70 - Hello Hero
-  // Levels 70-79: interpolate from 100000 to 300000
+  // Levels 71-79: interpolate from 100000 to 300000
   ...Array.from({ length: 9 }, (_, i) => Math.floor(100000 + ((300000 - 100000) / 10) * (i + 1))),
   300000, // Level 80 - World Connecter
-  // Levels 80-89: interpolate from 300000 to 7500000
+  // Levels 81-89: interpolate from 300000 to 7500000
   ...Array.from({ length: 9 }, (_, i) => Math.floor(300000 + ((7500000 - 300000) / 10) * (i + 1))),
   7500000, // Level 90 - Legend Status
-  // Levels 90-99: interpolate from 7500000 to 1000000 (note: this looks like a typo in spec, assuming 10M)
+  // Levels 91-99: interpolate from 7500000 to 1000000
   ...Array.from({ length: 9 }, (_, i) => Math.floor(7500000 + ((10000000 - 7500000) / 10) * (i + 1))),
   1000000, // Level 100 - Immortal
 ];
