@@ -197,6 +197,8 @@ export default function Onboarding() {
         last_completed_date: today,
         total_hellos: 1,
         hellos_this_week: 1,
+        total_xp: 10, // +10 XP for first hello
+        hellos_today_count: 1,
       }).eq('user_id', existingUser.id);
       
       await supabase.from('profiles').update({
@@ -218,6 +220,8 @@ export default function Onboarding() {
         last_completed_date: today,
         total_hellos: 1,
         hellos_this_week: 1,
+        total_xp: 10, // +10 XP for first hello
+        hellos_today_count: 1,
       });
     }
   };
