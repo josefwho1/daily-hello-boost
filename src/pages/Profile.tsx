@@ -639,43 +639,6 @@ const Profile = () => {
           </div>
         </Card>
 
-        {/* Add to Home Screen */}
-        <Card className="p-5 mb-4 rounded-2xl">
-          <button
-            onClick={() => setShowInstallSteps(!showInstallSteps)}
-            className="w-full flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <Smartphone className="text-primary w-5 h-5" />
-              <h3 className="font-semibold text-foreground">Add One Hello to your home screen</h3>
-            </div>
-            {showInstallSteps ? (
-              <ChevronUp className="w-5 h-5 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-muted-foreground" />
-            )}
-          </button>
-          
-          {showInstallSteps && (
-            <div className="mt-4 space-y-3 pl-8">
-              <div className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary flex-shrink-0">1</span>
-                <p className="text-sm text-muted-foreground">Open this site in Chrome or Safari</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary flex-shrink-0">2</span>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-muted-foreground">Tap the share icon</p>
-                  <Share className="w-4 h-4 text-muted-foreground" />
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary flex-shrink-0">3</span>
-                <p className="text-sm text-muted-foreground">Select "Add to Home Screen"</p>
-              </div>
-            </div>
-          )}
-        </Card>
 
         {/* Password (Auth users only) */}
         {user && (
