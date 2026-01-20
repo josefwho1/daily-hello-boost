@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import remiCongrats1 from "@/assets/remi-congrats-1.webp";
 
 // Onboarding images
+import onboardingObservation from "@/assets/onboarding-observation.webp";
 import onboardingCompliment from "@/assets/onboarding-compliment.webp";
 import onboardingQuestion from "@/assets/onboarding-question.webp";
 import onboardingName from "@/assets/onboarding-name.webp";
@@ -43,21 +44,53 @@ export const FirstHelloInstructionScreen = ({
           buttonText: "Continue",
         };
 
-      // After Observation complete - intro to Compliment
+      // Intro to Observation
       case 'observation_intro':
+        return {
+          image: onboardingObservation,
+          title: "Observation",
+          body: (
+            <>
+              <p className="text-muted-foreground leading-relaxed">
+                Next, comment on something you're both experiencing.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mt-3">
+                Weather, atmosphere, vibes - anything shared.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mt-4">
+                Examples:
+              </p>
+              <p className="text-sm text-primary italic mt-2">
+                "What a beautiful day"
+              </p>
+              <p className="text-sm text-primary italic mt-1">
+                "Long line, hey?"
+              </p>
+              <p className="text-sm text-primary italic mt-1">
+                "Love the vibe in here"
+              </p>
+            </>
+          ),
+          buttonText: "Let's do it",
+        };
+
+      // After Observation complete - intro to Compliment
       case 'observation_complete':
       case 'compliment_intro':
         return {
           image: onboardingCompliment,
-          title: "Nice work",
-          subtitle: "knew you were a natural 🦝",
+          title: "Compliment",
+          subtitle: "Nice work, knew you were a natural 🦝",
           body: (
             <>
               <p className="text-muted-foreground leading-relaxed">
                 Next up: make someone's day.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Give a genuine compliment. Clothing or accessories work great.
+                Give a genuine compliment.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mt-3">
+                Clothing or accessories work great.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
                 Come back once you've done it.
@@ -72,14 +105,12 @@ export const FirstHelloInstructionScreen = ({
       case 'question_intro':
         return {
           image: onboardingQuestion,
-          title: `Great job, ${username}.`,
+          title: "Question",
+          subtitle: `Great job, ${username}.`,
           body: (
             <>
               <p className="text-muted-foreground leading-relaxed">
-                Now let's add a little depth.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mt-3">
-                Ask a question to get to know someone.
+                Now let's try a question to get to know someone.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-4">
                 Examples:
@@ -103,20 +134,18 @@ export const FirstHelloInstructionScreen = ({
       case 'getname_intro':
         return {
           image: onboardingName,
-          title: "You're on a roll!",
+          title: "Name",
+          subtitle: "You're on a roll, it's time to start taking names!",
           body: (
             <>
               <p className="text-muted-foreground leading-relaxed">
-                Last one, it's time to start taking names.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mt-3">
                 Names are like magic, they turn strangers into friends.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
                 Use any of the four hellos to start a conversation.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Then ask their name and save it here.
+                Then ask their name and save it here (so you don't forget).
               </p>
             </>
           ),
