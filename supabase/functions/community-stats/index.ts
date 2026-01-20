@@ -199,26 +199,41 @@ Deno.serve(async (req) => {
       })
     );
 
-    // Top 10 by hellos this week
-    const { data: weeklyLeaders } = await supabase
-      .from('user_progress')
-      .select('user_id, hellos_this_week, username')
-      .gt('hellos_this_week', 0)
-      .order('hellos_this_week', { ascending: false })
-      .limit(10);
-
-    // Enrich weekly leaders with profile data
+    // Top 10 by hellos this week - count actual hello_logs for accuracy
+    const { data: weeklyHelloData } = await supabase
+      .from('hello_logs')
+      .select('user_id')
+      .gte('created_at', weekStartStr);
+    
+    // Count hellos per user this week
+    const weeklyHellosPerUser: Record<string, number> = {};
+    (weeklyHelloData || []).forEach((log) => {
+      weeklyHellosPerUser[log.user_id] = (weeklyHellosPerUser[log.user_id] || 0) + 1;
+    });
+    
+    // Sort by count and take top 10
+    const sortedWeeklyLeaders = Object.entries(weeklyHellosPerUser)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10);
+    
+    // Enrich weekly leaders with profile/progress data
     const enrichedWeeklyLeaders = await Promise.all(
-      (weeklyLeaders || []).map(async (leader) => {
+      sortedWeeklyLeaders.map(async ([userId, count]) => {
         const { data: profile } = await supabase
           .from('profiles')
           .select('username')
-          .eq('id', leader.user_id)
+          .eq('id', userId)
+          .maybeSingle();
+        
+        const { data: progress } = await supabase
+          .from('user_progress')
+          .select('username')
+          .eq('user_id', userId)
           .maybeSingle();
         
         return {
-          displayName: leader.username || profile?.username || 'Anonymous',
-          hellosThisWeek: leader.hellos_this_week,
+          displayName: progress?.username || profile?.username || 'Anonymous',
+          hellosThisWeek: count,
         };
       })
     );
