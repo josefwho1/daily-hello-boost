@@ -387,30 +387,30 @@ export default function Onboarding() {
       // Screen 3 - Stats
       case 'stats':
         return (
-          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <img 
               src={remiSurprised1} 
               alt="Remi surprised" 
-              className="w-64 h-auto max-h-64 mx-auto object-contain" 
+              className="w-48 h-auto max-h-48 mx-auto object-contain" 
               fetchPriority="high"
             />
-            <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-foreground">What users felt after only 7 days</h1>
+            <div className="space-y-4">
+              <h1 className="text-xl font-bold text-foreground">What users felt after 7 days</h1>
               
-              <div className="space-y-4">
-                <div className="bg-success/10 rounded-xl p-4">
-                  <p className="text-4xl font-bold text-success">100%</p>
-                  <p className="text-muted-foreground">improved their week</p>
+              <div className="space-y-2">
+                <div className="bg-success/10 rounded-xl p-3">
+                  <p className="text-3xl font-bold text-success">100%</p>
+                  <p className="text-sm text-muted-foreground">improved their week</p>
                 </div>
                 
-                <div className="bg-primary/10 rounded-xl p-4">
-                  <p className="text-4xl font-bold text-primary">93%</p>
-                  <p className="text-muted-foreground">felt more confident</p>
+                <div className="bg-primary/10 rounded-xl p-3">
+                  <p className="text-3xl font-bold text-primary">93%</p>
+                  <p className="text-sm text-muted-foreground">felt more confident</p>
                 </div>
                 
-                <div className="bg-accent/20 rounded-xl p-4">
-                  <p className="text-4xl font-bold text-accent-foreground">86%</p>
-                  <p className="text-muted-foreground">felt more connected</p>
+                <div className="bg-accent/20 rounded-xl p-3">
+                  <p className="text-3xl font-bold text-accent-foreground">86%</p>
+                  <p className="text-sm text-muted-foreground">felt more connected</p>
                 </div>
               </div>
             </div>
