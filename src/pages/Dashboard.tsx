@@ -265,7 +265,7 @@ export default function Dashboard() {
       // Only reset if the stored week is BEFORE the current week start
       if (isBefore(storedWeekStart, currentWeekStart)) {
         const mode = progress.mode || 'daily';
-        const target = mode === 'chill' ? 5 : 7;
+        const target = mode === 'chill' ? 3 : 7;
         const targetMet = (progress.hellos_this_week || 0) >= target;
         
         setWeeklyResetDone(true); // Prevent re-running
@@ -479,7 +479,7 @@ export default function Dashboard() {
       const mode = (progress?.mode === 'connect' ? 'chill' : (progress?.mode || 'daily')) as 'daily' | 'chill';
       const isChillMode = mode === 'chill' && !progress?.is_onboarding_week;
       const alreadyAchievedThisWeek = (progress as any)?.weekly_goal_achieved_this_week === true;
-      const justHitWeeklyGoal = isChillMode && newHellosThisWeek >= 5 && !alreadyAchievedThisWeek;
+      const justHitWeeklyGoal = isChillMode && newHellosThisWeek >= 3 && !alreadyAchievedThisWeek;
 
       // Calculate XP
       const xpResult = calculateHelloXp(
