@@ -603,7 +603,7 @@ export default function Onboarding() {
               fetchPriority="high"
             />
             <div className="space-y-4">
-              <h1 className="text-2xl font-bold text-foreground">Boom 😎</h1>
+              <h1 className="text-2xl font-bold text-foreground">Observation</h1>
               <p className="text-muted-foreground leading-relaxed">
                 Next, comment on something you're both experiencing.
               </p>
