@@ -58,7 +58,7 @@ export const FirstHelloRatingDialog = ({
             size="lg"
             variant="outline"
           >
-            💪 Easy money
+            💪 Easy
           </Button>
           <Button 
             onClick={() => onRate('nogood')} 
@@ -66,7 +66,7 @@ export const FirstHelloRatingDialog = ({
             size="lg"
             variant="outline"
           >
-            😬 No good
+            😤 Challenging but done
           </Button>
         </div>
       </DialogContent>
