@@ -129,10 +129,10 @@ export default function Onboarding() {
       };
       saveUserName();
 
-      // Auto-continue to how_it_works after 2.5 seconds
+      // Auto-continue to how_it_works after 1.25 seconds (2x faster)
       const timer = setTimeout(() => {
         setStep('how_it_works');
-      }, 2500);
+      }, 1250);
       
       return () => clearTimeout(timer);
     }
@@ -340,14 +340,14 @@ export default function Onboarding() {
       // Screen 1b - Greeting animation (auto-advances via useEffect)
       case 'greeting':
         return (
-          <div className="text-center space-y-6 animate-in fade-in zoom-in duration-700">
+          <div className="text-center space-y-6 animate-in fade-in zoom-in duration-300">
             <img 
               src={remiShakingHand} 
               alt="Remi shaking hand" 
               className="w-64 h-auto max-h-64 mx-auto object-contain" 
               fetchPriority="high"
             />
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200 delay-150">
               <h1 className="text-2xl font-bold text-foreground">
                 Nice to meet you, {userName.trim()}!
               </h1>

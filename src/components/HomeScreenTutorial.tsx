@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,8 @@ interface HomeScreenTutorialProps {
 
 export const HomeScreenTutorial = ({ open, mode, onComplete }: HomeScreenTutorialProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   const dailySteps: TutorialStep[] = [
     {
@@ -71,13 +73,53 @@ export const HomeScreenTutorial = ({ open, mode, onComplete }: HomeScreenTutoria
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
 
+  // Calculate tooltip position based on target element
+  useEffect(() => {
+    if (!open || isFirstStep || !currentStepData.targetId) {
+      setTooltipPosition(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const targetElement = document.getElementById(currentStepData.targetId!);
+      if (targetElement) {
+        const rect = targetElement.getBoundingClientRect();
+        const tooltipHeight = tooltipRef.current?.offsetHeight || 180;
+        
+        // Position tooltip above the target element
+        setTooltipPosition({
+          top: rect.top - tooltipHeight - 16, // 16px gap above element
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition);
+    
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition);
+    };
+  }, [open, currentStep, isFirstStep, currentStepData.targetId]);
+
   const handleNext = () => {
     if (isLastStep) {
+      setCurrentStep(0); // Reset for next time
       onComplete();
     } else {
       setCurrentStep(prev => prev + 1);
     }
   };
+
+  // Reset step when closed
+  useEffect(() => {
+    if (!open) {
+      setCurrentStep(0);
+    }
+  }, [open]);
 
   // For the first step (welcome message), show a centered dialog
   if (isFirstStep) {
@@ -138,82 +180,72 @@ export const HomeScreenTutorial = ({ open, mode, onComplete }: HomeScreenTutoria
     );
   }
 
-  // For subsequent steps, show an overlay with spotlight effect
+  // For subsequent steps, show a floating tooltip above the target element (no overlay)
   return (
     <AnimatePresence>
-      {open && (
-        <>
-          {/* Dark overlay */}
-          <motion.div
-            className="fixed inset-0 bg-black/70 z-[100]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleNext}
-          />
-          
-          {/* Tooltip pointing to the target */}
-          <motion.div
-            className="fixed z-[101] left-4 right-4 mx-auto max-w-sm"
-            style={{
-              top: currentStepData.targetId === 'any-hello-card' ? '35%' :
-                   currentStepData.targetId === 'todays-hello-card' ? '50%' :
-                   currentStepData.targetId === 'weekly-challenge-card' ? '65%' : '50%'
-            }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-          >
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-xl">
-              <div className="flex items-start gap-3 mb-3">
-                <img 
-                  src={remiMascot} 
-                  alt="Remi" 
-                  className="w-10 h-10 object-contain"
-                />
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-foreground">
-                    {currentStepData.title}
-                  </h3>
-                </div>
-              </div>
-              
-              <p className="text-foreground/80 whitespace-pre-line mb-4">
-                {currentStepData.body}
-              </p>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex gap-1">
-                  {steps.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-colors ${
-                        index === currentStep ? 'bg-primary' : 'bg-muted'
-                      }`}
-                    />
-                  ))}
-                </div>
-                
-                <Button onClick={handleNext} size="sm">
-                  {isLastStep ? "Got it! ✨" : "Next"}
-                </Button>
+      {open && tooltipPosition && (
+        <motion.div
+          ref={tooltipRef}
+          className="fixed z-[101] mx-4"
+          style={{
+            top: tooltipPosition.top,
+            left: Math.max(16, tooltipPosition.left + (tooltipPosition.width / 2) - 160), // Center tooltip, but keep 16px margin
+            maxWidth: 'calc(100vw - 32px)',
+            width: 320,
+          }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
+        >
+          <div className="bg-card border-2 border-primary rounded-2xl p-5 shadow-xl">
+            <div className="flex items-start gap-3 mb-3">
+              <img 
+                src={remiMascot} 
+                alt="Remi" 
+                className="w-10 h-10 object-contain"
+              />
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-foreground">
+                  {currentStepData.title}
+                </h3>
               </div>
             </div>
             
-            {/* Arrow pointing down to the card */}
-            <div className="flex justify-center mt-2">
-              <motion.div 
-                className="text-primary"
-                animate={{ y: [0, 8, 0] }}
-                transition={{ repeat: Infinity, duration: 1.2 }}
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 16l-6-6h12l-6 6z"/>
-                </svg>
-              </motion.div>
+            <p className="text-foreground/80 whitespace-pre-line mb-4">
+              {currentStepData.body}
+            </p>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex gap-1">
+                {steps.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      index === currentStep ? 'bg-primary' : 'bg-muted'
+                    }`}
+                  />
+                ))}
+              </div>
+              
+              <Button onClick={handleNext} size="sm">
+                {isLastStep ? "Got it! ✨" : "Next"}
+              </Button>
             </div>
-          </motion.div>
-        </>
+          </div>
+          
+          {/* Arrow pointing down to the card */}
+          <div className="flex justify-center mt-1">
+            <motion.div 
+              className="text-primary"
+              animate={{ y: [0, 6, 0] }}
+              transition={{ repeat: Infinity, duration: 1 }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 16l-6-6h12l-6 6z"/>
+              </svg>
+            </motion.div>
+          </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );
