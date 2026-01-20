@@ -85,7 +85,7 @@ export const WeeklyGoalCelebrationDialog = ({
           </div>
 
           {/* Main content */}
-          <div className="flex flex-col items-center gap-6 px-6 text-center">
+          <div className="flex flex-col items-center gap-4 px-6 text-center max-h-screen py-8">
             {/* Title */}
             <motion.h1
               initial={{ y: -30, opacity: 0 }}
@@ -107,11 +107,12 @@ export const WeeklyGoalCelebrationDialog = ({
                 scale: { delay: 0.3, duration: 0.5, type: "spring" },
                 rotate: { delay: 0.8, duration: 0.5, repeat: Infinity, repeatDelay: 2 }
               }}
+              className="flex-shrink-0"
             >
               <img 
                 src={remiImage} 
                 alt="Remi celebrating" 
-                className="w-64 h-auto max-h-72 object-contain"
+                className="w-44 h-auto max-h-48 object-contain"
               />
             </motion.div>
 
@@ -120,33 +121,22 @@ export const WeeklyGoalCelebrationDialog = ({
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.4 }}
-              className="flex flex-col items-center gap-2"
+              className="flex flex-col items-center gap-1"
             >
-              <span className="text-lg text-muted-foreground font-medium">Weekly Streak</span>
+              <span className="text-base text-muted-foreground font-medium">Weekly Streak</span>
               
-              <div className="relative h-24 flex items-center justify-center overflow-hidden">
+              <div className="relative h-20 flex items-center justify-center overflow-hidden">
                 <AnimatePresence mode="wait">
-                  {!showNewStreak ? (
-                    <motion.span
-                      key="old"
-                      initial={{ y: 0, opacity: 1 }}
-                      exit={{ y: -80, opacity: 0 }}
-                      transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className="text-7xl font-bold text-primary absolute"
-                    >
-                      {previousStreak}
-                    </motion.span>
-                  ) : (
-                    <motion.span
-                      key="new"
-                      initial={{ y: 80, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ duration: 0.4, ease: "easeOut" }}
-                      className="text-7xl font-bold text-primary absolute"
-                    >
-                      {newStreak}
-                    </motion.span>
-                  )}
+                  <motion.span
+                    key={showNewStreak ? "new" : "old"}
+                    initial={{ y: showNewStreak ? 60 : 0, opacity: showNewStreak ? 0 : 1 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -60, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="text-6xl font-bold text-primary"
+                  >
+                    {showNewStreak ? newStreak : previousStreak}
+                  </motion.span>
                 </AnimatePresence>
               </div>
 
@@ -154,7 +144,7 @@ export const WeeklyGoalCelebrationDialog = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.2, duration: 0.4 }}
-                className="text-lg text-muted-foreground"
+                className="text-base text-muted-foreground"
               >
                 {newStreak === 1 ? 'week' : 'weeks'} 🔥
               </motion.span>
