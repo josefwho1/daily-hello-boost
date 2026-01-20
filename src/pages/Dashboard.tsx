@@ -690,10 +690,46 @@ export default function Dashboard() {
     setPendingMode(mode);
     setShowModeSelection(false);
     
-    // Show the appropriate mode confirmation dialog
+    // For daily mode, skip the confirmation dialog and go straight to tutorial
     if (mode === 'daily') {
-      setShowDailyModeConfirm(true);
+      // Trigger mode confirmation immediately
+      setTutorialMode('daily');
+      
+      const target = 7;
+      const FIRST_HELLOS_COMPLETE_BONUS = 50;
+      const currentTotalXp = progress?.total_xp || 0;
+      const newTotalXp = currentTotalXp + FIRST_HELLOS_COMPLETE_BONUS;
+      const oldLevel = progress?.current_level || getLevelFromXp(currentTotalXp);
+      const newLevel = getLevelFromXp(newTotalXp);
+      
+      await updateProgress({ 
+        mode: 'daily',
+        target_hellos_per_week: target,
+        has_completed_onboarding: true,
+        is_onboarding_week: false,
+        hellos_this_week: 0,
+        week_start_date: getWeekStartKeyInOffset(new Date(), tzOffset),
+        current_phase: 'daily_path',
+        onboarding_completed_at: new Date().toISOString(),
+        daily_path_selected_at: new Date().toISOString(),
+        chill_path_selected_at: null,
+        total_xp: newTotalXp,
+        current_level: newLevel
+      });
+      
+      setPendingMode(null);
+      
+      // Show tutorial after a brief delay
+      setTimeout(() => {
+        setShowHomeTutorial(true);
+      }, 300);
+      
+      // Check for level up after tutorial completes
+      if (newLevel > oldLevel) {
+        setNewLevelValue(newLevel);
+      }
     } else {
+      // Chill mode still shows confirmation dialog
       setShowChillModeConfirm(true);
     }
   };
