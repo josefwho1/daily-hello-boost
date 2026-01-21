@@ -23,6 +23,7 @@ import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeComp
 import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingCompleteMilestoneDialog";
 import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompleteDialog";
 import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationDialog";
+import { DailyStreakCelebrationDialog } from "@/components/DailyStreakCelebrationDialog";
 import { LevelUpCelebrationDialog } from "@/components/LevelUpCelebrationDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { FirstHelloInstructionScreen, FirstHelloPhase } from "@/components/FirstHelloInstructionScreen";
@@ -137,6 +138,8 @@ export default function Dashboard() {
   const [weeklyChallengeOrbAwarded, setWeeklyChallengeOrbAwarded] = useState(false);
   const [showWeeklyGoalCelebration, setShowWeeklyGoalCelebration] = useState(false);
   const [newWeeklyStreakValue, setNewWeeklyStreakValue] = useState(1);
+  const [showDailyStreakCelebration, setShowDailyStreakCelebration] = useState(false);
+  const [newDailyStreakValue, setNewDailyStreakValue] = useState(1);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [newLevelValue, setNewLevelValue] = useState(1);
   const [pendingMode, setPendingMode] = useState<'daily' | 'chill' | null>(null);
@@ -504,6 +507,7 @@ export default function Dashboard() {
 
       // Calculate the new daily streak
       let newDailyStreak = progress?.daily_streak || 0;
+      let streakWasIncremented = false;
 
       if (isFirstHelloToday) {
         // First hello of the day - check if we should increment streak
@@ -519,6 +523,7 @@ export default function Dashboard() {
           if (diffDays <= 1) {
             // Yesterday was completed (or orb was used which sets to yesterday) - increment streak
             newDailyStreak = (progress?.daily_streak || 0) + 1;
+            streakWasIncremented = true;
           } else {
             // Missed days - reset to 1
             newDailyStreak = 1;
@@ -609,6 +614,10 @@ export default function Dashboard() {
       } else if (justHitWeeklyGoal) {
         // Show weekly goal celebration in Chill mode
         setShowWeeklyGoalCelebration(true);
+      } else if (streakWasIncremented && progress?.mode === 'daily') {
+        // Show daily streak celebration in Daily mode when streak increases
+        setNewDailyStreakValue(newDailyStreak);
+        setShowDailyStreakCelebration(true);
       } else if (isWeeklyChallenge) {
         // Show weekly challenge completion celebration
         setWeeklyChallengeOrbAwarded(orbAwardedThisTime);
@@ -1154,6 +1163,12 @@ export default function Dashboard() {
         open={showWeeklyGoalCelebration}
         onContinue={() => setShowWeeklyGoalCelebration(false)}
         newStreak={newWeeklyStreakValue}
+      />
+
+      <DailyStreakCelebrationDialog
+        open={showDailyStreakCelebration}
+        onContinue={() => setShowDailyStreakCelebration(false)}
+        newStreak={newDailyStreakValue}
       />
 
       <LevelUpCelebrationDialog
