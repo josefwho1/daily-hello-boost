@@ -828,7 +828,7 @@ const Profile = () => {
           </div>
         </Card>
 
-        {/* Sign Out (Guest users) */}
+        {/* Sign Out (Guest/Anonymous users) */}
         {isGuest && (
           <Card className="p-5 mb-4 rounded-2xl">
             <Button
@@ -845,8 +845,8 @@ const Profile = () => {
           </Card>
         )}
 
-        {/* Sign Out & Delete Account (Auth users only) */}
-        {user && (
+        {/* Sign Out & Delete Account (Non-anonymous authenticated users only) */}
+        {user && !isGuest && (
           <Card className="p-5 rounded-2xl space-y-3">
             <Button
               variant="outline"

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
@@ -154,11 +155,22 @@ export default function Dashboard() {
   const [lastCompletedFirstHello, setLastCompletedFirstHello] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      setUsername(user.user_metadata?.name || 'Friend');
-    } else if (guestProgress?.username) {
-      setUsername(guestProgress.username);
-    }
+    const fetchUsername = async () => {
+      if (user) {
+        // For authenticated users (including anonymous), check profiles table first
+        const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+        if (profile?.username) {
+          setUsername(profile.username);
+        } else if (user.user_metadata?.name) {
+          setUsername(user.user_metadata.name);
+        } else {
+          setUsername('Friend');
+        }
+      } else if (guestProgress?.username) {
+        setUsername(guestProgress.username);
+      }
+    };
+    fetchUsername();
   }, [user, guestProgress?.username]);
 
   // Fix for existing users who completed first hello but have streak 0
