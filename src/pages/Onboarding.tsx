@@ -495,9 +495,12 @@ export default function Onboarding() {
               fetchPriority="high"
             />
             <div className="space-y-4">
-              <h1 className="text-2xl font-bold text-foreground">Great.</h1>
-              <p className="text-muted-foreground leading-relaxed text-lg">
-                Smile, look up, and say hello to the first person you see.
+              <h1 className="text-2xl font-bold text-foreground">Greeting</h1>
+              <p className="text-muted-foreground leading-relaxed">
+                Your first challenge is to say hello to a stranger.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Smile, look up, and say hello the first person you see.
               </p>
             </div>
             <Button 
