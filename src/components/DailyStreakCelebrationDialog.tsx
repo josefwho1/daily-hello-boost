@@ -44,12 +44,14 @@ export const DailyStreakCelebrationDialog = ({
   const previousStreak = newStreak - 1;
   const milestoneMessage = getMilestoneMessage(newStreak);
   const isSuperSaiyanMilestone = newStreak === 10;
+  const isSuperRemi = newStreak >= 10; // Show Super Remi 2 for 10+ streaks
 
-  // Select a random Remi image when dialog opens (for non-Super Saiyan milestones)
+  // Select a random Remi image when dialog opens (for non-Super Remi milestones)
   const remiImage = useMemo(() => {
-    if (isSuperSaiyanMilestone) return remiSuper1; // Start with Super 1 for transformation
+    if (isSuperSaiyanMilestone) return remiSuper1; // Start with Super 1 for transformation at exactly 10
+    if (isSuperRemi) return remiSuper2; // Use Super 2 for 10+ streaks (after transformation)
     return celebratingImages[Math.floor(Math.random() * celebratingImages.length)];
-  }, [open, isSuperSaiyanMilestone]);
+  }, [open, isSuperSaiyanMilestone, isSuperRemi]);
 
   useEffect(() => {
     if (open) {
@@ -174,7 +176,7 @@ export const DailyStreakCelebrationDialog = ({
               )}
             </motion.div>
 
-            {/* Remi Image - with transformation animation for Super Saiyan */}
+            {/* Remi Image - with transformation animation for Super Saiyan milestone, or Super Remi 2 for 10+ */}
             {isSuperSaiyanMilestone ? (
               <div className="relative flex-shrink-0">
                 {/* Energy aura behind Remi during/after transformation */}
@@ -219,6 +221,30 @@ export const DailyStreakCelebrationDialog = ({
                     className="w-40 h-auto max-h-44 object-contain relative z-10"
                   />
                 </AnimatePresence>
+              </div>
+            ) : isSuperRemi ? (
+              // For streaks > 10, show Super Remi 2 with golden aura (no transformation animation)
+              <div className="relative flex-shrink-0">
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.1, 1], 
+                    opacity: [0.4, 0.6, 0.4]
+                  }}
+                  transition={{ 
+                    duration: 1.5,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                  className="absolute inset-0 bg-gradient-to-t from-yellow-500/40 to-yellow-300/20 rounded-full blur-xl -m-4"
+                />
+                <motion.img
+                  src={remiSuper2}
+                  alt="Super Remi"
+                  initial={{ scale: 0, rotate: -5 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.2, duration: 0.4, type: "spring" }}
+                  className="w-40 h-auto max-h-44 object-contain relative z-10"
+                />
               </div>
             ) : (
               <motion.div
