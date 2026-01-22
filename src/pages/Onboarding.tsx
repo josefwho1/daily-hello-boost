@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { getGuestState, createGuestState, createGuestProgress, updateGuestProgress, addGuestHelloLog } from "@/lib/indexedDB";
+import { useGuestMode } from "@/hooks/useGuestMode";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
 
 // Remi images
@@ -100,35 +100,7 @@ export default function Onboarding() {
   // Save username and auto-advance from greeting to how_it_works
   useEffect(() => {
     if (step === 'greeting' && userName.trim()) {
-      // Save the username to the appropriate storage
-      const saveUserName = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          // For authenticated users, save to both profiles and user_progress tables
-          await supabase.from('profiles').update({ 
-            username: userName.trim() 
-          }).eq('id', user.id);
-          
-          await supabase.from('user_progress').update({ 
-            username: userName.trim() 
-          }).eq('user_id', user.id);
-          
-          await supabase.auth.updateUser({
-            data: { name: userName.trim() }
-          });
-        } else {
-          // For guest users
-          let guestState = await getGuestState();
-          if (!guestState) {
-            guestState = await createGuestState();
-            await createGuestProgress(guestState.device_id, guestState.guest_user_id);
-          }
-          await updateGuestProgress({ username: userName.trim() });
-        }
-      };
-      saveUserName();
-
+      // Save the username to the appropriate storage - handled via initializeProgress
       // Auto-continue to how_it_works after 1.25 seconds (2x faster)
       const timer = setTimeout(() => {
         setStep('how_it_works');
@@ -142,7 +114,8 @@ export default function Onboarding() {
   const initializeProgress = async () => {
     const { data: { user: existingUser } } = await supabase.auth.getUser();
     
-    if (existingUser) {
+    if (existingUser && !existingUser.is_anonymous) {
+      // Regular authenticated user
       await supabase.from('user_progress').upsert({
         user_id: existingUser.id,
         is_onboarding_week: true,
@@ -154,76 +127,84 @@ export default function Onboarding() {
         orbs: 0,
         has_received_first_orb: false,
         onboarding_week_start: new Date().toISOString(),
+        username: userName.trim() || 'Friend',
       }, { onConflict: 'user_id' });
-      return { isGuest: false, userId: existingUser.id };
-    } else {
-      let guestState = await getGuestState();
-      if (!guestState) {
-        guestState = await createGuestState();
-        await createGuestProgress(guestState.device_id, guestState.guest_user_id);
-      }
       
-      await updateGuestProgress({
-        is_onboarding_week: true,
-        current_day: 1,
-        mode: 'first_hellos',
-        has_completed_onboarding: false,
-        orbs: 0,
-        has_received_first_orb: false,
-        onboarding_week_start: new Date().toISOString(),
-      });
-      return { isGuest: true, guestState };
+      await supabase.from('profiles').update({ 
+        username: userName.trim() || 'Friend' 
+      }).eq('id', existingUser.id);
+      
+      return { isGuest: false, userId: existingUser.id };
     }
+    
+    // For guests, use anonymous auth
+    const { data, error } = await supabase.auth.signInAnonymously();
+    
+    if (error) {
+      console.error('Error signing in anonymously:', error);
+      throw error;
+    }
+    
+    const userId = data.user?.id;
+    if (!userId) throw new Error('No user ID returned');
+
+    // Create profile for anonymous user
+    await supabase.from('profiles').upsert({
+      id: userId,
+      username: userName.trim() || 'Guest',
+      is_anonymous: true,
+      hide_from_leaderboard: false,
+    }, { onConflict: 'id' });
+
+    // Create user_progress for anonymous user
+    await supabase.from('user_progress').upsert({
+      user_id: userId,
+      is_onboarding_week: true,
+      current_day: 1,
+      current_streak: 0,
+      mode: 'first_hellos',
+      has_completed_onboarding: false,
+      current_phase: 'first_hellos',
+      orbs: 0,
+      has_received_first_orb: false,
+      onboarding_week_start: new Date().toISOString(),
+      username: userName.trim() || 'Guest',
+    }, { onConflict: 'user_id' });
+    
+    return { isGuest: true, userId };
   };
 
   // Log the Greeting hello and update streak to 1
   const logGreetingHello = async () => {
     const { data: { user: existingUser } } = await supabase.auth.getUser();
+    if (!existingUser) {
+      console.error('No user found when logging greeting hello');
+      return;
+    }
     
     const { detectBrowserTimezoneOffset, getDayKeyInOffset } = await import('@/lib/timezone');
     const detectedOffset = detectBrowserTimezoneOffset();
     const today = getDayKeyInOffset(new Date(), detectedOffset);
     
-    if (existingUser) {
-      await supabase.from('hello_logs').insert({
-        user_id: existingUser.id,
-        hello_type: 'Greeting',
-        timezone_offset: detectedOffset,
-      });
-      
-      await supabase.from('user_progress').update({
-        daily_streak: 1,
-        current_streak: 1,
-        last_completed_date: today,
-        total_hellos: 1,
-        hellos_this_week: 1,
-        total_xp: 10, // +10 XP for first hello
-        hellos_today_count: 1,
-      }).eq('user_id', existingUser.id);
-      
-      await supabase.from('profiles').update({
-        timezone_preference: detectedOffset,
-      }).eq('id', existingUser.id);
-    } else {
-      await addGuestHelloLog({
-        name: null,
-        notes: null,
-        hello_type: 'Greeting',
-        rating: null,
-        difficulty_rating: null,
-        timezone_offset: detectedOffset,
-      });
-      
-      await updateGuestProgress({
-        daily_streak: 1,
-        current_streak: 1,
-        last_completed_date: today,
-        total_hellos: 1,
-        hellos_this_week: 1,
-        total_xp: 10, // +10 XP for first hello
-        hellos_today_count: 1,
-      });
-    }
+    await supabase.from('hello_logs').insert({
+      user_id: existingUser.id,
+      hello_type: 'Greeting',
+      timezone_offset: detectedOffset,
+    });
+    
+    await supabase.from('user_progress').update({
+      daily_streak: 1,
+      current_streak: 1,
+      last_completed_date: today,
+      total_hellos: 1,
+      hellos_this_week: 1,
+      total_xp: 10, // +10 XP for first hello
+      hellos_today_count: 1,
+    }).eq('user_id', existingUser.id);
+    
+    await supabase.from('profiles').update({
+      timezone_preference: detectedOffset,
+    }).eq('id', existingUser.id);
   };
 
   // Handle "I did it" - log greeting and show rating
@@ -249,18 +230,12 @@ export default function Onboarding() {
   // Award the first orb after the first hello
   const awardFirstOrb = async () => {
     const { data: { user: existingUser } } = await supabase.auth.getUser();
+    if (!existingUser) return;
     
-    if (existingUser) {
-      await supabase.from('user_progress').update({
-        orbs: 1,
-        has_received_first_orb: true
-      }).eq('user_id', existingUser.id);
-    } else {
-      await updateGuestProgress({
-        orbs: 1,
-        has_received_first_orb: true
-      });
-    }
+    await supabase.from('user_progress').update({
+      orbs: 1,
+      has_received_first_orb: true
+    }).eq('user_id', existingUser.id);
   };
 
   // Handle claiming first orb from dialog

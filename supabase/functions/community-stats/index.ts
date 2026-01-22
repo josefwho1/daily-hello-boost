@@ -175,29 +175,41 @@ Deno.serve(async (req) => {
     // Get this week's challenge using client-side logic
     const thisWeeksChallenge = getThisWeeksChallenge();
 
-    // Top 10 by daily_streak (the actual streak being tracked)
+    // Get all profiles to check hide_from_leaderboard and is_anonymous
+    const { data: allProfiles } = await supabase
+      .from('profiles')
+      .select('id, username, is_anonymous, hide_from_leaderboard');
+    
+    const profileMap = new Map(
+      (allProfiles || []).map(p => [p.id, p])
+    );
+
+    // Top 10 by daily_streak (exclude hidden users)
     const { data: streakLeaders } = await supabase
       .from('user_progress')
       .select('user_id, daily_streak, username')
       .gt('daily_streak', 0)
       .order('daily_streak', { ascending: false })
-      .limit(10);
+      .limit(50); // Get more to filter
 
-    // Enrich streak leaders with profile data
-    const enrichedStreakLeaders = await Promise.all(
-      (streakLeaders || []).map(async (leader) => {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', leader.user_id)
-          .maybeSingle();
+    // Filter and enrich streak leaders
+    const enrichedStreakLeaders = (streakLeaders || [])
+      .filter(leader => {
+        const profile = profileMap.get(leader.user_id);
+        return !profile?.hide_from_leaderboard;
+      })
+      .slice(0, 10)
+      .map(leader => {
+        const profile = profileMap.get(leader.user_id);
+        const displayName = leader.username || profile?.username || 'Anonymous';
+        const isGuest = profile?.is_anonymous === true;
         
         return {
-          displayName: leader.username || profile?.username || 'Anonymous',
+          displayName: isGuest ? `${displayName} (guest)` : displayName,
           streak: leader.daily_streak,
+          isGuest,
         };
-      })
-    );
+      });
 
     // Top 10 by hellos this week - count actual hello_logs for accuracy
     const { data: weeklyHelloData } = await supabase
@@ -211,19 +223,19 @@ Deno.serve(async (req) => {
       weeklyHellosPerUser[log.user_id] = (weeklyHellosPerUser[log.user_id] || 0) + 1;
     });
     
-    // Sort by count and take top 10
+    // Sort by count, filter hidden users, and take top 10
     const sortedWeeklyLeaders = Object.entries(weeklyHellosPerUser)
+      .filter(([userId]) => {
+        const profile = profileMap.get(userId);
+        return !profile?.hide_from_leaderboard;
+      })
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10);
     
     // Enrich weekly leaders with profile/progress data
     const enrichedWeeklyLeaders = await Promise.all(
       sortedWeeklyLeaders.map(async ([userId, count]) => {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', userId)
-          .maybeSingle();
+        const profile = profileMap.get(userId);
         
         const { data: progress } = await supabase
           .from('user_progress')
@@ -231,9 +243,13 @@ Deno.serve(async (req) => {
           .eq('user_id', userId)
           .maybeSingle();
         
+        const displayName = progress?.username || profile?.username || 'Anonymous';
+        const isGuest = profile?.is_anonymous === true;
+        
         return {
-          displayName: progress?.username || profile?.username || 'Anonymous',
+          displayName: isGuest ? `${displayName} (guest)` : displayName,
           hellosThisWeek: count,
+          isGuest,
         };
       })
     );

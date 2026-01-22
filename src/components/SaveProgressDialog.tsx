@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { Mail, Sparkles, ArrowLeft, Check, Lock } from 'lucide-react';
 import remiWaving from '@/assets/remi-waving.webp';
-import { getGuestProgress, getGuestHelloLogs, updateGuestState, clearGuestData } from '@/lib/indexedDB';
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email" });
 const passwordSchema = z.string().min(6, { message: "Password must be at least 6 characters" });
@@ -52,98 +51,25 @@ export const SaveProgressDialog = ({
       passwordSchema.parse(password);
       setLoading(true);
 
-      // Get guest data before signup
-      const guestProgress = await getGuestProgress();
-      const guestLogs = await getGuestHelloLogs();
-
-      const { data, error } = await supabase.auth.signUp({
+      // Link anonymous account to email/password (converts anonymous to full account)
+      const { error } = await supabase.auth.updateUser({
         email: email.trim(),
         password,
-        options: {
-          emailRedirectTo: getAuthCallbackUrl(),
-          data: {
-            name: guestProgress?.username || 'Friend',
-          },
-        },
       });
 
       if (error) throw error;
 
-      const userId = data.user?.id;
-      if (!userId) throw new Error('No user ID returned');
-
-      // Sync guest progress to cloud
-      if (guestProgress) {
-        const { error: progressError } = await supabase
-          .from('user_progress')
-          .upsert({
-            user_id: userId,
-            current_streak: guestProgress.current_streak,
-            current_day: guestProgress.current_day,
-            last_completed_date: guestProgress.last_completed_date,
-            target_hellos_per_week: guestProgress.target_hellos_per_week,
-            hellos_this_week: guestProgress.hellos_this_week,
-            weekly_streak: guestProgress.weekly_streak,
-            daily_streak: guestProgress.daily_streak,
-            longest_streak: guestProgress.longest_streak,
-            is_onboarding_week: guestProgress.is_onboarding_week,
-            onboarding_week_start: guestProgress.onboarding_week_start,
-            week_start_date: guestProgress.week_start_date,
-            has_completed_onboarding: guestProgress.has_completed_onboarding,
-            orbs: guestProgress.orbs,
-            has_received_first_orb: guestProgress.has_received_first_orb,
-            total_hellos: guestProgress.total_hellos,
-            total_xp: guestProgress.total_xp,
-            current_level: guestProgress.current_level,
-            hellos_today_count: guestProgress.hellos_today_count,
-            names_today_count: guestProgress.names_today_count,
-            notes_today_count: guestProgress.notes_today_count,
-            last_xp_reset_date: guestProgress.last_xp_reset_date,
-            mode: guestProgress.mode === '7-day-starter' ? 'first_hellos' : guestProgress.mode,
-            why_here: guestProgress.why_here,
-            selected_pack_id: guestProgress.selected_pack_id,
-            comfort_rating: guestProgress.comfort_rating,
-            current_phase: 'onboarding',
-          }, { onConflict: 'user_id' });
-        
-        if (progressError) {
-          console.error('Error syncing progress:', progressError);
-        }
-
-        // Also update the profile with the username
-        await supabase
-          .from('profiles')
-          .update({ username: guestProgress.username || 'Friend' })
-          .eq('id', userId);
+      // Get current user to update profile
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Update profile to mark as no longer anonymous
+        await supabase.from('profiles').update({
+          is_anonymous: false,
+          email: email.trim(),
+        }).eq('id', user.id);
       }
 
-      // Sync hello logs
-      if (guestLogs.length > 0) {
-        const logsToInsert = guestLogs.map(log => ({
-          user_id: userId,
-          name: log.name,
-          notes: log.notes,
-          hello_type: log.hello_type,
-          rating: log.rating,
-          difficulty_rating: log.difficulty_rating,
-          timezone_offset: log.timezone_offset,
-          created_at: log.created_at,
-        }));
-
-        const { error: logsError } = await supabase
-          .from('hello_logs')
-          .insert(logsToInsert);
-        
-        if (logsError) {
-          console.error('Error syncing logs:', logsError);
-        }
-      }
-
-      // Mark guest data as synced and clear it
-      await updateGuestState({ account_linked: true });
-      await clearGuestData();
-
-      toast.success('Account created successfully!');
+      toast.success('Account created successfully! Your progress is now saved.');
       handleClose();
       navigate('/');
     } catch (error) {

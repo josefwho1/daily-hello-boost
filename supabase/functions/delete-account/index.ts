@@ -50,53 +50,74 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create admin client for deletion operations
+    // Create admin client for operations
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Delete all user data from tables (in correct order due to foreign keys)
-    console.log(`Deleting account for user: ${userId}`);
+    console.log(`Anonymizing account for user: ${userId}`);
 
-    // Delete hello_logs
-    const { error: helloLogsError } = await adminClient
-      .from("hello_logs")
-      .delete()
+    // Instead of deleting data, we anonymize it:
+    // 1. Remove email from profiles
+    // 2. Set hide_from_leaderboard = true
+    // 3. Set username to "Deleted User"
+    // 4. Keep all hello_logs, person_logs, challenge_completions (for stats)
+    // 5. Delete the auth user only
+
+    // Anonymize profile - remove email, hide from leaderboards
+    const { error: profileError } = await adminClient
+      .from("profiles")
+      .update({
+        email: null,
+        username: 'Deleted User',
+        hide_from_leaderboard: true,
+        is_anonymous: true,
+      })
+      .eq("id", userId);
+    if (profileError) console.error("Error anonymizing profile:", profileError);
+
+    // Anonymize user_progress - remove username
+    const { error: progressError } = await adminClient
+      .from("user_progress")
+      .update({
+        username: 'Deleted User',
+      })
       .eq("user_id", userId);
-    if (helloLogsError) console.error("Error deleting hello_logs:", helloLogsError);
+    if (progressError) console.error("Error anonymizing user_progress:", progressError);
 
-    // Delete challenge_completions
-    const { error: challengeError } = await adminClient
-      .from("challenge_completions")
-      .delete()
-      .eq("user_id", userId);
-    if (challengeError) console.error("Error deleting challenge_completions:", challengeError);
-
-    // Delete person_logs
-    const { error: personLogsError } = await adminClient
-      .from("person_logs")
-      .delete()
-      .eq("user_id", userId);
-    if (personLogsError) console.error("Error deleting person_logs:", personLogsError);
-
-    // Delete email_logs
+    // Delete email_logs as they contain PII
     const { error: emailLogsError } = await adminClient
       .from("email_logs")
       .delete()
       .eq("user_id", userId);
     if (emailLogsError) console.error("Error deleting email_logs:", emailLogsError);
 
-    // Delete user_progress
-    const { error: progressError } = await adminClient
-      .from("user_progress")
+    // Delete person_logs as they contain personal notes
+    const { error: personLogsError } = await adminClient
+      .from("person_logs")
       .delete()
       .eq("user_id", userId);
-    if (progressError) console.error("Error deleting user_progress:", progressError);
+    if (personLogsError) console.error("Error deleting person_logs:", personLogsError);
 
-    // Delete profile
-    const { error: profileError } = await adminClient
-      .from("profiles")
-      .delete()
-      .eq("id", userId);
-    if (profileError) console.error("Error deleting profiles:", profileError);
+    // Keep hello_logs, challenge_completions - they contribute to community stats
+    // Just anonymize the names in hello_logs
+    const { error: helloLogsError } = await adminClient
+      .from("hello_logs")
+      .update({
+        name: null,
+        notes: null,
+      })
+      .eq("user_id", userId);
+    if (helloLogsError) console.error("Error anonymizing hello_logs:", helloLogsError);
+
+    // Anonymize challenge_completions
+    const { error: challengeError } = await adminClient
+      .from("challenge_completions")
+      .update({
+        username: 'Deleted User',
+        interaction_name: null,
+        notes: null,
+      })
+      .eq("user_id", userId);
+    if (challengeError) console.error("Error anonymizing challenge_completions:", challengeError);
 
     // Delete the auth user using admin API
     const { error: deleteUserError } = await adminClient.auth.admin.deleteUser(userId);
@@ -109,10 +130,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Successfully deleted account for user: ${userId}`);
+    console.log(`Successfully anonymized and deleted auth for user: ${userId}`);
 
     return new Response(
-      JSON.stringify({ success: true, message: "Account deleted successfully" }),
+      JSON.stringify({ success: true, message: "Account deleted successfully. Your data has been anonymized." }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
