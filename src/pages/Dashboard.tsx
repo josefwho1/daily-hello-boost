@@ -156,22 +156,50 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchUsername = async () => {
+      // Resolve a display name that works for:
+      // - Signed-in users
+      // - Anonymous (guest) users
+      // - Legacy/non-auth guest state (fallback)
+      let resolvedName: string | null = null;
+
       if (user) {
         // For authenticated users (including anonymous), check profiles table first
-        const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
-        if (profile?.username) {
-          setUsername(profile.username);
-        } else if (user.user_metadata?.name) {
-          setUsername(user.user_metadata.name);
-        } else {
-          setUsername('Friend');
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (!error && profile?.username) {
+          resolvedName = profile.username;
         }
-      } else if (guestProgress?.username) {
-        setUsername(guestProgress.username);
+
+        // Next, try auth metadata (may be empty for anonymous users)
+        if (!resolvedName && user.user_metadata?.name) {
+          resolvedName = user.user_metadata.name;
+        }
+
+        // Finally, fall back to progress-derived names (covers anonymous users even if profiles SELECT fails)
+        if (!resolvedName && (progress as any)?.username) {
+          resolvedName = (progress as any).username;
+        }
+        if (!resolvedName && guestProgress?.username) {
+          resolvedName = guestProgress.username;
+        }
+      } else {
+        // Legacy non-auth guest fallback
+        if (guestProgress?.username) {
+          resolvedName = guestProgress.username;
+        }
+        if (!resolvedName && (progress as any)?.username) {
+          resolvedName = (progress as any).username;
+        }
       }
+
+      setUsername(resolvedName || 'Friend');
     };
     fetchUsername();
-  }, [user, guestProgress?.username]);
+  }, [user?.id, user?.user_metadata?.name, guestProgress?.username, (progress as any)?.username]);
 
   // Fix for existing users who completed first hello but have streak 0
   useEffect(() => {
