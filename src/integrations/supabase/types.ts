@@ -193,7 +193,9 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
+          hide_from_leaderboard: boolean
           id: string
+          is_anonymous: boolean
           profile_picture: string | null
           timezone_auto_detect: boolean
           timezone_preference: string | null
@@ -203,7 +205,9 @@ export type Database = {
         Insert: {
           created_at?: string
           email?: string | null
+          hide_from_leaderboard?: boolean
           id: string
+          is_anonymous?: boolean
           profile_picture?: string | null
           timezone_auto_detect?: boolean
           timezone_preference?: string | null
@@ -213,7 +217,9 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string | null
+          hide_from_leaderboard?: boolean
           id?: string
+          is_anonymous?: boolean
           profile_picture?: string | null
           timezone_auto_detect?: boolean
           timezone_preference?: string | null

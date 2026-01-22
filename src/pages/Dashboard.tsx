@@ -97,7 +97,7 @@ export default function Dashboard() {
   
   const logs = user ? cloudLogs : guestLogs.map(log => ({
     ...log,
-    user_id: guestProgress?.guest_user_id || '',
+    user_id: guestProgress?.user_id || '',
   }));
   
   const updateProgress = user ? updateCloudProgress : updateGuestProgress;

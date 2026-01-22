@@ -198,7 +198,6 @@ const Profile = () => {
         // For guest users, update the local guest progress
         await updateGuestProgress({
           username: editName.trim(),
-          updated_at: new Date().toISOString(),
         });
         toast.success("Name updated successfully");
         setIsEditingName(false);
@@ -390,7 +389,6 @@ const Profile = () => {
       } else {
         await updateGuestProgress({
           ...updates,
-          updated_at: new Date().toISOString(),
         });
       }
 
