@@ -1005,6 +1005,30 @@ export default function Dashboard() {
           firstHellosCompleted={completedFirstHellosCount}
         />
 
+        {/* DEV ONLY: Test Animation Button */}
+        {import.meta.env.DEV && (
+          <div className="mt-4 flex gap-2 flex-wrap">
+            <button
+              onClick={() => {
+                setNewDailyStreakValue((progress?.daily_streak || 0) + 1);
+                setShowDailyStreakCelebration(true);
+              }}
+              className="px-3 py-1.5 text-xs bg-purple-600 text-white rounded-md hover:bg-purple-700"
+            >
+              Test Streak +1
+            </button>
+            <button
+              onClick={() => {
+                setNewDailyStreakValue(10);
+                setShowDailyStreakCelebration(true);
+              }}
+              className="px-3 py-1.5 text-xs bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
+            >
+              Test Super Remi (10)
+            </button>
+          </div>
+        )}
+
         {/* Log a Hello Button - Show above challenges for non-onboarding users */}
         {!isFirstHellosMode && progress.has_completed_onboarding && (
           <div className="mt-6">
