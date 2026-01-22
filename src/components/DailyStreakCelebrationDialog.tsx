@@ -24,7 +24,7 @@ const celebratingImages = [
 
 // Get milestone message for special streak counts
 const getMilestoneMessage = (streak: number): string | null => {
-  if (streak === 10) return "SUPER SAIYAN MODE! ⚡";
+  if (streak === 10) return "10 Days in a row, your streak is lighting up 🔥";
   if (streak === 7) return "One week strong! 🔥";
   if (streak === 14) return "Two weeks! Incredible! 🌟";
   if (streak === 21) return "Three weeks! You're unstoppable! 💪";
@@ -159,7 +159,7 @@ export const DailyStreakCelebrationDialog = ({
                 <>
                   <Zap className="w-8 h-8 text-yellow-400 animate-pulse" />
                   <h1 className="text-2xl font-bold text-yellow-400">
-                    SUPER SAIYAN!
+                    SUPER REMI!
                   </h1>
                   <Zap className="w-8 h-8 text-yellow-400 animate-pulse" />
                 </>
