@@ -6,9 +6,16 @@ import remiSuper1 from "@/assets/remi-super-1.webp";
 import remiSuper2 from "@/assets/remi-super-2.webp";
 import { getRankFromLevel, getXpProgress } from "@/lib/xpSystem";
 
+const withCacheBuster = (src: string) => {
+  const v = "super2_2026-01-22";
+  return `${src}${src.includes("?") ? "&" : "?"}v=${encodeURIComponent(v)}`;
+};
+
 // Helper to get the appropriate streak image
 const getStreakImage = (streak: number) => {
-  return streak >= 10 ? remiSuper2 : remiSuper1;
+  // Cache-bust Super Remi 2 specifically to avoid stale placeholder assets
+  // lingering in PWA/browser caches.
+  return streak >= 10 ? withCacheBuster(remiSuper2) : remiSuper1;
 };
 
 interface StatsBarProps {
