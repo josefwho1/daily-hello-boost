@@ -44,6 +44,10 @@ const Profile = () => {
   const { guestProgress, guestState, isGuest, dismissSavePrompt, updateProgress: updateGuestProgress, refetch: refetchGuestData } = useGuestMode();
   const { timezoneOffset, updateTimezone, autoDetect, updateAutoDetect, loading: timezoneLoading } = useTimezone();
   const { progress: cloudProgress, updateProgress } = useUserProgress();
+
+  // Anonymous users are considered "guests" in our UI.
+  // Use the auth user object directly to avoid cross-hook timing mismatches.
+  const isAnonymousAuthUser = (user as any)?.is_anonymous === true;
   
   
   const [isEditingName, setIsEditingName] = useState(false);
@@ -239,6 +243,8 @@ const Profile = () => {
 
   const handleGuestSignOut = async () => {
     try {
+      // Sign out anonymous session first, then clear any local cached guest data
+      await supabase.auth.signOut({ scope: 'local' });
       await clearGuestData();
       toast.success("Signed out successfully");
       // Redirect to landing page with full reload to clear all state
@@ -829,7 +835,7 @@ const Profile = () => {
         </Card>
 
         {/* Sign Out (Guest/Anonymous users) */}
-        {isGuest && (
+        {isAnonymousAuthUser && (
           <Card className="p-5 mb-4 rounded-2xl">
             <Button
               variant="outline"
@@ -846,7 +852,7 @@ const Profile = () => {
         )}
 
         {/* Sign Out & Delete Account (Non-anonymous authenticated users only) */}
-        {user && !isGuest && (
+        {user && !isAnonymousAuthUser && (
           <Card className="p-5 rounded-2xl space-y-3">
             <Button
               variant="outline"
