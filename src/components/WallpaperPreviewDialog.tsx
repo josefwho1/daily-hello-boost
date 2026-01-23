@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, X } from "lucide-react";
 import type { Wallpaper } from "@/data/wallpapers";
 import { toast } from "sonner";
 
@@ -57,6 +57,15 @@ export const WallpaperPreviewDialog = ({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-sm p-0 overflow-hidden bg-background border-0 rounded-2xl [&>button]:hidden">
         <div className="relative">
+          {/* Custom close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5 text-white" />
+          </button>
+
           {/* Wallpaper preview */}
           <img
             src={wallpaper.imageUrl}
