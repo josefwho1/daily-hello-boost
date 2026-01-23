@@ -144,7 +144,7 @@ const Vault = () => {
           <img src={vaultIcon} alt="Vault" className="w-12 h-12 object-contain" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">Remi's Vault</h1>
-            <p className="text-sm text-muted-foreground">Secrets to saying hello</p>
+            <p className="text-sm text-muted-foreground">Secrets, extras & goodies</p>
           </div>
         </div>
 
