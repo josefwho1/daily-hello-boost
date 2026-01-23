@@ -67,7 +67,7 @@ export const useUserProgress = () => {
     }
 
     try {
-      // Try to load existing progress first
+      // Try to load existing progress
       const { data, error } = await supabase
         .from('user_progress')
         .select('*')
@@ -78,52 +78,11 @@ export const useUserProgress = () => {
 
       if (data) {
         setProgress(data);
-        return;
+      } else {
+        // No progress found - don't create default progress here
+        // Let the routing redirect to onboarding which will create proper progress
+        setProgress(null);
       }
-
-      // No progress found – ensure a profile exists for this user
-      const profileName = (user.user_metadata as { name?: string } | null)?.name || 'User';
-
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert(
-          { id: user.id, username: profileName },
-          { onConflict: 'id' }
-        );
-
-      if (profileError && profileError.code !== '23505') {
-        // Log but don't block progress creation if profile already exists or conflicts
-        console.error('Error ensuring profile exists:', profileError);
-      }
-
-      // Check again in case database trigger created progress when profile was inserted
-      const { data: progressAfterProfile, error: progressError2 } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (progressError2) throw progressError2;
-
-      if (progressAfterProfile) {
-        setProgress(progressAfterProfile);
-        return;
-      }
-
-      // Still no progress – create initial progress directly
-      const { data: newData, error: insertError } = await supabase
-        .from('user_progress')
-        .insert({
-          user_id: user.id,
-          current_streak: 0,
-          current_day: 1,
-          last_completed_date: null
-        })
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-      setProgress(newData);
     } catch (error) {
       console.error('Error fetching progress:', error);
       setProgress(null);

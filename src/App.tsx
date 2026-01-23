@@ -26,9 +26,10 @@ const queryClient = new QueryClient();
 // Routes that work for both guests and authenticated users
 const AppRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
-  const { guestProgress, loading: guestLoading } = useGuestMode();
+  const { guestProgress, loading: guestLoading, isAnonymous } = useGuestMode();
+  const { progress, loading: progressLoading } = useUserProgress();
 
-  const loading = authLoading || guestLoading;
+  const loading = authLoading || guestLoading || progressLoading;
 
   if (loading) {
     return (
@@ -41,8 +42,18 @@ const AppRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // If not logged in and no guest progress, redirect to onboarding
-  if (!user && !guestProgress) {
+  // If not logged in at all (no user), redirect to onboarding
+  if (!user) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // For anonymous users, check if they have progress (created during onboarding)
+  if (isAnonymous && !guestProgress) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // For authenticated (non-anonymous) users, check if they have progress
+  if (!isAnonymous && !progress) {
     return <Navigate to="/onboarding" replace />;
   }
 
@@ -52,7 +63,7 @@ const AppRoute = ({ children }: { children: React.ReactNode }) => {
 const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const { progress, loading: progressLoading } = useUserProgress();
-  const { guestProgress, loading: guestLoading } = useGuestMode();
+  const { guestProgress, loading: guestLoading, isAnonymous } = useGuestMode();
 
   const loading = progressLoading || guestLoading;
 
@@ -67,18 +78,28 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // For authenticated users, check their progress
-  if (user && progress) {
-    if (!progress.has_completed_onboarding && !progress.is_onboarding_week) {
-      return <Navigate to="/onboarding" replace />;
-    }
+  // Get the relevant progress
+  // For anonymous users, use guestProgress; for regular auth users, use progress
+  const currentProgress = isAnonymous ? guestProgress : progress;
+
+  // If no progress exists at all, redirect to onboarding
+  if (!currentProgress) {
+    return <Navigate to="/onboarding" replace />;
   }
-  
-  // For guests, check guest progress
-  if (!user && guestProgress) {
-    if (!guestProgress.has_completed_onboarding && !guestProgress.is_onboarding_week) {
-      return <Navigate to="/onboarding" replace />;
-    }
+
+  // Users who haven't completed onboarding AND aren't in onboarding week 
+  // need to start/restart onboarding
+  if (!currentProgress.has_completed_onboarding && !currentProgress.is_onboarding_week) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Users in first_hellos mode who haven't selected a final mode yet
+  // should stay in the app (Dashboard will show First Hellos challenges)
+  // But if they somehow have mode='first_hellos' with no onboarding context, redirect
+  if (currentProgress.mode === 'first_hellos' && 
+      !currentProgress.is_onboarding_week && 
+      !currentProgress.has_completed_onboarding) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   return <>{children}</>;
