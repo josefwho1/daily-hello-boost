@@ -673,7 +673,7 @@ export default function Dashboard() {
         setShowFirstOrbGift(true);
       }
       
-      // Show save prompt for guests after 3 hellos
+      // Show save prompt for guests at 2, 8, and 20 hellos
       if (isAnonymous && shouldShowSavePrompt()) {
         // Delay slightly so other dialogs can show first
         setTimeout(() => {

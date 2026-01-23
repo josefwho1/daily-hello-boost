@@ -75,8 +75,8 @@ export interface UseGuestModeReturn {
   initializeAnonymous: () => Promise<{ success: boolean; userId?: string; error?: string }>;
 }
 
-// Trigger save prompt after 3 hellos
-const SAVE_PROMPT_TRIGGER_COUNT = 3;
+// Trigger save prompt at specific hello milestones
+const SAVE_PROMPT_TRIGGERS = [2, 8, 20];
 const PROMPT_COOLDOWN_HOURS = 24;
 
 export const useGuestMode = (): UseGuestModeReturn => {
@@ -265,8 +265,8 @@ export const useGuestMode = (): UseGuestModeReturn => {
     
     const totalHellos = guestProgress?.total_hellos || 0;
     
-    // Trigger after reaching the threshold
-    if (totalHellos < SAVE_PROMPT_TRIGGER_COUNT) return false;
+    // Check if we hit a trigger milestone (2, 8, or 20 hellos)
+    if (!SAVE_PROMPT_TRIGGERS.includes(totalHellos)) return false;
     
     // Check cooldown
     if (lastPromptShownAt) {
