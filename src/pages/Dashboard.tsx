@@ -66,11 +66,14 @@ export default function Dashboard() {
     shouldShowSavePrompt,
     dismissSavePrompt,
     guestState,
-    isGuest
+    isGuest,
+    isAnonymous
   } = useGuestMode();
   
-  // Unified progress and logs - works for both guest and authenticated users
-  const progress = user ? cloudProgress : (guestProgress ? {
+  // Unified progress and logs
+  // For anonymous users (isAnonymous), use guestProgress which comes from useGuestMode
+  // For regular authenticated users, use cloudProgress from useUserProgress
+  const progress = isAnonymous ? (guestProgress ? {
     current_streak: guestProgress.current_streak,
     current_day: guestProgress.current_day,
     last_completed_date: guestProgress.last_completed_date,
@@ -94,15 +97,15 @@ export default function Dashboard() {
     names_today_count: guestProgress.names_today_count,
     notes_today_count: guestProgress.notes_today_count,
     last_xp_reset_date: guestProgress.last_xp_reset_date,
-  } : null);
+  } : null) : cloudProgress;
   
-  const logs = user ? cloudLogs : guestLogs.map(log => ({
+  const logs = isAnonymous ? guestLogs.map(log => ({
     ...log,
     user_id: guestProgress?.user_id || '',
-  }));
+  })) : cloudLogs;
   
-  const updateProgress = user ? updateCloudProgress : updateGuestProgress;
-  const addLog = user ? addCloudLog : async (data: Parameters<typeof addCloudLog>[0]) => {
+  const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
+  const addLog = isAnonymous ? async (data: Parameters<typeof addCloudLog>[0]) => {
     const result = await addGuestLog({
       name: data.name || null,
       notes: data.notes || null,
@@ -112,7 +115,7 @@ export default function Dashboard() {
       timezone_offset: '+00:00',
     });
     return result;
-  };
+  } : addCloudLog;
 
   const tzOffset = normalizeTimezoneOffset(timezoneOffset);
   const [showLogDialog, setShowLogDialog] = useState(false);
@@ -915,7 +918,7 @@ export default function Dashboard() {
   const thisWeeksChallenge = getThisWeeksChallenge();
   const todaysOnboardingChallenge = onboardingChallenges[currentOnboardingDay - 1];
 
-  const isLoading = user ? (progressLoading || logsLoading || timezoneLoading) : guestLoading;
+  const isLoading = isAnonymous ? (guestLoading || timezoneLoading) : (progressLoading || logsLoading || timezoneLoading);
   
   if (isLoading) {
     return (
