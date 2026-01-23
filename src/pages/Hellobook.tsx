@@ -111,13 +111,13 @@ const Hellobook = () => {
   const { logs, loading, updateLog } = useHelloLogs();
   const { formatTimestamp, timezoneOffset } = useTimezone();
   const { user } = useAuth();
-  const { isGuest } = useGuestMode();
+  const { isGuest, isAnonymous } = useGuestMode();
   const [searchQuery, setSearchQuery] = useState("");
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
 
-  const showGuestPrompt = isGuest && !user && logs.length > 0;
+  const showGuestPrompt = isAnonymous && logs.length > 0;
   const handleEditClick = (log: HelloLog) => {
     setEditingLog(log);
     setIsEditDialogOpen(true);
