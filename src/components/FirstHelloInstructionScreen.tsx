@@ -52,12 +52,12 @@ export const FirstHelloInstructionScreen = ({
           body: (
             <>
               <p className="text-muted-foreground leading-relaxed">
-                Next, comment on something you're both experiencing.
+                Next, comment on something you & someone are both experiencing.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
                 Weather, atmosphere, vibes - anything shared.
               </p>
-              <p className="text-muted-foreground leading-relaxed mt-4">
+              <p className="text-sm text-muted-foreground mt-4">
                 Examples:
               </p>
               <p className="text-sm text-primary italic mt-2">
@@ -87,7 +87,7 @@ export const FirstHelloInstructionScreen = ({
                 Next up: make someone's day.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Give a genuine compliment.
+                Give someone a genuine compliment.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
                 Clothing or accessories work great.
@@ -110,9 +110,9 @@ export const FirstHelloInstructionScreen = ({
           body: (
             <>
               <p className="text-muted-foreground leading-relaxed">
-                Now let's try a question to get to know someone.
+                Now lets use a question to get to know someone new.
               </p>
-              <p className="text-muted-foreground leading-relaxed mt-4">
+              <p className="text-sm text-muted-foreground mt-4">
                 Examples:
               </p>
               <p className="text-sm text-primary italic mt-2">
@@ -134,7 +134,7 @@ export const FirstHelloInstructionScreen = ({
       case 'getname_intro':
         return {
           image: onboardingName,
-          title: "Get a Name",
+          title: "Name",
           subtitle: "You're on a roll, it's time to start taking names!",
           body: (
             <>
@@ -145,7 +145,7 @@ export const FirstHelloInstructionScreen = ({
                 Use any of the four hellos to start a conversation.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Then ask their name and save it here (so you don't forget).
+                Then ask their name and save it here (so you don't forget)
               </p>
             </>
           ),
