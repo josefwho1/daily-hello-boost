@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight, Lock, Sparkles, Globe, Lightbulb, MessageCircle } from "lucide-react";
+import { ChevronRight, Lock, Sparkles, Globe, Lightbulb, MessageCircle, Image } from "lucide-react";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { fourTypesOfHello } from "@/data/firstHellos";
+import { wallpapers, type Wallpaper } from "@/data/wallpapers";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useAuth } from "@/hooks/useAuth";
 import { PackUnlockCelebrationDialog } from "@/components/PackUnlockCelebrationDialog";
+import { WallpaperPreviewDialog } from "@/components/WallpaperPreviewDialog";
 import remiMascot from "@/assets/remi-waving.webp";
 import vaultIcon from "@/assets/vault-icon.webp";
 
@@ -90,6 +92,7 @@ const Vault = () => {
     packName: string;
     packDescription: string;
   } | null>(null);
+  const [selectedWallpaper, setSelectedWallpaper] = useState<Wallpaper | null>(null);
 
   const currentLevel = progress?.current_level || 1;
 
@@ -147,7 +150,7 @@ const Vault = () => {
 
         {/* Sections */}
         <div className="space-y-3">
-          {/* The 4 Types of Hello - FIRST (Always unlocked) */}
+          {/* First Hellos - FIRST (Always unlocked) */}
           <Card 
             className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
             onClick={() => toggleSection('4types')}
@@ -158,7 +161,7 @@ const Vault = () => {
                   <MessageCircle className="w-5 h-5 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">The 4 Types of Hello</h3>
+                  <h3 className="font-semibold text-foreground">First Hellos</h3>
                   <p className="text-xs text-muted-foreground">Master the basics</p>
                 </div>
               </div>
@@ -361,7 +364,57 @@ const Vault = () => {
             )}
           </Card>
 
-          {/* More Packs Coming Soon - FOURTH */}
+          {/* Wallpapers Section (Always unlocked, easter-egg style) */}
+          <Card 
+            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
+            onClick={() => toggleSection('wallpapers')}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
+                  <Image className="w-5 h-5 text-pink-500" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Wallpapers</h3>
+                  <p className="text-xs text-muted-foreground">Exclusive phone backgrounds</p>
+                </div>
+              </div>
+              <ChevronRight 
+                className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
+                  expandedSection === 'wallpapers' ? 'rotate-90' : ''
+                }`} 
+              />
+            </div>
+            
+            {expandedSection === 'wallpapers' && (
+              <div className="mt-4 animate-fade-in">
+                <div className="grid grid-cols-3 gap-2">
+                  {wallpapers.map((wallpaper) => (
+                    <button
+                      key={wallpaper.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedWallpaper(wallpaper);
+                      }}
+                      className="aspect-[9/16] rounded-xl overflow-hidden border-2 border-transparent hover:border-primary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    >
+                      <img
+                        src={wallpaper.previewUrl}
+                        alt={wallpaper.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground text-center mt-3">
+                  Tap to preview & download
+                </p>
+              </div>
+            )}
+          </Card>
+
+          {/* More Packs Coming Soon */}
           <Card className="p-4 rounded-2xl opacity-60">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -399,6 +452,13 @@ const Vault = () => {
         onClose={() => setUnlockCelebration(null)}
         packName={unlockCelebration?.packName || ""}
         packDescription={unlockCelebration?.packDescription || ""}
+      />
+
+      {/* Wallpaper Preview Dialog */}
+      <WallpaperPreviewDialog
+        open={!!selectedWallpaper}
+        onClose={() => setSelectedWallpaper(null)}
+        wallpaper={selectedWallpaper}
       />
     </div>
   );
