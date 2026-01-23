@@ -28,9 +28,10 @@ export const WallpaperPreviewDialog = ({
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center"
+            className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors"
+            aria-label="Close"
           >
-            <X className="w-4 h-4 text-white" />
+            <X className="w-5 h-5 text-white" />
           </button>
 
           {/* Wallpaper preview */}
@@ -53,6 +54,14 @@ export const WallpaperPreviewDialog = ({
             >
               <Download className="w-4 h-4" />
               Save to Device
+            </Button>
+            <Button
+              onClick={onClose}
+              variant="outline"
+              className="w-full rounded-xl"
+              size="lg"
+            >
+              Back
             </Button>
           </div>
         </div>
