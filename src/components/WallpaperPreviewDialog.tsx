@@ -1,7 +1,8 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, X } from "lucide-react";
+import { Download } from "lucide-react";
 import type { Wallpaper } from "@/data/wallpapers";
+import { toast } from "sonner";
 
 interface WallpaperPreviewDialogProps {
   open: boolean;
@@ -16,24 +17,46 @@ export const WallpaperPreviewDialog = ({
 }: WallpaperPreviewDialogProps) => {
   if (!wallpaper) return null;
 
-  const handleDownload = () => {
-    // Open the image in a new tab for the user to save
-    window.open(wallpaper.imageUrl, "_blank");
+  const handleDownload = async () => {
+    try {
+      // Fetch the image as a blob
+      const response = await fetch(wallpaper.imageUrl);
+      const blob = await response.blob();
+      
+      // Try Web Share API first (works better on mobile for saving to photos)
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], `${wallpaper.name}.png`, { type: 'image/png' });
+        const shareData = { files: [file] };
+        
+        if (navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+          toast.success("Image ready to save!");
+          return;
+        }
+      }
+      
+      // Fallback: Download the file directly
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${wallpaper.name}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success("Wallpaper downloaded!");
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Ultimate fallback: open in new tab
+      window.open(wallpaper.imageUrl, "_blank");
+      toast.info("Long press the image to save it");
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm p-0 overflow-hidden bg-background border-0 rounded-2xl">
+      <DialogContent className="max-w-sm p-0 overflow-hidden bg-background border-0 rounded-2xl [&>button]:hidden">
         <div className="relative">
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5 text-white" />
-          </button>
-
           {/* Wallpaper preview */}
           <img
             src={wallpaper.imageUrl}
@@ -53,7 +76,7 @@ export const WallpaperPreviewDialog = ({
               size="lg"
             >
               <Download className="w-4 h-4" />
-              Save to Device
+              Save to Photos
             </Button>
             <Button
               onClick={onClose}
