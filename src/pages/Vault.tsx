@@ -1,20 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ChevronRight, Lock, Sparkles, Globe, Lightbulb, MessageCircle, Image } from "lucide-react";
+import { ChevronRight, Sparkles, Globe, Lightbulb, MessageCircle, Image } from "lucide-react";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { fourTypesOfHello } from "@/data/firstHellos";
 import { wallpapers, type Wallpaper } from "@/data/wallpapers";
-import { useUserProgress } from "@/hooks/useUserProgress";
-import { useAuth } from "@/hooks/useAuth";
-import { PackUnlockCelebrationDialog } from "@/components/PackUnlockCelebrationDialog";
 import { WallpaperPreviewDialog } from "@/components/WallpaperPreviewDialog";
 import remiMascot from "@/assets/remi-waving.webp";
 import vaultIcon from "@/assets/vault-icon.webp";
-
-// Level requirements for packs
-const TIPS_UNLOCK_LEVEL = 3;
-const LANGUAGES_UNLOCK_LEVEL = 8;
 
 // Hello in 50 languages
 const helloLanguages = [
@@ -85,47 +77,8 @@ const remiTips = [
 ];
 
 const Vault = () => {
-  const { user } = useAuth();
-  const { progress } = useUserProgress();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [unlockCelebration, setUnlockCelebration] = useState<{
-    packName: string;
-    packDescription: string;
-  } | null>(null);
   const [selectedWallpaper, setSelectedWallpaper] = useState<Wallpaper | null>(null);
-
-  const currentLevel = progress?.current_level || 1;
-
-  // Check if packs are unlocked
-  const isTipsUnlocked = currentLevel >= TIPS_UNLOCK_LEVEL;
-  const isLanguagesUnlocked = currentLevel >= LANGUAGES_UNLOCK_LEVEL;
-
-  // Check for newly unlocked packs and show celebration
-  useEffect(() => {
-    if (!user || !progress) return;
-
-    const tipsUnlockKey = `pack_unlocked_tips_${user.id}`;
-    const languagesUnlockKey = `pack_unlocked_languages_${user.id}`;
-
-    // Check Tips pack unlock
-    if (isTipsUnlocked && !localStorage.getItem(tipsUnlockKey)) {
-      localStorage.setItem(tipsUnlockKey, 'true');
-      setUnlockCelebration({
-        packName: "Remi's Top Tips",
-        packDescription: "10 golden rules for saying hello",
-      });
-      return;
-    }
-
-    // Check Languages pack unlock
-    if (isLanguagesUnlocked && !localStorage.getItem(languagesUnlockKey)) {
-      localStorage.setItem(languagesUnlockKey, 'true');
-      setUnlockCelebration({
-        packName: "Hello in 50 Languages",
-        packDescription: "Say hello to anyone, anywhere in the world!",
-      });
-    }
-  }, [user, progress, isTipsUnlocked, isLanguagesUnlocked]);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
@@ -205,118 +158,84 @@ const Vault = () => {
             )}
           </Card>
 
-          {/* Remi's Top Tips - SECOND (Unlocks at Level 3) */}
-          {isTipsUnlocked ? (
-            <Card 
-              className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
-              onClick={() => toggleSection('tips')}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-                    <Lightbulb className="w-5 h-5 text-yellow-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">Remi's Top Tips</h3>
-                    <p className="text-xs text-muted-foreground">10 golden rules</p>
-                  </div>
+          {/* Remi's Top Tips - SECOND */}
+          <Card 
+            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
+            onClick={() => toggleSection('tips')}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
+                  <Lightbulb className="w-5 h-5 text-yellow-500" />
                 </div>
-                <ChevronRight 
-                  className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
-                    expandedSection === 'tips' ? 'rotate-90' : ''
-                  }`} 
-                />
+                <div>
+                  <h3 className="font-semibold text-foreground">Remi's Top Tips</h3>
+                  <p className="text-xs text-muted-foreground">10 golden rules</p>
+                </div>
               </div>
-              
-              {expandedSection === 'tips' && (
-                <div className="mt-4 space-y-3 animate-fade-in">
-                  {remiTips.map((tip, index) => (
-                    <div 
-                      key={index}
-                      className="p-3 bg-muted/50 rounded-xl"
-                    >
-                      <p className="text-sm font-semibold text-foreground mb-1">
-                        {index + 1}. {tip.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{tip.subtitle}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          ) : (
-            <Card className="p-4 rounded-2xl opacity-60">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center">
-                    <Lock className="w-5 h-5 text-muted-foreground" />
+              <ChevronRight 
+                className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
+                  expandedSection === 'tips' ? 'rotate-90' : ''
+                }`} 
+              />
+            </div>
+            
+            {expandedSection === 'tips' && (
+              <div className="mt-4 space-y-3 animate-fade-in">
+                {remiTips.map((tip, index) => (
+                  <div 
+                    key={index}
+                    className="p-3 bg-muted/50 rounded-xl"
+                  >
+                    <p className="text-sm font-semibold text-foreground mb-1">
+                      {index + 1}. {tip.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{tip.subtitle}</p>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-muted-foreground">Remi's Top Tips</h3>
-                    <p className="text-xs text-muted-foreground">Unlocks at Level {TIPS_UNLOCK_LEVEL}</p>
-                  </div>
-                </div>
-                <Badge variant="secondary" className="text-xs">Lvl {TIPS_UNLOCK_LEVEL}</Badge>
+                ))}
               </div>
-            </Card>
-          )}
+            )}
+          </Card>
 
-          {/* Hello in 50 Languages - THIRD (Unlocks at Level 8) */}
-          {isLanguagesUnlocked ? (
-            <Card 
-              className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
-              onClick={() => toggleSection('languages')}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                    <Globe className="w-5 h-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">Hello in 50 Languages</h3>
-                    <p className="text-xs text-muted-foreground">Say hello worldwide</p>
-                  </div>
+          {/* Hello in 50 Languages - THIRD */}
+          <Card 
+            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
+            onClick={() => toggleSection('languages')}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                  <Globe className="w-5 h-5 text-blue-500" />
                 </div>
-                <ChevronRight 
-                  className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
-                    expandedSection === 'languages' ? 'rotate-90' : ''
-                  }`} 
-                />
+                <div>
+                  <h3 className="font-semibold text-foreground">Hello in 50 Languages</h3>
+                  <p className="text-xs text-muted-foreground">Say hello worldwide</p>
+                </div>
               </div>
-              
-              {expandedSection === 'languages' && (
-                <div className="mt-4 max-h-64 overflow-y-auto space-y-1 animate-fade-in">
-                  {helloLanguages.map((item, index) => (
-                    <div 
-                      key={index}
-                      className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded-lg"
-                    >
-                      <span className="text-xl">{item.flag}</span>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">{item.language}</p>
-                      </div>
-                      <p className="text-sm text-primary font-medium">{item.hello}</p>
+              <ChevronRight 
+                className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
+                  expandedSection === 'languages' ? 'rotate-90' : ''
+                }`} 
+              />
+            </div>
+            
+            {expandedSection === 'languages' && (
+              <div className="mt-4 max-h-64 overflow-y-auto space-y-1 animate-fade-in">
+                {helloLanguages.map((item, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded-lg"
+                  >
+                    <span className="text-xl">{item.flag}</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">{item.language}</p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          ) : (
-            <Card className="p-4 rounded-2xl opacity-60">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center">
-                    <Lock className="w-5 h-5 text-muted-foreground" />
+                    <p className="text-sm text-primary font-medium">{item.hello}</p>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-muted-foreground">Hello in 50 Languages</h3>
-                    <p className="text-xs text-muted-foreground">Unlocks at Level {LANGUAGES_UNLOCK_LEVEL}</p>
-                  </div>
-                </div>
-                <Badge variant="secondary" className="text-xs">Lvl {LANGUAGES_UNLOCK_LEVEL}</Badge>
+                ))}
               </div>
-            </Card>
-          )}
+            )}
+          </Card>
 
           {/* The Original 7-Day Challenge - FOURTH (Always unlocked) */}
           <Card 
@@ -426,7 +345,7 @@ const Vault = () => {
                   <p className="text-xs text-muted-foreground">Dating, Networking & more</p>
                 </div>
               </div>
-              <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">Coming Soon</span>
             </div>
           </Card>
         </div>
@@ -446,13 +365,6 @@ const Vault = () => {
         </div>
       </div>
 
-      {/* Pack Unlock Celebration Dialog */}
-      <PackUnlockCelebrationDialog
-        open={!!unlockCelebration}
-        onClose={() => setUnlockCelebration(null)}
-        packName={unlockCelebration?.packName || ""}
-        packDescription={unlockCelebration?.packDescription || ""}
-      />
 
       {/* Wallpaper Preview Dialog */}
       <WallpaperPreviewDialog
