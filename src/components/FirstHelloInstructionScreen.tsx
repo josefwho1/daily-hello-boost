@@ -134,7 +134,7 @@ export const FirstHelloInstructionScreen = ({
       case 'getname_intro':
         return {
           image: onboardingName,
-          title: "Name",
+          title: "Get a Name",
           subtitle: "You're on a roll, it's time to start taking names!",
           body: (
             <>
@@ -145,7 +145,7 @@ export const FirstHelloInstructionScreen = ({
                 Use any of the four hellos to start a conversation.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Then ask their name and save it here (so you don't forget)
+                Then exchange names and log it in here (so you don't forget it)
               </p>
             </>
           ),
