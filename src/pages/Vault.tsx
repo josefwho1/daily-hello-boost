@@ -376,7 +376,7 @@ const Vault = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">Wallpapers</h3>
-                  <p className="text-xs text-muted-foreground">Exclusive phone backgrounds</p>
+                  <p className="text-xs text-muted-foreground">Free Remi phone backgrounds 🦝</p>
                 </div>
               </div>
               <ChevronRight 
