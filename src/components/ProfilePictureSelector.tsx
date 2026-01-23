@@ -21,6 +21,12 @@ import remiCelebrating1 from "@/assets/remi-celebrating-1.webp";
 import remiCelebrating2 from "@/assets/remi-celebrating-2.webp";
 import remiCelebrating3 from "@/assets/remi-celebrating-3.webp";
 import remiCelebrating4 from "@/assets/remi-celebrating-4.webp";
+import remiCelebrating5 from "@/assets/remi-celebrating-5.webp";
+import remiCelebrating6 from "@/assets/remi-celebrating-6.webp";
+import remiCelebrating7 from "@/assets/remi-celebrating-7.webp";
+import remiCelebrating8 from "@/assets/remi-celebrating-8.webp";
+import remiCelebrating9 from "@/assets/remi-celebrating-9.webp";
+import remiCelebrating10 from "@/assets/remi-celebrating-10.webp";
 import remiCongrats1 from "@/assets/remi-congrats-1.webp";
 import remiCongrats2 from "@/assets/remi-congrats-2.webp";
 import remiSurprised1 from "@/assets/remi-surprised-1.webp";
@@ -48,6 +54,12 @@ export const remiImages: { id: string; src: string; label: string; requiredLevel
   { id: "remi-celebrating-2.webp", src: remiCelebrating2, label: "Celebrating 2" },
   { id: "remi-celebrating-3.webp", src: remiCelebrating3, label: "Celebrating 3" },
   { id: "remi-celebrating-4.webp", src: remiCelebrating4, label: "Celebrating 4" },
+  { id: "remi-celebrating-5.webp", src: remiCelebrating5, label: "Celebrating 5" },
+  { id: "remi-celebrating-6.webp", src: remiCelebrating6, label: "Celebrating 6" },
+  { id: "remi-celebrating-7.webp", src: remiCelebrating7, label: "Celebrating 7" },
+  { id: "remi-celebrating-8.webp", src: remiCelebrating8, label: "Celebrating 8" },
+  { id: "remi-celebrating-9.webp", src: remiCelebrating9, label: "Celebrating 9" },
+  { id: "remi-celebrating-10.webp", src: remiCelebrating10, label: "Celebrating 10" },
   { id: "remi-congrats-1.webp", src: remiCongrats1, label: "Congrats 1" },
   { id: "remi-congrats-2.webp", src: remiCongrats2, label: "Congrats 2" },
   { id: "remi-surprised-1.webp", src: remiSurprised1, label: "Surprised 1" },

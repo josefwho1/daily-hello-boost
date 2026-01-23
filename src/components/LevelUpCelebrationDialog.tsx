@@ -8,13 +8,22 @@ import { getRankFromLevel, formatXp, getXpProgress, LEVEL_XP_THRESHOLDS } from "
 import { Trophy, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Remi Celebrating images
+// Remi Celebrating images (10 total)
 import remiCelebrating1 from "@/assets/remi-celebrating-1.webp";
 import remiCelebrating2 from "@/assets/remi-celebrating-2.webp";
 import remiCelebrating3 from "@/assets/remi-celebrating-3.webp";
 import remiCelebrating4 from "@/assets/remi-celebrating-4.webp";
+import remiCelebrating5 from "@/assets/remi-celebrating-5.webp";
+import remiCelebrating6 from "@/assets/remi-celebrating-6.webp";
+import remiCelebrating7 from "@/assets/remi-celebrating-7.webp";
+import remiCelebrating8 from "@/assets/remi-celebrating-8.webp";
+import remiCelebrating9 from "@/assets/remi-celebrating-9.webp";
+import remiCelebrating10 from "@/assets/remi-celebrating-10.webp";
 
-const remiCelebratingImages = [remiCelebrating1, remiCelebrating2, remiCelebrating3, remiCelebrating4];
+const remiCelebratingImages = [
+  remiCelebrating1, remiCelebrating2, remiCelebrating3, remiCelebrating4, remiCelebrating5,
+  remiCelebrating6, remiCelebrating7, remiCelebrating8, remiCelebrating9, remiCelebrating10
+];
 
 const getRandomImage = (images: string[]) => {
   return images[Math.floor(Math.random() * images.length)];
