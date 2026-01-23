@@ -79,10 +79,10 @@ export const FirstHelloInstructionDialog = ({
                 First up, make an <span className="font-semibold text-foreground">Observation</span>.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Think the weather, atmosphere, vibes etc.
+                Comment on something you & someone are both experiencing.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Anything you are experiencing in a shared space.
+                Weather, atmosphere, vibes - anything shared.
               </p>
               <p className="text-sm text-primary italic mt-4">
                 "What a beautiful day" "Long line hey" "Love the vibe in here"
@@ -97,23 +97,23 @@ export const FirstHelloInstructionDialog = ({
       case 'compliment_intro':
         return {
           image: getRandomCelebratingImage(),
-          title: null,
+          title: "Compliment",
           body: (
             <>
-              <p className="text-muted-foreground leading-relaxed">
-                Well done! Knew you were a natural 🦝
+              <p className="text-sm text-muted-foreground">
+                Nice work, knew you were a natural 🦝
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Now its time to make someone's day (and possibly yours)
+                Next up: make someone's day.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Give a stranger a <span className="font-semibold text-foreground">genuine compliment</span>.
+                Give someone a <span className="font-semibold text-foreground">genuine compliment</span>.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Clothing and accessories work best.
+                Clothing or accessories work great.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Watch them smile, come back here once you're done
+                Come back once you've done it.
               </p>
             </>
           ),
@@ -125,20 +125,24 @@ export const FirstHelloInstructionDialog = ({
       case 'question_intro':
         return {
           image: getRandomCelebratingImage(),
-          title: null,
+          title: "Question",
           body: (
             <>
               <p className="text-muted-foreground leading-relaxed">
-                Nice work <span className="text-primary font-medium">{username}</span>!
+                Great job, <span className="text-primary font-medium">{username}</span>.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Now let's add some depth.
+                Now lets use a question to get to know someone new.
               </p>
-              <p className="text-muted-foreground leading-relaxed mt-3">
-                Ask a stranger a <span className="font-semibold text-foreground">question</span> to get to know them.
+              <p className="text-sm text-muted-foreground mt-3">Examples:</p>
+              <p className="text-sm text-primary italic mt-2">
+                "How are you?"
               </p>
-              <p className="text-muted-foreground leading-relaxed mt-3">
-                Where are you from? What are their weekend plans.
+              <p className="text-sm text-primary italic mt-1">
+                "Where are you from?"
+              </p>
+              <p className="text-sm text-primary italic mt-1">
+                "Got any plans for the weekend?"
               </p>
             </>
           ),
@@ -150,23 +154,20 @@ export const FirstHelloInstructionDialog = ({
       case 'getname_intro':
         return {
           image: getRandomCelebratingImage(),
-          title: null,
+          title: "Name",
           body: (
             <>
-              <h2 className="text-xl font-semibold text-foreground">
-                You're on a roll!
-              </h2>
-              <p className="text-muted-foreground leading-relaxed mt-3">
-                Last one, it's time to start <span className="font-semibold text-foreground">taking names</span>.
+              <p className="text-muted-foreground leading-relaxed">
+                You're on a roll, it's time to start taking names!
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
                 Names are like magic, they turn strangers into friends.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Use a combination of the 4 Hellos to start a conversation.
+                Use any of the four hellos to start a conversation.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Then get their name and write it down in here once you're done.
+                Then ask their name and save it here (so you don't forget)
               </p>
             </>
           ),

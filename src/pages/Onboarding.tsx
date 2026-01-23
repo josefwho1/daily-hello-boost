@@ -370,7 +370,7 @@ export default function Onboarding() {
               fetchPriority="high"
             />
             <div className="space-y-4">
-              <h1 className="text-xl font-bold text-foreground">What users felt after 7 days</h1>
+              <h1 className="text-xl font-bold text-foreground">What users felt after only 7 days</h1>
               
               <div className="space-y-2">
                 <div className="bg-success/10 rounded-xl p-3">
@@ -408,7 +408,7 @@ export default function Onboarding() {
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Introduction</h1>
               <p className="text-muted-foreground leading-relaxed">
-                I'll guide you through five simple ways to start conversations.
+                I'll guide you through your first five hello's.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 These are skills you can use anywhere, anytime.
@@ -472,7 +472,7 @@ export default function Onboarding() {
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Greeting</h1>
               <p className="text-muted-foreground leading-relaxed">
-                Your first challenge is to say hello to a stranger.
+                Your first challenge is to say hello to someone new.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Smile, look up, and say hello the first person you see.
@@ -508,7 +508,10 @@ export default function Onboarding() {
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">No worries.</h1>
               <p className="text-muted-foreground leading-relaxed">
-                Your first challenge is to say hello to a stranger. Don't forget to smile 🙂
+                Your first challenge is to say hello to someone new.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Don't forget to smile 🙂
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Come back and log it in here once you've done it.
@@ -583,14 +586,17 @@ export default function Onboarding() {
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">Observation</h1>
               <p className="text-muted-foreground leading-relaxed">
-                Next, comment on something you're both experiencing.
+                Next, comment on something you & someone are both experiencing.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Weather, atmosphere, vibes - anything shared.
               </p>
-              <p className="text-sm text-primary italic">
-                "What a beautiful day" "Long line, hey?" "Love the vibe in here"
-              </p>
+              <p className="text-sm text-muted-foreground">Examples:</p>
+              <div className="text-sm text-primary italic space-y-1">
+                <p>"What a beautiful day"</p>
+                <p>"Long line, hey?"</p>
+                <p>"Love the vibe in here"</p>
+              </div>
             </div>
             <Button 
               onClick={() => navigate('/')} 
@@ -613,13 +619,13 @@ export default function Onboarding() {
               fetchPriority="high"
             />
             <div className="space-y-4">
-              <h1 className="text-2xl font-bold text-foreground">Nice work</h1>
-              <p className="text-sm text-muted-foreground">knew you were a natural 🦝</p>
+              <h1 className="text-2xl font-bold text-foreground">Compliment</h1>
+              <p className="text-sm text-muted-foreground">Nice work, knew you were a natural 🦝</p>
               <p className="text-muted-foreground leading-relaxed">
                 Next up: make someone's day.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Give a genuine compliment.
+                Give someone a genuine compliment.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Clothing or accessories work great.
@@ -649,13 +655,14 @@ export default function Onboarding() {
               fetchPriority="high"
             />
             <div className="space-y-4">
-              <h1 className="text-2xl font-bold text-foreground">Great job, {userName.trim() || 'friend'}.</h1>
+              <h1 className="text-2xl font-bold text-foreground">Question</h1>
               <p className="text-muted-foreground leading-relaxed">
-                Now let's add a little depth.
+                Great job, {userName.trim() || 'friend'}.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Ask a question to get to know someone.
+                Now lets use a question to get to know someone new.
               </p>
+              <p className="text-sm text-muted-foreground">Examples:</p>
               <div className="text-sm text-primary italic space-y-1">
                 <p>"How are you?"</p>
                 <p>"Where are you from?"</p>
@@ -683,9 +690,9 @@ export default function Onboarding() {
               fetchPriority="high"
             />
             <div className="space-y-4">
-              <h1 className="text-2xl font-bold text-foreground">You're on a roll!</h1>
+              <h1 className="text-2xl font-bold text-foreground">Name</h1>
               <p className="text-muted-foreground leading-relaxed">
-                Last one, it's time to start taking names.
+                You're on a roll, it's time to start taking names!
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Names are like magic, they turn strangers into friends.
@@ -694,7 +701,7 @@ export default function Onboarding() {
                 Use any of the four hellos to start a conversation.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Then ask their name and save it here.
+                Then ask their name and save it here (so you don't forget)
               </p>
             </div>
             <Button 
