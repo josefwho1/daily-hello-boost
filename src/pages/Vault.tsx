@@ -76,13 +76,38 @@ const remiTips = [
   { title: "A hello costs nothing, but can change everything.", subtitle: "It could be the beginning of a new friendship, relationship, business opportunity, or maybe just a spark of brightness in someone's day." },
 ];
 
+const REMI_MESSAGES = [
+  "Hello!",
+  "Hey!",
+  "Yo yo yooo",
+  "Okay that's enough...",
+  null // Remi disappears
+];
+
 const Vault = () => {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [selectedWallpaper, setSelectedWallpaper] = useState<Wallpaper | null>(null);
+  const [remiTapCount, setRemiTapCount] = useState(0);
+  const [showSpeechBubble, setShowSpeechBubble] = useState(false);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
   };
+
+  const handleRemiTap = () => {
+    if (remiTapCount >= REMI_MESSAGES.length) return;
+    
+    setRemiTapCount(prev => prev + 1);
+    setShowSpeechBubble(true);
+    
+    // Hide speech bubble after a delay (except for the final "scared away" message)
+    if (remiTapCount < REMI_MESSAGES.length - 1) {
+      setTimeout(() => setShowSpeechBubble(false), 2000);
+    }
+  };
+
+  const remiMessage = remiTapCount > 0 ? REMI_MESSAGES[remiTapCount - 1] : null;
+  const isRemiGone = remiTapCount >= REMI_MESSAGES.length;
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -351,17 +376,41 @@ const Vault = () => {
         </div>
       </div>
 
-      {/* Remi peeking from bottom */}
-      <div className="fixed bottom-20 right-4 pointer-events-none">
+      {/* Remi peeking from bottom - Easter Egg */}
+      <div className="fixed bottom-20 right-4">
         <div className="relative">
-          <img 
-            src={remiMascot} 
-            alt="Remi" 
-            className="w-16 h-auto max-h-16 drop-shadow-lg animate-bounce-soft object-contain"
-          />
-          <div className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-            <Sparkles className="w-3 h-3 text-primary" />
-          </div>
+          {/* Speech bubble */}
+          {showSpeechBubble && remiMessage && !isRemiGone && (
+            <div className="absolute -top-12 right-0 bg-white dark:bg-card rounded-xl px-3 py-2 shadow-lg animate-scale-in whitespace-nowrap">
+              <p className="text-sm font-medium text-foreground">{remiMessage}</p>
+              <div className="absolute -bottom-1 right-4 w-3 h-3 bg-white dark:bg-card rotate-45 shadow-lg" />
+            </div>
+          )}
+          
+          {/* "Scared away" message */}
+          {isRemiGone && (
+            <div className="bg-muted/80 rounded-xl px-3 py-2 shadow-lg animate-fade-in whitespace-nowrap">
+              <p className="text-xs text-muted-foreground">You scared Remi away...</p>
+            </div>
+          )}
+          
+          {/* Remi mascot */}
+          {!isRemiGone && (
+            <button
+              onClick={handleRemiTap}
+              className="focus:outline-none active:scale-95 transition-transform"
+              aria-label="Tap Remi"
+            >
+              <img 
+                src={remiMascot} 
+                alt="Remi" 
+                className="w-16 h-auto max-h-16 drop-shadow-lg animate-bounce-soft object-contain"
+              />
+              <div className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                <Sparkles className="w-3 h-3 text-primary" />
+              </div>
+            </button>
+          )}
         </div>
       </div>
 
