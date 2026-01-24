@@ -341,7 +341,10 @@ Deno.serve(async (req) => {
       let templateKey = ''
 
       // Calculate days since last activity
-      const lastActivity = user.last_hello_at ? new Date(user.last_hello_at) : null
+      // Use last_completed_date as primary source (most reliable), fallback to last_hello_at
+      const lastCompletedDate = user.last_completed_date ? new Date(user.last_completed_date) : null
+      const lastHelloAt = user.last_hello_at ? new Date(user.last_hello_at) : null
+      const lastActivity = lastCompletedDate || lastHelloAt
       const daysSinceActivity = lastActivity ? daysBetween(now, lastActivity) : 999
 
       // Priority 1: Streak-at-risk emails (override all other logic)
