@@ -93,48 +93,48 @@ export const HelloOfTheDay = ({ logs }: HelloOfTheDayProps) => {
   const isLongNotes = notesText.length > 80;
 
   return (
-    <Card className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200 dark:border-amber-800/30">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Star className="w-5 h-5 text-amber-500" />
-          <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">Memory</span>
-        </div>
-        {eligibleLogs.length > 1 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleShuffle}
-            className="h-8 px-2 text-amber-600 hover:text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/30"
-          >
-            <Shuffle className="w-4 h-4" />
-          </Button>
-        )}
-      </div>
-      <div className="pl-7">
-        <p className="font-medium text-foreground">{selectedMemory.name}</p>
-        <p className={`text-sm text-muted-foreground mt-1 ${!isExpanded && isLongNotes ? 'line-clamp-2' : ''}`}>
-          "{notesText}"
-        </p>
-        {isLongNotes && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="mt-1 h-6 px-0 text-xs text-amber-600 hover:text-amber-700 dark:text-amber-400"
-          >
-            {isExpanded ? (
-              <>
-                <ChevronUp className="w-3 h-3 mr-1" />
-                Show less
-              </>
-            ) : (
-              <>
-                <ChevronDown className="w-3 h-3 mr-1" />
-                Read more
-              </>
+    <Card className="p-3 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200 dark:border-amber-800/30">
+      <div className="flex items-start gap-2">
+        <Star className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">Memory</span>
+              <span className="text-sm font-medium text-foreground truncate">{selectedMemory.name}</span>
+            </div>
+            {eligibleLogs.length > 1 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleShuffle}
+                className="h-6 w-6 p-0 text-amber-600 hover:text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/30 flex-shrink-0"
+              >
+                <Shuffle className="w-3.5 h-3.5" />
+              </Button>
             )}
-          </Button>
-        )}
+          </div>
+          <p className={`text-sm text-muted-foreground mt-0.5 ${!isExpanded && isLongNotes ? 'line-clamp-2' : ''}`}>
+            "{notesText}"
+          </p>
+          {isLongNotes && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex items-center gap-0.5 mt-1 text-xs text-amber-600 hover:text-amber-700 dark:text-amber-400"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="w-3 h-3" />
+                  Less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-3 h-3" />
+                  More
+                </>
+              )}
+            </button>
+          )}
+        </div>
       </div>
     </Card>
   );
