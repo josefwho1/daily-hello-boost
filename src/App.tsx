@@ -1,4 +1,5 @@
 // App entry point
+import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,10 +27,25 @@ const queryClient = new QueryClient();
 // Routes that work for both guests and authenticated users
 const AppRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
-  const { guestProgress, loading: guestLoading, isAnonymous } = useGuestMode();
+  const { guestProgress, loading: guestLoading, isAnonymous, initializeAnonymous } = useGuestMode();
   const { progress, loading: progressLoading } = useUserProgress();
 
-  const loading = authLoading || guestLoading || progressLoading;
+  const [bootstrapAttempted, setBootstrapAttempted] = useState(false);
+  const [bootstrapping, setBootstrapping] = useState(false);
+
+  // If there is no session, automatically start a guest (anonymous) session.
+  // This ensures new users can use the app without creating an account.
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) return;
+    if (bootstrapAttempted) return;
+
+    setBootstrapAttempted(true);
+    setBootstrapping(true);
+    initializeAnonymous().finally(() => setBootstrapping(false));
+  }, [authLoading, user, bootstrapAttempted, initializeAnonymous]);
+
+  const loading = authLoading || bootstrapping || guestLoading || progressLoading;
 
   if (loading) {
     return (
@@ -42,10 +58,9 @@ const AppRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // If not logged in at all (no user), redirect to landing (not onboarding)
-  // This allows returning users to sign in properly
+  // If still no user after bootstrap attempt, send them to the auth entry.
   if (!user) {
-    return <Navigate to="/landing" replace />;
+    return <Navigate to="/auth" replace />;
   }
 
   // For anonymous users, check if they have progress (created during onboarding)
@@ -88,8 +103,13 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
+  // Treat legacy users as "completed" if they have onboarding_completed_at set.
+  const completedOnboarding =
+    Boolean(currentProgress.has_completed_onboarding) ||
+    Boolean((currentProgress as any).onboarding_completed_at);
+
   // Users who haven't completed onboarding need to complete it
-  if (!currentProgress.has_completed_onboarding) {
+  if (!completedOnboarding) {
     return <Navigate to="/onboarding" replace />;
   }
 

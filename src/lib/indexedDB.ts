@@ -203,7 +203,8 @@ export const createGuestProgress = async (deviceId: string, guestUserId: string)
     names_today_count: 0,
     notes_today_count: 0,
     last_xp_reset_date: today,
-    mode: 'first_hellos',
+    // Single mode now
+    mode: 'daily',
     why_here: null,
     selected_pack_id: 'starter-pack',
     username: 'Friend',

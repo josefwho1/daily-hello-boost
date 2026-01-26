@@ -82,77 +82,77 @@ export default function Onboarding() {
   }, [step, userName]);
 
   // Initialize user/guest progress
-  const initializeProgress = async () => {
-    const { data: { user: existingUser } } = await supabase.auth.getUser();
-    
-    if (existingUser && !existingUser.is_anonymous) {
-      // Regular authenticated user - set mode to 'daily' (single mode now)
-      await supabase.from('user_progress').upsert({
-        user_id: existingUser.id,
-        is_onboarding_week: false,
-        current_day: 1,
-        current_streak: 0,
-        mode: 'daily', // Single mode now
-        has_completed_onboarding: true,
-        current_phase: 'active',
-        orbs: 1, // Start with 1 orb
-        has_received_first_orb: true,
-        onboarding_week_start: new Date().toISOString(),
-        onboarding_completed_at: new Date().toISOString(),
-        username: userName.trim() || 'Friend',
-        target_hellos_per_week: 7,
-        total_hellos: 1, // They just logged one
-        hellos_this_week: 1,
-        daily_streak: 1,
-      }, { onConflict: 'user_id' });
-      
-      await supabase.from('profiles').update({ 
-        username: userName.trim() || 'Friend' 
-      }).eq('id', existingUser.id);
-      
-      return { isGuest: false, userId: existingUser.id };
-    }
-    
-    // For guests, use anonymous auth
-    const { data, error } = await supabase.auth.signInAnonymously();
-    
-    if (error) {
-      console.error('Error signing in anonymously:', error);
-      throw error;
-    }
-    
-    const userId = data.user?.id;
-    if (!userId) throw new Error('No user ID returned');
+  const ensureUserAndProgress = async (): Promise<{ userId: string }> => {
+    const { data: { user: existingUser }, error: getUserError } = await supabase.auth.getUser();
+    if (getUserError) throw getUserError;
 
-    // Create profile for anonymous user
-    await supabase.from('profiles').upsert({
-      id: userId,
-      username: userName.trim() || 'Guest',
-      is_anonymous: true,
-      hide_from_leaderboard: false,
-    }, { onConflict: 'id' });
+    let user = existingUser;
 
-    // Create user_progress for anonymous user with mode='daily'
-    await supabase.from('user_progress').upsert({
-      user_id: userId,
-      is_onboarding_week: false,
-      current_day: 1,
-      current_streak: 0,
-      mode: 'daily', // Single mode now
-      has_completed_onboarding: true,
-      current_phase: 'active',
-      orbs: 1,
-      has_received_first_orb: true,
-      onboarding_week_start: new Date().toISOString(),
-      onboarding_completed_at: new Date().toISOString(),
-      username: userName.trim() || 'Guest',
-      target_hellos_per_week: 7,
-      total_hellos: 1,
-      hellos_this_week: 1,
-      daily_streak: 1,
-    }, { onConflict: 'user_id' });
-    
-    return { isGuest: true, userId };
+    // If no session yet, start a guest (anonymous) session.
+    if (!user) {
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (error) throw error;
+      user = data.user;
+    }
+
+    if (!user) throw new Error('No user session');
+
+    const userId = user.id;
+    const displayName = userName.trim() || (user.is_anonymous ? 'Guest' : 'Friend');
+
+    // Ensure profile exists + has latest name
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .upsert({
+        id: userId,
+        username: displayName,
+        is_anonymous: user.is_anonymous === true,
+        hide_from_leaderboard: false,
+      }, { onConflict: 'id' });
+    if (profileError) throw profileError;
+
+    // Ensure user_progress exists and mark onboarding complete.
+    // IMPORTANT: do NOT reset existing users' stats here.
+    const { data: existingProgress, error: progressReadError } = await supabase
+      .from('user_progress')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (progressReadError) throw progressReadError;
+
+    if (existingProgress) {
+      const { error: progressUpdateError } = await supabase
+        .from('user_progress')
+        .update({
+          has_completed_onboarding: true,
+          onboarding_completed_at: new Date().toISOString(),
+          is_onboarding_week: false,
+          mode: 'daily',
+          current_phase: 'active',
+          username: displayName,
+        })
+        .eq('user_id', userId);
+      if (progressUpdateError) throw progressUpdateError;
+    } else {
+      const { error: progressInsertError } = await supabase
+        .from('user_progress')
+        .insert({
+          user_id: userId,
+          current_streak: 0,
+          current_day: 1,
+          is_onboarding_week: false,
+          has_completed_onboarding: true,
+          onboarding_completed_at: new Date().toISOString(),
+          current_phase: 'active',
+          mode: 'daily',
+          username: displayName,
+          target_hellos_per_week: 7,
+          selected_pack_id: 'starter-pack',
+        });
+      if (progressInsertError) throw progressInsertError;
+    }
+
+    return { userId };
   };
 
   // Log the first hello (the saved connection)
@@ -160,8 +160,8 @@ export default function Onboarding() {
     const { detectBrowserTimezoneOffset, getDayKeyInOffset } = await import('@/lib/timezone');
     const detectedOffset = detectBrowserTimezoneOffset();
     const today = getDayKeyInOffset(new Date(), detectedOffset);
-    
-    await supabase.from('hello_logs').insert({
+
+    const { error: helloError } = await supabase.from('hello_logs').insert({
       user_id: userId,
       name: connectionName.trim(),
       location: connectionLocation.trim() || null,
@@ -169,12 +169,36 @@ export default function Onboarding() {
       hello_type: 'Greeting',
       timezone_offset: detectedOffset,
     });
+    if (helloError) throw helloError;
+
+    const { data: currentProgress, error: progressReadError } = await supabase
+      .from('user_progress')
+      .select('total_xp, total_hellos, hellos_this_week, hellos_today_count, names_today_count, notes_today_count, last_xp_reset_date')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (progressReadError) throw progressReadError;
+
+    const notesIncrement = connectionNotes.trim() ? 1 : 0;
+
+    const nextTotalXp = (currentProgress?.total_xp ?? 0) + 10;
+    const nextTotalHellos = (currentProgress?.total_hellos ?? 0) + 1;
+    const nextHellosThisWeek = (currentProgress?.hellos_this_week ?? 0) + 1;
+    const nextHellosToday = (currentProgress?.hellos_today_count ?? 0) + 1;
+    const nextNamesToday = (currentProgress?.names_today_count ?? 0) + 1;
+    const nextNotesToday = (currentProgress?.notes_today_count ?? 0) + notesIncrement;
+    const nextXpResetDate = currentProgress?.last_xp_reset_date ?? today;
     
-    await supabase.from('user_progress').update({
+    const { error: progressUpdateError } = await supabase.from('user_progress').update({
       last_completed_date: today,
-      total_xp: 10, // +10 XP for first hello
-      hellos_today_count: 1,
+      total_xp: nextTotalXp,
+      total_hellos: nextTotalHellos,
+      hellos_this_week: nextHellosThisWeek,
+      hellos_today_count: nextHellosToday,
+      names_today_count: nextNamesToday,
+      notes_today_count: nextNotesToday,
+      last_xp_reset_date: nextXpResetDate,
     }).eq('user_id', userId);
+    if (progressUpdateError) throw progressUpdateError;
     
     await supabase.from('profiles').update({
       timezone_preference: detectedOffset,
@@ -194,7 +218,7 @@ export default function Onboarding() {
 
     try {
       setIsSubmitting(true);
-      const { userId } = await initializeProgress();
+      const { userId } = await ensureUserAndProgress();
       await logFirstHello(userId);
       setStep('hellobook_intro');
     } catch (error) {
@@ -211,7 +235,8 @@ export default function Onboarding() {
 
   // Complete onboarding and go to dashboard
   const handleComplete = () => {
-    navigate('/');
+    // Force a hard navigation so route guards read the just-written progress state.
+    window.location.replace('/');
   };
 
   const renderScreen = () => {
@@ -224,7 +249,6 @@ export default function Onboarding() {
               src={remiWaving4} 
               alt="Remi waving" 
               className="w-64 h-auto max-h-64 mx-auto object-contain animate-bounce-soft" 
-              fetchPriority="high"
             />
             <div className="space-y-3">
               <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
@@ -274,7 +298,6 @@ export default function Onboarding() {
               src={remiShakingHand} 
               alt="Remi shaking hand" 
               className="w-64 h-auto max-h-64 mx-auto object-contain" 
-              fetchPriority="high"
             />
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200 delay-150">
               <h1 className="text-2xl font-bold text-foreground">
@@ -292,7 +315,6 @@ export default function Onboarding() {
               src={remiCurious1} 
               alt="Remi curious" 
               className="w-64 h-auto max-h-64 mx-auto object-contain" 
-              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">How it works</h1>
@@ -314,7 +336,6 @@ export default function Onboarding() {
               src={remiCurious4} 
               alt="Remi curious" 
               className="w-48 h-auto max-h-48 mx-auto object-contain" 
-              fetchPriority="high"
             />
             <div className="space-y-4">
               <p className="text-muted-foreground leading-relaxed">
@@ -446,7 +467,6 @@ export default function Onboarding() {
               src={hellobookIcon} 
               alt="Hellobook" 
               className="w-48 h-auto max-h-48 mx-auto object-contain" 
-              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">First Hello complete 🎉</h1>
@@ -471,7 +491,6 @@ export default function Onboarding() {
               src={remiSurprised1} 
               alt="Remi surprised" 
               className="w-48 h-auto max-h-48 mx-auto object-contain" 
-              fetchPriority="high"
             />
             <div className="space-y-4">
               <h1 className="text-xl font-bold text-foreground">

@@ -79,22 +79,48 @@ export default function MagicLinkSignIn() {
 
       // Check if user has progress before navigating
       if (data.user) {
-        const { data: progressData } = await supabase
+        const userId = data.user.id;
+
+        // Ensure progress exists and is in the single standard mode.
+        // Logged-in users should land on the Home screen immediately.
+        const { data: progressRow, error: progressReadError } = await supabase
           .from('user_progress')
-          .select('has_completed_onboarding, is_onboarding_week')
-          .eq('user_id', data.user.id)
+          .select('id')
+          .eq('user_id', userId)
           .maybeSingle();
+        if (progressReadError) throw progressReadError;
+
+        if (!progressRow) {
+          const { error: insertError } = await supabase
+            .from('user_progress')
+            .insert({
+              user_id: userId,
+              current_streak: 0,
+              current_day: 1,
+              is_onboarding_week: false,
+              has_completed_onboarding: true,
+              onboarding_completed_at: new Date().toISOString(),
+              current_phase: 'active',
+              mode: 'daily',
+              target_hellos_per_week: 7,
+              selected_pack_id: 'starter-pack',
+            });
+          if (insertError) throw insertError;
+        } else {
+          // Normalize legacy rows so they don't trigger onboarding loops.
+          await supabase
+            .from('user_progress')
+            .update({
+              has_completed_onboarding: true,
+              is_onboarding_week: false,
+              current_phase: 'active',
+              mode: 'daily',
+            })
+            .eq('user_id', userId);
+        }
 
         toast.success('Signed in successfully!');
-        
-        // Navigate based on progress state
-        if (progressData) {
-          // User has progress - go to dashboard
-          navigate('/', { replace: true });
-        } else {
-          // No progress - needs onboarding
-          navigate('/onboarding', { replace: true });
-        }
+        navigate('/', { replace: true });
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
