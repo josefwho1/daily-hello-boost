@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shuffle } from "lucide-react";
 import { dailyHellos, getTodaysHello, type DailyHello } from "@/data/dailyHellos";
@@ -53,7 +54,7 @@ export const DailySuggestionCard = () => {
   };
 
   return (
-    <div className="py-3 px-1">
+    <Card className="p-3 rounded-xl border-border/50 bg-card">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
@@ -74,6 +75,6 @@ export const DailySuggestionCard = () => {
           <Shuffle className="w-3.5 h-3.5" />
         </Button>
       </div>
-    </div>
+    </Card>
   );
 };

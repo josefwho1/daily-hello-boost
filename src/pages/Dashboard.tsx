@@ -1086,6 +1086,9 @@ export default function Dashboard() {
               }}
             />
 
+            {/* Today's Hello - Daily inspiration */}
+            <DailySuggestionCard />
+
             {/* Primary CTA - Log a Hello */}
             <SaveHelloButton
               onClick={() => {
@@ -1101,9 +1104,6 @@ export default function Dashboard() {
                 setShowLogDialog(true);
               }}
             />
-
-            {/* Today's Hello - Daily inspiration */}
-            <DailySuggestionCard />
 
 
             {/* Recent Hellos Section */}

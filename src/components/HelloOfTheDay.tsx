@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shuffle } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
@@ -90,8 +91,8 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
   const notesText = selectedMemory.notes || "";
 
   return (
-    <div 
-      className="py-3 px-1 cursor-pointer hover:bg-muted/30 rounded-lg transition-colors -mx-1"
+    <Card 
+      className="p-3 rounded-xl border-border/50 bg-card cursor-pointer hover:bg-accent/50 transition-colors"
       onClick={handleCardClick}
     >
       <div className="flex items-start justify-between gap-3">
@@ -116,6 +117,6 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
           </Button>
         )}
       </div>
-    </div>
+    </Card>
   );
 };
