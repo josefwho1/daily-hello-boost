@@ -1,20 +1,15 @@
 import { Card } from "@/components/ui/card";
 import { User, MapPin, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-
-interface HelloLog {
-  id: string;
-  name: string | null;
-  notes: string | null;
-  created_at: string;
-}
+import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface RecentHellosSectionProps {
   logs: HelloLog[];
   onViewAll?: () => void;
+  onEditLog?: (log: HelloLog) => void;
 }
 
-export const RecentHellosSection = ({ logs, onViewAll }: RecentHellosSectionProps) => {
+export const RecentHellosSection = ({ logs, onViewAll, onEditLog }: RecentHellosSectionProps) => {
   // Only show logs that have names (meaningful connections)
   const namedLogs = logs.filter(log => log.name && log.name.trim() !== '');
   
@@ -52,7 +47,8 @@ export const RecentHellosSection = ({ logs, onViewAll }: RecentHellosSectionProp
         {recentLogs.map((log) => (
           <Card 
             key={log.id} 
-            className="p-3 border-border/30 bg-card/50 hover:bg-card/80 transition-colors"
+            className="p-3 border-border/30 bg-card/50 hover:bg-card/80 transition-colors cursor-pointer"
+            onClick={() => onEditLog?.(log)}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">

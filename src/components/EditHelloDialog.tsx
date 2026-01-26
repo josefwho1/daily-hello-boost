@@ -69,7 +69,7 @@ const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogPro
             <Label htmlFor="edit-name">Name</Label>
             <Input
               id="edit-name"
-              placeholder="Who did you say hello to?"
+              placeholder="Who did you meet?"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="rounded-xl"
