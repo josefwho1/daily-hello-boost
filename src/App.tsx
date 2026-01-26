@@ -42,9 +42,10 @@ const AppRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // If not logged in at all (no user), redirect to onboarding
+  // If not logged in at all (no user), redirect to landing (not onboarding)
+  // This allows returning users to sign in properly
   if (!user) {
-    return <Navigate to="/onboarding" replace />;
+    return <Navigate to="/landing" replace />;
   }
 
   // For anonymous users, check if they have progress (created during onboarding)
@@ -53,6 +54,7 @@ const AppRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   // For authenticated (non-anonymous) users, check if they have progress
+  // If no progress, they need to complete onboarding
   if (!isAnonymous && !progress) {
     return <Navigate to="/onboarding" replace />;
   }

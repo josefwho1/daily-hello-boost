@@ -63,7 +63,7 @@ export default function MagicLinkSignIn() {
       setLoading(true);
       setPasswordError(null);
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: validatedEmail,
         password,
       });
@@ -77,8 +77,25 @@ export default function MagicLinkSignIn() {
         return;
       }
 
-      toast.success('Signed in successfully!');
-      navigate('/');
+      // Check if user has progress before navigating
+      if (data.user) {
+        const { data: progressData } = await supabase
+          .from('user_progress')
+          .select('has_completed_onboarding, is_onboarding_week')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+
+        toast.success('Signed in successfully!');
+        
+        // Navigate based on progress state
+        if (progressData) {
+          // User has progress - go to dashboard
+          navigate('/', { replace: true });
+        } else {
+          // No progress - needs onboarding
+          navigate('/onboarding', { replace: true });
+        }
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         setPasswordError(error.errors[0].message);
