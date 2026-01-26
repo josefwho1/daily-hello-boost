@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lightbulb, Shuffle } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import { dailyHellos, getTodaysHello, type DailyHello } from "@/data/dailyHellos";
 
 // Get today's date key for localStorage
@@ -54,29 +53,27 @@ export const DailySuggestionCard = () => {
   };
 
   return (
-    <Card className="p-3 rounded-xl border-border/30 bg-muted/30">
-      <div className="flex items-center gap-2">
-        <Lightbulb className="w-4 h-4 text-primary/70 flex-shrink-0" />
+    <div className="py-3 px-1">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">Today's Hello</span>
-              <span className="text-sm font-medium text-foreground truncate">{displayHello.title}</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleShuffle}
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
-            >
-              <Shuffle className="w-3.5 h-3.5" />
-            </Button>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wide">Today's Hello</span>
+            <span className="text-xs text-muted-foreground">•</span>
+            <span className="text-sm font-medium text-foreground">{displayHello.title}</span>
           </div>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground line-clamp-2">
             {displayHello.description}
           </p>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleShuffle}
+          className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
+        >
+          <Shuffle className="w-3.5 h-3.5" />
+        </Button>
       </div>
-    </Card>
+    </div>
   );
 };

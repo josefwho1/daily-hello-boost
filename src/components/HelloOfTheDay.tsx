@@ -1,15 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, Shuffle, ChevronDown, ChevronUp, Pencil } from "lucide-react";
-
-interface HelloLog {
-  id: string;
-  name: string | null;
-  notes: string | null;
-  hello_type: string | null;
-  created_at: string;
-}
+import { Shuffle } from "lucide-react";
+import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface HelloOfTheDayProps {
   logs: HelloLog[];
@@ -23,7 +15,6 @@ const getTodayKey = () => {
 };
 
 export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [shuffledIndex, setShuffledIndex] = useState<number | null>(null);
 
   // Filter logs with both name AND notes
@@ -63,7 +54,8 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
     return eligibleLogs[index];
   }, [eligibleLogs, shuffledIndex]);
 
-  const handleShuffle = () => {
+  const handleShuffle = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (eligibleLogs.length <= 1) return;
     
     // Pick a random index different from current
@@ -79,7 +71,6 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
     } while (newIndex === currentIndex && eligibleLogs.length > 1);
     
     setShuffledIndex(newIndex);
-    setIsExpanded(false);
     
     // Persist to localStorage
     localStorage.setItem('memory-of-day-selection', JSON.stringify({
@@ -88,68 +79,43 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
     }));
   };
 
+  const handleCardClick = () => {
+    if (selectedMemory && onEditLog) {
+      onEditLog(selectedMemory);
+    }
+  };
+
   if (!selectedMemory) return null;
 
   const notesText = selectedMemory.notes || "";
-  const isLongNotes = notesText.length > 80;
 
   return (
-    <Card className="p-3 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200 dark:border-amber-800/30">
-      <div className="flex items-center gap-2">
-        <Star className="w-4 h-4 text-amber-500 flex-shrink-0" />
+    <div 
+      className="py-3 px-1 cursor-pointer hover:bg-muted/30 rounded-lg transition-colors -mx-1"
+      onClick={handleCardClick}
+    >
+      <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">Memory</span>
-              <span className="text-sm font-medium text-foreground truncate">{selectedMemory.name}</span>
-            </div>
-            {eligibleLogs.length > 1 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleShuffle}
-                className="h-6 w-6 p-0 text-amber-600 hover:text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/30 flex-shrink-0"
-              >
-                <Shuffle className="w-3.5 h-3.5" />
-              </Button>
-            )}
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide">Memory</span>
+            <span className="text-xs text-muted-foreground">•</span>
+            <span className="text-sm font-medium text-foreground">{selectedMemory.name}</span>
           </div>
-          <p className={`text-sm text-muted-foreground mt-0.5 ${!isExpanded && isLongNotes ? 'line-clamp-2' : ''}`}>
-            "{notesText}"
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {notesText}
           </p>
-          {isLongNotes && (
-            <div className="flex items-center justify-between mt-1">
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="flex items-center gap-0.5 text-xs text-amber-600 hover:text-amber-700 dark:text-amber-400"
-              >
-                {isExpanded ? (
-                  <>
-                    <ChevronUp className="w-3 h-3" />
-                    Less
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="w-3 h-3" />
-                    More
-                  </>
-                )}
-              </button>
-              {isExpanded && onEditLog && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEditLog(selectedMemory)}
-                  className="h-6 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/30"
-                >
-                  <Pencil className="w-3 h-3 mr-1" />
-                  Edit
-                </Button>
-              )}
-            </div>
-          )}
         </div>
+        {eligibleLogs.length > 1 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShuffle}
+            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
+          >
+            <Shuffle className="w-3.5 h-3.5" />
+          </Button>
+        )}
       </div>
-    </Card>
+    </div>
   );
 };
