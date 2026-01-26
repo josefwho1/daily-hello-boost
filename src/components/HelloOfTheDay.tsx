@@ -92,17 +92,17 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
 
   return (
     <Card 
-      className="p-3 rounded-xl border-border/50 bg-card cursor-pointer hover:bg-accent/50 transition-colors"
+      className="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20 cursor-pointer hover:from-amber-500/15 hover:to-amber-500/10 transition-colors"
       onClick={handleCardClick}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide">Memory</span>
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Memory</span>
             <span className="text-xs text-muted-foreground">•</span>
-            <span className="text-sm font-medium text-foreground">{selectedMemory.name}</span>
+            <span className="text-sm font-medium text-foreground truncate">{selectedMemory.name}</span>
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-xs text-muted-foreground line-clamp-2">
             {notesText}
           </p>
         </div>
@@ -111,9 +111,9 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
             variant="ghost"
             size="sm"
             onClick={handleShuffle}
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
           >
-            <Shuffle className="w-3.5 h-3.5" />
+            <Shuffle className="w-3 h-3" />
           </Button>
         )}
       </div>
