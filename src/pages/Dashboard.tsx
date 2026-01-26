@@ -18,6 +18,7 @@ import { UseOrbDialog } from "@/components/UseOrbDialog";
 import { StreakSaverDialog, StreakSaverScenario } from "@/components/StreakSaverDialog";
 import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { RecentHellosSection } from "@/components/RecentHellosSection";
+import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
 import { LogHelloButton } from "@/components/LogHelloButton";
 import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
@@ -986,11 +987,19 @@ export default function Dashboard() {
       <div className="max-w-md mx-auto px-4 py-8">
 
         {/* Friendly Header Greeting */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-6">
           <h1 className="text-2xl font-semibold text-foreground">
-            Hi {username} 👋
+            Hello, {username} 👋
           </h1>
         </div>
+
+        {/* Stats Dashboard */}
+        {!isFirstHellosMode && (
+          <HomeStatsBar 
+            logs={logs} 
+            lifetimeHellos={progress.total_hellos || 0} 
+          />
+        )}
 
         {/* First Hellos Mode - Keep the onboarding challenge system */}
         {isFirstHellosMode ? (
