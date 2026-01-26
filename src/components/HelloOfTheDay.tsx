@@ -98,8 +98,8 @@ export const HelloOfTheDay = ({ logs }: HelloOfTheDayProps) => {
         <Star className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">Memory</span>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">Memory</span>
               <span className="text-sm font-medium text-foreground truncate">{selectedMemory.name}</span>
             </div>
             {eligibleLogs.length > 1 && (

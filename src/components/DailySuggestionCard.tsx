@@ -54,29 +54,25 @@ export const DailySuggestionCard = () => {
   };
 
   return (
-    <Card className="p-4 border-border/30 bg-muted/30">
-      <div className="flex items-start gap-3">
-        <div className="p-2 rounded-full bg-primary/10">
-          <Lightbulb className="w-4 h-4 text-primary/70" />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              Today's Hello
-            </p>
+    <Card className="p-3 rounded-xl border-border/30 bg-muted/30">
+      <div className="flex items-start gap-2">
+        <Lightbulb className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-sm font-semibold text-muted-foreground">Today's Hello</span>
+              <span className="text-sm font-medium text-foreground truncate">{displayHello.title}</span>
+            </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleShuffle}
-              className="h-6 px-2 text-muted-foreground hover:text-foreground"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
             >
               <Shuffle className="w-3.5 h-3.5" />
             </Button>
           </div>
-          <p className="text-sm text-foreground font-medium">
-            {displayHello.title}
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-0.5">
             {displayHello.description}
           </p>
         </div>
