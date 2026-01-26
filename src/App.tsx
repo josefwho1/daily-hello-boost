@@ -107,6 +107,7 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
 
 const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const { isAnonymous } = useGuestMode();
 
   if (loading) {
     return (
@@ -119,7 +120,9 @@ const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (user) {
+  // Allow anonymous users to access auth pages (so they can sign in/link account)
+  // Only redirect fully authenticated users
+  if (user && !isAnonymous) {
     return <Navigate to="/" replace />;
   }
 
