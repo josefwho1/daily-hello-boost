@@ -1068,6 +1068,12 @@ export default function Dashboard() {
           /* Main Dashboard - Connection-focused layout */
           <div className="space-y-10">
             
+            {/* Daily Suggestion - Soft, optional inspiration */}
+            <DailySuggestionCard
+              title={todaysHello.title}
+              description={todaysHello.description}
+            />
+
             {/* Primary CTA - Log a Hello */}
             <SaveHelloButton 
               onClick={() => {
@@ -1082,12 +1088,6 @@ export default function Dashboard() {
                 setAutoStartRecording(true);
                 setShowLogDialog(true);
               }}
-            />
-
-            {/* Daily Suggestion - Soft, optional inspiration */}
-            <DailySuggestionCard
-              title={todaysHello.title}
-              description={todaysHello.description}
             />
 
             {/* Recent Hellos Section */}
