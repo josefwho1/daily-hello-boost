@@ -1068,12 +1068,18 @@ export default function Dashboard() {
           /* Main Dashboard - Connection-focused layout */
           <div className="space-y-10">
             
-            {/* Primary CTA - Save a Hello */}
+            {/* Primary CTA - Log a Hello */}
             <SaveHelloButton 
               onClick={() => {
                 setSelectedChallenge(null);
                 setSelectedHelloType('regular_hello');
                 setAutoStartRecording(false);
+                setShowLogDialog(true);
+              }}
+              onDictateClick={() => {
+                setSelectedChallenge(null);
+                setSelectedHelloType('regular_hello');
+                setAutoStartRecording(true);
                 setShowLogDialog(true);
               }}
             />
