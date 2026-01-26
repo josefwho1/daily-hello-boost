@@ -8,31 +8,26 @@ interface SaveHelloButtonProps {
 
 export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProps) => {
   return (
-    <div className="text-center space-y-3">
-      <div className="flex gap-2 justify-center">
+    <div className="flex gap-2 justify-center">
+      <Button 
+        onClick={onClick}
+        size="lg"
+        className="flex-1 max-w-xs h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+      >
+        <UserPlus className="w-5 h-5 mr-2" />
+        Log a Hello
+      </Button>
+      {onDictateClick && (
         <Button 
-          onClick={onClick}
+          onClick={onDictateClick}
           size="lg"
-          className="flex-1 max-w-xs h-14 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+          variant="outline"
+          className="h-12 px-4 shadow-md hover:shadow-lg"
+          title="Quick dictate"
         >
-          <UserPlus className="w-5 h-5 mr-2" />
-          Log a Hello
+          <Mic className="w-5 h-5" />
         </Button>
-        {onDictateClick && (
-          <Button 
-            onClick={onDictateClick}
-            size="lg"
-            variant="outline"
-            className="h-14 px-4 shadow-md hover:shadow-lg"
-            title="Quick dictate"
-          >
-            <Mic className="w-5 h-5" />
-          </Button>
-        )}
-      </div>
-      <p className="text-sm text-muted-foreground">
-        Save their name so you remember them next time.
-      </p>
+      )}
     </div>
   );
 };

@@ -228,17 +228,22 @@ const Hellobook = () => {
             {filteredLogs.map((log) => {
               // Determine thumbnail: ? for no name, 👤 for named entries
               const hasName = log.name && log.name.trim() !== "";
-              const thumbnail = hasName ? "👤" : "❓";
               
               return (
                 <Card 
                   key={log.id} 
-                  className="p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in"
+                  className={`p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in ${
+                    !hasName ? 'opacity-60' : ''
+                  }`}
                 >
                   <div className="flex items-start gap-3">
                     {/* Thumbnail */}
-                    <div className="w-12 h-12 rounded-xl border bg-muted border-border flex items-center justify-center flex-shrink-0 text-2xl">
-                      {thumbnail}
+                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center flex-shrink-0 text-2xl ${
+                      hasName 
+                        ? 'bg-muted border-border' 
+                        : 'bg-muted/50 border-border/50'
+                    }`}>
+                      {hasName ? "👤" : <span className="text-muted-foreground">?</span>}
                     </div>
 
                     {/* Content */}
