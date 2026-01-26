@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -15,9 +16,9 @@ import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
 import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { UseOrbDialog } from "@/components/UseOrbDialog";
 import { StreakSaverDialog, StreakSaverScenario } from "@/components/StreakSaverDialog";
-import { TodaysHelloCard } from "@/components/TodaysHelloCard";
-import { RemisWeeklyChallengeCard } from "@/components/RemisWeeklyChallengeCard";
-import { StatsBar } from "@/components/StatsBar";
+import { DailySuggestionCard } from "@/components/DailySuggestionCard";
+import { RecentHellosSection } from "@/components/RecentHellosSection";
+import { SaveHelloButton } from "@/components/SaveHelloButton";
 import { LogHelloButton } from "@/components/LogHelloButton";
 import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
 import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
@@ -38,7 +39,6 @@ import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 
-import remiMascot from "@/assets/remi-waving.webp";
 import { Sparkles } from "lucide-react";
 
 import { normalizeTimezoneOffset, getDayKeyInOffset, getDayKeyDifference, getYesterdayKeyInOffset } from "@/lib/timezone";
@@ -979,58 +979,22 @@ export default function Dashboard() {
 
   const mode = (progress.mode === 'connect' ? 'chill' : (progress.mode || 'daily')) as 'daily' | 'chill';
   const targetHellos = mode === 'chill' ? 5 : 7;
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="max-w-md mx-auto px-4 py-6">
+      <div className="max-w-md mx-auto px-4 py-8">
 
-        {/* Greeting - Centered */}
-        <div className="text-center mb-6">
-          <p className="text-lg font-medium text-foreground">
-            Hello, <span className="text-primary">{username}</span>! 👋
-          </p>
+        {/* Friendly Header Greeting */}
+        <div className="text-center mb-10">
+          <h1 className="text-2xl font-semibold text-foreground">
+            Hi {username} 👋
+          </h1>
         </div>
 
-        {/* Stats Bar - ALWAYS visible */}
-        <StatsBar
-          hellosToday={user ? getLogsTodayCount(tzOffset) : (progress.hellos_today_count || 0)}
-          hellosThisWeek={progress.hellos_this_week || 0}
-          dailyStreak={progress.daily_streak || 0}
-          weeklyStreak={progress.weekly_streak || 0}
-          lifetimeHellos={progress.total_hellos || logs.length}
-          orbs={progress.orbs || 0}
-          mode={(progress.mode === '7-day-starter' ? 'first_hellos' : progress.mode) as 'daily' | 'chill' | 'first_hellos' || 'first_hellos'}
-          isOnboardingWeek={progress.is_onboarding_week || false}
-          onboardingCompleted={completedDaysCount}
-          hasCompletedOnboarding={progress.has_completed_onboarding || false}
-          currentLevel={progress.current_level || 1}
-          totalXp={progress.total_xp || 0}
-          firstHellosCompleted={completedFirstHellosCount}
-        />
-
-        {/* Log a Hello Button - Show above challenges for non-onboarding users */}
-        {!isFirstHellosMode && progress.has_completed_onboarding && (
-          <div className="mt-6">
-            <LogHelloButton 
-              onClick={() => {
-                setSelectedChallenge(null);
-                setSelectedHelloType('regular_hello');
-                setAutoStartRecording(false);
-                setShowLogDialog(true);
-              }}
-              onDictateClick={() => {
-                setSelectedChallenge(null);
-                setSelectedHelloType('regular_hello');
-                setAutoStartRecording(true);
-                setShowLogDialog(true);
-              }}
-            />
-          </div>
-        )}
-
-        {/* First Hellos Mode - New sequential challenge system */}
+        {/* First Hellos Mode - Keep the onboarding challenge system */}
         {isFirstHellosMode ? (
-          <div className="mt-6">
+          <div className="space-y-6">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-5 h-5 text-primary" />
               <h2 className="text-lg font-semibold text-foreground">First Hello's</h2>
@@ -1045,7 +1009,6 @@ export default function Dashboard() {
             <div className="space-y-3">
               {firstHellos.map((challenge, index) => {
                 const isCompleted = completedFirstHelloTypes.includes(challenge.title);
-                // Sequential unlock: challenge is unlocked if all previous are completed
                 const previousCompleted = index === 0 || firstHellos.slice(0, index).every(
                   prev => completedFirstHelloTypes.includes(prev.title)
                 );
@@ -1072,7 +1035,7 @@ export default function Dashboard() {
               })}
             </div>
 
-            {/* Log a Hello Button - Show below for extra hellos */}
+            {/* Log a Hello Button for extra hellos during onboarding */}
             <div className="mt-6">
               <LogHelloButton 
                 onClick={() => {
@@ -1093,30 +1056,29 @@ export default function Dashboard() {
             </div>
           </div>
         ) : (
-          <div className="mt-6 space-y-4">
-            {/* Today's Hello */}
-            <TodaysHelloCard
-              title={todaysHello.title}
-              description={todaysHello.description}
-              isCompleted={isTodaysHelloComplete()}
-              onComplete={() => {
-                setSelectedChallenge(todaysHello.title);
-                setSelectedHelloType('todays_hello');
+          /* Main Dashboard - Connection-focused layout */
+          <div className="space-y-10">
+            
+            {/* Primary CTA - Save a Hello */}
+            <SaveHelloButton 
+              onClick={() => {
+                setSelectedChallenge(null);
+                setSelectedHelloType('regular_hello');
+                setAutoStartRecording(false);
                 setShowLogDialog(true);
               }}
             />
 
-            {/* Remi's Weekly Challenge */}
-            <RemisWeeklyChallengeCard
-              title={thisWeeksChallenge.title}
-              description={thisWeeksChallenge.description}
-              isCompleted={isWeeklyChallengeComplete()}
-              orbsFull={(progress.orbs || 0) >= 3}
-              onComplete={() => {
-                setSelectedChallenge(thisWeeksChallenge.title);
-                setSelectedHelloType('remis_challenge');
-                setShowLogDialog(true);
-              }}
+            {/* Daily Suggestion - Soft, optional inspiration */}
+            <DailySuggestionCard
+              title={todaysHello.title}
+              description={todaysHello.description}
+            />
+
+            {/* Recent Hellos Section */}
+            <RecentHellosSection
+              logs={logs}
+              onViewAll={() => navigate('/hellobook')}
             />
           </div>
         )}
