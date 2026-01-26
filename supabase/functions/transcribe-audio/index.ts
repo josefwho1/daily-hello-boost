@@ -11,26 +11,35 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Received transcription request");
+    
     const formData = await req.formData();
     const audioFile = formData.get("audio") as File;
     
     if (!audioFile) {
+      console.error("No audio file in request");
       return new Response(JSON.stringify({ error: "No audio file provided" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    const fileSizeKB = Math.round(audioFile.size / 1024);
+    console.log(`Audio file received: ${audioFile.name}, size: ${fileSizeKB}KB, type: ${audioFile.type}`);
+
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
     if (!ELEVENLABS_API_KEY) {
+      console.error("ELEVENLABS_API_KEY not configured");
       throw new Error("ELEVENLABS_API_KEY is not configured");
     }
 
+    // Use scribe_v2 for better accuracy and longer audio support
     const apiFormData = new FormData();
     apiFormData.append("file", audioFile);
-    apiFormData.append("model_id", "scribe_v1");
-    apiFormData.append("language_code", "eng");
+    apiFormData.append("model_id", "scribe_v2");
 
+    console.log("Sending request to ElevenLabs API...");
+    
     const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
       method: "POST",
       headers: {
@@ -39,16 +48,19 @@ serve(async (req) => {
       body: apiFormData,
     });
 
+    console.log(`ElevenLabs API response status: ${response.status}`);
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error("ElevenLabs API error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "Transcription failed" }), {
+      return new Response(JSON.stringify({ error: `Transcription failed: ${errorText}` }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const transcription = await response.json();
+    console.log(`Transcription successful, text length: ${transcription.text?.length || 0} chars`);
 
     return new Response(JSON.stringify(transcription), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
