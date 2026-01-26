@@ -919,19 +919,22 @@ export default function Dashboard() {
         />
 
         {/* Main Dashboard - Connection-focused layout */}
-        <div className="space-y-10">
+        <div className="space-y-6">
           
-            {/* Memory - Featured memory from user's history */}
-            <HelloOfTheDay 
-              logs={logs} 
-              onEditLog={(log) => {
-                setEditingLog(log as HelloLog);
-                setIsEditDialogOpen(true);
-              }}
-            />
+            {/* Memory & Today's Hello - Tighter spacing */}
+            <div className="space-y-3">
+              {/* Memory - Featured memory from user's history */}
+              <HelloOfTheDay 
+                logs={logs} 
+                onEditLog={(log) => {
+                  setEditingLog(log as HelloLog);
+                  setIsEditDialogOpen(true);
+                }}
+              />
 
-            {/* Today's Hello - Daily inspiration */}
-            <DailySuggestionCard />
+              {/* Today's Hello - Daily inspiration */}
+              <DailySuggestionCard />
+            </div>
 
             {/* Primary CTA - Log a Hello */}
             <SaveHelloButton

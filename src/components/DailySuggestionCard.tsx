@@ -54,15 +54,14 @@ export const DailySuggestionCard = () => {
   };
 
   return (
-    <Card className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-      <div className="flex items-start justify-between gap-2">
+    <Card className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-xs font-medium text-primary">Today's Hello</span>
-            <span className="text-xs text-muted-foreground">•</span>
-            <span className="text-sm font-medium text-foreground truncate">{displayHello.title}</span>
+            <span className="text-xs font-medium text-primary uppercase tracking-wide">Today's Hello</span>
           </div>
-          <p className="text-xs text-muted-foreground line-clamp-2">
+          <h3 className="text-base font-semibold text-foreground mb-2">{displayHello.title}</h3>
+          <p className="text-sm text-muted-foreground line-clamp-2">
             {displayHello.description}
           </p>
         </div>
@@ -70,9 +69,9 @@ export const DailySuggestionCard = () => {
           variant="ghost"
           size="sm"
           onClick={handleShuffle}
-          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
+          className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
         >
-          <Shuffle className="w-3 h-3" />
+          <Shuffle className="w-3.5 h-3.5" />
         </Button>
       </div>
     </Card>

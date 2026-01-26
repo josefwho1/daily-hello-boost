@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shuffle } from "lucide-react";
+import { Shuffle, ChevronDown, ChevronUp } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface HelloOfTheDayProps {
@@ -17,6 +17,7 @@ const getTodayKey = () => {
 
 export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
   const [shuffledIndex, setShuffledIndex] = useState<number | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Filter logs with both name AND notes
   const eligibleLogs = useMemo(() => {
@@ -72,6 +73,7 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
     } while (newIndex === currentIndex && eligibleLogs.length > 1);
     
     setShuffledIndex(newIndex);
+    setIsExpanded(false);
     
     // Persist to localStorage
     localStorage.setItem('memory-of-day-selection', JSON.stringify({
@@ -86,34 +88,62 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
     }
   };
 
+  const handleExpandToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
+
   if (!selectedMemory) return null;
 
   const notesText = selectedMemory.notes || "";
+  const isLongNote = notesText.length > 80;
+  const displayLocation = selectedMemory.location?.trim();
 
   return (
     <Card 
-      className="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20 cursor-pointer hover:from-amber-500/15 hover:to-amber-500/10 transition-colors"
+      className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20 cursor-pointer hover:from-amber-500/15 hover:to-amber-500/10 transition-colors"
       onClick={handleCardClick}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Memory</span>
-            <span className="text-xs text-muted-foreground">•</span>
-            <span className="text-sm font-medium text-foreground truncate">{selectedMemory.name}</span>
+            <span className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide">Memory</span>
           </div>
-          <p className="text-xs text-muted-foreground line-clamp-2">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="text-base font-semibold text-foreground">{selectedMemory.name}</span>
+            {displayLocation && (
+              <>
+                <span className="text-muted-foreground">/</span>
+                <span className="text-sm text-muted-foreground truncate">{displayLocation}</span>
+              </>
+            )}
+          </div>
+          <p className={`text-sm text-muted-foreground ${isExpanded ? '' : 'line-clamp-2'}`}>
             {notesText}
           </p>
+          {isLongNote && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleExpandToggle}
+              className="h-6 px-0 mt-1 text-xs text-primary hover:text-primary/80 hover:bg-transparent"
+            >
+              {isExpanded ? (
+                <>Read less <ChevronUp className="w-3 h-3 ml-1" /></>
+              ) : (
+                <>Read more <ChevronDown className="w-3 h-3 ml-1" /></>
+              )}
+            </Button>
+          )}
         </div>
         {eligibleLogs.length > 1 && (
           <Button
             variant="ghost"
             size="sm"
             onClick={handleShuffle}
-            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
+            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
           >
-            <Shuffle className="w-3 h-3" />
+            <Shuffle className="w-3.5 h-3.5" />
           </Button>
         )}
       </div>
