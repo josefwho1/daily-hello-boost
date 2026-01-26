@@ -130,6 +130,7 @@ export const useHelloLogs = () => {
 
   const updateLog = async (id: string, updates: {
     name?: string | null;
+    location?: string | null;
     notes?: string | null;
     rating?: 'positive' | 'neutral' | 'negative' | null;
     difficulty_rating?: number | null;
@@ -153,6 +154,7 @@ export const useHelloLogs = () => {
         .from('hello_logs')
         .update({
           name: updates.name,
+          location: updates.location,
           notes: updates.notes,
           rating: updates.rating,
           difficulty_rating: updates.difficulty_rating
