@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import vaultIcon from "@/assets/vault-icon.webp";
 import EditHelloDialog from "@/components/EditHelloDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 
+type FilterType = 'all' | 'names' | 'unknown';
 
 // Expandable text component for long notes
 const ExpandableText = ({ text }: { text: string }) => {
@@ -66,8 +67,21 @@ const Hellobook = () => {
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   const showGuestPrompt = isAnonymous && logs.length > 0;
+  
+  // Calculate stats for the toggle bar
+  const stats = useMemo(() => {
+    const regularLogs = logs.filter(log => isRegularHello(log.hello_type));
+    const withNames = regularLogs.filter(log => log.name && log.name.trim() !== "");
+    const withoutNames = regularLogs.filter(log => !log.name || log.name.trim() === "");
+    return {
+      all: regularLogs.length,
+      names: withNames.length,
+      unknown: withoutNames.length
+    };
+  }, [logs]);
   
   const handleEditClick = (log: HelloLog) => {
     setEditingLog(log);
@@ -89,9 +103,18 @@ const Hellobook = () => {
     return result;
   };
 
-  // Filter out challenge completions and apply search
+  // Filter out challenge completions, apply toggle filter, and apply search
   const filteredLogs = logs
     .filter(log => isRegularHello(log.hello_type))
+    .filter(log => {
+      if (activeFilter === 'names') {
+        return log.name && log.name.trim() !== "";
+      }
+      if (activeFilter === 'unknown') {
+        return !log.name || log.name.trim() === "";
+      }
+      return true;
+    })
     .filter(log => {
       const query = searchQuery.toLowerCase();
       const nameMatch = log.name?.toLowerCase().includes(query);
@@ -143,6 +166,43 @@ const Hellobook = () => {
           </Card>
         )}
 
+
+        {/* Toggle Stats Bar */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setActiveFilter('all')}
+            className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
+              activeFilter === 'all'
+                ? 'bg-primary text-primary-foreground shadow-md'
+                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+            }`}
+          >
+            <div className="text-xl font-bold">{stats.all}</div>
+            <div className="text-xs">All</div>
+          </button>
+          <button
+            onClick={() => setActiveFilter('names')}
+            className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
+              activeFilter === 'names'
+                ? 'bg-primary text-primary-foreground shadow-md'
+                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+            }`}
+          >
+            <div className="text-xl font-bold">{stats.names}</div>
+            <div className="text-xs">Names</div>
+          </button>
+          <button
+            onClick={() => setActiveFilter('unknown')}
+            className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
+              activeFilter === 'unknown'
+                ? 'bg-primary text-primary-foreground shadow-md'
+                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+            }`}
+          >
+            <div className="text-xl font-bold">{stats.unknown}</div>
+            <div className="text-xs">????</div>
+          </button>
+        </div>
 
         {/* Search */}
         <div className="relative mb-6">
