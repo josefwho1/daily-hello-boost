@@ -936,23 +936,6 @@ export default function Dashboard() {
               <DailySuggestionCard />
             </div>
 
-            {/* Primary CTA - Log a Hello */}
-            <SaveHelloButton
-              onClick={() => {
-                setSelectedChallenge(null);
-                setSelectedHelloType('regular_hello');
-                setAutoStartRecording(false);
-                setShowLogDialog(true);
-              }}
-              onDictateClick={() => {
-                setSelectedChallenge(null);
-                setSelectedHelloType('regular_hello');
-                setAutoStartRecording(true);
-                setShowLogDialog(true);
-              }}
-            />
-
-
             {/* Recent Hellos Section */}
             <RecentHellosSection
               logs={logs}
@@ -961,6 +944,29 @@ export default function Dashboard() {
                 setEditingLog(log);
                 setIsEditDialogOpen(true);
               }}
+            />
+            
+            {/* Spacer for fixed button */}
+            <div className="h-24" />
+        </div>
+      </div>
+
+      {/* Fixed CTA at bottom */}
+      <div className="fixed bottom-20 left-0 right-0 z-40 px-4 pb-2">
+        <div className="max-w-md mx-auto">
+          <SaveHelloButton
+            onClick={() => {
+              setSelectedChallenge(null);
+              setSelectedHelloType('regular_hello');
+              setAutoStartRecording(false);
+              setShowLogDialog(true);
+            }}
+            onDictateClick={() => {
+              setSelectedChallenge(null);
+              setSelectedHelloType('regular_hello');
+              setAutoStartRecording(true);
+              setShowLogDialog(true);
+            }}
           />
         </div>
       </div>
