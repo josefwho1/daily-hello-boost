@@ -215,12 +215,18 @@ export const LogHelloScreen = ({
     }
   };
 
-  // Validation: either name or noNameFlag must be set
-  const canSubmit = (name.trim() !== "" || noNameFlag) && !isLogging && !isRecording && !isProcessing;
+  // Validation: name required OR (noNameFlag + at least location or notes)
+  const hasName = name.trim() !== "";
+  const hasLocationOrNotes = location.trim() !== "" || notes.trim() !== "";
+  const canSubmit = (hasName || (noNameFlag && hasLocationOrNotes)) && !isLogging && !isRecording && !isProcessing;
 
   const handleSubmit = async () => {
     if (!name.trim() && !noNameFlag) {
       toast.error("Please enter a name or check 'Didn't get name'");
+      return;
+    }
+    if (noNameFlag && !location.trim() && !notes.trim()) {
+      toast.error("Please enter where you met or add some notes");
       return;
     }
 
