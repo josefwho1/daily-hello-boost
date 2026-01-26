@@ -13,7 +13,7 @@ import hellobookIcon from "@/assets/hellobook-icon.webp";
 import vaultIcon from "@/assets/vault-icon.webp";
 import EditHelloDialog from "@/components/EditHelloDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
-import { HellobookStats } from "@/components/HellobookStats";
+
 
 // Expandable text component for long notes
 const ExpandableText = ({ text }: { text: string }) => {
@@ -143,8 +143,6 @@ const Hellobook = () => {
           </Card>
         )}
 
-        {/* Stats Snapshot */}
-        <HellobookStats logs={logs.filter(log => isRegularHello(log.hello_type))} timezoneOffset={timezoneOffset} />
 
         {/* Search */}
         <div className="relative mb-6">

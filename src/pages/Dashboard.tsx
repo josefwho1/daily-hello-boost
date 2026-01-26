@@ -20,6 +20,7 @@ import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { RecentHellosSection } from "@/components/RecentHellosSection";
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
+import { HelloOfTheDay } from "@/components/HelloOfTheDay";
 import { LogHelloButton } from "@/components/LogHelloButton";
 import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
 import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
@@ -1068,13 +1069,6 @@ export default function Dashboard() {
           /* Main Dashboard - Connection-focused layout */
           <div className="space-y-10">
             
-            {/* Daily Suggestion - Soft, optional inspiration */}
-            <DailySuggestionCard
-              title={todaysHello.title}
-              description={todaysHello.description}
-            />
-
-            {/* Primary CTA - Log a Hello */}
             <SaveHelloButton 
               onClick={() => {
                 setSelectedChallenge(null);
@@ -1089,6 +1083,9 @@ export default function Dashboard() {
                 setShowLogDialog(true);
               }}
             />
+
+            {/* Hello of the Day - Featured memory */}
+            <HelloOfTheDay logs={logs} />
 
             {/* Recent Hellos Section */}
             <RecentHellosSection
