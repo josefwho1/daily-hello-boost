@@ -21,6 +21,8 @@ import { RecentHellosSection } from "@/components/RecentHellosSection";
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
 import { HelloOfTheDay } from "@/components/HelloOfTheDay";
+import EditHelloDialog from "@/components/EditHelloDialog";
+import { HelloLog } from "@/hooks/useHelloLogs";
 import { LogHelloButton } from "@/components/LogHelloButton";
 import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
 import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
@@ -58,7 +60,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress: cloudProgress, loading: progressLoading, updateProgress: updateCloudProgress, refetch } = useUserProgress();
-  const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, getLogsTodayCount } = useHelloLogs();
+  const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, getLogsTodayCount } = useHelloLogs();
   const { timezoneOffset, loading: timezoneLoading } = useTimezone();
   const { 
     guestProgress, 
@@ -159,6 +161,10 @@ export default function Dashboard() {
   const [showFirstHelloInstruction, setShowFirstHelloInstruction] = useState(false);
   const [firstHelloPhase, setFirstHelloPhase] = useState<FirstHelloPhase>('observation_intro');
   const [lastCompletedFirstHello, setLastCompletedFirstHello] = useState<string | null>(null);
+  
+  // Edit hello dialog states
+  const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchUsername = async () => {
@@ -1070,7 +1076,13 @@ export default function Dashboard() {
           <div className="space-y-10">
             
             {/* Memory - Featured memory from user's history */}
-            <HelloOfTheDay logs={logs} />
+            <HelloOfTheDay 
+              logs={logs} 
+              onEditLog={(log) => {
+                setEditingLog(log as HelloLog);
+                setIsEditDialogOpen(true);
+              }}
+            />
 
             {/* Primary CTA - Log a Hello */}
             <SaveHelloButton
@@ -1215,6 +1227,22 @@ export default function Dashboard() {
         onComplete={() => {
           setShowHomeTutorial(false);
           toast.success(`🎉 You're all set in ${tutorialMode === 'daily' ? 'Daily' : 'Chill'} Mode!`);
+        }}
+      />
+
+      {/* Edit Hello Dialog */}
+      <EditHelloDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        log={editingLog}
+        onSave={async (id, updates) => {
+          const result = await updateCloudLog(id, updates);
+          if (result) {
+            toast.success("Hello updated!");
+          } else {
+            toast.error("Failed to update hello");
+          }
+          return result;
         }}
       />
     </div>

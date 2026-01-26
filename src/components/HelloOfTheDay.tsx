@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, Shuffle, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, Shuffle, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 
 interface HelloLog {
   id: string;
@@ -13,6 +13,7 @@ interface HelloLog {
 
 interface HelloOfTheDayProps {
   logs: HelloLog[];
+  onEditLog?: (log: HelloLog) => void;
 }
 
 // Get today's date key for localStorage
@@ -21,7 +22,7 @@ const getTodayKey = () => {
   return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
 };
 
-export const HelloOfTheDay = ({ logs }: HelloOfTheDayProps) => {
+export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [shuffledIndex, setShuffledIndex] = useState<number | null>(null);
 
@@ -94,8 +95,8 @@ export const HelloOfTheDay = ({ logs }: HelloOfTheDayProps) => {
 
   return (
     <Card className="p-3 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200 dark:border-amber-800/30">
-      <div className="flex items-start gap-2">
-        <Star className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+      <div className="flex items-center gap-2">
+        <Star className="w-4 h-4 text-amber-500 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
@@ -117,22 +118,35 @@ export const HelloOfTheDay = ({ logs }: HelloOfTheDayProps) => {
             "{notesText}"
           </p>
           {isLongNotes && (
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-0.5 mt-1 text-xs text-amber-600 hover:text-amber-700 dark:text-amber-400"
-            >
-              {isExpanded ? (
-                <>
-                  <ChevronUp className="w-3 h-3" />
-                  Less
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-3 h-3" />
-                  More
-                </>
+            <div className="flex items-center justify-between mt-1">
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="flex items-center gap-0.5 text-xs text-amber-600 hover:text-amber-700 dark:text-amber-400"
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronUp className="w-3 h-3" />
+                    Less
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-3 h-3" />
+                    More
+                  </>
+                )}
+              </button>
+              {isExpanded && onEditLog && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEditLog(selectedMemory)}
+                  className="h-6 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                >
+                  <Pencil className="w-3 h-3 mr-1" />
+                  Edit
+                </Button>
               )}
-            </button>
+            </div>
           )}
         </div>
       </div>

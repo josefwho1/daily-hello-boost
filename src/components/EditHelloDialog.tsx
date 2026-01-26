@@ -18,6 +18,7 @@ interface EditHelloDialogProps {
   log: HelloLog | null;
   onSave: (id: string, updates: {
     name?: string | null;
+    location?: string | null;
     notes?: string | null;
     rating?: 'positive' | 'neutral' | 'negative' | null;
     difficulty_rating?: number | null;
@@ -26,12 +27,14 @@ interface EditHelloDialogProps {
 
 const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogProps) => {
   const [name, setName] = useState("");
+  const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (log) {
       setName(log.name || "");
+      setLocation(log.location || "");
       setNotes(log.notes || "");
     }
   }, [log]);
@@ -43,6 +46,7 @@ const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogPro
     setIsSubmitting(true);
     const result = await onSave(log.id, {
       name: name || null,
+      location: location || null,
       notes: notes || null
     });
 
@@ -62,7 +66,7 @@ const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogPro
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-name">Name (optional)</Label>
+            <Label htmlFor="edit-name">Name</Label>
             <Input
               id="edit-name"
               placeholder="Who did you say hello to?"
@@ -73,7 +77,18 @@ const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-notes">Notes (optional)</Label>
+            <Label htmlFor="edit-location">Where you met</Label>
+            <Input
+              id="edit-location"
+              placeholder="Coffee shop, gym, park..."
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-notes">Notes</Label>
             <Textarea
               id="edit-notes"
               placeholder="Any details you want to remember..."

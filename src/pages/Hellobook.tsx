@@ -90,6 +90,7 @@ const Hellobook = () => {
 
   const handleSaveEdit = async (id: string, updates: {
     name?: string | null;
+    location?: string | null;
     notes?: string | null;
     rating?: 'positive' | 'neutral' | 'negative' | null;
     difficulty_rating?: number | null;
