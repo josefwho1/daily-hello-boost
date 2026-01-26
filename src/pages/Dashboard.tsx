@@ -53,6 +53,7 @@ const getWeekStartKeyInOffset = (date: Date, offset: string) => {
 };
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { progress: cloudProgress, loading: progressLoading, updateProgress: updateCloudProgress, refetch } = useUserProgress();
   const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, getLogsTodayCount } = useHelloLogs();
@@ -979,7 +980,6 @@ export default function Dashboard() {
 
   const mode = (progress.mode === 'connect' ? 'chill' : (progress.mode || 'daily')) as 'daily' | 'chill';
   const targetHellos = mode === 'chill' ? 5 : 7;
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background pb-24">
