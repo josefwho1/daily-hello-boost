@@ -18,11 +18,8 @@ const getRandomLoggingImage = () => {
   return remiLoggingImages[Math.floor(Math.random() * remiLoggingImages.length)];
 };
 
-// Includes regular types + onboarding challenge titles + First Hello initiation types for tracking completion
-export type HelloType = 'regular_hello' | 'todays_hello' | 'remis_challenge' | 
-  'First Hello' | 'Well Wishes' | 'Observation' | 'Nice Shoes' | 
-  'How Are You?' | 'Name to the Face' | 'Getting Personal' |
-  'Greeting' | 'Compliment' | 'Question' | 'Get a Name';
+// hello_type is deprecated - all hellos are now treated the same
+// The only distinction is whether the name field is filled or blank
 
 interface LogHelloScreenProps {
   onBack: () => void;
@@ -34,7 +31,6 @@ interface LogHelloScreenProps {
     no_name_flag?: boolean;
   }) => Promise<void>;
   challengeTitle?: string | null;
-  helloType?: HelloType;
   autoStartRecording?: boolean;
 }
 
@@ -42,7 +38,6 @@ export const LogHelloScreen = ({
   onBack, 
   onLog, 
   challengeTitle,
-  helloType = 'regular_hello',
   autoStartRecording = false
 }: LogHelloScreenProps) => {
   const [name, setName] = useState("");

@@ -6,7 +6,7 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
-import { LogHelloScreen, HelloType } from "@/components/LogHelloScreen";
+import { LogHelloScreen } from "@/components/LogHelloScreen";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
 import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
@@ -110,7 +110,6 @@ export default function Dashboard() {
     const result = await addGuestLog({
       name: data.name || null,
       notes: data.notes || null,
-      hello_type: data.hello_type || null,
       rating: data.rating || null,
       difficulty_rating: data.difficulty_rating || null,
       timezone_offset: '+00:00',
@@ -121,7 +120,7 @@ export default function Dashboard() {
   const tzOffset = normalizeTimezoneOffset(timezoneOffset);
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
-  const [selectedHelloType, setSelectedHelloType] = useState<HelloType>('regular_hello');
+  const [selectedHelloType, setSelectedHelloType] = useState<string>('regular_hello');
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
   const [username, setUsername] = useState("");
   
@@ -243,30 +242,22 @@ export default function Dashboard() {
 
   const currentOnboardingDay = getOnboardingDay();
 
-  // Get completed onboarding challenges from logs (for 7-day-starter legacy mode)
-  const getCompletedOnboardingChallenges = () => {
-    if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return [];
-    
-    const weekLogs = logs.filter(log => {
-      const logDate = new Date(log.created_at);
-      const onboardingStart = new Date(progress.onboarding_week_start || new Date());
-      return logDate >= onboardingStart;
-    });
-
-    return weekLogs.map(log => log.hello_type).filter(Boolean);
-  };
-
-  const completedTypes = getCompletedOnboardingChallenges();
-  
-  // Count how many DAYS are completed (1 per day max) - for legacy 7-day-starter
+  // Get completed days from logs (for legacy 7-day-starter mode)
+  // Since hello_type is removed, we just count unique days with hellos
   const getCompletedDaysCount = () => {
-    let count = 0;
-    for (let i = 0; i < onboardingChallenges.length; i++) {
-      if (completedTypes.includes(onboardingChallenges[i].title)) {
-        count++;
+    if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return 0;
+    
+    const onboardingStart = new Date(progress.onboarding_week_start || new Date());
+    const uniqueDays = new Set<string>();
+    
+    logs.forEach(log => {
+      const logDate = new Date(log.created_at);
+      if (logDate >= onboardingStart) {
+        uniqueDays.add(logDate.toDateString());
       }
-    }
-    return count;
+    });
+    
+    return Math.min(uniqueDays.size, 7);
   };
 
   const completedDaysCount = getCompletedDaysCount();
@@ -468,8 +459,7 @@ export default function Dashboard() {
     const isFirstHelloToday = !progress?.last_completed_date || progress.last_completed_date !== today;
 
     const result = await addLog({
-      ...data,
-      hello_type: selectedHelloType
+      ...data
     });
 
     if (result) {
@@ -813,7 +803,7 @@ export default function Dashboard() {
     }
   };
 
-  // Check if today's hello is completed
+  // Check if today's hello is completed - now just checks if any hello was logged today
   const isTodaysHelloComplete = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -821,13 +811,12 @@ export default function Dashboard() {
     return logs.some(log => {
       const logDate = new Date(log.created_at);
       logDate.setHours(0, 0, 0, 0);
-      return logDate.getTime() === today.getTime() && log.hello_type === 'todays_hello';
+      return logDate.getTime() === today.getTime();
     });
   };
 
   // Check if weekly challenge is completed this week
-  // IMPORTANT: Use stored progress fields first (they're date-only strings in the user's timezone),
-  // because logs-based calculations can be stale during auth transitions.
+  // Now uses stored progress field only (since hello_type is removed)
   const isWeeklyChallengeComplete = () => {
     if (!progress) return false;
 
@@ -843,19 +832,7 @@ export default function Dashboard() {
     // Primary source of truth - compare date strings
     const lastChallengeDate = progress.last_weekly_challenge_date;
     
-    // Debug log to help diagnose the issue
-    console.log('[WeeklyChallenge] weekStartStr:', weekStartStr, 'lastChallengeDate:', lastChallengeDate, 'comparison:', lastChallengeDate && lastChallengeDate >= weekStartStr);
-
-    if (lastChallengeDate) {
-      return lastChallengeDate >= weekStartStr;
-    }
-
-    // Fallback for older users/data (no last_weekly_challenge_date set)
-    return logs.some((log) => {
-      if (log.hello_type !== "remis_challenge") return false;
-      const logDateInTz = formatInTimeZone(new Date(log.created_at), tzOffset, "yyyy-MM-dd");
-      return logDateInTz >= weekStartStr;
-    });
+    return !!(lastChallengeDate && lastChallengeDate >= weekStartStr);
   };
 
   const todaysHello = getTodaysHello();
@@ -892,7 +869,6 @@ export default function Dashboard() {
         }}
         onLog={handleLogHello}
         challengeTitle={selectedChallenge}
-        helloType={selectedHelloType}
         autoStartRecording={autoStartRecording}
       />
     );
@@ -993,7 +969,7 @@ export default function Dashboard() {
         username={username}
         isFirstHelloEver={logs.length === 1}
         isPerfectWeek={(progress?.daily_streak || 0) === 7 && selectedDayNumber === 7}
-        totalChallengesCompleted={getCompletedOnboardingChallenges().length + 1}
+        totalChallengesCompleted={getCompletedDaysCount() + 1}
       />
 
       <FirstOrbGiftDialog

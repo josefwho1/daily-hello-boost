@@ -310,7 +310,7 @@ async function syncGuestDataToCloud(userId: string) {
       user_id: userId,
       name: log.name,
       notes: log.notes,
-      hello_type: log.hello_type,
+      location: (log as any).location,
       rating: log.rating,
       difficulty_rating: log.difficulty_rating,
       timezone_offset: log.timezone_offset,

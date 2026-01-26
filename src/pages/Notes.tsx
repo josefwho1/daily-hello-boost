@@ -90,11 +90,9 @@ const Notes = () => {
     return config[rating];
   };
 
-  const getHelloTypeTag = (helloType: string | null) => {
-    if (!helloType) return { label: "Standard Hello", color: "bg-muted text-muted-foreground" };
-    if (helloType === "Weekly Challenge") return { label: "Weekly Challenge", color: "bg-primary/10 text-primary border-primary/20" };
-    // If it matches one of the 7 onboarding challenges
-    return { label: "Intro Series", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" };
+  // hello_type is deprecated - all hellos are now "Standard Hello"
+  const getHelloTypeTag = () => {
+    return { label: "Hello", color: "bg-muted text-muted-foreground" };
   };
 
   if (loading || logsLoading || helloLogsLoading) {
@@ -125,7 +123,7 @@ const Notes = () => {
               // Hello Log Entry
               if (entry.type === 'hello') {
                 const ratingDisplay = getRatingDisplay(entry.rating);
-                const typeTag = getHelloTypeTag(entry.hello_type);
+                const typeTag = getHelloTypeTag();
                 return (
                   <Card key={entry.id} className="p-6">
                     <div className="flex items-start justify-between mb-3">

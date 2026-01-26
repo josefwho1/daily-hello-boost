@@ -38,7 +38,7 @@ export interface GuestHelloLog {
   user_id: string;
   name: string | null;
   notes: string | null;
-  hello_type: string | null;
+  location?: string | null;
   rating: 'positive' | 'neutral' | 'negative' | null;
   difficulty_rating: number | null;
   created_at: string;
@@ -220,7 +220,7 @@ export const useGuestMode = (): UseGuestModeReturn => {
           user_id: user.id,
           name: log.name,
           notes: log.notes,
-          hello_type: log.hello_type,
+          location: log.location,
           rating: log.rating,
           difficulty_rating: log.difficulty_rating,
           timezone_offset: log.timezone_offset,

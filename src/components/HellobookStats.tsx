@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Trophy, Users, Calendar, Star } from "lucide-react";
+import { Users, Calendar, Star } from "lucide-react";
 
 interface HelloLog {
   id: string;
   name: string | null;
   notes: string | null;
-  hello_type: string | null;
+  location?: string | null;
   created_at: string;
   timezone_offset?: string | null;
 }
@@ -30,10 +30,6 @@ export const HellobookStats = ({ logs, timezoneOffset }: HellobookStatsProps) =>
     });
     const namesRemembered = namesSet.size;
     
-    // Count by type
-    const todaysHelloCount = logs.filter(log => log.hello_type === 'todays_hello').length;
-    const remisWeeklyCount = logs.filter(log => log.hello_type === 'remis_challenge').length;
-    
     // Hello of the Day - random log with both name AND notes
     const logsWithNameAndNotes = logs.filter(log => 
       log.name && log.name.trim() && log.notes && log.notes.trim()
@@ -50,8 +46,6 @@ export const HellobookStats = ({ logs, timezoneOffset }: HellobookStatsProps) =>
     return {
       totalHellos,
       namesRemembered,
-      todaysHelloCount,
-      remisWeeklyCount,
       helloOfTheDay
     };
   }, [logs, timezoneOffset]);
@@ -61,7 +55,7 @@ export const HellobookStats = ({ logs, timezoneOffset }: HellobookStatsProps) =>
   return (
     <div className="space-y-3 mb-4">
       {/* Compact Stats Row */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <Card className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
           <div className="flex flex-col items-center text-center">
             <Calendar className="w-3.5 h-3.5 text-primary mb-0.5" />
@@ -75,22 +69,6 @@ export const HellobookStats = ({ logs, timezoneOffset }: HellobookStatsProps) =>
             <Users className="w-3.5 h-3.5 text-emerald-600 mb-0.5" />
             <p className="text-lg font-bold text-foreground leading-none">{stats.namesRemembered}</p>
             <span className="text-[10px] text-muted-foreground">Names</span>
-          </div>
-        </Card>
-        
-        <Card className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-          <div className="flex flex-col items-center text-center">
-            <Sparkles className="w-3.5 h-3.5 text-primary mb-0.5" />
-            <p className="text-lg font-bold text-foreground leading-none">{stats.todaysHelloCount}</p>
-            <span className="text-[10px] text-muted-foreground">Daily</span>
-          </div>
-        </Card>
-        
-        <Card className="p-2 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
-          <div className="flex flex-col items-center text-center">
-            <Trophy className="w-3.5 h-3.5 text-amber-600 mb-0.5" />
-            <p className="text-lg font-bold text-foreground leading-none">{stats.remisWeeklyCount}</p>
-            <span className="text-[10px] text-muted-foreground">Weekly</span>
           </div>
         </Card>
       </div>
