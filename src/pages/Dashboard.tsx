@@ -1072,9 +1072,7 @@ export default function Dashboard() {
             {/* Memory - Featured memory from user's history */}
             <HelloOfTheDay logs={logs} />
 
-            {/* Today's Hello - Daily inspiration */}
-            <DailySuggestionCard />
-
+            {/* Primary CTA - Log a Hello */}
             <SaveHelloButton
               onClick={() => {
                 setSelectedChallenge(null);
@@ -1089,6 +1087,9 @@ export default function Dashboard() {
                 setShowLogDialog(true);
               }}
             />
+
+            {/* Today's Hello - Daily inspiration */}
+            <DailySuggestionCard />
 
 
             {/* Recent Hellos Section */}
