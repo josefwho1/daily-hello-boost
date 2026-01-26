@@ -166,7 +166,6 @@ export default function Onboarding() {
       name: connectionName.trim(),
       location: connectionLocation.trim() || null,
       notes: connectionNotes.trim() || null,
-      hello_type: 'Greeting',
       timezone_offset: detectedOffset,
     });
     if (helloError) throw helloError;

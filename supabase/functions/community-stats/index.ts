@@ -150,21 +150,19 @@ Deno.serve(async (req) => {
       .gte('created_at', todayStart)
       .lt('created_at', todayEnd);
 
-    // Users who completed today's hello (hello_type = 'todays_hello')
+    // Count unique users who logged hellos today (any hello counts)
     const { data: todayHelloUsers } = await supabase
       .from('hello_logs')
       .select('user_id')
-      .eq('hello_type', 'todays_hello')
       .gte('created_at', todayStart)
       .lt('created_at', todayEnd);
     
     const uniqueTodayHelloUsers = new Set(todayHelloUsers?.map(u => u.user_id) || []).size;
 
-    // Weekly challenge completions this week (hello_type = 'remis_challenge')
+    // Count unique users who logged hellos this week
     const { data: weeklyCompletionUsers } = await supabase
       .from('hello_logs')
       .select('user_id')
-      .eq('hello_type', 'remis_challenge')
       .gte('created_at', weekStartStr);
     
     const uniqueWeeklyCompletions = new Set(weeklyCompletionUsers?.map(u => u.user_id) || []).size;

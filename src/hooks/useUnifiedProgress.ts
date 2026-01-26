@@ -48,7 +48,7 @@ export interface UnifiedHelloLog {
   id: string;
   name: string | null;
   notes: string | null;
-  hello_type: string | null;
+  location?: string | null;
   rating: 'positive' | 'neutral' | 'negative' | null;
   difficulty_rating: number | null;
   created_at: string;
@@ -172,7 +172,7 @@ export const useUnifiedProgress = () => {
   const addLog = useCallback(async (log: {
     name?: string;
     notes?: string;
-    hello_type?: string;
+    location?: string;
     rating?: 'positive' | 'neutral' | 'negative';
     difficulty_rating?: number;
   }) => {
@@ -193,7 +193,7 @@ export const useUnifiedProgress = () => {
             user_id: user.id,
             name: log.name || null,
             notes: log.notes || null,
-            hello_type: log.hello_type || null,
+            location: log.location || null,
             rating: log.rating || null,
             difficulty_rating: log.difficulty_rating || null,
             timezone_offset: timezoneOffset
@@ -214,7 +214,7 @@ export const useUnifiedProgress = () => {
       return await addGuestLog({
         name: log.name || null,
         notes: log.notes || null,
-        hello_type: log.hello_type || null,
+        location: log.location || null,
         rating: log.rating || null,
         difficulty_rating: log.difficulty_rating || null,
         timezone_offset: timezoneOffset

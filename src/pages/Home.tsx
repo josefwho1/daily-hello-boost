@@ -246,13 +246,11 @@ const Home = () => {
     return (
       <LogHelloScreen
         onBack={() => setShowLogHelloDialog(false)}
-        helloType="regular_hello"
         onLog={async (data) => {
           await addHelloLog({
             name: data.name,
             notes: data.notes,
-            rating: data.rating,
-            hello_type: 'regular_hello'
+            rating: data.rating
           });
           toast.success("Hello logged!");
         }}

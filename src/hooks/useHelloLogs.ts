@@ -12,7 +12,6 @@ export interface HelloLog {
   name: string | null;
   location: string | null;
   notes: string | null;
-  hello_type: string | null;
   rating: 'positive' | 'neutral' | 'negative' | null;
   difficulty_rating: number | null;
   no_name_flag: boolean;
@@ -35,7 +34,6 @@ export const useHelloLogs = () => {
         name: log.name || null,
         location: (log as any).location || null,
         notes: log.notes || null,
-        hello_type: log.hello_type || null,
         rating: (log.rating as 'positive' | 'neutral' | 'negative' | null) || null,
         difficulty_rating: log.difficulty_rating || null,
         no_name_flag: (log as any).no_name_flag || false,
@@ -85,7 +83,6 @@ export const useHelloLogs = () => {
     name?: string;
     location?: string;
     notes?: string;
-    hello_type?: string;
     rating?: 'positive' | 'neutral' | 'negative';
     difficulty_rating?: number;
     no_name_flag?: boolean;
@@ -109,7 +106,6 @@ export const useHelloLogs = () => {
           name: log.name || null,
           location: log.location || null,
           notes: log.notes || null,
-          hello_type: log.hello_type || null,
           rating: log.rating || null,
           difficulty_rating: log.difficulty_rating || null,
           no_name_flag: log.no_name_flag || false,
