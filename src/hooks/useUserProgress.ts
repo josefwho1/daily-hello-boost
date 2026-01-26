@@ -37,7 +37,7 @@ export interface UserProgress {
   onboarding_email_opt_in?: boolean;
   daily_email_opt_in?: boolean;
   chill_email_opt_in?: boolean;
-  onboarding_completed_at?: string;
+  onboarding_completed_at?: string | null;
   last_hello_at?: string;
   daily_path_selected_at?: string;
   chill_path_selected_at?: string;
@@ -77,7 +77,35 @@ export const useUserProgress = () => {
       if (error) throw error;
 
       if (data) {
-        setProgress(data);
+        const legacyCompleted = !data.has_completed_onboarding && Boolean((data as any).onboarding_completed_at);
+        const legacyMode = data.mode === 'first_hellos';
+
+        const normalized: UserProgress = {
+          ...(data as any),
+          has_completed_onboarding: Boolean(data.has_completed_onboarding) || legacyCompleted,
+          mode: legacyMode ? 'daily' : data.mode,
+          // If legacy onboarding is completed, ensure we don't keep onboarding flags around.
+          is_onboarding_week: legacyCompleted ? false : data.is_onboarding_week,
+          current_phase: legacyCompleted ? 'active' : data.current_phase,
+        };
+
+        setProgress(normalized);
+
+        // Best-effort cleanup in the background so guards stop looping.
+        if ((legacyCompleted || legacyMode) && user) {
+          supabase
+            .from('user_progress')
+            .update({
+              has_completed_onboarding: true,
+              is_onboarding_week: false,
+              current_phase: legacyCompleted ? 'active' : data.current_phase,
+              mode: 'daily',
+            })
+            .eq('user_id', user.id)
+            .then(() => {
+              // no-op
+            });
+        }
       } else {
         // No progress found - don't create default progress here
         // Let the routing redirect to onboarding which will create proper progress

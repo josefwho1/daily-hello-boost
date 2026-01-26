@@ -174,18 +174,18 @@ export default function AuthCallback() {
         .maybeSingle();
       
       if (!progress) {
-        // Use browser-detected timezone for date calculation
-        const { detectBrowserTimezoneOffset, getDayKeyInOffset } = await import('@/lib/timezone');
-        const detectedOffset = detectBrowserTimezoneOffset();
-        const today = getDayKeyInOffset(new Date(), detectedOffset);
-        
+        // Create minimal progress for newly signed-in users.
+        // We no longer use legacy "first_hellos" onboarding; send users straight to Home.
         await supabase.from('user_progress').insert({
           user_id: userId,
           current_streak: 0,
           current_day: 1,
-          is_onboarding_week: true,
-          onboarding_week_start: today,
-          mode: 'first_hellos',
+          is_onboarding_week: false,
+          has_completed_onboarding: true,
+          current_phase: 'active',
+          mode: 'daily',
+          target_hellos_per_week: 7,
+          selected_pack_id: 'starter-pack',
         });
       }
 
@@ -292,7 +292,8 @@ async function syncGuestDataToCloud(userId: string) {
         names_today_count: guestProgress.names_today_count,
         notes_today_count: guestProgress.notes_today_count,
         last_xp_reset_date: guestProgress.last_xp_reset_date,
-        mode: guestProgress.mode === '7-day-starter' ? 'first_hellos' : guestProgress.mode,
+        // Single mode now
+        mode: 'daily',
         why_here: guestProgress.why_here,
         selected_pack_id: guestProgress.selected_pack_id,
         comfort_rating: guestProgress.comfort_rating,
