@@ -10,10 +10,12 @@ export interface HelloLog {
   id: string;
   user_id: string;
   name: string | null;
+  location: string | null;
   notes: string | null;
   hello_type: string | null;
   rating: 'positive' | 'neutral' | 'negative' | null;
   difficulty_rating: number | null;
+  no_name_flag: boolean;
   created_at: string;
   timezone_offset: string;
 }
@@ -31,10 +33,12 @@ export const useHelloLogs = () => {
         id: log.id,
         user_id: 'guest',
         name: log.name || null,
+        location: (log as any).location || null,
         notes: log.notes || null,
         hello_type: log.hello_type || null,
         rating: (log.rating as 'positive' | 'neutral' | 'negative' | null) || null,
         difficulty_rating: log.difficulty_rating || null,
+        no_name_flag: (log as any).no_name_flag || false,
         created_at: log.created_at,
         timezone_offset: log.timezone_offset || '+00:00'
       }));
@@ -79,10 +83,12 @@ export const useHelloLogs = () => {
 
   const addLog = async (log: {
     name?: string;
+    location?: string;
     notes?: string;
     hello_type?: string;
     rating?: 'positive' | 'neutral' | 'negative';
     difficulty_rating?: number;
+    no_name_flag?: boolean;
   }) => {
     if (!user) return null;
 
@@ -101,10 +107,12 @@ export const useHelloLogs = () => {
         .insert({
           user_id: user.id,
           name: log.name || null,
+          location: log.location || null,
           notes: log.notes || null,
           hello_type: log.hello_type || null,
           rating: log.rating || null,
           difficulty_rating: log.difficulty_rating || null,
+          no_name_flag: log.no_name_flag || false,
           timezone_offset: timezoneOffset
         })
         .select()

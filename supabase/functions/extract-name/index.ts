@@ -14,7 +14,7 @@ serve(async (req) => {
     const { text } = await req.json();
     
     if (!text) {
-      return new Response(JSON.stringify({ name: "", notes: "" }), {
+      return new Response(JSON.stringify({ name: "", location: "", notes: "" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -35,29 +35,32 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a helpful assistant that extracts person names from transcribed speech about social interactions.
+            content: `You are a helpful assistant that extracts structured information from transcribed speech about social interactions.
 
 Given a transcription of someone describing meeting or greeting another person, extract:
 1. The name of the person they met (if mentioned)
-2. The remaining notes/description
+2. The location/place where they met (if mentioned)
+3. Any remaining notes/description
 
 Rules:
 - Only extract actual person names, not pronouns or generic references like "the barista", "some guy", "a woman"
 - If no specific name is mentioned, return an empty string for name
-- Keep the notes natural and include all relevant details
-- Don't modify the content, just separate the name from the description`
+- For location, extract places like "coffee shop", "gym", "work", "park", "on the train", etc.
+- If no location is mentioned, return an empty string for location
+- Keep the notes natural and include all relevant details not captured by name or location
+- Don't duplicate information - if something is captured in name or location, don't repeat it in notes`
           },
           {
             role: "user",
-            content: `Extract the person's name and notes from this transcription: "${text}"`
+            content: `Extract the person's name, location, and notes from this transcription: "${text}"`
           }
         ],
         tools: [
           {
             type: "function",
             function: {
-              name: "extract_name_and_notes",
-              description: "Extract a person's name and remaining notes from transcribed text",
+              name: "extract_interaction_details",
+              description: "Extract a person's name, meeting location, and remaining notes from transcribed text",
               parameters: {
                 type: "object",
                 properties: {
@@ -65,18 +68,22 @@ Rules:
                     type: "string",
                     description: "The person's name if explicitly mentioned, or empty string if not"
                   },
+                  location: {
+                    type: "string",
+                    description: "Where they met (e.g., 'coffee shop', 'gym', 'work'), or empty string if not mentioned"
+                  },
                   notes: {
                     type: "string",
                     description: "The remaining description/notes about the interaction"
                   }
                 },
-                required: ["name", "notes"],
+                required: ["name", "location", "notes"],
                 additionalProperties: false
               }
             }
           }
         ],
-        tool_choice: { type: "function", function: { name: "extract_name_and_notes" } }
+        tool_choice: { type: "function", function: { name: "extract_interaction_details" } }
       }),
     });
 
@@ -90,7 +97,7 @@ Rules:
       const errorText = await response.text();
       console.error("AI Gateway error:", response.status, errorText);
       // Fallback: return text as notes
-      return new Response(JSON.stringify({ name: "", notes: text }), {
+      return new Response(JSON.stringify({ name: "", location: "", notes: text }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -106,7 +113,7 @@ Rules:
     }
 
     // Fallback
-    return new Response(JSON.stringify({ name: "", notes: text }), {
+    return new Response(JSON.stringify({ name: "", location: "", notes: text }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

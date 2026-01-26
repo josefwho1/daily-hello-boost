@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Mic, Square, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import remiLogging1 from "@/assets/remi-logging-1.webp";
@@ -27,8 +28,10 @@ interface LogHelloScreenProps {
   onBack: () => void;
   onLog: (data: { 
     name?: string; 
+    location?: string;
     notes?: string; 
     rating?: 'positive' | 'neutral' | 'negative';
+    no_name_flag?: boolean;
   }) => Promise<void>;
   challengeTitle?: string | null;
   helloType?: HelloType;
@@ -43,8 +46,9 @@ export const LogHelloScreen = ({
   autoStartRecording = false
 }: LogHelloScreenProps) => {
   const [name, setName] = useState("");
+  const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
-  const [rating, setRating] = useState<'positive' | 'neutral' | 'negative' | ''>("");
+  const [noNameFlag, setNoNameFlag] = useState(false);
   const [isLogging, setIsLogging] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -168,7 +172,7 @@ export const LogHelloScreen = ({
         return;
       }
 
-      // Step 2: Extract name using AI
+      // Step 2: Extract name, location, and notes using AI
       const extractResponse = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-name`,
         {
@@ -193,6 +197,10 @@ export const LogHelloScreen = ({
       // Update fields
       if (extracted.name && !name) {
         setName(extracted.name);
+        setNoNameFlag(false);
+      }
+      if (extracted.location && !location) {
+        setLocation(extracted.location);
       }
       if (extracted.notes) {
         setNotes((prev) => (prev ? `${prev}\n${extracted.notes}` : extracted.notes));
@@ -207,17 +215,27 @@ export const LogHelloScreen = ({
     }
   };
 
+  // Validation: either name or noNameFlag must be set
+  const canSubmit = (name.trim() !== "" || noNameFlag) && !isLogging && !isRecording && !isProcessing;
+
   const handleSubmit = async () => {
+    if (!name.trim() && !noNameFlag) {
+      toast.error("Please enter a name or check 'Didn't get name'");
+      return;
+    }
+
     setIsLogging(true);
     try {
       await onLog({
         name: name || undefined,
+        location: location || undefined,
         notes: notes || undefined,
-        rating: rating || undefined,
+        no_name_flag: noNameFlag,
       });
       setName("");
+      setLocation("");
       setNotes("");
-      setRating("");
+      setNoNameFlag(false);
       onBack();
     } finally {
       setIsLogging(false);
@@ -237,15 +255,20 @@ export const LogHelloScreen = ({
       
       {/* Content - scrollable */}
       <div className="flex-1 p-6 space-y-5 overflow-y-auto">
+        {/* Name Field */}
         <div className="space-y-2">
-          <Label htmlFor="name">Name (optional)</Label>
+          <Label htmlFor="name">Name</Label>
           <div className="flex gap-2">
             <Input
               id="name"
-              placeholder="Did you catch their name?"
+              placeholder="What's their name?"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (e.target.value.trim()) setNoNameFlag(false);
+              }}
               className="text-base flex-1"
+              disabled={noNameFlag}
             />
             <Button
               type="button"
@@ -269,13 +292,44 @@ export const LogHelloScreen = ({
               🎙️ Recording... Tap stop when done
             </p>
           )}
+          
+          {/* Didn't get name checkbox */}
+          <div className="flex items-center space-x-2 pt-1">
+            <Checkbox 
+              id="no-name" 
+              checked={noNameFlag}
+              onCheckedChange={(checked) => {
+                setNoNameFlag(checked === true);
+                if (checked) setName("");
+              }}
+            />
+            <label 
+              htmlFor="no-name" 
+              className="text-sm text-muted-foreground cursor-pointer"
+            >
+              Didn't get name
+            </label>
+          </div>
         </div>
 
+        {/* Location Field */}
         <div className="space-y-2">
-          <Label htmlFor="notes">Notes (optional)</Label>
+          <Label htmlFor="location">Where you met</Label>
+          <Input
+            id="location"
+            placeholder="Coffee shop, gym, work..."
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="text-base"
+          />
+        </div>
+
+        {/* Notes Field */}
+        <div className="space-y-2">
+          <Label htmlFor="notes">Notes</Label>
           <Textarea
             id="notes"
-            placeholder="Describe who you met, location, how it felt or any details you might want to remember :)"
+            placeholder="What do you want to remember about them?"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="min-h-28 text-base"
@@ -285,7 +339,7 @@ export const LogHelloScreen = ({
         <Button 
           onClick={handleSubmit} 
           className="w-full h-12 text-lg mt-4" 
-          disabled={isLogging || isRecording || isProcessing}
+          disabled={!canSubmit}
         >
           {isLogging ? "Logging..." : "Log Hello! 👋"}
         </Button>
