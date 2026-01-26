@@ -308,7 +308,7 @@ export default function Onboarding() {
               Continue
             </Button>
             <button 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/signin')}
               className="text-sm text-muted-foreground hover:text-primary underline"
             >
               I already have an account
