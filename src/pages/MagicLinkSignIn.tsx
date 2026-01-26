@@ -108,7 +108,7 @@ export default function MagicLinkSignIn() {
           if (insertError) throw insertError;
         } else {
           // Normalize legacy rows so they don't trigger onboarding loops.
-          await supabase
+          const { error: updateError } = await supabase
             .from('user_progress')
             .update({
               has_completed_onboarding: true,
@@ -117,10 +117,15 @@ export default function MagicLinkSignIn() {
               mode: 'daily',
             })
             .eq('user_id', userId);
+          if (updateError) {
+            console.error('Failed to normalize progress:', updateError);
+          }
         }
 
         toast.success('Signed in successfully!');
-        navigate('/', { replace: true });
+        // Use hard navigation to ensure stale React state is cleared
+        window.location.replace('/');
+        return;
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
