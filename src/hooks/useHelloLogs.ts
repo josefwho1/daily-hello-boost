@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useGuestMode } from './useGuestMode';
 import { formatInTimeZone } from 'date-fns-tz';
 import { startOfWeek, parseISO } from 'date-fns';
 import { normalizeTimezoneOffset } from '@/lib/timezone';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export interface HelloLog {
   id: string;
@@ -22,47 +22,33 @@ export interface HelloLog {
 export const useHelloLogs = () => {
   const { user } = useAuth();
   const { isGuest, guestLogs, updateLog: updateGuestLog } = useGuestMode();
-  const [logs, setLogs] = useState<HelloLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    // If guest, use guest logs from IndexedDB
-    if (isGuest && !user) {
-      const formattedGuestLogs: HelloLog[] = guestLogs.map(log => ({
-        id: log.id,
-        user_id: 'guest',
-        name: log.name || null,
-        location: (log as any).location || null,
-        notes: log.notes || null,
-        rating: (log.rating as 'positive' | 'neutral' | 'negative' | null) || null,
-        difficulty_rating: log.difficulty_rating || null,
-        no_name_flag: (log as any).no_name_flag || false,
-        created_at: log.created_at,
-        timezone_offset: log.timezone_offset || '+00:00'
-      }));
-      setLogs(formattedGuestLogs);
-      setLoading(false);
-      return;
-    }
+  // Use React Query for caching - prevents refetch on tab switch
+  const { data: logs = [], isLoading: loading, refetch } = useQuery({
+    queryKey: ['hello-logs', user?.id, isGuest],
+    queryFn: async () => {
+      // If guest, use guest logs from IndexedDB
+      if (isGuest && !user) {
+        const formattedGuestLogs: HelloLog[] = guestLogs.map(log => ({
+          id: log.id,
+          user_id: 'guest',
+          name: log.name || null,
+          location: (log as any).location || null,
+          notes: log.notes || null,
+          rating: (log.rating as 'positive' | 'neutral' | 'negative' | null) || null,
+          difficulty_rating: log.difficulty_rating || null,
+          no_name_flag: (log as any).no_name_flag || false,
+          created_at: log.created_at,
+          timezone_offset: log.timezone_offset || '+00:00'
+        }));
+        return formattedGuestLogs;
+      }
 
-    if (!user) {
-      setLogs([]);
-      setLoading(false);
-      return;
-    }
+      if (!user) {
+        return [];
+      }
 
-    setLoading(true);
-    fetchLogs();
-  }, [user, isGuest, guestLogs]);
-
-  const fetchLogs = async () => {
-    if (!user) {
-      setLogs([]);
-      setLoading(false);
-      return;
-    }
-
-    try {
       const { data, error } = await supabase
         .from('hello_logs')
         .select('*')
@@ -70,14 +56,15 @@ export const useHelloLogs = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setLogs((data as HelloLog[]) || []);
-    } catch (error) {
-      console.error('Error fetching hello logs:', error);
-      setLogs([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return (data as HelloLog[]) || [];
+    },
+    // Keep data fresh for 5 minutes - prevents refetch on every tab switch
+    staleTime: 5 * 60 * 1000,
+    // Keep cached data for 10 minutes even when component unmounts
+    gcTime: 10 * 60 * 1000,
+    // Enable when we have a user or guest logs
+    enabled: !!(user || (isGuest && guestLogs)),
+  });
 
   const addLog = async (log: {
     name?: string;
@@ -116,7 +103,10 @@ export const useHelloLogs = () => {
 
       if (error) throw error;
       
-      setLogs(prev => [data as HelloLog, ...prev]);
+      // Optimistically update cache
+      queryClient.setQueryData(['hello-logs', user.id, isGuest], (old: HelloLog[] = []) => 
+        [data as HelloLog, ...old]
+      );
       return data;
     } catch (error) {
       console.error('Error adding hello log:', error);
@@ -135,7 +125,8 @@ export const useHelloLogs = () => {
     if (isGuest && !user) {
       try {
         await updateGuestLog(id, updates);
-        setLogs(prev => prev.map(log => log.id === id ? { ...log, ...updates } : log));
+        // Invalidate to refetch guest logs
+        queryClient.invalidateQueries({ queryKey: ['hello-logs'] });
         return { id, ...updates };
       } catch (error) {
         console.error('Error updating guest hello log:', error);
@@ -162,7 +153,10 @@ export const useHelloLogs = () => {
 
       if (error) throw error;
       
-      setLogs(prev => prev.map(log => log.id === id ? data as HelloLog : log));
+      // Optimistically update cache
+      queryClient.setQueryData(['hello-logs', user.id, isGuest], (old: HelloLog[] = []) =>
+        old.map(log => log.id === id ? data as HelloLog : log)
+      );
       return data;
     } catch (error) {
       console.error('Error updating hello log:', error);
@@ -195,7 +189,7 @@ export const useHelloLogs = () => {
     loading,
     addLog,
     updateLog,
-    refetch: fetchLogs,
+    refetch,
     getLogsThisWeek,
     getLogsTodayCount,
   };
