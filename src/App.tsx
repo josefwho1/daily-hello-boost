@@ -138,8 +138,9 @@ const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/landing" element={<Landing />} />
-          <Route path="/auth" element={<AuthRedirect><Auth /></AuthRedirect>} />
-          <Route path="/signin" element={<AuthRedirect><MagicLinkSignIn /></AuthRedirect>} />
+          {/* Always allow access to sign-in (even if already signed in) to avoid redirect loops */}
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/signin" element={<MagicLinkSignIn />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route 
