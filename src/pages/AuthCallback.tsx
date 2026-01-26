@@ -187,6 +187,17 @@ export default function AuthCallback() {
           target_hellos_per_week: 7,
           selected_pack_id: 'starter-pack',
         });
+      } else {
+        // Normalize legacy rows so returning users don't get stuck in onboarding
+        await supabase
+          .from('user_progress')
+          .update({
+            has_completed_onboarding: true,
+            is_onboarding_week: false,
+            current_phase: 'active',
+            mode: 'daily',
+          })
+          .eq('user_id', userId);
       }
 
       // Send welcome email for new users
