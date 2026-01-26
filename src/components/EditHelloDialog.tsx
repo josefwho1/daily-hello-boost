@@ -23,6 +23,7 @@ interface EditHelloDialogProps {
     rating?: 'positive' | 'neutral' | 'negative' | null;
     difficulty_rating?: number | null;
   }) => Promise<any>;
+  onDelete?: (id: string) => Promise<void>;
 }
 
 const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogProps) => {
