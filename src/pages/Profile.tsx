@@ -13,11 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { XpProgressBar } from "@/components/XpProgressBar";
-import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
-import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { ProfilePictureSelector, getProfilePictureSrc } from "@/components/ProfilePictureSelector";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
-import { LogOut, Clock, Pencil, Check, X, Flame, Calendar, Route, Bell, Camera, Instagram, Globe, Mail, Smartphone, Share, ChevronDown, ChevronUp, Sparkles, Lock, Eye, EyeOff, AlertCircle, Trash2 } from "lucide-react";
+import { LogOut, Clock, Pencil, Check, X, Bell, Camera, Instagram, Globe, Mail, Smartphone, Share, ChevronDown, ChevronUp, Sparkles, Lock, Eye, EyeOff, AlertCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -53,10 +51,6 @@ const Profile = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState("");
   const [isSavingName, setIsSavingName] = useState(false);
-  const [showModeChangeDialog, setShowModeChangeDialog] = useState(false);
-  const [showDailyModeConfirm, setShowDailyModeConfirm] = useState(false);
-  const [showChillModeConfirm, setShowChillModeConfirm] = useState(false);
-  const [pendingMode, setPendingMode] = useState<string | null>(null);
   const [showProfilePictureSelector, setShowProfilePictureSelector] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [showInstallSteps, setShowInstallSteps] = useState(false);
@@ -151,29 +145,7 @@ const Profile = () => {
     timezoneOptions.push({ value, label });
   }
 
-  const modeOptions = [
-    { 
-      value: 'daily', 
-      label: 'Daily', 
-      description: '1 hello per day',
-      icon: Flame
-    },
-    { 
-      value: 'chill', 
-      label: 'Chill', 
-      description: '3 hellos per week',
-      icon: Calendar
-    },
-  ];
-
-  const getTargetFromMode = (mode: string) => {
-    switch (mode) {
-      case '7-day-starter': return 7;
-      case 'daily': return 7;
-      case 'chill': return 3;
-      default: return 3;
-    }
-  };
+  // Mode is always 'daily' now - no options needed
 
   const handleStartEditName = () => {
     setEditName(user?.user_metadata?.name || guestProgress?.username || '');
@@ -352,72 +324,7 @@ const Profile = () => {
     }
   };
 
-  const handleModeClick = (value: string) => {
-    // Don't show dialog if clicking the already-selected mode
-    if (value === currentMode) return;
-    
-    setPendingMode(value);
-    setShowModeChangeDialog(true);
-  };
-
-  const handleConfirmModeChange = async () => {
-    if (!pendingMode) return;
-    
-    try {
-      // Show mode-specific confirmation dialog
-      setShowModeChangeDialog(false);
-      if (pendingMode === 'daily') {
-        setShowDailyModeConfirm(true);
-      } else {
-        setShowChillModeConfirm(true);
-      }
-    } catch (error) {
-      console.error("Error updating mode:", error);
-      toast.error("Failed to update mode");
-      setShowModeChangeDialog(false);
-      setPendingMode(null);
-    }
-  };
-
-  const handleModeConfirmContinue = async () => {
-    if (!pendingMode) return;
-
-    try {
-      const updates = {
-        mode: pendingMode,
-        target_hellos_per_week: getTargetFromMode(pendingMode),
-        has_completed_onboarding: true,
-        is_onboarding_week: false,
-      };
-
-      if (user) {
-        await updateProgress(updates);
-      } else {
-        await updateGuestProgress({
-          ...updates,
-        });
-      }
-
-      toast.success(`🎉 You're now in ${pendingMode === 'daily' ? 'Daily' : 'Chill'} Mode!`);
-    } catch (error) {
-      console.error("Error updating mode:", error);
-      toast.error("Failed to update mode");
-    }
-
-    setShowDailyModeConfirm(false);
-    setShowChillModeConfirm(false);
-    setPendingMode(null);
-  };
-
-  const handleCancelModeChange = () => {
-    setShowModeChangeDialog(false);
-    setPendingMode(null);
-  };
-
-  // Determine current mode - use first_hellos as default for new users
-  const currentMode = (!progress?.has_completed_onboarding) 
-    ? 'first_hellos' 
-    : (progress?.mode === 'normal' ? 'chill' : (progress?.mode === 'connect' ? 'chill' : (progress?.mode || 'first_hellos')));
+  // Mode is now always 'daily' - no mode switching needed
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -526,54 +433,6 @@ const Profile = () => {
         </div>
 
 
-        {/* Mode - Only show after onboarding is complete */}
-        {progress?.has_completed_onboarding && (
-          <Card className="p-5 mb-4 rounded-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <Route className="text-primary w-5 h-5" />
-              <h3 className="font-semibold text-foreground">Mode</h3>
-            </div>
-            
-            <div className="space-y-2">
-              {modeOptions.map((mode) => {
-                const Icon = mode.icon;
-                const isSelected = currentMode === mode.value;
-                
-                return (
-                  <button
-                    key={mode.value}
-                    onClick={() => handleModeClick(mode.value)}
-                    className={cn(
-                      "w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left",
-                      isSelected 
-                        ? "border-primary bg-primary/10" 
-                        : "border-border hover:border-primary/50 bg-muted/30"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
-                      isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                    )}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0 flex items-center gap-2">
-                      <span className={cn(
-                        "font-medium",
-                        isSelected ? "text-primary" : "text-foreground"
-                      )}>
-                        {mode.label}
-                      </span>
-                      <span className="text-sm text-muted-foreground">• {mode.description}</span>
-                    </div>
-                    {isSelected && (
-                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </Card>
-        )}
 
         {/* Timezone */}
         <Card className="p-5 mb-4 rounded-2xl">
@@ -874,36 +733,6 @@ const Profile = () => {
         )}
       </div>
 
-      {/* Mode Change Confirmation Dialog */}
-      <Dialog open={showModeChangeDialog} onOpenChange={setShowModeChangeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change your mode?</DialogTitle>
-            <DialogDescription className="space-y-2">
-              <p>Switching your mode will affect how your progress is tracked (daily vs weekly).</p>
-              <p>You'll keep your stats and orbs don't worry.</p>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex gap-2 sm:gap-0">
-            <Button variant="outline" onClick={handleCancelModeChange}>
-              No
-            </Button>
-            <Button onClick={handleConfirmModeChange}>
-              Yes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <DailyModeSelectedDialog
-        open={showDailyModeConfirm}
-        onContinue={handleModeConfirmContinue}
-      />
-
-      <ChillModeSelectedDialog
-        open={showChillModeConfirm}
-        onContinue={handleModeConfirmContinue}
-      />
 
       <ProfilePictureSelector
         open={showProfilePictureSelector}

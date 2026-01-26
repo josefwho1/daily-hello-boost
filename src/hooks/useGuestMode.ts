@@ -178,13 +178,13 @@ export const useGuestMode = (): UseGuestModeReturn => {
         hide_from_leaderboard: false,
       }, { onConflict: 'id' });
 
-      // Create user_progress for anonymous user
+      // Create user_progress for anonymous user with mode='daily' (single mode now)
       await supabase.from('user_progress').upsert({
         user_id: userId,
         current_streak: 0,
         current_day: 1,
-        is_onboarding_week: true,
-        mode: 'first_hellos',
+        is_onboarding_week: false,
+        mode: 'daily',
         has_completed_onboarding: false,
         orbs: 0,
         has_received_first_orb: false,
