@@ -1069,7 +1069,13 @@ export default function Dashboard() {
           /* Main Dashboard - Connection-focused layout */
           <div className="space-y-10">
             
-            <SaveHelloButton 
+            {/* Today's Hello - Daily inspiration */}
+            <DailySuggestionCard
+              title={todaysHello.title}
+              description={todaysHello.description}
+            />
+
+            <SaveHelloButton
               onClick={() => {
                 setSelectedChallenge(null);
                 setSelectedHelloType('regular_hello');
