@@ -2,11 +2,42 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ChevronRight, Sparkles, Globe, Lightbulb, MessageCircle, Image } from "lucide-react";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
-import { fourTypesOfHello } from "@/data/firstHellos";
 import { wallpapers, type Wallpaper } from "@/data/wallpapers";
 import { WallpaperPreviewDialog } from "@/components/WallpaperPreviewDialog";
 import remiMascot from "@/assets/remi-waving.webp";
 import vaultIcon from "@/assets/vault-icon.webp";
+
+// Four types of hello for reference
+const fourTypesOfHello = [
+  {
+    id: 1,
+    title: "Greeting",
+    description: "A simple hello to acknowledge someone",
+    examples: ["Hello", "Hey", "Good morning"],
+    tip: "A smile makes all the difference"
+  },
+  {
+    id: 2,
+    title: "Observation",
+    description: "Comment on something you're both experiencing",
+    examples: ["Nice weather today", "Long line, hey?", "Love the vibe here"],
+    tip: "Great for waiting situations"
+  },
+  {
+    id: 3,
+    title: "Compliment",
+    description: "Give someone a genuine compliment",
+    examples: ["Love your jacket", "Nice shoes", "Cool shirt"],
+    tip: "Clothing or accessories work great"
+  },
+  {
+    id: 4,
+    title: "Question",
+    description: "Ask something to get to know them",
+    examples: ["How's your day going?", "Where are you from?", "What brings you here?"],
+    tip: "Open-ended questions lead to better conversations"
+  }
+];
 
 // Hello in 50 languages
 const helloLanguages = [

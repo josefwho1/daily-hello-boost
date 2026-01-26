@@ -63,7 +63,6 @@ const AppRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
   const { progress, loading: progressLoading } = useUserProgress();
   const { guestProgress, loading: guestLoading, isAnonymous } = useGuestMode();
 
@@ -89,18 +88,8 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // Users who haven't completed onboarding AND aren't in onboarding week 
-  // need to start/restart onboarding
-  if (!currentProgress.has_completed_onboarding && !currentProgress.is_onboarding_week) {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  // Users in first_hellos mode who haven't selected a final mode yet
-  // should stay in the app (Dashboard will show First Hellos challenges)
-  // But if they somehow have mode='first_hellos' with no onboarding context, redirect
-  if (currentProgress.mode === 'first_hellos' && 
-      !currentProgress.is_onboarding_week && 
-      !currentProgress.has_completed_onboarding) {
+  // Users who haven't completed onboarding need to complete it
+  if (!currentProgress.has_completed_onboarding) {
     return <Navigate to="/onboarding" replace />;
   }
 

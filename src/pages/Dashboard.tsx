@@ -7,13 +7,9 @@ import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { LogHelloScreen, HelloType } from "@/components/LogHelloScreen";
-import { FirstHelloCard } from "@/components/FirstHelloCard";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
 import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
-import { ModeSelectionScreen } from "@/components/ModeSelectionScreen";
-import { DailyModeSelectedDialog } from "@/components/DailyModeSelectedDialog";
-import { ChillModeSelectedDialog } from "@/components/ChillModeSelectedDialog";
 import { UseOrbDialog } from "@/components/UseOrbDialog";
 import { StreakSaverDialog, StreakSaverScenario } from "@/components/StreakSaverDialog";
 import { DailySuggestionCard } from "@/components/DailySuggestionCard";
@@ -32,9 +28,7 @@ import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationD
 import { DailyStreakCelebrationDialog } from "@/components/DailyStreakCelebrationDialog";
 import { LevelUpCelebrationDialog } from "@/components/LevelUpCelebrationDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
-import { FirstHelloInstructionScreen, FirstHelloPhase } from "@/components/FirstHelloInstructionScreen";
 import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
-import { firstHellos } from "@/data/firstHellos";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
@@ -43,7 +37,7 @@ import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 
-import { Sparkles } from "lucide-react";
+
 
 import { normalizeTimezoneOffset, getDayKeyInOffset, getDayKeyDifference, getYesterdayKeyInOffset } from "@/lib/timezone";
 
@@ -159,10 +153,8 @@ export default function Dashboard() {
   const [showHomeTutorial, setShowHomeTutorial] = useState(false);
   const [tutorialMode, setTutorialMode] = useState<'daily' | 'chill'>('daily');
   
-  // First Hello instruction screen states
-  const [showFirstHelloInstruction, setShowFirstHelloInstruction] = useState(false);
-  const [firstHelloPhase, setFirstHelloPhase] = useState<FirstHelloPhase>('observation_intro');
-  const [lastCompletedFirstHello, setLastCompletedFirstHello] = useState<string | null>(null);
+  
+  // Edit hello dialog states
   
   // Edit hello dialog states
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
@@ -280,30 +272,7 @@ export default function Dashboard() {
   const completedDaysCount = getCompletedDaysCount();
   const allOnboardingComplete = completedDaysCount >= 7;
 
-  // First Hellos mode - get completed first hellos from logs
-  const getCompletedFirstHellos = () => {
-    if (progress?.mode !== 'first_hellos' || progress?.has_completed_onboarding) return [];
-    return logs.map(log => log.hello_type).filter(Boolean);
-  };
-
-  const completedFirstHelloTypes = getCompletedFirstHellos();
-  
-  // Count completed first hellos
-  const getCompletedFirstHellosCount = () => {
-    let count = 0;
-    for (let i = 0; i < firstHellos.length; i++) {
-      if (completedFirstHelloTypes.includes(firstHellos[i].title)) {
-        count++;
-      }
-    }
-    return count;
-  };
-
-  const completedFirstHellosCount = getCompletedFirstHellosCount();
-  const allFirstHellosComplete = completedFirstHellosCount >= 5;
-
-  // Check if in First Hellos mode
-  const isFirstHellosMode = progress?.mode === 'first_hellos' && !progress?.has_completed_onboarding;
+  // isFirstHellosMode is no longer needed - always show main dashboard
 
   // Weekly reset logic - check for missed weekly goal (Chill Mode)
   // Use a ref to prevent the effect from running multiple times
@@ -644,27 +613,6 @@ export default function Dashboard() {
           // Days 2-7: show the normal celebration dialog
           setShowCelebration(true);
         }
-      } else if (progress?.mode === 'first_hellos' && !progress?.has_completed_onboarding) {
-        // First Hellos mode - show guided instruction dialogs
-        const justCompletedType = selectedHelloType;
-        setLastCompletedFirstHello(justCompletedType);
-        
-        if (justCompletedType === 'Greeting') {
-          // First hello complete - show observation intro screen
-          setFirstHelloPhase('observation_intro');
-          setShowFirstHelloInstruction(true);
-        } else if (justCompletedType === 'Observation') {
-          setFirstHelloPhase('compliment_intro');
-          setShowFirstHelloInstruction(true);
-        } else if (justCompletedType === 'Compliment') {
-          setFirstHelloPhase('question_intro');
-          setShowFirstHelloInstruction(true);
-        } else if (justCompletedType === 'Question') {
-          setFirstHelloPhase('getname_intro');
-          setShowFirstHelloInstruction(true);
-        } else if (justCompletedType === 'Get a Name') {
-          // All 5 complete - will trigger milestone via useEffect
-        }
       } else if (justHitWeeklyGoal) {
         // Show weekly goal celebration in Chill mode
         setShowWeeklyGoalCelebration(true);
@@ -733,21 +681,6 @@ export default function Dashboard() {
 
   // Track if we've already awarded the initiation orb this session to prevent duplicates
   const [hasAwardedInitiationOrb, setHasAwardedInitiationOrb] = useState(false);
-
-  // Check if all 5 First Hellos are complete - show mode selection and award bonus orb
-  useEffect(() => {
-    if (progress?.mode !== 'first_hellos') return;
-    if (!allFirstHellosComplete || progress?.has_completed_onboarding) return;
-    if (hasAwardedInitiationOrb) return;
-    
-    // Award bonus orb for completing initiation (if not already at max)
-    const currentOrbs = progress?.orbs || 0;
-    if (currentOrbs < 3) {
-      setHasAwardedInitiationOrb(true);
-      updateProgress({ orbs: Math.min(currentOrbs + 1, 3) });
-    }
-    setShowMilestone(true);
-  }, [allFirstHellosComplete, progress?.has_completed_onboarding, progress?.mode, hasAwardedInitiationOrb, updateProgress, progress?.orbs]);
 
   const handleModeSelect = async (mode: 'daily' | 'chill') => {
     setPendingMode(mode);
@@ -947,29 +880,6 @@ export default function Dashboard() {
   // Full-screen milestone dialog for onboarding completion (with orb ceremony)
   // Now uses a dialog overlay instead of replacing the whole page
 
-  if (showModeSelection) {
-    return (
-      <ModeSelectionScreen
-        onSelectMode={handleModeSelect}
-      />
-    );
-  }
-
-  if (showFirstHelloInstruction) {
-    return (
-      <FirstHelloInstructionScreen
-        phase={firstHelloPhase}
-        username={username}
-        onContinue={() => {
-          setShowFirstHelloInstruction(false);
-          if (firstHelloPhase === 'all_complete') {
-            setShowModeSelection(true);
-          }
-        }}
-      />
-    );
-  }
-
   // Full-screen Log Hello
   if (showLogDialog) {
     return (
@@ -1003,80 +913,14 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Dashboard */}
-        {!isFirstHellosMode && (
-          <HomeStatsBar 
-            logs={logs} 
-            lifetimeHellos={progress.total_hellos || 0} 
-          />
-        )}
+        <HomeStatsBar 
+          logs={logs} 
+          lifetimeHellos={progress.total_hellos || 0} 
+        />
 
-        {/* First Hellos Mode - Keep the onboarding challenge system */}
-        {isFirstHellosMode ? (
-          <div className="space-y-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">First Hello's</h2>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              {completedFirstHellosCount === 0 
-                ? "Complete each challenge to unlock the next"
-                : completedFirstHellosCount < 5
-                ? `${completedFirstHellosCount}/5 completed - keep going!`
-                : "Amazing! You've completed all First Hello's!"}
-            </p>
-            <div className="space-y-3">
-              {firstHellos.map((challenge, index) => {
-                const isCompleted = completedFirstHelloTypes.includes(challenge.title);
-                const previousCompleted = index === 0 || firstHellos.slice(0, index).every(
-                  prev => completedFirstHelloTypes.includes(prev.title)
-                );
-                const isLocked = !previousCompleted;
-                const isCurrent = previousCompleted && !isCompleted;
-                const isAvailable = previousCompleted && !isCompleted;
-                
-                return (
-                  <FirstHelloCard
-                    key={challenge.id}
-                    challenge={challenge}
-                    isCompleted={isCompleted}
-                    isAvailable={isAvailable}
-                    isLocked={isLocked}
-                    isCurrent={isCurrent}
-                    onComplete={() => {
-                      setSelectedChallenge(challenge.title);
-                      setSelectedHelloType(challenge.title as HelloType);
-                      setSelectedDayNumber(index + 1);
-                      setShowLogDialog(true);
-                    }}
-                  />
-                );
-              })}
-            </div>
-
-            {/* Log a Hello Button for extra hellos during onboarding */}
-            <div className="mt-6">
-              <LogHelloButton 
-                onClick={() => {
-                  setSelectedChallenge(null);
-                  setSelectedHelloType('regular_hello');
-                  setAutoStartRecording(false);
-                  setShowLogDialog(true);
-                }}
-                onDictateClick={() => {
-                  setSelectedChallenge(null);
-                  setSelectedHelloType('regular_hello');
-                  setAutoStartRecording(true);
-                  setShowLogDialog(true);
-                }}
-                variant="onboarding"
-              />
-              <p className="text-center text-sm text-muted-foreground mt-2">For any extra Hellos</p>
-            </div>
-          </div>
-        ) : (
-          /* Main Dashboard - Connection-focused layout */
-          <div className="space-y-10">
-            
+        {/* Main Dashboard - Connection-focused layout */}
+        <div className="space-y-10">
+          
             {/* Memory - Featured memory from user's history */}
             <HelloOfTheDay 
               logs={logs} 
@@ -1114,10 +958,8 @@ export default function Dashboard() {
                 setEditingLog(log);
                 setIsEditDialogOpen(true);
               }}
-            />
-          </div>
-        )}
-
+          />
+        </div>
       </div>
 
       {/* Dialogs */}
@@ -1161,15 +1003,6 @@ export default function Dashboard() {
         onContinue={() => setShowComeBackTomorrow(false)}
       />
 
-      <DailyModeSelectedDialog
-        open={showDailyModeConfirm}
-        onContinue={handleModeConfirmContinue}
-      />
-
-      <ChillModeSelectedDialog
-        open={showChillModeConfirm}
-        onContinue={handleModeConfirmContinue}
-      />
 
       {/* Streak Saver Dialog - handles all scenarios */}
       <StreakSaverDialog
