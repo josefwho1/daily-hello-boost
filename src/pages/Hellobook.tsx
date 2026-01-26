@@ -50,10 +50,11 @@ const ExpandableText = ({ text }: { text: string }) => {
   );
 };
 
-// Filter out challenge-related entries - only show regular hellos
-const isRegularHello = (helloType: string | null) => {
-  // Exclude Today's Hello and Weekly Challenge completions
-  const excludedTypes = ['todays_hello', 'remis_challenge'];
+// Filter out only weekly challenge entries - show all personal hellos including "Today's Hello"
+const isPersonalHello = (helloType: string | null) => {
+  // Only exclude Remi's Weekly Challenge completions (system-driven)
+  // Keep: regular_hello, todays_hello, Greeting, Compliment, Observation, Question, etc.
+  const excludedTypes = ['remis_challenge'];
   return !helloType || !excludedTypes.includes(helloType);
 };
 
@@ -73,11 +74,11 @@ const Hellobook = () => {
   
   // Calculate stats for the toggle bar
   const stats = useMemo(() => {
-    const regularLogs = logs.filter(log => isRegularHello(log.hello_type));
-    const withNames = regularLogs.filter(log => log.name && log.name.trim() !== "");
-    const withoutNames = regularLogs.filter(log => !log.name || log.name.trim() === "");
+    const personalLogs = logs.filter(log => isPersonalHello(log.hello_type));
+    const withNames = personalLogs.filter(log => log.name && log.name.trim() !== "");
+    const withoutNames = personalLogs.filter(log => !log.name || log.name.trim() === "");
     return {
-      all: regularLogs.length,
+      all: personalLogs.length,
       names: withNames.length,
       unknown: withoutNames.length
     };
@@ -106,7 +107,7 @@ const Hellobook = () => {
 
   // Filter out challenge completions, apply toggle filter, and apply search
   const filteredLogs = logs
-    .filter(log => isRegularHello(log.hello_type))
+    .filter(log => isPersonalHello(log.hello_type))
     .filter(log => {
       if (activeFilter === 'names') {
         return log.name && log.name.trim() !== "";
