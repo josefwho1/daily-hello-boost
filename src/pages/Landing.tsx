@@ -33,12 +33,12 @@ const Index = () => {
             Get Started
           </Button>
           <Button 
-            onClick={() => navigate('/auth')} 
+            onClick={() => navigate('/signin')} 
             variant="outline" 
             className="w-full" 
             size="lg"
           >
-            Sign In
+            I already have an account
           </Button>
         </div>
         
