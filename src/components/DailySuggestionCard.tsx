@@ -55,12 +55,12 @@ export const DailySuggestionCard = () => {
 
   return (
     <Card className="p-3 rounded-xl border-border/30 bg-muted/30">
-      <div className="flex items-start gap-2">
-        <Lightbulb className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
+      <div className="flex items-center gap-2">
+        <Lightbulb className="w-4 h-4 text-primary/70 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-sm font-semibold text-muted-foreground">Today's Hello</span>
+              <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">Today's Hello</span>
               <span className="text-sm font-medium text-foreground truncate">{displayHello.title}</span>
             </div>
             <Button

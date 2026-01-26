@@ -12,7 +12,7 @@ export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProp
       <Button 
         onClick={onClick}
         size="lg"
-        className="flex-1 max-w-xs h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+        className="flex-1 max-w-xs h-14 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
       >
         <UserPlus className="w-5 h-5 mr-2" />
         Log a Hello
@@ -22,7 +22,7 @@ export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProp
           onClick={onDictateClick}
           size="lg"
           variant="outline"
-          className="h-12 px-4 shadow-md hover:shadow-lg"
+          className="h-14 px-4 shadow-md hover:shadow-lg"
           title="Quick dictate"
         >
           <Mic className="w-5 h-5" />
