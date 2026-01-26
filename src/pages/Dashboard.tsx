@@ -107,6 +107,8 @@ export default function Dashboard() {
   const logs = isAnonymous ? guestLogs.map(log => ({
     ...log,
     user_id: guestProgress?.user_id || '',
+    location: (log as any).location || null,
+    no_name_flag: (log as any).no_name_flag || false,
   })) : cloudLogs;
   
   const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
@@ -1108,6 +1110,10 @@ export default function Dashboard() {
             <RecentHellosSection
               logs={logs}
               onViewAll={() => navigate('/hellobook')}
+              onEditLog={(log) => {
+                setEditingLog(log);
+                setIsEditDialogOpen(true);
+              }}
             />
           </div>
         )}

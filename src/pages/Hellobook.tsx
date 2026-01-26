@@ -234,7 +234,7 @@ const Hellobook = () => {
                 <Card 
                   key={log.id} 
                   className={`p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in ${
-                    !hasName ? 'opacity-60' : ''
+                    !hasName ? 'opacity-75' : ''
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -255,14 +255,24 @@ const Hellobook = () => {
                           {log.name || "Unknown"}
                         </h3>
 
-                        {/* Edit button - pushed to right */}
-                        <button
-                          onClick={() => handleEditClick(log)}
-                          className="ml-auto p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
-                          aria-label="Edit hello"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
+                        {/* Edit/Add Name button - pushed to right */}
+                        {hasName ? (
+                          <button
+                            onClick={() => handleEditClick(log)}
+                            className="ml-auto p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
+                            aria-label="Edit hello"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleEditClick(log)}
+                            className="ml-auto px-2 py-1 text-xs rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex-shrink-0"
+                            aria-label="Add name"
+                          >
+                            Add Name
+                          </button>
+                        )}
                       </div>
 
                       {/* Location */}
