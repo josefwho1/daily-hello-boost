@@ -1069,11 +1069,11 @@ export default function Dashboard() {
           /* Main Dashboard - Connection-focused layout */
           <div className="space-y-10">
             
+            {/* Memory - Featured memory from user's history */}
+            <HelloOfTheDay logs={logs} />
+
             {/* Today's Hello - Daily inspiration */}
-            <DailySuggestionCard
-              title={todaysHello.title}
-              description={todaysHello.description}
-            />
+            <DailySuggestionCard />
 
             <SaveHelloButton
               onClick={() => {
@@ -1090,8 +1090,6 @@ export default function Dashboard() {
               }}
             />
 
-            {/* Hello of the Day - Featured memory */}
-            <HelloOfTheDay logs={logs} />
 
             {/* Recent Hellos Section */}
             <RecentHellosSection
