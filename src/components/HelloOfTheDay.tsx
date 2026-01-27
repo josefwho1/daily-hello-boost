@@ -113,9 +113,14 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0 pr-12">
           {/* Header */}
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">📖</span>
-            <span className="text-base font-semibold text-foreground">Throwback</span>
+          <div className="mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">📖</span>
+              <span className="text-base font-semibold text-orange-600">Throwback</span>
+            </div>
+            <p className="text-xs text-muted-foreground/70 mt-0.5 ml-7">
+              A memory from your hellobook
+            </p>
           </div>
           
           {/* Name row */}
