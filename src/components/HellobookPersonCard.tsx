@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, MapPin, Pencil } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface HellobookPersonCardProps {
@@ -67,9 +67,10 @@ const HellobookPersonCard = ({
 
   return (
     <Card 
-      className={`p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in ${
+      className={`p-4 rounded-2xl hover:shadow-md transition-all duration-200 animate-fade-in cursor-pointer active:scale-[0.98] ${
         !hasName ? 'opacity-75' : ''
       }`}
+      onClick={() => onEditClick(primaryLog)}
     >
       {hasMultipleInteractions ? (
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -94,17 +95,6 @@ const HellobookPersonCard = ({
                   </div>
                 )}
 
-                {/* Edit button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditClick(primaryLog);
-                  }}
-                  className="ml-auto p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
-                  aria-label="Edit hello"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
               </div>
 
               {/* Latest timestamp */}
@@ -185,23 +175,11 @@ const HellobookPersonCard = ({
                 </div>
               )}
 
-              {/* Edit/Add Name button - pushed to right */}
-              {hasName ? (
-                <button
-                  onClick={() => onEditClick(primaryLog)}
-                  className="ml-auto p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
-                  aria-label="Edit hello"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  onClick={() => onEditClick(primaryLog)}
-                  className="ml-auto px-2 py-1 text-xs rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex-shrink-0"
-                  aria-label="Add name"
-                >
-                  Add Name
-                </button>
+              {/* Add Name badge for entries without names */}
+              {!hasName && (
+                <span className="ml-auto px-2 py-1 text-xs rounded-lg bg-primary/10 text-primary flex-shrink-0">
+                  Tap to add name
+                </span>
               )}
             </div>
 
