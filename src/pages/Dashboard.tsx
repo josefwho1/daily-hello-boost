@@ -912,6 +912,24 @@ export default function Dashboard() {
               <DailySuggestionCard />
             </div>
 
+            {/* Log a Hello Button */}
+            <div className="py-2">
+              <SaveHelloButton
+                onClick={() => {
+                  setSelectedChallenge(null);
+                  setSelectedHelloType('regular_hello');
+                  setAutoStartRecording(false);
+                  setShowLogDialog(true);
+                }}
+                onDictateClick={() => {
+                  setSelectedChallenge(null);
+                  setSelectedHelloType('regular_hello');
+                  setAutoStartRecording(true);
+                  setShowLogDialog(true);
+                }}
+              />
+            </div>
+
             {/* Recent Hellos Section */}
             <RecentHellosSection
               logs={logs}
@@ -922,30 +940,11 @@ export default function Dashboard() {
               }}
             />
             
-            {/* Spacer for fixed button */}
-            <div className="h-24" />
+            {/* Spacer for bottom nav */}
+            <div className="h-8" />
         </div>
       </div>
 
-      {/* Fixed CTA at bottom */}
-      <div className="fixed bottom-20 left-0 right-0 z-40 px-4 pb-2">
-        <div className="max-w-md mx-auto">
-          <SaveHelloButton
-            onClick={() => {
-              setSelectedChallenge(null);
-              setSelectedHelloType('regular_hello');
-              setAutoStartRecording(false);
-              setShowLogDialog(true);
-            }}
-            onDictateClick={() => {
-              setSelectedChallenge(null);
-              setSelectedHelloType('regular_hello');
-              setAutoStartRecording(true);
-              setShowLogDialog(true);
-            }}
-          />
-        </div>
-      </div>
 
       {/* Dialogs */}
 
