@@ -133,26 +133,32 @@ Deno.serve(async (req) => {
     const hellosAllTime = countHellosPerUser(allHelloData);
     const hellosMonth = countHellosPerUser(allHelloData, monthStartStr);
     const hellosWeek = countHellosPerUser(allHelloData, weekStartStr);
+    const hellosTodays = countHellosPerUser(allHelloData, todayStart);
 
     const namesAllTime = countNamesPerUser(allHelloData);
     const namesMonth = countNamesPerUser(allHelloData, monthStartStr);
     const namesWeek = countNamesPerUser(allHelloData, weekStartStr);
+    const namesToday = countNamesPerUser(allHelloData, todayStart);
 
     // Get top 10 for each category
     const [
       hellosAllTimeLeaders,
       hellosMonthLeaders,
       hellosWeekLeaders,
+      hellosTodayLeaders,
       namesAllTimeLeaders,
       namesMonthLeaders,
       namesWeekLeaders,
+      namesTodayLeaders,
     ] = await Promise.all([
       getTopLeaders(hellosAllTime),
       getTopLeaders(hellosMonth),
       getTopLeaders(hellosWeek),
+      getTopLeaders(hellosTodays),
       getTopLeaders(namesAllTime),
       getTopLeaders(namesMonth),
       getTopLeaders(namesWeek),
+      getTopLeaders(namesToday),
     ]);
 
     return new Response(
@@ -169,11 +175,13 @@ Deno.serve(async (req) => {
             allTime: hellosAllTimeLeaders,
             thisMonth: hellosMonthLeaders,
             thisWeek: hellosWeekLeaders,
+            today: hellosTodayLeaders,
           },
           names: {
             allTime: namesAllTimeLeaders,
             thisMonth: namesMonthLeaders,
             thisWeek: namesWeekLeaders,
+            today: namesTodayLeaders,
           },
         },
       }),
