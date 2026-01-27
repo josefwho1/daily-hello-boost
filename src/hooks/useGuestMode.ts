@@ -62,6 +62,9 @@ export interface UseGuestModeReturn {
   addLog: (log: Omit<GuestHelloLog, 'id' | 'created_at' | 'user_id'>) => Promise<GuestHelloLog | null>;
   updateLog: (id: string, updates: Partial<GuestHelloLog>) => Promise<void>;
   
+  // Challenge completion operations
+  clearPackCompletions: (packId: string) => Promise<void>;
+  
   // Save prompt tracking
   shouldShowSavePrompt: () => boolean;
   dismissSavePrompt: () => Promise<void>;
@@ -314,6 +317,25 @@ export const useGuestMode = (): UseGuestModeReturn => {
     }
   }, [user, isAnonymous]);
 
+  // Clear challenge completions for a specific pack (for restart functionality)
+  const clearPackCompletions = useCallback(async (packId: string) => {
+    if (!user || !isAnonymous) return;
+
+    try {
+      // Delete challenge completions that match this pack's challenge tags
+      const { error } = await supabase
+        .from('challenge_completions')
+        .delete()
+        .eq('user_id', user.id)
+        .like('challenge_tag', `${packId}-%`);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error clearing pack completions:', error);
+      throw error;
+    }
+  }, [user, isAnonymous]);
+
   const refetch = useCallback(async () => {
     if (user && isAnonymous) {
       await loadAnonymousUserData();
@@ -330,6 +352,7 @@ export const useGuestMode = (): UseGuestModeReturn => {
     updateProgress,
     addLog,
     updateLog,
+    clearPackCompletions,
     shouldShowSavePrompt,
     dismissSavePrompt,
     linkToEmail,
