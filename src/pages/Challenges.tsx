@@ -10,11 +10,22 @@ import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
 import { cn } from "@/lib/utils";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Challenges = () => {
   const navigate = useNavigate();
   const { progress: cloudProgress, updateProgress: updateCloudProgress } = useUserProgress();
   const [restartingPackId, setRestartingPackId] = useState<string | null>(null);
+  const [confirmRestartPackId, setConfirmRestartPackId] = useState<string | null>(null);
   const { guestProgress, updateProgress: updateGuestProgress, isAnonymous, clearPackCompletions: clearGuestPackCompletions } = useGuestMode();
   const { completions, clearPackCompletions, refetch: refetchCompletions } = useChallengeCompletions();
   
@@ -76,6 +87,7 @@ const Challenges = () => {
 
   const handleRestartPack = async (packId: string) => {
     setRestartingPackId(packId);
+    setConfirmRestartPackId(null);
     try {
       // Clear challenge completions for this pack (preserves hello logs)
       if (isAnonymous) {
@@ -101,6 +113,10 @@ const Challenges = () => {
     } finally {
       setRestartingPackId(null);
     }
+  };
+
+  const handleRequestRestart = (packId: string) => {
+    setConfirmRestartPackId(packId);
   };
 
   const isPackActive = (packId: string) => selectedPackId === packId;
@@ -224,7 +240,7 @@ const Challenges = () => {
                           </Button>
                           <Button 
                             variant="outline"
-                            onClick={() => handleRestartPack(pack.id)}
+                            onClick={() => handleRequestRestart(pack.id)}
                             disabled={restartingPackId === pack.id}
                           >
                             <RotateCcw className="w-4 h-4 mr-1" />
@@ -242,7 +258,7 @@ const Challenges = () => {
                           </Button>
                           <Button 
                             variant="outline"
-                            onClick={() => handleRestartPack(pack.id)}
+                            onClick={() => handleRequestRestart(pack.id)}
                             disabled={restartingPackId === pack.id}
                           >
                             <RotateCcw className="w-4 h-4 mr-1" />
@@ -273,6 +289,28 @@ const Challenges = () => {
           </p>
         </div>
       </div>
+
+      {/* Restart Confirmation Dialog */}
+      <AlertDialog open={!!confirmRestartPackId} onOpenChange={(open) => !open && setConfirmRestartPackId(null)}>
+        <AlertDialogContent className="rounded-2xl max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Restart this challenge?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your challenge progress will be reset to Day 1. Your logged hellos in the Hellobook will be kept.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => confirmRestartPackId && handleRestartPack(confirmRestartPackId)}
+              className="rounded-xl"
+              disabled={restartingPackId !== null}
+            >
+              {restartingPackId ? "Restarting..." : "Restart"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
