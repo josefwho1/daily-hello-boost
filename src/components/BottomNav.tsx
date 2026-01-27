@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, BookOpen, Users, User } from "lucide-react";
+import { Home, BookOpen, Trophy, User } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useLocation } from "react-router-dom";
 
@@ -39,7 +39,7 @@ export const BottomNav = () => {
   const tabs = [
     { to: "/", icon: Home, label: "Home" },
     { to: "/hellobook", icon: BookOpen, label: "Hellobook" },
-    { to: "/community", icon: Users, label: "Community" },
+    { to: "/challenges", icon: Trophy, label: "Challenges" },
     { to: "/profile", icon: User, label: "Profile" },
   ];
 

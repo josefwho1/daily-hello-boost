@@ -13,6 +13,10 @@ import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
 import { UseOrbDialog } from "@/components/UseOrbDialog";
 import { StreakSaverDialog, StreakSaverScenario } from "@/components/StreakSaverDialog";
 import { DailySuggestionCard } from "@/components/DailySuggestionCard";
+import { ActiveChallengeCard } from "@/components/ActiveChallengeCard";
+import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
+import { getPackById } from "@/data/packs";
+import { Challenge } from "@/types/challenge";
 import { RecentHellosSection } from "@/components/RecentHellosSection";
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
@@ -56,6 +60,7 @@ export default function Dashboard() {
   const { progress: cloudProgress, loading: progressLoading, updateProgress: updateCloudProgress, refetch } = useUserProgress();
   const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, deleteLog: deleteCloudLog, getLogsTodayCount } = useHelloLogs();
   const { timezoneOffset, loading: timezoneLoading } = useTimezone();
+  const { completions, addCompletion } = useChallengeCompletions();
   const { 
     guestProgress, 
     guestLogs, 
@@ -454,6 +459,7 @@ export default function Dashboard() {
   const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string }) => {
     const isFirstHelloEver = logs.length === 0 && !progress?.has_received_first_orb;
     const isOnboardingChallenge = onboardingChallenges.some(c => c.title === selectedChallenge);
+    const isPackChallenge = selectedHelloType === 'pack_challenge';
 
     const today = getDayKeyInOffset(new Date(), tzOffset);
     const isFirstHelloToday = !progress?.last_completed_date || progress.last_completed_date !== today;
@@ -461,6 +467,21 @@ export default function Dashboard() {
     const result = await addLog({
       ...data
     });
+
+    // Record pack challenge completion if applicable
+    if (result && isPackChallenge && selectedDayNumber && data.rating) {
+      try {
+        await addCompletion({
+          challenge_day: selectedDayNumber,
+          interaction_name: data.name || null,
+          notes: data.notes || null,
+          rating: data.rating,
+          difficulty_rating: data.difficulty_rating || null,
+        });
+      } catch (error) {
+        console.error('Failed to record challenge completion:', error);
+      }
+    }
 
     if (result) {
       const previousHellosThisWeek = progress?.hellos_this_week || 0;
@@ -898,7 +919,7 @@ export default function Dashboard() {
         {/* Main Dashboard - Connection-focused layout */}
         <div className="space-y-6">
           
-            {/* Memory & Today's Hello - Tighter spacing */}
+            {/* Memory & Today's Hello/Challenge - Tighter spacing */}
             <div className="space-y-3">
               {/* Memory - Featured memory from user's history */}
               <HelloOfTheDay 
@@ -909,8 +930,23 @@ export default function Dashboard() {
                 }}
               />
 
-              {/* Today's Hello - Daily inspiration */}
-              <DailySuggestionCard />
+              {/* Active Challenge Card or Daily Suggestion */}
+              {progress?.selected_pack_id && getPackById(progress.selected_pack_id)?.challenges.length ? (
+                <ActiveChallengeCard
+                  packId={progress.selected_pack_id}
+                  completedDays={completions.map(c => c.challenge_day)}
+                  packStartDate={progress.onboarding_week_start || null}
+                  onLogHello={(challenge: Challenge) => {
+                    setSelectedChallenge(challenge.title);
+                    setSelectedDayNumber(challenge.day);
+                    setSelectedHelloType('pack_challenge');
+                    setShowLogDialog(true);
+                  }}
+                  onViewPack={() => navigate('/challenges')}
+                />
+              ) : (
+                <DailySuggestionCard />
+              )}
             </div>
 
             {/* Log a Hello Button */}

@@ -37,7 +37,11 @@ interface CommunityStats {
 
 type TimeFilter = 'allTime' | 'thisMonth' | 'thisWeek' | 'today';
 
-const Community = () => {
+interface CommunityProps {
+  embedded?: boolean;
+}
+
+const Community = ({ embedded = false }: CommunityProps) => {
   const { user } = useAuth();
   const [stats, setStats] = useState<CommunityStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -161,16 +165,18 @@ const Community = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24 pt-6 px-4">
-      <div className="max-w-md mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
-            <Users className="w-6 h-6 text-primary" />
-            Community
-          </h1>
-          <p className="text-muted-foreground text-sm">Hello's from around the world</p>
-        </div>
+    <div className={embedded ? "space-y-6" : "min-h-screen bg-background pb-24 pt-6 px-4"}>
+      <div className={embedded ? "space-y-6" : "max-w-md mx-auto space-y-6"}>
+        {/* Header - only show when not embedded */}
+        {!embedded && (
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
+              <Users className="w-6 h-6 text-primary" />
+              Community
+            </h1>
+            <p className="text-muted-foreground text-sm">Hello's from around the world</p>
+          </div>
+        )}
 
         {/* Section 1: Collective Impact */}
         <div className="space-y-3">
