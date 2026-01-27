@@ -268,6 +268,11 @@ const Hellobook = () => {
                         )}
                       </div>
 
+                      {/* Timestamp - date only */}
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">
+                        {formatTimestamp(log.created_at, false)}
+                      </p>
+
                       {/* Notes */}
                       {log.notes && <ExpandableText text={log.notes} />}
                     </div>
