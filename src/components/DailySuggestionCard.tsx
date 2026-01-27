@@ -76,7 +76,7 @@ export const DailySuggestionCard = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-lg">💡</span>
-            <span className="text-base font-semibold text-orange-600">Remi's Hello</span>
+            <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>Remi's Hello</span>
           </div>
           <p className="text-xs text-muted-foreground/70 mt-0.5">
             A daily suggestion to help you connect
