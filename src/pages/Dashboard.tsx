@@ -33,6 +33,9 @@ import { DailyStreakCelebrationDialog } from "@/components/DailyStreakCelebratio
 import { LevelUpCelebrationDialog } from "@/components/LevelUpCelebrationDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
+import { SingleChallengeCompleteDialog } from "@/components/SingleChallengeCompleteDialog";
+import { PackCompleteCelebrationDialog } from "@/components/PackCompleteCelebrationDialog";
+import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
@@ -157,6 +160,16 @@ export default function Dashboard() {
   const [autoStartRecording, setAutoStartRecording] = useState(false);
   const [showHomeTutorial, setShowHomeTutorial] = useState(false);
   const [tutorialMode, setTutorialMode] = useState<'daily' | 'chill'>('daily');
+  
+  // Pack challenge celebration states
+  const [showSingleChallengeComplete, setShowSingleChallengeComplete] = useState(false);
+  const [showPackComplete, setShowPackComplete] = useState(false);
+  const [completedChallengeTitle, setCompletedChallengeTitle] = useState('');
+  
+  // Milestone celebration states
+  const [showMilestoneCelebration, setShowMilestoneCelebration] = useState(false);
+  const [milestoneValue, setMilestoneValue] = useState(0);
+  const [milestoneType, setMilestoneType] = useState<MilestoneType>('hellos');
   
   
   // Edit hello dialog states
@@ -491,6 +504,28 @@ export default function Dashboard() {
         });
         // Refetch to ensure UI updates
         await refetchCompletions();
+        
+        // Calculate pack progress to determine celebration type
+        const selectedPackId = progress?.selected_pack_id || '';
+        const pack = getPackById(selectedPackId);
+        if (pack) {
+          // Get newly updated completions count
+          const completedAfter = completions.filter(c => 
+            c.challenge_tag?.startsWith(`${selectedPackId}-`) || pack.challenges.some(ch => ch.tag === c.challenge_tag)
+          ).length + 1; // +1 for the one we just added
+          
+          const totalChallenges = pack.challenges.length;
+          const currentChallenge = pack.challenges.find(c => c.day === selectedDayNumber);
+          
+          if (completedAfter >= totalChallenges) {
+            // All challenges complete - show big celebration
+            setTimeout(() => setShowPackComplete(true), 500);
+          } else {
+            // Single challenge complete - show moderate celebration
+            setCompletedChallengeTitle(currentChallenge?.title || '');
+            setTimeout(() => setShowSingleChallengeComplete(true), 300);
+          }
+        }
       } catch (error) {
         console.error('Failed to record challenge completion:', error);
       }
@@ -654,6 +689,29 @@ export default function Dashboard() {
       // This is kept as a fallback for edge cases only
       if (isFirstHelloEver && !progress?.has_received_first_orb) {
         setShowFirstOrbGift(true);
+      }
+      
+      // Check for hello/name milestones
+      const previousTotalHellos = progress?.total_hellos || logs.length;
+      const helloMilestone = checkMilestoneReached(previousTotalHellos, newTotalHellos, HELLO_MILESTONES);
+      if (helloMilestone) {
+        setMilestoneValue(helloMilestone);
+        setMilestoneType('hellos');
+        // Delay to not conflict with other celebrations
+        setTimeout(() => setShowMilestoneCelebration(true), didLevelUp ? 3000 : 1000);
+      }
+      
+      // Check for names milestone (unique names logged)
+      const previousNamesCount = progress?.names_today_count || 0;
+      const newNamesCount = data.name ? previousNamesCount + 1 : previousNamesCount;
+      // For names, we use total unique names from logs
+      const uniqueNamesCount = new Set(logs.filter(l => l.name).map(l => l.name?.toLowerCase())).size + (data.name ? 1 : 0);
+      const previousUniqueNames = new Set(logs.filter(l => l.name).map(l => l.name?.toLowerCase())).size;
+      const nameMilestone = checkMilestoneReached(previousUniqueNames, uniqueNamesCount, NAME_MILESTONES);
+      if (nameMilestone && !helloMilestone) {
+        setMilestoneValue(nameMilestone);
+        setMilestoneType('names');
+        setTimeout(() => setShowMilestoneCelebration(true), didLevelUp ? 3000 : 1000);
       }
       
       // Show save prompt for guests at 2, 8, and 20 hellos
@@ -1085,6 +1143,29 @@ export default function Dashboard() {
         onClose={() => setShowLevelUp(false)}
         newLevel={newLevelValue}
         totalXp={progress?.total_xp || 0}
+      />
+
+      {/* Pack Challenge Celebrations */}
+      <SingleChallengeCompleteDialog
+        open={showSingleChallengeComplete}
+        onContinue={() => setShowSingleChallengeComplete(false)}
+        dayNumber={selectedDayNumber}
+        totalDays={getPackById(progress?.selected_pack_id || '')?.challenges.length || 7}
+        challengeTitle={completedChallengeTitle}
+      />
+
+      <PackCompleteCelebrationDialog
+        open={showPackComplete}
+        onContinue={() => setShowPackComplete(false)}
+        packName={getPackById(progress?.selected_pack_id || '')?.name || 'Challenge Pack'}
+      />
+
+      {/* Milestone Celebrations */}
+      <MilestoneCelebrationDialog
+        open={showMilestoneCelebration}
+        onContinue={() => setShowMilestoneCelebration(false)}
+        milestoneValue={milestoneValue}
+        milestoneType={milestoneType}
       />
 
       {/* Save Progress Dialog for Guests */}

@@ -2,18 +2,21 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Check, Play, Pause } from "lucide-react";
+import { Trophy, Check, Play, Pause, RotateCcw } from "lucide-react";
 import { packs, getPackById } from "@/data/packs";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
 import { cn } from "@/lib/utils";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
+import { toast } from "sonner";
 
 const Challenges = () => {
   const navigate = useNavigate();
   const { progress: cloudProgress, updateProgress: updateCloudProgress } = useUserProgress();
-  const { guestProgress, updateProgress: updateGuestProgress, isAnonymous } = useGuestMode();
+  const [restartingPackId, setRestartingPackId] = useState<string | null>(null);
+  const { guestProgress, updateProgress: updateGuestProgress, isAnonymous, clearPackCompletions: clearGuestPackCompletions } = useGuestMode();
+  const { clearPackCompletions } = useChallengeCompletions();
   const { completions } = useChallengeCompletions();
   
   const progress = isAnonymous ? guestProgress : cloudProgress;
@@ -70,6 +73,32 @@ const Challenges = () => {
       selected_pack_id: packId,
       mode: 'challenge',
     });
+  };
+
+  const handleRestartPack = async (packId: string) => {
+    setRestartingPackId(packId);
+    try {
+      // Clear challenge completions for this pack (preserves hello logs)
+      if (isAnonymous) {
+        clearGuestPackCompletions?.(packId);
+      } else {
+        await clearPackCompletions(packId);
+      }
+      
+      // Reset pack_start_date to now and activate the pack
+      await updateProgress({ 
+        selected_pack_id: packId,
+        pack_start_date: new Date().toISOString(),
+        mode: 'challenge',
+      });
+      
+      toast.success('Challenge restarted! Day 1 unlocked.');
+    } catch (error) {
+      console.error('Failed to restart pack:', error);
+      toast.error('Failed to restart challenge');
+    } finally {
+      setRestartingPackId(null);
+    }
   };
 
   const isPackActive = (packId: string) => selectedPackId === packId;
@@ -183,13 +212,41 @@ const Challenges = () => {
                           </Button>
                         </div>
                       ) : isPaused ? (
-                        <Button 
-                          onClick={() => handleResumePack(pack.id)}
-                          className="w-full"
-                        >
-                          <Play className="w-4 h-4 mr-2" />
-                          Resume Challenge
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => handleResumePack(pack.id)}
+                            className="flex-1"
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            Resume
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => handleRestartPack(pack.id)}
+                            disabled={restartingPackId === pack.id}
+                          >
+                            <RotateCcw className="w-4 h-4 mr-1" />
+                            Restart
+                          </Button>
+                        </div>
+                      ) : isComplete ? (
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => handleSelectPack(pack.id)}
+                            className="flex-1"
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            Start Again
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => handleRestartPack(pack.id)}
+                            disabled={restartingPackId === pack.id}
+                          >
+                            <RotateCcw className="w-4 h-4 mr-1" />
+                            Restart
+                          </Button>
+                        </div>
                       ) : (
                         <Button 
                           onClick={() => handleSelectPack(pack.id)}
