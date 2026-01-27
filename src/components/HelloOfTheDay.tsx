@@ -116,9 +116,9 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
           <div className="mb-2">
             <div className="flex items-center gap-2">
               <span className="text-lg">📖</span>
-              <span className="text-base font-semibold text-orange-600">Throwback</span>
+              <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>Throwback</span>
             </div>
-            <p className="text-xs text-muted-foreground/70 mt-0.5 ml-7">
+            <p className="text-xs text-muted-foreground/70 mt-0.5">
               A memory from your hellobook
             </p>
           </div>
@@ -134,34 +134,34 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
             )}
           </div>
           
-          {/* Notes with inline Read more */}
-          <p className="text-sm text-muted-foreground">
-            {isExpanded ? (
-              <>
+          {/* Notes - always 2 lines with Read more */}
+          {isExpanded ? (
+            <p className="text-sm text-muted-foreground">
+              {notesText}
+              {isLongNote && (
+                <button
+                  onClick={handleExpandToggle}
+                  className="text-xs text-primary hover:text-primary/80 ml-1 inline"
+                >
+                  Read less
+                </button>
+              )}
+            </p>
+          ) : (
+            <div className="relative">
+              <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
                 {notesText}
-                {isLongNote && (
-                  <button
-                    onClick={handleExpandToggle}
-                    className="text-xs text-primary hover:text-primary/80 ml-1 inline"
-                  >
-                    Read less
-                  </button>
-                )}
-              </>
-            ) : (
-              <>
-                {truncatedNotes}
-                {isLongNote && (
-                  <button
-                    onClick={handleExpandToggle}
-                    className="text-xs text-primary hover:text-primary/80 inline"
-                  >
-                    ...Read more
-                  </button>
-                )}
-              </>
-            )}
-          </p>
+              </p>
+              {isLongNote && (
+                <button
+                  onClick={handleExpandToggle}
+                  className="absolute bottom-0 right-0 text-xs text-primary hover:text-primary/80 bg-card pl-1"
+                >
+                  Read more
+                </button>
+              )}
+            </div>
+          )}
         </div>
         
         {eligibleLogs.length > 1 && (
