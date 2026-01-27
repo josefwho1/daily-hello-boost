@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerContent,
+} from "@/components/ui/drawer";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, MapPin, X, Check } from "lucide-react";
+import { Trash2, MapPin, Check } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 
@@ -61,7 +61,6 @@ const ViewHelloDialog = ({ open, onOpenChange, log, onSave, onDelete }: ViewHell
   // Focus input when editing starts
   useEffect(() => {
     if (editingField === 'name' || editingField === 'location') {
-      // Small delay to ensure input is rendered
       setTimeout(() => inputRef.current?.focus(), 50);
     } else if (editingField === 'notes') {
       setTimeout(() => textareaRef.current?.focus(), 50);
@@ -85,7 +84,6 @@ const ViewHelloDialog = ({ open, onOpenChange, log, onSave, onDelete }: ViewHell
   };
 
   const handleCancelEdit = () => {
-    // Reset to original values
     if (log) {
       setName(log.name || "");
       setLocation(log.location || "");
@@ -115,141 +113,133 @@ const ViewHelloDialog = ({ open, onOpenChange, log, onSave, onDelete }: ViewHell
   if (!log) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md h-[85vh] rounded-2xl p-0 flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Hello Details</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {formatTimestamp(log.created_at, true)}
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onOpenChange(false)}
-            className="rounded-full"
-          >
-            <X className="w-5 h-5" />
-          </Button>
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className="max-h-[85vh] rounded-t-2xl">
+        {/* Drag handle */}
+        <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted-foreground/20 my-3" />
+        
+        {/* Timestamp header */}
+        <div className="px-4 pb-2">
+          <p className="text-xs text-muted-foreground text-center">
+            {formatTimestamp(log.created_at, true)}
+          </p>
         </div>
 
-        {/* Content - scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {/* Content */}
+        <div className="overflow-y-auto px-4 pb-4 space-y-3">
           {/* Name Section */}
           <div 
-            className={`rounded-xl p-4 transition-colors ${
+            className={`rounded-xl p-3 transition-colors ${
               editingField === 'name' 
-                ? 'bg-primary/5 ring-2 ring-primary/20' 
-                : 'bg-muted/30 hover:bg-muted/50 cursor-pointer'
+                ? 'bg-primary/5 ring-1 ring-primary/20' 
+                : 'bg-muted/30 active:bg-muted/50'
             }`}
             onClick={() => editingField !== 'name' && setEditingField('name')}
           >
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
               Name
             </label>
             {editingField === 'name' ? (
-              <div className="mt-2 space-y-2">
+              <div className="mt-1.5 space-y-2">
                 <Input
                   ref={inputRef}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Who did you meet?"
-                  className="rounded-xl"
+                  className="rounded-lg h-9 text-sm"
                 />
                 <div className="flex gap-2 justify-end">
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={handleCancelEdit}
-                    className="rounded-lg"
+                    onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }}
+                    className="h-7 text-xs rounded-lg"
                   >
                     Cancel
                   </Button>
                   <Button
                     size="sm"
-                    onClick={handleSaveField}
+                    onClick={(e) => { e.stopPropagation(); handleSaveField(); }}
                     disabled={isSubmitting}
-                    className="rounded-lg"
+                    className="h-7 text-xs rounded-lg"
                   >
-                    <Check className="w-4 h-4 mr-1" />
+                    <Check className="w-3 h-3 mr-1" />
                     Save
                   </Button>
                 </div>
               </div>
             ) : (
-              <p className={`mt-1 text-base ${name ? 'text-foreground font-medium' : 'text-muted-foreground italic'}`}>
-                {name || "Tap to add name"}
+              <p className={`mt-0.5 text-sm ${name ? 'text-foreground font-medium' : 'text-muted-foreground/60 italic'}`}>
+                {name || "Tap to add"}
               </p>
             )}
           </div>
 
           {/* Location Section */}
           <div 
-            className={`rounded-xl p-4 transition-colors ${
+            className={`rounded-xl p-3 transition-colors ${
               editingField === 'location' 
-                ? 'bg-primary/5 ring-2 ring-primary/20' 
-                : 'bg-muted/30 hover:bg-muted/50 cursor-pointer'
+                ? 'bg-primary/5 ring-1 ring-primary/20' 
+                : 'bg-muted/30 active:bg-muted/50'
             }`}
             onClick={() => editingField !== 'location' && setEditingField('location')}
           >
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              Where you met
+            <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+              <MapPin className="w-2.5 h-2.5" />
+              Location
             </label>
             {editingField === 'location' ? (
-              <div className="mt-2 space-y-2">
+              <div className="mt-1.5 space-y-2">
                 <Input
                   ref={inputRef}
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Coffee shop, gym, park..."
-                  className="rounded-xl"
+                  placeholder="Coffee shop, gym..."
+                  className="rounded-lg h-9 text-sm"
                 />
                 <div className="flex gap-2 justify-end">
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={handleCancelEdit}
-                    className="rounded-lg"
+                    onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }}
+                    className="h-7 text-xs rounded-lg"
                   >
                     Cancel
                   </Button>
                   <Button
                     size="sm"
-                    onClick={handleSaveField}
+                    onClick={(e) => { e.stopPropagation(); handleSaveField(); }}
                     disabled={isSubmitting}
-                    className="rounded-lg"
+                    className="h-7 text-xs rounded-lg"
                   >
-                    <Check className="w-4 h-4 mr-1" />
+                    <Check className="w-3 h-3 mr-1" />
                     Save
                   </Button>
                 </div>
               </div>
             ) : (
-              <p className={`mt-1 text-base ${location ? 'text-foreground' : 'text-muted-foreground italic'}`}>
-                {location || "Tap to add location"}
+              <p className={`mt-0.5 text-sm ${location ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
+                {location || "Tap to add"}
               </p>
             )}
           </div>
 
           {/* Notes Section */}
           <div 
-            className={`rounded-xl p-4 transition-colors ${
+            className={`rounded-xl p-3 transition-colors ${
               editingField === 'notes' 
-                ? 'bg-primary/5 ring-2 ring-primary/20' 
-                : 'bg-muted/30 hover:bg-muted/50 cursor-pointer'
+                ? 'bg-primary/5 ring-1 ring-primary/20' 
+                : 'bg-muted/30 active:bg-muted/50'
             }`}
             onClick={() => editingField !== 'notes' && setEditingField('notes')}
           >
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
               Notes
             </label>
             {editingField === 'notes' ? (
-              <div className="mt-2 space-y-2">
+              <div className="mt-1.5 space-y-2">
                 <Textarea
                   ref={textareaRef}
                   value={notes}
@@ -257,56 +247,54 @@ const ViewHelloDialog = ({ open, onOpenChange, log, onSave, onDelete }: ViewHell
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') handleCancelEdit();
                   }}
-                  placeholder="Any details you want to remember..."
-                  className="rounded-xl min-h-[120px]"
+                  placeholder="Details to remember..."
+                  className="rounded-lg min-h-[80px] text-sm"
                 />
                 <div className="flex gap-2 justify-end">
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={handleCancelEdit}
-                    className="rounded-lg"
+                    onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }}
+                    className="h-7 text-xs rounded-lg"
                   >
                     Cancel
                   </Button>
                   <Button
                     size="sm"
-                    onClick={handleSaveField}
+                    onClick={(e) => { e.stopPropagation(); handleSaveField(); }}
                     disabled={isSubmitting}
-                    className="rounded-lg"
+                    className="h-7 text-xs rounded-lg"
                   >
-                    <Check className="w-4 h-4 mr-1" />
+                    <Check className="w-3 h-3 mr-1" />
                     Save
                   </Button>
                 </div>
               </div>
             ) : (
-              <p className={`mt-1 text-base whitespace-pre-wrap ${notes ? 'text-foreground' : 'text-muted-foreground italic'}`}>
-                {notes || "Tap to add notes"}
+              <p className={`mt-0.5 text-sm whitespace-pre-wrap ${notes ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
+                {notes || "Tap to add"}
               </p>
             )}
           </div>
-        </div>
 
-        {/* Footer with delete */}
-        {onDelete && (
-          <div className="p-4 border-t border-border">
+          {/* Delete button */}
+          {onDelete && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className="w-full rounded-xl text-destructive/70 hover:text-destructive hover:bg-destructive/10 h-9 text-sm"
                   disabled={isDeleting}
                 >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete this hello
+                  <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                  Delete
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="rounded-2xl">
+              <AlertDialogContent className="rounded-2xl max-w-[90vw]">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete this hello?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently remove this entry from your Hellobook. This action cannot be undone.
+                    This will permanently remove this entry. This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -320,10 +308,10 @@ const ViewHelloDialog = ({ open, onOpenChange, log, onSave, onDelete }: ViewHell
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+          )}
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 };
 
