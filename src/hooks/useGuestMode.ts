@@ -28,7 +28,8 @@ export interface GuestProgress {
   last_xp_reset_date: string | null;
   mode: string;
   why_here: string | null;
-  selected_pack_id: string;
+  selected_pack_id: string | null;
+  pack_start_date: string | null;
   comfort_rating: number | null;
   username?: string;
 }

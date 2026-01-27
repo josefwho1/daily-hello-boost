@@ -935,7 +935,7 @@ export default function Dashboard() {
                 <ActiveChallengeCard
                   packId={progress.selected_pack_id}
                   completedDays={completions.map(c => c.challenge_day)}
-                  packStartDate={progress.onboarding_week_start || null}
+                  packStartDate={progress.pack_start_date || null}
                   onLogHello={(challenge: Challenge) => {
                     setSelectedChallenge(challenge.title);
                     setSelectedDayNumber(challenge.day);

@@ -285,6 +285,7 @@ export type Database = {
           onboarding_email_opt_in: boolean | null
           onboarding_week_start: string | null
           orbs: number | null
+          pack_start_date: string | null
           reengagement_email_index: number | null
           save_offered_for_date: string | null
           selected_pack_id: string
@@ -335,6 +336,7 @@ export type Database = {
           onboarding_email_opt_in?: boolean | null
           onboarding_week_start?: string | null
           orbs?: number | null
+          pack_start_date?: string | null
           reengagement_email_index?: number | null
           save_offered_for_date?: string | null
           selected_pack_id?: string
@@ -385,6 +387,7 @@ export type Database = {
           onboarding_email_opt_in?: boolean | null
           onboarding_week_start?: string | null
           orbs?: number | null
+          pack_start_date?: string | null
           reengagement_email_index?: number | null
           save_offered_for_date?: string | null
           selected_pack_id?: string

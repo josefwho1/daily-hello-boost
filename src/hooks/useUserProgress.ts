@@ -7,7 +7,8 @@ export interface UserProgress {
   current_day: number;
   last_completed_date: string | null;
   has_seen_welcome_messages?: boolean;
-  selected_pack_id?: string;
+  selected_pack_id?: string | null;
+  pack_start_date?: string | null;
   mode?: string;
   target_hellos_per_week?: number;
   hellos_this_week?: number;
