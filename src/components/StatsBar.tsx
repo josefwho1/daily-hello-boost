@@ -4,7 +4,6 @@ import orbImage from "@/assets/orb.webp";
 import remiWaving from "@/assets/remi-waving.webp";
 import remiSuper1 from "@/assets/remi-super-1.webp";
 import remiSuper2 from "@/assets/remi-super-2.webp";
-import { getRankFromLevel, getXpProgress } from "@/lib/xpSystem";
 
 const withCacheBuster = (src: string) => {
   const v = "super2_2026-01-22";
@@ -29,52 +28,8 @@ interface StatsBarProps {
   isOnboardingWeek: boolean;
   onboardingCompleted: number;
   hasCompletedOnboarding?: boolean;
-  currentLevel?: number;
-  totalXp?: number;
   firstHellosCompleted?: number;
 }
-
-// Circular progress component for level
-const LevelCircle = ({ level, progress }: { level: number; progress: number }) => {
-  const size = 56;
-  const strokeWidth = 4;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
-
-  return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="transform -rotate-90">
-        {/* Background circle */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          className="stroke-primary/20"
-          strokeWidth={strokeWidth}
-          fill="transparent"
-        />
-        {/* Progress circle */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          className="stroke-primary"
-          strokeWidth={strokeWidth}
-          fill="transparent"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          style={{ transition: 'all 0.5s' }}
-        />
-      </svg>
-      {/* Level number in center */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-lg font-bold text-primary">{level}</span>
-      </div>
-    </div>
-  );
-};
 
 export const StatsBar = ({
   hellosToday,
@@ -87,8 +42,6 @@ export const StatsBar = ({
   isOnboardingWeek,
   onboardingCompleted,
   hasCompletedOnboarding = false,
-  currentLevel = 1,
-  totalXp = 0,
   firstHellosCompleted = 0
 }: StatsBarProps) => {
   const isDaily = mode === 'daily';
@@ -116,9 +69,6 @@ export const StatsBar = ({
   
   const progressPercent = Math.min((progressValue / progressMax) * 100, 100);
 
-  // Get XP progress for level circle
-  const xpProgress = getXpProgress(totalXp, currentLevel);
-
   // Labels based on mode
   const getProgressLabel = () => {
     if (isFirstHellos || (!hasCompletedOnboarding && isOnboardingWeek)) return "First Hello's";
@@ -141,7 +91,7 @@ export const StatsBar = ({
         <Progress value={progressPercent} className="h-3 [&>div]:bg-primary" />
       </div>
 
-      {/* Primary Streak with Level - Emphasized */}
+      {/* Primary Streak - Emphasized */}
       {/* Daily Streak - visible during onboarding AND in Daily mode only */}
       {(effectivelyOnboarding || isDaily) && (
         <div className="flex items-center gap-4 p-5 rounded-xl bg-muted">
@@ -149,11 +99,6 @@ export const StatsBar = ({
           <div className="flex-1">
             <p className="text-sm text-muted-foreground">Daily Streak</p>
             <p className="text-2xl font-bold text-foreground">{dailyStreak} day{dailyStreak !== 1 ? 's' : ''}</p>
-          </div>
-          {/* Level Circle */}
-          <div className="flex flex-col items-center">
-            <LevelCircle level={currentLevel} progress={xpProgress.percent} />
-            <p className="text-xs text-muted-foreground mt-1">Level</p>
           </div>
         </div>
       )}
@@ -165,11 +110,6 @@ export const StatsBar = ({
           <div className="flex-1">
             <p className="text-sm text-muted-foreground">Weekly Streak</p>
             <p className="text-2xl font-bold text-foreground">{weeklyStreak} week{weeklyStreak !== 1 ? 's' : ''}</p>
-          </div>
-          {/* Level Circle */}
-          <div className="flex flex-col items-center">
-            <LevelCircle level={currentLevel} progress={xpProgress.percent} />
-            <p className="text-xs text-muted-foreground mt-1">Level</p>
           </div>
         </div>
       )}

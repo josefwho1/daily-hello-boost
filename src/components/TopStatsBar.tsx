@@ -1,4 +1,3 @@
-import { getRankFromLevel } from "@/lib/xpSystem";
 import orbImage from "@/assets/orb.webp";
 import { Flame, Calendar } from "lucide-react";
 
@@ -7,7 +6,6 @@ interface TopStatsBarProps {
   targetHellos: number;
   streak: number;
   orbs: number;
-  level: number;
   mode: 'daily' | 'chill';
   isOnboarding?: boolean;
 }
@@ -17,11 +15,9 @@ export const TopStatsBar = ({
   targetHellos,
   streak,
   orbs,
-  level,
   mode,
   isOnboarding = false
 }: TopStatsBarProps) => {
-  const rank = getRankFromLevel(level);
   const isDaily = mode === 'daily';
 
   return (
@@ -48,15 +44,6 @@ export const TopStatsBar = ({
       <div className="flex items-center gap-1">
         <img src={orbImage} alt="Orb" className="w-4 h-4 object-contain" />
         <span className="font-bold text-foreground">{orbs}/3</span>
-      </div>
-
-      {/* Level Badge */}
-      <div 
-        className="w-7 h-7 rounded-full flex items-center justify-center text-primary-foreground text-xs font-bold shadow-sm"
-        style={{ backgroundColor: rank.color }}
-        title={`Level ${level} - ${rank.name}`}
-      >
-        {level}
       </div>
     </div>
   );

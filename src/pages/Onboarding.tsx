@@ -172,30 +172,18 @@ export default function Onboarding() {
 
     const { data: currentProgress, error: progressReadError } = await supabase
       .from('user_progress')
-      .select('total_xp, total_hellos, hellos_this_week, hellos_today_count, names_today_count, notes_today_count, last_xp_reset_date')
+      .select('total_hellos, hellos_this_week')
       .eq('user_id', userId)
       .maybeSingle();
     if (progressReadError) throw progressReadError;
 
-    const notesIncrement = connectionNotes.trim() ? 1 : 0;
-
-    const nextTotalXp = (currentProgress?.total_xp ?? 0) + 10;
     const nextTotalHellos = (currentProgress?.total_hellos ?? 0) + 1;
     const nextHellosThisWeek = (currentProgress?.hellos_this_week ?? 0) + 1;
-    const nextHellosToday = (currentProgress?.hellos_today_count ?? 0) + 1;
-    const nextNamesToday = (currentProgress?.names_today_count ?? 0) + 1;
-    const nextNotesToday = (currentProgress?.notes_today_count ?? 0) + notesIncrement;
-    const nextXpResetDate = currentProgress?.last_xp_reset_date ?? today;
     
     const { error: progressUpdateError } = await supabase.from('user_progress').update({
       last_completed_date: today,
-      total_xp: nextTotalXp,
       total_hellos: nextTotalHellos,
       hellos_this_week: nextHellosThisWeek,
-      hellos_today_count: nextHellosToday,
-      names_today_count: nextNamesToday,
-      notes_today_count: nextNotesToday,
-      last_xp_reset_date: nextXpResetDate,
     }).eq('user_id', userId);
     if (progressUpdateError) throw progressUpdateError;
     
