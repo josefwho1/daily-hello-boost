@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 // Remi Curious images - rotate daily
@@ -43,10 +43,10 @@ export const TodaysHelloCard = ({
     }`}>
       <div className="mb-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Sparkles className={`w-6 h-6 ${isCompleted ? 'text-muted-foreground' : 'text-primary'}`} />
+          <div className="flex items-center gap-2">
+            <span className="text-lg">💡</span>
             <h2 className={`text-lg font-semibold ${isCompleted ? 'text-muted-foreground' : 'text-foreground'}`}>
-              Today's Hello
+              Remi's Hello
             </h2>
           </div>
           {isCompleted && (
@@ -56,8 +56,8 @@ export const TodaysHelloCard = ({
             </Badge>
           )}
         </div>
-        <p className="text-xs text-muted-foreground mt-1 ml-9">
-          Any Hello counts, but this one gives you extra XP 🦝
+        <p className="text-xs text-muted-foreground mt-1 ml-7">
+          A daily suggestion to help you connect
         </p>
       </div>
       
