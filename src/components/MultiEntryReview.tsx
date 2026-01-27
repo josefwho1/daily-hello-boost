@@ -73,7 +73,7 @@ export const MultiEntryReview = ({
       </div>
 
       {/* Content - scrollable */}
-      <div className="flex-1 p-4 space-y-4 overflow-y-auto pb-32">
+      <div className="flex-1 p-4 space-y-4 overflow-y-auto pb-44">
         <p className="text-sm text-muted-foreground">
           We detected multiple people in your recording. Review and edit each entry below.
         </p>
@@ -101,7 +101,7 @@ export const MultiEntryReview = ({
                 placeholder="What's their name?"
                 value={entry.name}
                 onChange={(e) => updateEntry(index, "name", e.target.value)}
-                className="text-base"
+                className="text-sm"
               />
             </div>
 
@@ -112,7 +112,7 @@ export const MultiEntryReview = ({
                 placeholder="Coffee shop, gym, work..."
                 value={entry.location}
                 onChange={(e) => updateEntry(index, "location", e.target.value)}
-                className="text-base"
+                className="text-sm"
               />
             </div>
 
@@ -123,7 +123,7 @@ export const MultiEntryReview = ({
                 placeholder="What do you want to remember about them?"
                 value={entry.notes}
                 onChange={(e) => updateEntry(index, "notes", e.target.value)}
-                className="min-h-20 text-base"
+                className="min-h-16 text-sm resize-none"
               />
             </div>
           </Card>
@@ -131,7 +131,7 @@ export const MultiEntryReview = ({
 
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full mb-4"
           onClick={addEntry}
         >
           <Plus className="w-4 h-4 mr-2" />
