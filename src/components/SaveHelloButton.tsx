@@ -8,7 +8,7 @@ interface SaveHelloButtonProps {
 
 export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProps) => {
   return (
-    <div className="flex gap-2 justify-center bg-background/95 backdrop-blur-sm py-3 px-4 rounded-2xl shadow-lg border border-border/50">
+    <div className="flex gap-2">
       <Button 
         onClick={onClick}
         size="lg"
