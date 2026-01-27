@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Lock, Trophy, Check } from "lucide-react";
@@ -51,10 +51,7 @@ export const ActiveChallengeCard = ({
   };
 
   const [currentIndex, setCurrentIndex] = useState(getCurrentChallengeIndex());
-  
-  // Ensure currentIndex doesn't exceed max unlocked
-  const safeCurrentIndex = Math.min(currentIndex, maxUnlockedIndex);
-  const currentChallenge = pack.challenges[safeCurrentIndex];
+  const currentChallenge = pack.challenges[currentIndex];
   
   // Calculate unlock status for each challenge
   const isUnlocked = (challengeIndex: number) => {
@@ -70,25 +67,21 @@ export const ActiveChallengeCard = ({
     return format(unlockDate, "EEEE");
   };
 
-  // Can only navigate to unlocked challenges
-  const canGoLeft = safeCurrentIndex > 0;
-  const canGoRight = safeCurrentIndex < maxUnlockedIndex;
+  // Can navigate to any challenge, but locked ones are blurred
+  const canGoLeft = currentIndex > 0;
+  const canGoRight = currentIndex < pack.challenges.length - 1;
 
   const goLeft = () => {
-    if (canGoLeft) setCurrentIndex(safeCurrentIndex - 1);
+    if (canGoLeft) setCurrentIndex(currentIndex - 1);
   };
 
   const goRight = () => {
-    if (canGoRight) setCurrentIndex(safeCurrentIndex + 1);
+    if (canGoRight) setCurrentIndex(currentIndex + 1);
   };
 
   const challengeCompleted = isCompleted(currentChallenge);
-  const challengeUnlocked = isUnlocked(safeCurrentIndex);
+  const challengeUnlocked = isUnlocked(currentIndex);
   const completedCount = completedDays.length;
-
-  // Check if next challenge is locked
-  const nextChallengeLocked = safeCurrentIndex < pack.challenges.length - 1 && 
-    !isUnlocked(safeCurrentIndex + 1);
 
   return (
     <Card className="p-4 rounded-2xl border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
@@ -138,7 +131,10 @@ export const ActiveChallengeCard = ({
         </button>
 
         {/* Challenge Content */}
-        <div className="bg-card rounded-xl p-4 mx-4 text-center transition-all">
+        <div className={cn(
+          "bg-card rounded-xl p-4 mx-4 text-center transition-all",
+          !challengeUnlocked && "relative"
+        )}>
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="text-xs font-semibold text-muted-foreground">
               DAY {currentChallenge.day}
@@ -149,35 +145,48 @@ export const ActiveChallengeCard = ({
                 <span className="text-xs font-semibold">DONE</span>
               </div>
             )}
+            {!challengeUnlocked && (
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Lock size={12} />
+              </div>
+            )}
           </div>
           
-          <div className="text-3xl mb-2">
+          <div className={cn(
+            "text-3xl mb-2",
+            !challengeUnlocked && "grayscale opacity-50"
+          )}>
             {currentChallenge.icon}
           </div>
           
-          <h3 className="font-bold text-lg mb-1">
+          <h3 className={cn(
+            "font-bold text-lg mb-1",
+            !challengeUnlocked && "blur-sm select-none"
+          )}>
             {currentChallenge.title}
           </h3>
           
-          <p className="text-sm text-muted-foreground mb-2">
+          <p className={cn(
+            "text-sm text-muted-foreground mb-2",
+            !challengeUnlocked && "blur-sm select-none"
+          )}>
             {currentChallenge.description}
           </p>
 
-          {currentChallenge.tips && (
+          {challengeUnlocked && currentChallenge.tips && (
             <p className="text-xs text-muted-foreground/70 italic mb-3">
               💡 {currentChallenge.tips}
             </p>
           )}
 
-          {/* Show next unlock message if current is complete and next is locked */}
-          {challengeCompleted && nextChallengeLocked && (
+          {!challengeUnlocked && (
             <p className="text-xs text-muted-foreground mb-3 flex items-center justify-center gap-1">
               <Lock size={12} />
-              Next challenge unlocks {getUnlockDate(safeCurrentIndex + 1)}
+              Unlocks {getUnlockDate(currentIndex)}
             </p>
           )}
 
-          {!challengeCompleted && (
+          {challengeUnlocked && !challengeCompleted && (
             <Button 
               onClick={() => onLogHello(currentChallenge)}
               className="w-full rounded-full font-semibold"

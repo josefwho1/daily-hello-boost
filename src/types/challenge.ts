@@ -5,6 +5,7 @@ export interface Challenge {
   description: string;
   icon: string;
   tips: string;
+  tag: string; // Unique tag for tracking completions
 }
 
 export interface CompletedChallenge {
