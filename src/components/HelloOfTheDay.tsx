@@ -115,7 +115,7 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
           {/* Header */}
           <div className="flex items-center gap-2 mb-2">
             <span className="text-lg">📖</span>
-            <span className="text-base font-semibold text-orange-600">Throwback</span>
+            <span className="text-base font-semibold text-foreground">Throwback</span>
           </div>
           
           {/* Name row */}
