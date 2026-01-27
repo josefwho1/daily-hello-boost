@@ -451,7 +451,7 @@ export default function Dashboard() {
   // NOTE: Daily streak updates are handled exclusively in handleLogHello
   // to prevent race conditions. Do not add duplicate streak logic here.
 
-  const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean }) => {
+  const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string }) => {
     const isFirstHelloEver = logs.length === 0 && !progress?.has_received_first_orb;
     const isOnboardingChallenge = onboardingChallenges.some(c => c.title === selectedChallenge);
 
@@ -870,6 +870,7 @@ export default function Dashboard() {
         onLog={handleLogHello}
         challengeTitle={selectedChallenge}
         autoStartRecording={autoStartRecording}
+        existingLogs={logs}
       />
     );
   }

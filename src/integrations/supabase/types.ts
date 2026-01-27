@@ -121,6 +121,7 @@ export type Database = {
           difficulty_rating: number | null
           hello_type: string | null
           id: string
+          linked_to: string | null
           location: string | null
           name: string | null
           no_name_flag: boolean | null
@@ -134,6 +135,7 @@ export type Database = {
           difficulty_rating?: number | null
           hello_type?: string | null
           id?: string
+          linked_to?: string | null
           location?: string | null
           name?: string | null
           no_name_flag?: boolean | null
@@ -147,6 +149,7 @@ export type Database = {
           difficulty_rating?: number | null
           hello_type?: string | null
           id?: string
+          linked_to?: string | null
           location?: string | null
           name?: string | null
           no_name_flag?: boolean | null
@@ -156,6 +159,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "hello_logs_linked_to_fkey"
+            columns: ["linked_to"]
+            isOneToOne: false
+            referencedRelation: "hello_logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hello_logs_linked_to_fkey"
+            columns: ["linked_to"]
+            isOneToOne: false
+            referencedRelation: "hello_logs_with_user"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "hello_logs_user_id_fkey"
             columns: ["user_id"]
