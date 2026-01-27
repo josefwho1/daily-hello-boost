@@ -163,9 +163,8 @@ export default function Dashboard() {
   
   
   // Edit hello dialog states
-  
-  // Edit hello dialog states
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
+  const [editingLogIndex, setEditingLogIndex] = useState(0);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -946,7 +945,11 @@ export default function Dashboard() {
               logs={logs}
               onViewAll={() => navigate('/hellobook')}
               onViewLog={(log) => {
+                // Get sorted logs for navigation (same as RecentHellosSection uses)
+                const namedLogs = logs.filter(l => l.name && l.name.trim() !== '');
+                const index = namedLogs.findIndex(l => l.id === log.id);
                 setEditingLog(log);
+                setEditingLogIndex(index >= 0 ? index : 0);
                 setIsEditDialogOpen(true);
               }}
             />
@@ -1086,6 +1089,15 @@ export default function Dashboard() {
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         log={editingLog}
+        logs={logs.filter(l => l.name && l.name.trim() !== '')}
+        currentIndex={editingLogIndex}
+        onNavigate={(newIndex) => {
+          const namedLogs = logs.filter(l => l.name && l.name.trim() !== '');
+          if (newIndex >= 0 && newIndex < namedLogs.length) {
+            setEditingLog(namedLogs[newIndex]);
+            setEditingLogIndex(newIndex);
+          }
+        }}
         onSave={async (id, updates) => {
           const result = await updateCloudLog(id, updates);
           if (result) {
