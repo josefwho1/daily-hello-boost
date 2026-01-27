@@ -30,7 +30,6 @@ import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingComple
 import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompleteDialog";
 import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationDialog";
 import { DailyStreakCelebrationDialog } from "@/components/DailyStreakCelebrationDialog";
-import { LevelUpCelebrationDialog } from "@/components/LevelUpCelebrationDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { SingleChallengeCompleteDialog } from "@/components/SingleChallengeCompleteDialog";
@@ -39,7 +38,6 @@ import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMil
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
-import { calculateHelloXp, getLevelFromXp } from "@/lib/xpSystem";
 import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
@@ -98,12 +96,6 @@ export default function Dashboard() {
     orbs: guestProgress.orbs,
     has_received_first_orb: guestProgress.has_received_first_orb,
     total_hellos: guestProgress.total_hellos,
-    total_xp: guestProgress.total_xp,
-    current_level: guestProgress.current_level,
-    hellos_today_count: guestProgress.hellos_today_count,
-    names_today_count: guestProgress.names_today_count,
-    notes_today_count: guestProgress.notes_today_count,
-    last_xp_reset_date: guestProgress.last_xp_reset_date,
   } : null) : cloudProgress;
   
   const logs = isAnonymous ? guestLogs.map(log => ({
@@ -153,8 +145,6 @@ export default function Dashboard() {
   const [newWeeklyStreakValue, setNewWeeklyStreakValue] = useState(1);
   const [showDailyStreakCelebration, setShowDailyStreakCelebration] = useState(false);
   const [newDailyStreakValue, setNewDailyStreakValue] = useState(1);
-  const [showLevelUp, setShowLevelUp] = useState(false);
-  const [newLevelValue, setNewLevelValue] = useState(1);
   const [pendingMode, setPendingMode] = useState<'daily' | 'chill' | null>(null);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [autoStartRecording, setAutoStartRecording] = useState(false);
@@ -566,27 +556,6 @@ export default function Dashboard() {
       const alreadyAchievedThisWeek = (progress as any)?.weekly_goal_achieved_this_week === true;
       const justHitWeeklyGoal = isChillMode && newHellosThisWeek >= 3 && !alreadyAchievedThisWeek;
 
-      // Calculate XP
-      const xpResult = calculateHelloXp(
-        hellosToday,
-        namesToday,
-        notesToday,
-        !!data.name && data.name.trim().length > 0,
-        !!data.notes && data.notes.trim().length > 0,
-        isTodaysHello,
-        isWeeklyChallenge,
-        justHitWeeklyGoal,
-        mode,
-        progress?.daily_streak || 0,
-        progress?.weekly_streak || 0
-      );
-
-      const currentXp = progress?.total_xp || 0;
-      const newTotalXp = currentXp + xpResult.totalXp;
-      const currentLevel = progress?.current_level || 1;
-      const newLevel = getLevelFromXp(newTotalXp);
-      const didLevelUp = newLevel > currentLevel;
-
       // Calculate the new daily streak
       let newDailyStreak = progress?.daily_streak || 0;
       let streakWasIncremented = false;
@@ -622,13 +591,6 @@ export default function Dashboard() {
         last_completed_date: today,
         total_hellos: newTotalHellos,
         daily_streak: newDailyStreak,
-        // XP updates
-        total_xp: newTotalXp,
-        current_level: newLevel,
-        hellos_today_count: hellosToday + 1,
-        names_today_count: data.name ? namesToday + 1 : namesToday,
-        notes_today_count: data.notes ? notesToday + 1 : notesToday,
-        last_xp_reset_date: today
       };
 
       // Award orb for weekly challenge (max 3, once per week)
@@ -652,18 +614,8 @@ export default function Dashboard() {
 
       await updateProgress(updates);
 
-      // Show XP toast
-      if (xpResult.totalXp > 0) {
-        toast.success(`+${xpResult.totalXp} XP earned!`, {
-          description: xpResult.breakdown.slice(0, 2).join(' • ')
-        });
-      }
-
-      // Show level up celebration
-      if (didLevelUp) {
-        setNewLevelValue(newLevel);
-        setTimeout(() => setShowLevelUp(true), 500);
-      }
+      // Show simple "Hello logged!" toast
+      toast.success("Hello logged!");
 
       // Show celebration for onboarding challenges (only in 7-day-starter mode)
       // For Day 1 (first hello ever), only show FirstOrbGiftDialog (skip ChallengeCompletionCelebrationDialog)
@@ -698,7 +650,7 @@ export default function Dashboard() {
         setMilestoneValue(helloMilestone);
         setMilestoneType('hellos');
         // Delay to not conflict with other celebrations
-        setTimeout(() => setShowMilestoneCelebration(true), didLevelUp ? 3000 : 1000);
+        setTimeout(() => setShowMilestoneCelebration(true), 1000);
       }
       
       // Check for names milestone (unique names logged)
@@ -711,7 +663,7 @@ export default function Dashboard() {
       if (nameMilestone && !helloMilestone) {
         setMilestoneValue(nameMilestone);
         setMilestoneType('names');
-        setTimeout(() => setShowMilestoneCelebration(true), didLevelUp ? 3000 : 1000);
+        setTimeout(() => setShowMilestoneCelebration(true), 1000);
       }
       
       // Show save prompt for guests at 2, 8, and 20 hellos
@@ -774,11 +726,6 @@ export default function Dashboard() {
       setTutorialMode('daily');
       
       const target = 7;
-      const FIRST_HELLOS_COMPLETE_BONUS = 50;
-      const currentTotalXp = progress?.total_xp || 0;
-      const newTotalXp = currentTotalXp + FIRST_HELLOS_COMPLETE_BONUS;
-      const oldLevel = progress?.current_level || getLevelFromXp(currentTotalXp);
-      const newLevel = getLevelFromXp(newTotalXp);
       
       await updateProgress({ 
         mode: 'daily',
@@ -791,8 +738,6 @@ export default function Dashboard() {
         onboarding_completed_at: new Date().toISOString(),
         daily_path_selected_at: new Date().toISOString(),
         chill_path_selected_at: null,
-        total_xp: newTotalXp,
-        current_level: newLevel
       });
       
       setPendingMode(null);
@@ -801,21 +746,9 @@ export default function Dashboard() {
       setTimeout(() => {
         setShowHomeTutorial(true);
       }, 300);
-      
-      // Check for level up after tutorial completes
-      if (newLevel > oldLevel) {
-        setNewLevelValue(newLevel);
-      }
     } else {
       // Chill mode - go directly to tutorial (skip confirmation dialog)
       const target = 3;
-      
-      // Award 50 XP bonus for completing First Hellos
-      const FIRST_HELLOS_COMPLETE_BONUS = 50;
-      const currentTotalXp = progress?.total_xp || 0;
-      const newTotalXp = currentTotalXp + FIRST_HELLOS_COMPLETE_BONUS;
-      const oldLevel = progress?.current_level || getLevelFromXp(currentTotalXp);
-      const newLevel = getLevelFromXp(newTotalXp);
       
       await updateProgress({ 
         mode: 'chill',
@@ -828,8 +761,6 @@ export default function Dashboard() {
         onboarding_completed_at: new Date().toISOString(),
         daily_path_selected_at: null,
         chill_path_selected_at: new Date().toISOString(),
-        total_xp: newTotalXp,
-        current_level: newLevel
       });
       
       setTutorialMode('chill');
@@ -839,11 +770,6 @@ export default function Dashboard() {
       setTimeout(() => {
         setShowHomeTutorial(true);
       }, 300);
-      
-      // Check for level up after tutorial completes
-      if (newLevel > oldLevel) {
-        setNewLevelValue(newLevel);
-      }
     }
   };
 
@@ -852,13 +778,6 @@ export default function Dashboard() {
     
     const target = pendingMode === 'daily' ? 7 : 3;
     const isDaily = pendingMode === 'daily';
-    
-    // Award 50 XP bonus for completing First Hellos
-    const FIRST_HELLOS_COMPLETE_BONUS = 50;
-    const currentTotalXp = progress?.total_xp || 0;
-    const newTotalXp = currentTotalXp + FIRST_HELLOS_COMPLETE_BONUS;
-    const oldLevel = progress?.current_level || getLevelFromXp(currentTotalXp);
-    const newLevel = getLevelFromXp(newTotalXp);
     
     await updateProgress({ 
       mode: pendingMode,
@@ -871,8 +790,6 @@ export default function Dashboard() {
       onboarding_completed_at: new Date().toISOString(),
       daily_path_selected_at: isDaily ? new Date().toISOString() : null,
       chill_path_selected_at: !isDaily ? new Date().toISOString() : null,
-      total_xp: newTotalXp,
-      current_level: newLevel
     });
     
     setShowDailyModeConfirm(false);
@@ -886,13 +803,6 @@ export default function Dashboard() {
     setTimeout(() => {
       setShowHomeTutorial(true);
     }, 300);
-    
-    // Check for level up after tutorial completes
-    if (newLevel > oldLevel) {
-      setNewLevelValue(newLevel);
-      // Delay level up to show after tutorial
-      // We'll handle this when tutorial completes
-    }
   };
 
   // Check if today's hello is completed - now just checks if any hello was logged today
@@ -1138,12 +1048,6 @@ export default function Dashboard() {
         newStreak={newDailyStreakValue}
       />
 
-      <LevelUpCelebrationDialog
-        open={showLevelUp}
-        onClose={() => setShowLevelUp(false)}
-        newLevel={newLevelValue}
-        totalXp={progress?.total_xp || 0}
-      />
 
       {/* Pack Challenge Celebrations */}
       <SingleChallengeCompleteDialog

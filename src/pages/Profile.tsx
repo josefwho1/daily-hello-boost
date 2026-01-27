@@ -12,7 +12,6 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { XpProgressBar } from "@/components/XpProgressBar";
 import { ProfilePictureSelector, getProfilePictureSrc } from "@/components/ProfilePictureSelector";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { LogOut, Clock, Pencil, Check, X, Bell, Camera, Instagram, Globe, Mail, Smartphone, Share, ChevronDown, ChevronUp, Sparkles, Lock, Eye, EyeOff, AlertCircle, Trash2 } from "lucide-react";
@@ -73,8 +72,6 @@ const Profile = () => {
   
   // Use cloud progress for authenticated users, guest progress otherwise
   const progress = user ? cloudProgress : (guestProgress ? {
-    current_level: guestProgress.current_level,
-    total_xp: guestProgress.total_xp,
     has_completed_onboarding: guestProgress.has_completed_onboarding,
     is_onboarding_week: guestProgress.is_onboarding_week,
     mode: guestProgress.mode,
@@ -424,13 +421,6 @@ const Profile = () => {
           </Card>
         )}
 
-        {/* XP & Level Progress */}
-        <div className="mb-4">
-          <XpProgressBar
-            totalXp={progress?.total_xp || 0}
-            currentLevel={progress?.current_level || 1}
-          />
-        </div>
 
 
 
@@ -739,7 +729,6 @@ const Profile = () => {
         onOpenChange={setShowProfilePictureSelector}
         selectedId={profilePicture}
         onSelect={handleProfilePictureSelect}
-        userLevel={progress?.current_level || 1}
       />
 
       <SaveProgressDialog
