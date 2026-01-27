@@ -96,17 +96,17 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
   if (!selectedMemory) return null;
 
   const notesText = selectedMemory.notes || "";
-  const isLongNote = notesText.length > 80;
+  const isLongNote = notesText.length > 100;
   const displayLocation = selectedMemory.location?.trim();
 
   // For inline "Read more", we truncate the text and append the button
   const truncatedNotes = isLongNote && !isExpanded 
-    ? notesText.slice(0, 80).trim() 
+    ? notesText.slice(0, 100).trim() 
     : notesText;
 
   return (
     <Card 
-      className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20 cursor-pointer hover:from-amber-500/15 hover:to-amber-500/10 transition-colors"
+      className="p-4 rounded-xl bg-card border-border/50 cursor-pointer hover:bg-muted/30 transition-colors"
       onClick={handleCardClick}
     >
       <div className="flex items-start justify-between gap-3">
@@ -114,16 +114,16 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
           {/* Header */}
           <div className="flex items-center gap-2 mb-2">
             <span className="text-lg">📖</span>
-            <span className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide">Hello of the Day</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Hello of the Day</span>
           </div>
           
           {/* Name row */}
-          <div className="flex items-center gap-1.5 mb-2">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="text-base font-semibold text-foreground">{selectedMemory.name}</span>
             {displayLocation && (
               <div className="flex items-center gap-1 text-muted-foreground">
                 <MapPin className="w-3 h-3" />
-                <span className="text-sm truncate">{displayLocation}</span>
+                <span className="text-sm">{displayLocation}</span>
               </div>
             )}
           </div>

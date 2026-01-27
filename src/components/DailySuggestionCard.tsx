@@ -70,30 +70,19 @@ export const DailySuggestionCard = () => {
   };
 
   return (
-    <Card className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 relative overflow-hidden">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0 pr-14">
-          {/* Header */}
-          <div className="flex items-center gap-2 mb-1">
+    <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden">
+      {/* Header row with shuffle button */}
+      <div className="flex items-start justify-between mb-1">
+        <div>
+          <div className="flex items-center gap-2">
             <span className="text-lg">💡</span>
             <span className="text-base font-semibold text-foreground">Remi's Hello</span>
           </div>
-          
-          {/* Subtitle */}
-          <p className="text-xs text-muted-foreground mb-3 ml-7">
+          <p className="text-xs text-muted-foreground mt-0.5">
             A daily suggestion to help you connect
-          </p>
-          
-          {/* Title */}
-          <h3 className="text-sm font-medium text-foreground mb-1">{displayHello.title}</h3>
-          
-          {/* Description */}
-          <p className="text-sm text-muted-foreground">
-            {displayHello.description}
           </p>
         </div>
         
-        {/* Shuffle button */}
         <Button
           variant="ghost"
           size="sm"
@@ -102,6 +91,14 @@ export const DailySuggestionCard = () => {
         >
           <Shuffle className="w-3.5 h-3.5" />
         </Button>
+      </div>
+      
+      {/* Content - fixed height for 2 lines */}
+      <div className="mt-3 pr-16">
+        <h3 className="text-sm font-medium text-foreground mb-1">{displayHello.title}</h3>
+        <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+          {displayHello.description}
+        </p>
       </div>
       
       {/* Remi Curious - positioned bottom right of the card */}
