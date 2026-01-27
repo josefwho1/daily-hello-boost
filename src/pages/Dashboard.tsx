@@ -20,7 +20,7 @@ import { Challenge } from "@/types/challenge";
 import { RecentHellosSection } from "@/components/RecentHellosSection";
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
-import { HelloOfTheDay } from "@/components/HelloOfTheDay";
+
 import EditHelloDialog from "@/components/EditHelloDialog";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { LogHelloButton } from "@/components/LogHelloButton";
@@ -900,17 +900,8 @@ export default function Dashboard() {
         {/* Main Dashboard - Connection-focused layout */}
         <div className="space-y-6">
           
-            {/* Memory & Today's Hello/Challenge - Tighter spacing */}
+            {/* Today's Hello/Challenge */}
             <div className="space-y-3">
-              {/* Memory - Featured memory from user's history */}
-              <HelloOfTheDay 
-                logs={logs} 
-                onEditLog={(log) => {
-                  setEditingLog(log as HelloLog);
-                  setIsEditDialogOpen(true);
-                }}
-              />
-
               {/* Active Challenge Card or Daily Suggestion */}
               {progress?.selected_pack_id && getPackById(progress.selected_pack_id)?.challenges.length ? (
                 <ActiveChallengeCard

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Search, Mail, Globe } from "lucide-react";
 import { useHelloLogs, HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
-import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { toast } from "sonner";
 import hellobookIcon from "@/assets/hellobook-icon.webp";
@@ -15,6 +14,7 @@ import EditHelloDialog from "@/components/EditHelloDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import HellobookPersonCard from "@/components/HellobookPersonCard";
 import Community from "@/pages/Community";
+import { HelloOfTheDay } from "@/components/HelloOfTheDay";
 
 type FilterType = 'all' | 'names' | 'unknown';
 type ViewType = 'mybook' | 'global';
@@ -248,6 +248,12 @@ const Hellobook = () => {
             </div>
           </Card>
         )}
+
+        {/* Throwback Section */}
+        <HelloOfTheDay 
+          logs={logs} 
+          onEditLog={handleEditClick}
+        />
 
 
         {/* Toggle Stats Bar */}
