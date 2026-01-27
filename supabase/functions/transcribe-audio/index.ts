@@ -27,32 +27,32 @@ serve(async (req) => {
     const fileSizeKB = Math.round(audioFile.size / 1024);
     console.log(`Audio file received: ${audioFile.name}, size: ${fileSizeKB}KB, type: ${audioFile.type}`);
 
-    const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
-    if (!ELEVENLABS_API_KEY) {
-      console.error("ELEVENLABS_API_KEY not configured");
-      throw new Error("ELEVENLABS_API_KEY is not configured");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) {
+      console.error("OPENAI_API_KEY not configured");
+      throw new Error("OPENAI_API_KEY is not configured");
     }
 
-    // Use scribe_v2 for better accuracy and longer audio support
+    // Use OpenAI Whisper for transcription
     const apiFormData = new FormData();
     apiFormData.append("file", audioFile);
-    apiFormData.append("model_id", "scribe_v2");
+    apiFormData.append("model", "whisper-1");
 
-    console.log("Sending request to ElevenLabs API...");
+    console.log("Sending request to OpenAI Whisper API...");
     
-    const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST",
       headers: {
-        "xi-api-key": ELEVENLABS_API_KEY,
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
       },
       body: apiFormData,
     });
 
-    console.log(`ElevenLabs API response status: ${response.status}`);
+    console.log(`OpenAI API response status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("ElevenLabs API error:", response.status, errorText);
+      console.error("OpenAI API error:", response.status, errorText);
       return new Response(JSON.stringify({ error: `Transcription failed: ${errorText}` }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
