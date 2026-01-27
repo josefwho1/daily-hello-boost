@@ -154,9 +154,9 @@ const Community = () => {
   };
 
   const filterLabels: Record<TimeFilter, string> = {
-    allTime: 'All time',
-    thisMonth: 'This month',
-    thisWeek: 'This week',
+    allTime: 'All',
+    thisMonth: 'Month',
+    thisWeek: 'Week',
   };
 
   return (
@@ -193,24 +193,27 @@ const Community = () => {
               </CardContent>
             </Card>
             
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
             <Card className="bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
-              <CardContent className="pt-4 pb-4 text-center">
-                <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosThisMonth)}</p>
-                <p className="text-sm text-muted-foreground">hellos this month</p>
+              <CardContent className="pt-3 pb-3 text-center px-2">
+                <p className="text-xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosThisMonth)}</p>
+                <p className="text-[10px] text-muted-foreground">this month</p>
               </CardContent>
             </Card>
 
             <Card className="bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
-              <CardContent className="pt-4 pb-4 text-center">
-                <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosThisWeek)}</p>
-                <p className="text-sm text-muted-foreground">hellos this week</p>
+              <CardContent className="pt-3 pb-3 text-center px-2">
+                <p className="text-xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosThisWeek)}</p>
+                <p className="text-[10px] text-muted-foreground">this week</p>
               </CardContent>
             </Card>
             
-            <Card className="col-span-2 bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
-              <CardContent className="pt-4 pb-4 text-center">
-                <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosToday)}</p>
-                <p className="text-sm text-muted-foreground">hellos today</p>
+            <Card className="bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
+              <CardContent className="pt-3 pb-3 text-center px-2">
+                <p className="text-xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosToday)}</p>
+                <p className="text-[10px] text-muted-foreground">today</p>
               </CardContent>
             </Card>
           </div>
@@ -226,19 +229,21 @@ const Community = () => {
           {/* Hellos Logged Leaderboard */}
           <Card>
             <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <Hand className="w-4 h-4 text-primary" />
                 Hellos Logged
               </CardTitle>
-              <Tabs value={hellosFilter} onValueChange={(v) => setHellosFilter(v as TimeFilter)} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 h-8">
+              <Tabs value={hellosFilter} onValueChange={(v) => setHellosFilter(v as TimeFilter)} className="w-fit ml-auto">
+                <TabsList className="h-6 p-0.5 bg-muted/50">
                   {(Object.keys(filterLabels) as TimeFilter[]).map((key) => (
-                    <TabsTrigger key={key} value={key} className="text-xs px-2">
+                    <TabsTrigger key={key} value={key} className="text-[10px] px-2 py-0.5 h-5">
                       {filterLabels[key]}
                     </TabsTrigger>
                   ))}
                 </TabsList>
               </Tabs>
+              </div>
             </CardHeader>
             <CardContent className="pt-0">
               {renderLeaderboard(
@@ -252,19 +257,21 @@ const Community = () => {
           {/* Names Logged Leaderboard */}
           <Card>
             <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <User className="w-4 h-4 text-primary" />
                 Names Logged
               </CardTitle>
-              <Tabs value={namesFilter} onValueChange={(v) => setNamesFilter(v as TimeFilter)} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 h-8">
+              <Tabs value={namesFilter} onValueChange={(v) => setNamesFilter(v as TimeFilter)} className="w-fit ml-auto">
+                <TabsList className="h-6 p-0.5 bg-muted/50">
                   {(Object.keys(filterLabels) as TimeFilter[]).map((key) => (
-                    <TabsTrigger key={key} value={key} className="text-xs px-2">
+                    <TabsTrigger key={key} value={key} className="text-[10px] px-2 py-0.5 h-5">
                       {filterLabels[key]}
                     </TabsTrigger>
                   ))}
                 </TabsList>
               </Tabs>
+              </div>
             </CardHeader>
             <CardContent className="pt-0">
               {renderLeaderboard(
