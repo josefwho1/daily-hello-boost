@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useLayoutEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shuffle, MapPin } from "lucide-react";
@@ -19,6 +19,8 @@ const getTodayKey = () => {
 export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
   const [shuffledIndex, setShuffledIndex] = useState<number | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isNotesOverflowing, setIsNotesOverflowing] = useState(false);
+  const notesRef = useRef<HTMLParagraphElement | null>(null);
 
   // Filter logs with both name AND notes
   const eligibleLogs = useMemo(() => {
@@ -94,16 +96,29 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
     setIsExpanded(!isExpanded);
   };
 
+  const notesText = selectedMemory?.notes || "";
+  const displayLocation = selectedMemory?.location?.trim();
+
+  // Determine whether the collapsed, clamped text actually overflows (more reliable than char count)
+  useLayoutEffect(() => {
+    if (isExpanded) return;
+    const el = notesRef.current;
+    if (!el) return;
+
+    const check = () => {
+      const overflowing = el.scrollHeight > el.clientHeight + 1;
+      setIsNotesOverflowing(overflowing);
+    };
+
+    check();
+
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isExpanded, notesText, selectedMemory?.id]);
+
   if (!selectedMemory) return null;
-
-  const notesText = selectedMemory.notes || "";
-  const isLongNote = notesText.length > 80;
-  const displayLocation = selectedMemory.location?.trim();
-
-  // Truncate at word boundary for cleaner cut
-  const truncatedNotes = isLongNote && !isExpanded 
-    ? notesText.slice(0, 80).replace(/\s+\S*$/, '') 
-    : notesText;
 
   return (
     <Card 
@@ -134,19 +149,31 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
             )}
           </div>
           
-          {/* Notes - fixed 2-line height */}
-          <div className={isExpanded ? "" : "min-h-[2.75rem]"}>
-            <p className={`text-sm text-muted-foreground leading-relaxed ${!isExpanded && isLongNote ? "line-clamp-2" : ""}`}>
-              {isExpanded ? notesText : truncatedNotes}
-              {isLongNote && (
+          {/* Notes - always reserve 2 lines when collapsed */}
+          <div className={isExpanded ? "" : "relative h-[2.75rem] overflow-hidden"}>
+            <p
+              ref={notesRef}
+              className={`text-sm text-muted-foreground leading-relaxed ${isExpanded ? "" : "line-clamp-2"}`}
+            >
+              {notesText}
+              {isExpanded && isNotesOverflowing && (
                 <button
                   onClick={handleExpandToggle}
-                  className="text-primary/70 hover:text-primary ml-0.5 transition-colors"
+                  className="text-primary/70 hover:text-primary ml-1 transition-colors"
                 >
-                  {isExpanded ? " less" : "... more"}
+                  less
                 </button>
               )}
             </p>
+
+            {!isExpanded && isNotesOverflowing && (
+              <button
+                onClick={handleExpandToggle}
+                className="absolute bottom-0 right-0 text-xs font-medium text-primary/80 hover:text-primary transition-colors px-1 pl-3 bg-gradient-to-l from-card via-card to-transparent"
+              >
+                more
+              </button>
+            )}
           </div>
         </div>
         
