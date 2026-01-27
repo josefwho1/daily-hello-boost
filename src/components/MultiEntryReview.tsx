@@ -140,10 +140,10 @@ export const MultiEntryReview = ({
       </div>
 
       {/* Fixed bottom button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border safe-area-bottom">
         <Button
           onClick={handleSubmit}
-          className="w-full h-12 text-lg"
+          className="w-full h-14 text-lg font-semibold shadow-lg"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
