@@ -35,8 +35,9 @@ const Challenges = () => {
     const pack = getPackById(packId);
     if (!pack || pack.challenges.length === 0) return { completed: 0, total: 0 };
     
+    // Use challenge_tag for more reliable tracking across packs
     const completed = pack.challenges.filter(challenge => 
-      completions.some(c => c.challenge_day === challenge.day)
+      completions.some(c => c.challenge_tag === challenge.tag || c.challenge_day === challenge.day)
     ).length;
     
     return { completed, total: pack.challenges.length };

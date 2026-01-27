@@ -29,7 +29,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress, loading: progressLoading, updateProgress } = useUserProgress();
-  const { completions, loading: completionsLoading, addCompletion } = useChallengeCompletions();
+  const { completions, loading: completionsLoading, addCompletion, refetch: refetchCompletions } = useChallengeCompletions();
   const { addLog: addHelloLog } = useHelloLogs();
   const [showLogHelloDialog, setShowLogHelloDialog] = useState(false);
   const [showNoteDialog, setShowNoteDialog] = useState(false);
@@ -178,14 +178,22 @@ const Home = () => {
   const handleSaveNote = async () => {
     if (!completingChallengeId || !progress) return;
 
+    // Find the challenge to get its tag
+    const completingChallenge = challenges.find(c => c.id === completingChallengeId);
+    const challengeTag = completingChallenge?.tag || `challenge-${completingChallengeId}`;
+
     try {
       await addCompletion({
         challenge_day: completingChallengeId,
+        challenge_tag: challengeTag,
         interaction_name: currentName || null,
         notes: currentNote || null,
         rating: currentRating,
         difficulty_rating: currentDifficulty
       });
+
+      // Refetch to ensure UI updates
+      refetchCompletions();
 
       // Use timezone-aware date calculation for consistency
       const tzOffset = detectBrowserTimezoneOffset();
