@@ -146,7 +146,7 @@ const Community = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              {stats.leaderboards.lifetimeLeaders.length > 0 ? (
+              {(stats.leaderboards?.lifetimeLeaders?.length ?? 0) > 0 ? (
                 <div className="space-y-2">
                   {stats.leaderboards.lifetimeLeaders.map((leader, index) => (
                     <div 
