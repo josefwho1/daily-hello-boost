@@ -8,7 +8,7 @@ import { useTimezone } from "@/hooks/useTimezone";
 
 interface HelloOfTheDayProps {
   logs: HelloLog[];
-  onEditLog?: (log: HelloLog) => void;
+  onViewLog?: (log: HelloLog) => void;
 }
 
 // Get today's date key for localStorage
@@ -17,7 +17,7 @@ const getTodayKey = () => {
   return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
 };
 
-export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
+export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
   const [shuffledIndex, setShuffledIndex] = useState<number | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isNotesOverflowing, setIsNotesOverflowing] = useState(false);
@@ -97,8 +97,8 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
   };
 
   const handleCardClick = () => {
-    if (selectedMemory && onEditLog) {
-      onEditLog(selectedMemory);
+    if (selectedMemory && onViewLog) {
+      onViewLog(selectedMemory);
     }
   };
 

@@ -10,7 +10,7 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { toast } from "sonner";
 import hellobookIcon from "@/assets/hellobook-icon.webp";
 import vaultIcon from "@/assets/vault-icon.webp";
-import EditHelloDialog from "@/components/EditHelloDialog";
+import ViewHelloDialog from "@/components/ViewHelloDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import HellobookPersonCard from "@/components/HellobookPersonCard";
 import Community from "@/pages/Community";
@@ -122,7 +122,7 @@ const Hellobook = () => {
     };
   }, [groupedPeople]);
   
-  const handleEditClick = (log: HelloLog) => {
+  const handleViewClick = (log: HelloLog) => {
     setEditingLog(log);
     setIsEditDialogOpen(true);
   };
@@ -253,7 +253,7 @@ const Hellobook = () => {
         <div className="mb-6">
           <HelloOfTheDay 
             logs={logs} 
-            onEditLog={handleEditClick}
+            onViewLog={handleViewClick}
           />
         </div>
 
@@ -321,7 +321,7 @@ const Hellobook = () => {
                 primaryLog={group.primaryLog}
                 linkedLogs={group.linkedLogs}
                 formatTimestamp={formatTimestamp}
-                onEditClick={handleEditClick}
+                onViewClick={handleViewClick}
               />
             ))}
           </div>
@@ -350,7 +350,7 @@ const Hellobook = () => {
         </div>
       </div>
 
-      <EditHelloDialog
+      <ViewHelloDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         log={editingLog}
