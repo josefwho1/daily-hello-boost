@@ -167,12 +167,14 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
             </p>
 
             {!isExpanded && isNotesOverflowing && (
-              <button
-                onClick={handleExpandToggle}
-                className="absolute bottom-0 right-0 text-xs font-medium text-primary/80 hover:text-primary transition-colors px-1 pl-3 bg-gradient-to-l from-card via-card to-transparent"
-              >
-                more
-              </button>
+              <span className="absolute bottom-0 right-0 flex items-end bg-gradient-to-l from-card via-card to-transparent pl-6 pr-1">
+                <button
+                  onClick={handleExpandToggle}
+                  className="text-xs font-medium text-primary/80 hover:text-primary transition-colors"
+                >
+                  more
+                </button>
+              </span>
             )}
           </div>
         </div>

@@ -14,7 +14,7 @@ serve(async (req) => {
     const { text } = await req.json();
     
     if (!text) {
-      return new Response(JSON.stringify({ name: "", location: "", notes: "" }), {
+      return new Response(JSON.stringify({ entries: [{ name: "", location: "", notes: "" }] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -37,22 +37,32 @@ serve(async (req) => {
             role: "system",
             content: `You are a helpful assistant that extracts structured information from transcribed speech about social interactions.
 
-Given a transcription of someone describing meeting or greeting another person, extract:
+Given a transcription of someone describing meeting or greeting people, extract information about EACH person mentioned separately.
+
+For EACH person mentioned, extract:
 1. The name of the person they met (if mentioned)
-2. The location/place where they met (if mentioned)
-3. Any remaining notes/description
+2. The location/place where they met that specific person (if mentioned)
+3. Any notes/description specific to that person
 
 Rules:
+- If multiple people are mentioned, create a separate entry for each person
 - Only extract actual person names, not pronouns or generic references like "the barista", "some guy", "a woman"
-- If no specific name is mentioned, return an empty string for name
+- If no specific name is mentioned for a person, return an empty string for name
 - For location, extract places like "coffee shop", "gym", "work", "park", "on the train", etc.
 - If no location is mentioned, return an empty string for location
 - Keep the notes natural and include all relevant details not captured by name or location
-- Don't duplicate information - if something is captured in name or location, don't repeat it in notes`
+- Don't duplicate information - if something is captured in name or location, don't repeat it in notes
+- If only one person is mentioned, return an array with one entry
+- Associate the correct details with the correct person when multiple people are mentioned
+
+Examples:
+- "I met Sarah at the gym, she was really friendly" → one entry for Sarah
+- "I said hi to John at work and then met Emma at the coffee shop later" → two entries, one for John (at work) and one for Emma (at coffee shop)
+- "Met three people today - Mike from accounting, Lisa at lunch, and some guy on the bus" → two entries (Mike and Lisa), skip the unnamed person unless there are notable details`
           },
           {
             role: "user",
-            content: `Extract the person's name, location, and notes from this transcription: "${text}"`
+            content: `Extract information about each person from this transcription: "${text}"`
           }
         ],
         tools: [
@@ -60,24 +70,34 @@ Rules:
             type: "function",
             function: {
               name: "extract_interaction_details",
-              description: "Extract a person's name, meeting location, and remaining notes from transcribed text",
+              description: "Extract details about one or more people from transcribed text",
               parameters: {
                 type: "object",
                 properties: {
-                  name: {
-                    type: "string",
-                    description: "The person's name if explicitly mentioned, or empty string if not"
-                  },
-                  location: {
-                    type: "string",
-                    description: "Where they met (e.g., 'coffee shop', 'gym', 'work'), or empty string if not mentioned"
-                  },
-                  notes: {
-                    type: "string",
-                    description: "The remaining description/notes about the interaction"
+                  entries: {
+                    type: "array",
+                    description: "Array of entries, one for each person mentioned",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: {
+                          type: "string",
+                          description: "The person's name if explicitly mentioned, or empty string if not"
+                        },
+                        location: {
+                          type: "string",
+                          description: "Where they met this specific person (e.g., 'coffee shop', 'gym', 'work'), or empty string if not mentioned"
+                        },
+                        notes: {
+                          type: "string",
+                          description: "The description/notes about the interaction with this person"
+                        }
+                      },
+                      required: ["name", "location", "notes"]
+                    }
                   }
                 },
-                required: ["name", "location", "notes"],
+                required: ["entries"],
                 additionalProperties: false
               }
             }
@@ -96,8 +116,8 @@ Rules:
       }
       const errorText = await response.text();
       console.error("AI Gateway error:", response.status, errorText);
-      // Fallback: return text as notes
-      return new Response(JSON.stringify({ name: "", location: "", notes: text }), {
+      // Fallback: return text as notes in single entry
+      return new Response(JSON.stringify({ entries: [{ name: "", location: "", notes: text }] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -107,13 +127,22 @@ Rules:
     
     if (toolCall?.function?.arguments) {
       const result = JSON.parse(toolCall.function.arguments);
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // Ensure we always have an entries array
+      if (result.entries && Array.isArray(result.entries)) {
+        return new Response(JSON.stringify(result), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // Legacy single-entry fallback
+      if (result.name !== undefined || result.location !== undefined || result.notes !== undefined) {
+        return new Response(JSON.stringify({ entries: [result] }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Fallback
-    return new Response(JSON.stringify({ name: "", location: "", notes: text }), {
+    return new Response(JSON.stringify({ entries: [{ name: "", location: "", notes: text }] }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
