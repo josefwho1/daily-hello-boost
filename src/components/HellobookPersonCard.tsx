@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, MapPin } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, Trash2 } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
+import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
 
 interface HellobookPersonCardProps {
   primaryLog: HelloLog;
   linkedLogs: HelloLog[];
   formatTimestamp: (timestamp: string, includeTime?: boolean) => string;
   onViewClick: (log: HelloLog) => void;
+  onDelete?: (id: string) => void;
 }
 
 // Expandable text component for long notes
@@ -52,9 +54,11 @@ const HellobookPersonCard = ({
   primaryLog, 
   linkedLogs, 
   formatTimestamp, 
-  onViewClick 
+  onViewClick,
+  onDelete
 }: HellobookPersonCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const hasName = primaryLog.name && primaryLog.name.trim() !== "";
   const allInteractions = [primaryLog, ...linkedLogs].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -65,13 +69,77 @@ const HellobookPersonCard = ({
   // For the card header, show the most recent interaction's details
   const mostRecent = allInteractions[0];
 
+  // Swipe gesture handling
+  const x = useMotionValue(0);
+  const deleteOpacity = useTransform(x, [-100, -60], [1, 0]);
+  const deleteScale = useTransform(x, [-100, -60], [1, 0.8]);
+  const SWIPE_THRESHOLD = -80;
+
+  const handleDragEnd = (_: any, info: PanInfo) => {
+    if (info.offset.x < SWIPE_THRESHOLD && onDelete) {
+      setIsDeleting(true);
+    }
+  };
+
+  const handleConfirmDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(primaryLog.id);
+    }
+    setIsDeleting(false);
+  };
+
+  const handleCancelDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsDeleting(false);
+  };
+
   return (
-    <Card 
-      className={`p-4 rounded-2xl hover:shadow-md transition-all duration-200 animate-fade-in cursor-pointer active:scale-[0.98] ${
-        !hasName ? 'opacity-75' : ''
-      }`}
-      onClick={() => onViewClick(primaryLog)}
-    >
+    <div className="relative overflow-hidden rounded-2xl">
+      {/* Delete action background */}
+      <motion.div 
+        className="absolute inset-y-0 right-0 flex items-center justify-end pr-4 bg-destructive rounded-2xl"
+        style={{ opacity: deleteOpacity, scale: deleteScale }}
+      >
+        <Trash2 className="w-5 h-5 text-destructive-foreground" />
+      </motion.div>
+
+      {/* Confirmation overlay */}
+      {isDeleting && (
+        <div 
+          className="absolute inset-0 z-10 flex items-center justify-center gap-3 bg-destructive/95 rounded-2xl px-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="text-sm text-destructive-foreground font-medium">Delete?</span>
+          <button
+            onClick={handleConfirmDelete}
+            className="px-4 py-2 bg-destructive-foreground text-destructive rounded-xl text-sm font-medium"
+          >
+            Yes
+          </button>
+          <button
+            onClick={handleCancelDelete}
+            className="px-4 py-2 bg-destructive-foreground/20 text-destructive-foreground rounded-xl text-sm font-medium"
+          >
+            No
+          </button>
+        </div>
+      )}
+
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: -100, right: 0 }}
+        dragElastic={0.1}
+        onDragEnd={handleDragEnd}
+        style={{ x }}
+        whileTap={{ cursor: "grabbing" }}
+      >
+        <Card 
+          className={`p-4 rounded-2xl hover:shadow-md transition-all duration-200 animate-fade-in cursor-pointer active:scale-[0.98] ${
+            !hasName ? 'opacity-75' : ''
+          }`}
+          onClick={() => !isDeleting && onViewClick(primaryLog)}
+        >
       {hasMultipleInteractions ? (
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <div className="flex items-start gap-3">
@@ -197,7 +265,9 @@ const HellobookPersonCard = ({
           </div>
         </div>
       )}
-    </Card>
+        </Card>
+      </motion.div>
+    </div>
   );
 };
 
