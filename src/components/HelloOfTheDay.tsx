@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shuffle, ChevronDown, ChevronUp } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface HelloOfTheDayProps {
@@ -107,33 +107,42 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide">Memory</span>
+            <span className="text-lg">📖</span>
+            <span className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide">Hello of the Day</span>
           </div>
           <div className="flex items-center gap-1.5 mb-2">
             <span className="text-base font-semibold text-foreground">{selectedMemory.name}</span>
             {displayLocation && (
               <>
-                <span className="text-muted-foreground">/</span>
+                <span className="text-muted-foreground">📍</span>
                 <span className="text-sm text-muted-foreground truncate">{displayLocation}</span>
               </>
             )}
           </div>
-          <p className={`text-sm text-muted-foreground ${isExpanded ? '' : 'line-clamp-2'}`}>
-            {notesText}
-          </p>
-          {isLongNote && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleExpandToggle}
-              className="h-6 px-0 mt-1 text-xs text-primary hover:text-primary/80 hover:bg-transparent"
-            >
-              {isExpanded ? (
-                <>Read less <ChevronUp className="w-3 h-3 ml-1" /></>
-              ) : (
-                <>Read more <ChevronDown className="w-3 h-3 ml-1" /></>
+          {isExpanded ? (
+            <p className="text-sm text-muted-foreground">
+              {notesText}
+              {isLongNote && (
+                <button
+                  onClick={handleExpandToggle}
+                  className="text-xs text-primary hover:text-primary/80 ml-1 inline"
+                >
+                  Read less
+                </button>
               )}
-            </Button>
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {notesText}
+              {isLongNote && (
+                <button
+                  onClick={handleExpandToggle}
+                  className="text-xs text-primary hover:text-primary/80 ml-1 inline"
+                >
+                  ...Read more
+                </button>
+              )}
+            </p>
           )}
         </div>
         {eligibleLogs.length > 1 && (
