@@ -337,6 +337,7 @@ const Hellobook = () => {
                 linkedLogs={group.linkedLogs}
                 formatTimestamp={formatTimestamp}
                 onViewClick={handleViewClick}
+                onDelete={handleDeleteLog}
               />
             ))}
           </div>
