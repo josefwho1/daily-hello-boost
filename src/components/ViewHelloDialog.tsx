@@ -64,6 +64,7 @@ const ViewHelloDialog = ({
   
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const nameSectionRef = useRef<HTMLDivElement>(null);
   const locationSectionRef = useRef<HTMLDivElement>(null);
   const notesSectionRef = useRef<HTMLDivElement>(null);
@@ -77,24 +78,42 @@ const ViewHelloDialog = ({
     }
   }, [log]);
 
-  // Focus input and scroll section into view when editing starts
+  // Handle edit start - focus input and scroll section to top
+  const startEditing = (field: EditingField) => {
+    if (editingField === field) return;
+    setEditingField(field);
+  };
+
+  // Focus and scroll when editing field changes
   useEffect(() => {
-    if (editingField === 'name') {
+    if (!editingField) return;
+    
+    // Use requestAnimationFrame to ensure DOM has updated
+    requestAnimationFrame(() => {
+      const sectionRef = 
+        editingField === 'name' ? nameSectionRef :
+        editingField === 'location' ? locationSectionRef :
+        notesSectionRef;
+      
+      const inputElement = editingField === 'notes' ? textareaRef.current : inputRef.current;
+      
+      // Scroll the section to the top of the scroll container
+      if (sectionRef.current && scrollContainerRef.current) {
+        const containerTop = scrollContainerRef.current.getBoundingClientRect().top;
+        const sectionTop = sectionRef.current.getBoundingClientRect().top;
+        const scrollOffset = sectionTop - containerTop - 8; // 8px padding from top
+        
+        scrollContainerRef.current.scrollTo({
+          top: scrollContainerRef.current.scrollTop + scrollOffset,
+          behavior: 'smooth'
+        });
+      }
+      
+      // Focus the input to bring up keyboard
       setTimeout(() => {
-        nameSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        inputRef.current?.focus();
-      }, 50);
-    } else if (editingField === 'location') {
-      setTimeout(() => {
-        locationSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        inputRef.current?.focus();
-      }, 50);
-    } else if (editingField === 'notes') {
-      setTimeout(() => {
-        notesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        textareaRef.current?.focus();
-      }, 50);
-    }
+        inputElement?.focus();
+      }, 100);
+    });
   }, [editingField]);
 
   const handleSaveField = async () => {
@@ -201,7 +220,7 @@ const ViewHelloDialog = ({
         </div>
 
         {/* Content area - scrollable */}
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 pb-4">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={log.id}
@@ -233,7 +252,7 @@ const ViewHelloDialog = ({
                     ? 'bg-primary/5 ring-1 ring-primary/20' 
                     : 'bg-muted/30 active:bg-muted/50'
                 }`}
-                onClick={() => editingField !== 'name' && setEditingField('name')}
+                onClick={() => startEditing('name')}
               >
                 <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                   Name
@@ -247,6 +266,7 @@ const ViewHelloDialog = ({
                       onKeyDown={handleKeyDown}
                       placeholder="Who did you meet?"
                       className="rounded-lg h-10 text-base"
+                      autoComplete="off"
                     />
                     <div className="flex gap-2 justify-end">
                       <Button
@@ -283,7 +303,7 @@ const ViewHelloDialog = ({
                     ? 'bg-primary/5 ring-1 ring-primary/20' 
                     : 'bg-muted/30 active:bg-muted/50'
                 }`}
-                onClick={() => editingField !== 'location' && setEditingField('location')}
+                onClick={() => startEditing('location')}
               >
                 <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
@@ -298,6 +318,7 @@ const ViewHelloDialog = ({
                       onKeyDown={handleKeyDown}
                       placeholder="Coffee shop, gym..."
                       className="rounded-lg h-10 text-base"
+                      autoComplete="off"
                     />
                     <div className="flex gap-2 justify-end">
                       <Button
@@ -334,7 +355,7 @@ const ViewHelloDialog = ({
                     ? 'bg-primary/5 ring-1 ring-primary/20' 
                     : 'bg-muted/30 active:bg-muted/50'
                 }`}
-                onClick={() => editingField !== 'notes' && setEditingField('notes')}
+                onClick={() => startEditing('notes')}
               >
                 <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                   Notes
@@ -350,6 +371,7 @@ const ViewHelloDialog = ({
                       }}
                       placeholder="Details to remember..."
                       className="rounded-lg min-h-[120px] text-base"
+                      autoComplete="off"
                     />
                     <div className="flex gap-2 justify-end">
                       <Button
