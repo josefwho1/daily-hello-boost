@@ -233,13 +233,20 @@ const Hellobook = () => {
                 >
                   <div className="flex items-start gap-3">
 
-                    {/* Content */}
                     <div className="flex-1 min-w-0">
-                      {/* Top row: Name and Edit button */}
+                      {/* Top row: Name, Location, and Edit button */}
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-foreground truncate">
                           {log.name || "Unknown"}
                         </h3>
+                        
+                        {/* Location - inline with name */}
+                        {log.location && (
+                          <div className="flex items-center gap-1 text-muted-foreground flex-shrink-0">
+                            <MapPin className="w-3 h-3" />
+                            <span className="text-sm">{log.location}</span>
+                          </div>
+                        )}
 
                         {/* Edit/Add Name button - pushed to right */}
                         {hasName ? (
@@ -260,19 +267,6 @@ const Hellobook = () => {
                           </button>
                         )}
                       </div>
-
-                      {/* Location */}
-                      {log.location && (
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <MapPin className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">{log.location}</span>
-                        </div>
-                      )}
-
-                      {/* Timestamp - date only */}
-                      <p className="text-xs text-muted-foreground/70 mt-0.5">
-                        {formatTimestamp(log.created_at, false)}
-                      </p>
 
                       {/* Notes */}
                       {log.notes && <ExpandableText text={log.notes} />}
