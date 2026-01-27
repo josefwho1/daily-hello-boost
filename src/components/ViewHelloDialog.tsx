@@ -64,6 +64,9 @@ const ViewHelloDialog = ({
   
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const nameSectionRef = useRef<HTMLDivElement>(null);
+  const locationSectionRef = useRef<HTMLDivElement>(null);
+  const notesSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (log) {
@@ -74,12 +77,23 @@ const ViewHelloDialog = ({
     }
   }, [log]);
 
-  // Focus input when editing starts
+  // Focus input and scroll section into view when editing starts
   useEffect(() => {
-    if (editingField === 'name' || editingField === 'location') {
-      setTimeout(() => inputRef.current?.focus(), 50);
+    if (editingField === 'name') {
+      setTimeout(() => {
+        nameSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        inputRef.current?.focus();
+      }, 50);
+    } else if (editingField === 'location') {
+      setTimeout(() => {
+        locationSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        inputRef.current?.focus();
+      }, 50);
     } else if (editingField === 'notes') {
-      setTimeout(() => textareaRef.current?.focus(), 50);
+      setTimeout(() => {
+        notesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        textareaRef.current?.focus();
+      }, 50);
     }
   }, [editingField]);
 
@@ -213,7 +227,8 @@ const ViewHelloDialog = ({
 
               {/* Name Section */}
               <div 
-                className={`rounded-xl p-4 transition-colors ${
+                ref={nameSectionRef}
+                className={`rounded-xl p-4 transition-colors scroll-mt-4 ${
                   editingField === 'name' 
                     ? 'bg-primary/5 ring-1 ring-primary/20' 
                     : 'bg-muted/30 active:bg-muted/50'
@@ -262,7 +277,8 @@ const ViewHelloDialog = ({
 
               {/* Location Section */}
               <div 
-                className={`rounded-xl p-4 transition-colors ${
+                ref={locationSectionRef}
+                className={`rounded-xl p-4 transition-colors scroll-mt-4 ${
                   editingField === 'location' 
                     ? 'bg-primary/5 ring-1 ring-primary/20' 
                     : 'bg-muted/30 active:bg-muted/50'
@@ -312,7 +328,8 @@ const ViewHelloDialog = ({
 
               {/* Notes Section */}
               <div 
-                className={`rounded-xl p-4 transition-colors ${
+                ref={notesSectionRef}
+                className={`rounded-xl p-4 transition-colors scroll-mt-4 ${
                   editingField === 'notes' 
                     ? 'bg-primary/5 ring-1 ring-primary/20' 
                     : 'bg-muted/30 active:bg-muted/50'
