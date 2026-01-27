@@ -146,7 +146,7 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
           <div className="mb-2">
             <div className="flex items-center gap-2">
               <span className="text-lg">📖</span>
-              <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>A memory from your hellobook</span>
+              <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>Hello of the day</span>
             </div>
           </div>
           
@@ -201,7 +201,7 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
             variant="ghost"
             size="sm"
             onClick={handleShuffle}
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
+            className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
           >
             <Shuffle className="w-3.5 h-3.5" />
           </Button>
