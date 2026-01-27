@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { ArrowLeft, Mic, Square, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { MultiEntryReview, ExtractedEntry } from "@/components/MultiEntryReview";
@@ -50,7 +50,7 @@ export const LogHelloScreen = ({
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
-  const [noNameFlag, setNoNameFlag] = useState(false);
+  
   const [isLogging, setIsLogging] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -221,7 +221,6 @@ export const LogHelloScreen = ({
           const entry = extracted.entries[0];
           if (entry.name && !name) {
             setName(entry.name);
-            setNoNameFlag(false);
           }
           if (entry.location && !location) {
             setLocation(entry.location);
@@ -237,7 +236,6 @@ export const LogHelloScreen = ({
       // Legacy single-entry fallback
       if (extracted.name && !name) {
         setName(extracted.name);
-        setNoNameFlag(false);
       }
       if (extracted.location && !location) {
         setLocation(extracted.location);
@@ -255,18 +253,16 @@ export const LogHelloScreen = ({
     }
   };
 
-  // Validation: name required OR (noNameFlag + at least location or notes)
+  // Validation: at least one field must have content
   const hasName = name.trim() !== "";
-  const hasLocationOrNotes = location.trim() !== "" || notes.trim() !== "";
-  const canSubmit = (hasName || (noNameFlag && hasLocationOrNotes)) && !isLogging && !isRecording && !isProcessing;
+  const hasLocation = location.trim() !== "";
+  const hasNotes = notes.trim() !== "";
+  const hasAnyContent = hasName || hasLocation || hasNotes;
+  const canSubmit = hasAnyContent && !isLogging && !isRecording && !isProcessing;
 
   const handleSubmit = async () => {
-    if (!name.trim() && !noNameFlag) {
-      toast.error("Please enter a name or check 'Didn't get name'");
-      return;
-    }
-    if (noNameFlag && !location.trim() && !notes.trim()) {
-      toast.error("Please enter where you met or add some notes");
+    if (!hasAnyContent) {
+      toast.error("Please enter some information - ideally a name!");
       return;
     }
 
@@ -279,7 +275,7 @@ export const LogHelloScreen = ({
           name: name || undefined,
           location: location || undefined,
           notes: notes || undefined,
-          no_name_flag: noNameFlag,
+          no_name_flag: !hasName,
         });
         setDuplicateMatch(duplicate);
         setShowDuplicateDialog(true);
@@ -292,7 +288,7 @@ export const LogHelloScreen = ({
       name: name || undefined,
       location: location || undefined,
       notes: notes || undefined,
-      no_name_flag: noNameFlag,
+      no_name_flag: !hasName,
     });
   };
 
@@ -310,7 +306,6 @@ export const LogHelloScreen = ({
       setName("");
       setLocation("");
       setNotes("");
-      setNoNameFlag(false);
       onBack();
     } finally {
       setIsLogging(false);
@@ -358,7 +353,6 @@ export const LogHelloScreen = ({
       setName("");
       setLocation("");
       setNotes("");
-      setNoNameFlag(false);
       onBack();
     } catch (error) {
       console.error("Error logging entries:", error);
@@ -401,12 +395,8 @@ export const LogHelloScreen = ({
               id="name"
               placeholder="What's their name?"
               value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (e.target.value.trim()) setNoNameFlag(false);
-              }}
+              onChange={(e) => setName(e.target.value)}
               className="text-base flex-1"
-              disabled={noNameFlag}
             />
             <Button
               type="button"
@@ -430,24 +420,6 @@ export const LogHelloScreen = ({
               🎙️ Recording... Tap stop when done
             </p>
           )}
-          
-          {/* Didn't get name checkbox */}
-          <div className="flex items-center space-x-2 pt-1">
-            <Checkbox 
-              id="no-name" 
-              checked={noNameFlag}
-              onCheckedChange={(checked) => {
-                setNoNameFlag(checked === true);
-                if (checked) setName("");
-              }}
-            />
-            <label 
-              htmlFor="no-name" 
-              className="text-sm text-muted-foreground cursor-pointer"
-            >
-              Didn't get name
-            </label>
-          </div>
         </div>
 
         {/* Location Field */}
