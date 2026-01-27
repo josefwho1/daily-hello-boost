@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
-import { Calendar, CalendarDays, Sparkles } from "lucide-react";
 import { startOfWeek, startOfMonth, isAfter } from "date-fns";
 
 interface HelloLog {
@@ -36,27 +35,24 @@ export const HomeStatsBar = ({ logs, lifetimeHellos }: HomeStatsBarProps) => {
 
   return (
     <div className="grid grid-cols-3 gap-2 mb-6">
-      <Card className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+      <Card className="p-3 rounded-xl bg-card border-border/50">
         <div className="flex flex-col items-center text-center">
-          <Calendar className="w-4 h-4 text-primary mb-1" />
           <p className="text-xl font-bold text-foreground leading-none">{stats.hellosThisWeek}</p>
-          <span className="text-[10px] text-muted-foreground mt-0.5">This Week</span>
+          <span className="text-[10px] text-muted-foreground mt-1">This Week</span>
         </div>
       </Card>
       
-      <Card className="p-3 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/20">
+      <Card className="p-3 rounded-xl bg-card border-border/50">
         <div className="flex flex-col items-center text-center">
-          <CalendarDays className="w-4 h-4 text-emerald-600 mb-1" />
           <p className="text-xl font-bold text-foreground leading-none">{stats.hellosThisMonth}</p>
-          <span className="text-[10px] text-muted-foreground mt-0.5">This Month</span>
+          <span className="text-[10px] text-muted-foreground mt-1">This Month</span>
         </div>
       </Card>
       
-      <Card className="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
+      <Card className="p-3 rounded-xl bg-card border-border/50">
         <div className="flex flex-col items-center text-center">
-          <Sparkles className="w-4 h-4 text-amber-600 mb-1" />
           <p className="text-xl font-bold text-foreground leading-none">{stats.lifetimeHellos}</p>
-          <span className="text-[10px] text-muted-foreground mt-0.5">Lifetime</span>
+          <span className="text-[10px] text-muted-foreground mt-1">Lifetime</span>
         </div>
       </Card>
     </div>
