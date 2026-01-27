@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { User, MapPin } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
+import { formatDistanceToNow } from "date-fns";
 
 interface RecentHellosSectionProps {
   logs: HelloLog[];
@@ -43,35 +44,46 @@ export const RecentHellosSection = ({ logs, onViewAll, onViewLog }: RecentHellos
       </div>
       
       <div className="space-y-2">
-        {recentLogs.map((log) => (
-          <Card 
-            key={log.id} 
-            className="p-3 border-border/30 bg-card/50 hover:bg-card/80 transition-colors cursor-pointer"
-            onClick={() => onViewLog?.(log)}
-          >
-            <div className="flex flex-col gap-1">
-              {/* First row: Name + Location */}
-              <div className="flex items-center gap-2 min-w-0">
-                <p className="font-medium text-foreground truncate">
-                  {log.name}
-                </p>
-                {log.location && (
-                  <div className="flex items-center gap-1 text-muted-foreground shrink-0">
-                    <MapPin className="w-3 h-3" />
-                    <span className="text-sm truncate max-w-[120px]">{log.location}</span>
+        {recentLogs.map((log) => {
+          const timeAgo = formatDistanceToNow(new Date(log.created_at), { addSuffix: true });
+          
+          return (
+            <Card 
+              key={log.id} 
+              className="p-3 border-border/30 bg-card/50 hover:bg-card/80 transition-colors cursor-pointer"
+              onClick={() => onViewLog?.(log)}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  {/* First row: Name + Location */}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <p className="font-medium text-foreground truncate">
+                      {log.name}
+                    </p>
+                    {log.location && (
+                      <div className="flex items-center gap-1 text-muted-foreground shrink-0">
+                        <MapPin className="w-3 h-3" />
+                        <span className="text-sm truncate max-w-[120px]">{log.location}</span>
+                      </div>
+                    )}
                   </div>
-                )}
+                  
+                  {/* Second row: Notes (truncated) */}
+                  {log.notes && (
+                    <p className="text-sm text-muted-foreground truncate">
+                      {log.notes}
+                    </p>
+                  )}
+                </div>
+                
+                {/* Time ago */}
+                <span className="text-xs text-muted-foreground/70 shrink-0 whitespace-nowrap">
+                  {timeAgo}
+                </span>
               </div>
-              
-              {/* Second row: Notes (truncated) */}
-              {log.notes && (
-                <p className="text-sm text-muted-foreground truncate">
-                  {log.notes}
-                </p>
-              )}
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
