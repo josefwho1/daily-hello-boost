@@ -10,6 +10,7 @@ import { format, differenceInDays, parseISO, startOfDay, addDays } from "date-fn
 interface ActiveChallengeCardProps {
   packId: string;
   completedDays: number[];
+  completedTags: string[];
   packStartDate: string | null;
   onLogHello: (challenge: Challenge) => void;
   onViewPack: () => void;
@@ -18,6 +19,7 @@ interface ActiveChallengeCardProps {
 export const ActiveChallengeCard = ({
   packId,
   completedDays,
+  completedTags,
   packStartDate,
   onLogHello,
   onViewPack,
@@ -59,7 +61,8 @@ export const ActiveChallengeCard = ({
   };
   
   const isCompleted = (challenge: Challenge) => {
-    return completedDays.includes(challenge.day);
+    // Check by tag first (more reliable), fallback to day number
+    return completedTags.includes(challenge.tag) || completedDays.includes(challenge.day);
   };
 
   const getUnlockDate = (challengeIndex: number) => {
@@ -81,7 +84,8 @@ export const ActiveChallengeCard = ({
 
   const challengeCompleted = isCompleted(currentChallenge);
   const challengeUnlocked = isUnlocked(currentIndex);
-  const completedCount = completedDays.length;
+  // Count completed challenges by checking each challenge
+  const completedCount = pack.challenges.filter(c => isCompleted(c)).length;
 
   return (
     <Card className="p-4 rounded-2xl border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
@@ -101,7 +105,7 @@ export const ActiveChallengeCard = ({
                 key={idx}
                 className={cn(
                   "w-2 h-2 rounded-full transition-all",
-                  completedDays.includes(challenge.day)
+                  isCompleted(challenge)
                     ? "bg-success"
                     : idx <= maxUnlockedIndex
                     ? "bg-muted-foreground/30"

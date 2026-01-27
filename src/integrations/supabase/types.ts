@@ -17,6 +17,7 @@ export type Database = {
       challenge_completions: {
         Row: {
           challenge_day: number
+          challenge_tag: string | null
           completed_at: string
           created_at: string
           difficulty_rating: number | null
@@ -30,6 +31,7 @@ export type Database = {
         }
         Insert: {
           challenge_day: number
+          challenge_tag?: string | null
           completed_at?: string
           created_at?: string
           difficulty_rating?: number | null
@@ -43,6 +45,7 @@ export type Database = {
         }
         Update: {
           challenge_day?: number
+          challenge_tag?: string | null
           completed_at?: string
           created_at?: string
           difficulty_rating?: number | null

@@ -5,6 +5,7 @@ import { useAuth } from './useAuth';
 export interface ChallengeCompletion {
   id: string;
   challenge_day: number;
+  challenge_tag: string | null;
   completed_at: string;
   interaction_name: string | null;
   notes: string | null;
@@ -47,6 +48,7 @@ export const useChallengeCompletions = () => {
 
   const addCompletion = async (completion: {
     challenge_day: number;
+    challenge_tag: string;
     interaction_name: string | null;
     notes: string | null;
     rating: 'positive' | 'neutral' | 'negative';

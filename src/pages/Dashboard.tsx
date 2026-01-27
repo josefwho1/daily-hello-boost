@@ -60,7 +60,7 @@ export default function Dashboard() {
   const { progress: cloudProgress, loading: progressLoading, updateProgress: updateCloudProgress, refetch } = useUserProgress();
   const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, deleteLog: deleteCloudLog, getLogsTodayCount } = useHelloLogs();
   const { timezoneOffset, loading: timezoneLoading } = useTimezone();
-  const { completions, addCompletion } = useChallengeCompletions();
+  const { completions, addCompletion, refetch: refetchCompletions } = useChallengeCompletions();
   const { 
     guestProgress, 
     guestLogs, 
@@ -127,6 +127,7 @@ export default function Dashboard() {
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
   const [selectedHelloType, setSelectedHelloType] = useState<string>('regular_hello');
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
+  const [selectedChallengeTag, setSelectedChallengeTag] = useState<string>('');
   const [username, setUsername] = useState("");
   
   // Dialog states
@@ -473,11 +474,14 @@ export default function Dashboard() {
       try {
         await addCompletion({
           challenge_day: selectedDayNumber,
+          challenge_tag: selectedChallengeTag,
           interaction_name: data.name || null,
           notes: data.notes || null,
           rating: data.rating,
           difficulty_rating: data.difficulty_rating || null,
         });
+        // Refetch to ensure UI updates
+        refetchCompletions();
       } catch (error) {
         console.error('Failed to record challenge completion:', error);
       }
@@ -935,10 +939,12 @@ export default function Dashboard() {
                 <ActiveChallengeCard
                   packId={progress.selected_pack_id}
                   completedDays={completions.map(c => c.challenge_day)}
+                  completedTags={completions.map(c => c.challenge_tag).filter((t): t is string => t !== null)}
                   packStartDate={progress.pack_start_date || null}
                   onLogHello={(challenge: Challenge) => {
                     setSelectedChallenge(challenge.title);
                     setSelectedDayNumber(challenge.day);
+                    setSelectedChallengeTag(challenge.tag);
                     setSelectedHelloType('pack_challenge');
                     setShowLogDialog(true);
                   }}
