@@ -22,7 +22,19 @@ import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Prevent aggressive refetching on window focus/reconnect
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      // Keep data fresh for 5 minutes
+      staleTime: 5 * 60 * 1000,
+      // Retry failed queries only once
+      retry: 1,
+    },
+  },
+});
 
 // Routes that work for both guests and authenticated users
 const AppRoute = ({ children }: { children: React.ReactNode }) => {

@@ -17,6 +17,7 @@ export interface HelloLog {
   no_name_flag: boolean;
   created_at: string;
   timezone_offset: string;
+  linked_to?: string | null;
 }
 
 export const useHelloLogs = () => {
@@ -40,7 +41,8 @@ export const useHelloLogs = () => {
           difficulty_rating: log.difficulty_rating || null,
           no_name_flag: (log as any).no_name_flag || false,
           created_at: log.created_at,
-          timezone_offset: log.timezone_offset || '+00:00'
+          timezone_offset: log.timezone_offset || '+00:00',
+          linked_to: (log as any).linked_to || null
         }));
         return formattedGuestLogs;
       }
@@ -73,6 +75,7 @@ export const useHelloLogs = () => {
     rating?: 'positive' | 'neutral' | 'negative';
     difficulty_rating?: number;
     no_name_flag?: boolean;
+    linked_to?: string;
   }) => {
     if (!user) return null;
 
@@ -96,7 +99,8 @@ export const useHelloLogs = () => {
           rating: log.rating || null,
           difficulty_rating: log.difficulty_rating || null,
           no_name_flag: log.no_name_flag || false,
-          timezone_offset: timezoneOffset
+          timezone_offset: timezoneOffset,
+          linked_to: log.linked_to || null
         })
         .select()
         .single();

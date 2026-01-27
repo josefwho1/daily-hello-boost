@@ -7,6 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Mic, Square, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { MultiEntryReview, ExtractedEntry } from "@/components/MultiEntryReview";
+import { DuplicatePersonDialog } from "@/components/DuplicatePersonDialog";
+import { useDuplicateDetection, PotentialDuplicate } from "@/hooks/useDuplicateDetection";
+import { HelloLog } from "@/hooks/useHelloLogs";
 import remiLogging1 from "@/assets/remi-logging-1.webp";
 import remiLogging2 from "@/assets/remi-logging-2.webp";
 import remiLogging3 from "@/assets/remi-logging-3.webp";
@@ -30,16 +33,19 @@ interface LogHelloScreenProps {
     notes?: string; 
     rating?: 'positive' | 'neutral' | 'negative';
     no_name_flag?: boolean;
+    linked_to?: string;
   }) => Promise<void>;
   challengeTitle?: string | null;
   autoStartRecording?: boolean;
+  existingLogs?: HelloLog[];
 }
 
 export const LogHelloScreen = ({ 
   onBack, 
   onLog, 
   challengeTitle,
-  autoStartRecording = false
+  autoStartRecording = false,
+  existingLogs = []
 }: LogHelloScreenProps) => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
@@ -50,6 +56,18 @@ export const LogHelloScreen = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasAutoStarted, setHasAutoStarted] = useState(false);
   const [multiEntries, setMultiEntries] = useState<ExtractedEntry[] | null>(null);
+  
+  // Duplicate detection state
+  const [duplicateMatch, setDuplicateMatch] = useState<PotentialDuplicate | null>(null);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [pendingLogData, setPendingLogData] = useState<{
+    name?: string;
+    location?: string;
+    notes?: string;
+    no_name_flag?: boolean;
+  } | null>(null);
+  
+  const { findDuplicate, getDuplicateDescription } = useDuplicateDetection(existingLogs);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -252,14 +270,43 @@ export const LogHelloScreen = ({
       return;
     }
 
+    // Check for duplicate if there's a name
+    if (name.trim()) {
+      const duplicate = findDuplicate(name.trim());
+      if (duplicate) {
+        // Store pending data and show confirmation dialog
+        setPendingLogData({
+          name: name || undefined,
+          location: location || undefined,
+          notes: notes || undefined,
+          no_name_flag: noNameFlag,
+        });
+        setDuplicateMatch(duplicate);
+        setShowDuplicateDialog(true);
+        return;
+      }
+    }
+
+    // No duplicate found, proceed with logging
+    await performLog({
+      name: name || undefined,
+      location: location || undefined,
+      notes: notes || undefined,
+      no_name_flag: noNameFlag,
+    });
+  };
+
+  // Perform the actual log operation
+  const performLog = async (data: {
+    name?: string;
+    location?: string;
+    notes?: string;
+    no_name_flag?: boolean;
+    linked_to?: string;
+  }) => {
     setIsLogging(true);
     try {
-      await onLog({
-        name: name || undefined,
-        location: location || undefined,
-        notes: notes || undefined,
-        no_name_flag: noNameFlag,
-      });
+      await onLog(data);
       setName("");
       setLocation("");
       setNotes("");
@@ -268,6 +315,29 @@ export const LogHelloScreen = ({
     } finally {
       setIsLogging(false);
     }
+  };
+
+  // Handle "Same person" confirmation
+  const handleConfirmSamePerson = async () => {
+    if (!pendingLogData || !duplicateMatch) return;
+    
+    setShowDuplicateDialog(false);
+    await performLog({
+      ...pendingLogData,
+      linked_to: duplicateMatch.existingLog.id,
+    });
+    setPendingLogData(null);
+    setDuplicateMatch(null);
+  };
+
+  // Handle "Different person" confirmation
+  const handleConfirmDifferentPerson = async () => {
+    if (!pendingLogData) return;
+    
+    setShowDuplicateDialog(false);
+    await performLog(pendingLogData);
+    setPendingLogData(null);
+    setDuplicateMatch(null);
   };
 
   // Handler for multi-entry submission
@@ -412,6 +482,20 @@ export const LogHelloScreen = ({
           {isLogging ? "Logging..." : "Log Hello! 👋"}
         </Button>
       </div>
+
+      {/* Duplicate Person Dialog */}
+      {duplicateMatch && (
+        <DuplicatePersonDialog
+          open={showDuplicateDialog}
+          onOpenChange={setShowDuplicateDialog}
+          existingLog={duplicateMatch.existingLog}
+          newName={name}
+          description={getDuplicateDescription(duplicateMatch.existingLog)}
+          onConfirmSamePerson={handleConfirmSamePerson}
+          onConfirmDifferentPerson={handleConfirmDifferentPerson}
+          isLoading={isLogging}
+        />
+      )}
     </div>
   );
 };
