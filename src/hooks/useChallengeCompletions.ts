@@ -122,28 +122,21 @@ export const useChallengeCompletions = () => {
   };
 
   // Clear completions for a specific pack (by tag prefix)
+  // Uses database pattern matching directly instead of relying on local state
   const clearPackCompletions = async (packId: string) => {
     if (!user) return;
 
     try {
-      // Get all completions that match this pack's challenge tags
-      const packPrefix = `${packId}-`;
-      const packCompletionIds = completions
-        .filter(c => c.challenge_tag?.startsWith(packPrefix))
-        .map(c => c.id);
-
-      if (packCompletionIds.length === 0) return;
-
       const { error } = await supabase
         .from('challenge_completions')
         .delete()
         .eq('user_id', user.id)
-        .in('id', packCompletionIds);
+        .like('challenge_tag', `${packId}-%`);
 
       if (error) throw error;
       
-      // Update local state
-      setCompletions(completions.filter(c => !c.challenge_tag?.startsWith(packPrefix)));
+      // Update local state to match
+      setCompletions(prev => prev.filter(c => !c.challenge_tag?.startsWith(`${packId}-`)));
     } catch (error) {
       console.error('Error clearing pack completions:', error);
       throw error;
