@@ -78,7 +78,7 @@ export const DailySuggestionCard = () => {
             <span className="text-lg">💡</span>
             <span className="text-base font-semibold text-foreground">Remi's Hello</span>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground/70 mt-0.5">
             A daily suggestion to help you connect
           </p>
         </div>
