@@ -73,7 +73,7 @@ export const MultiEntryReview = ({
       </div>
 
       {/* Content - scrollable */}
-      <div className="flex-1 p-4 space-y-4 overflow-y-auto pb-24">
+      <div className="flex-1 p-4 space-y-4 overflow-y-auto pb-32">
         <p className="text-sm text-muted-foreground">
           We detected multiple people in your recording. Review and edit each entry below.
         </p>
@@ -139,11 +139,11 @@ export const MultiEntryReview = ({
         </Button>
       </div>
 
-      {/* Fixed bottom button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border safe-area-bottom">
+      {/* Fixed bottom button - positioned above nav bar */}
+      <div className="fixed bottom-20 left-0 right-0 p-4 bg-background border-t border-border">
         <Button
           onClick={handleSubmit}
-          className="w-full h-14 text-lg font-semibold shadow-lg"
+          className="w-full h-12 text-lg font-semibold shadow-md"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
