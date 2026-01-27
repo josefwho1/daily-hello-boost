@@ -134,34 +134,20 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
             )}
           </div>
           
-          {/* Notes - inline read more */}
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {isExpanded ? (
-              <>
-                {notesText}
-                {isLongNote && (
-                  <button
-                    onClick={handleExpandToggle}
-                    className="text-primary/70 hover:text-primary ml-1 transition-colors"
-                  >
-                    less
-                  </button>
-                )}
-              </>
-            ) : (
-              <>
-                {truncatedNotes}
-                {isLongNote && (
-                  <button
-                    onClick={handleExpandToggle}
-                    className="text-primary/70 hover:text-primary transition-colors"
-                  >
-                    ... more
-                  </button>
-                )}
-              </>
-            )}
-          </p>
+          {/* Notes - fixed 2-line height */}
+          <div className={isExpanded ? "" : "min-h-[2.75rem]"}>
+            <p className={`text-sm text-muted-foreground leading-relaxed ${!isExpanded && isLongNote ? "line-clamp-2" : ""}`}>
+              {isExpanded ? notesText : truncatedNotes}
+              {isLongNote && (
+                <button
+                  onClick={handleExpandToggle}
+                  className="text-primary/70 hover:text-primary ml-0.5 transition-colors"
+                >
+                  {isExpanded ? " less" : "... more"}
+                </button>
+              )}
+            </p>
+          </div>
         </div>
         
         {eligibleLogs.length > 1 && (
