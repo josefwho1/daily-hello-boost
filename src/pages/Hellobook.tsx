@@ -65,6 +65,7 @@ const Hellobook = () => {
   const { isAnonymous } = useGuestMode();
   const [searchQuery, setSearchQuery] = useState("");
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
+  const [editingLogIndex, setEditingLogIndex] = useState(0);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
@@ -122,9 +123,23 @@ const Hellobook = () => {
     };
   }, [groupedPeople]);
   
+  // Flatten all logs for navigation (sorted by date, newest first)
+  const allLogsFlat = useMemo(() => {
+    return [...logs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [logs]);
+
   const handleViewClick = (log: HelloLog) => {
+    const index = allLogsFlat.findIndex(l => l.id === log.id);
     setEditingLog(log);
+    setEditingLogIndex(index >= 0 ? index : 0);
     setIsEditDialogOpen(true);
+  };
+
+  const handleNavigate = (newIndex: number) => {
+    if (newIndex >= 0 && newIndex < allLogsFlat.length) {
+      setEditingLog(allLogsFlat[newIndex]);
+      setEditingLogIndex(newIndex);
+    }
   };
 
   const handleSaveEdit = async (id: string, updates: {
@@ -354,6 +369,9 @@ const Hellobook = () => {
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         log={editingLog}
+        logs={allLogsFlat}
+        currentIndex={editingLogIndex}
+        onNavigate={handleNavigate}
         onSave={handleSaveEdit}
         onDelete={handleDeleteLog}
       />
