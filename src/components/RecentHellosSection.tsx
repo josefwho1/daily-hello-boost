@@ -30,8 +30,8 @@ export const RecentHellosSection = ({ logs, onViewAll, onEditLog }: RecentHellos
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
+    <div>
+      <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-medium text-foreground">Recent Hellos</h2>
         {namedLogs.length > 3 && onViewAll && (
           <button 
