@@ -190,19 +190,19 @@ const HellobookPersonCard = ({
                 {primaryLog.name || "Unknown"}
               </h3>
               
+              {/* Add Name badge for entries without names - next to Unknown label */}
+              {!hasName && (
+                <span className="px-2 py-0.5 text-xs rounded-lg bg-primary/10 text-primary flex-shrink-0">
+                  Tap to add name
+                </span>
+              )}
+              
               {/* Location - inline with name */}
               {primaryLog.location && (
                 <div className="flex items-center gap-1 text-muted-foreground flex-shrink-0">
                   <MapPin className="w-3 h-3" />
                   <span className="text-sm">{primaryLog.location}</span>
                 </div>
-              )}
-
-              {/* Add Name badge for entries without names */}
-              {!hasName && (
-                <span className="ml-auto px-2 py-1 text-xs rounded-lg bg-primary/10 text-primary flex-shrink-0">
-                  Tap to add name
-                </span>
               )}
             </div>
 
