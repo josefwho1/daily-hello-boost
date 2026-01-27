@@ -57,15 +57,16 @@ export const SingleChallengeCompleteDialog = ({
     }
   }, [open]);
 
-  // Auto-dismiss after 2.5 seconds
+  const [showDismiss, setShowDismiss] = useState(false);
+
+  // Show dismiss button after a short delay
   useEffect(() => {
     if (open) {
-      const timer = setTimeout(() => {
-        onContinue();
-      }, 2500);
+      setShowDismiss(false);
+      const timer = setTimeout(() => setShowDismiss(true), 1200);
       return () => clearTimeout(timer);
     }
-  }, [open, onContinue]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -76,7 +77,7 @@ export const SingleChallengeCompleteDialog = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm p-6"
           onClick={onContinue}
         >
           {/* Sparkle particles */}
@@ -185,15 +186,26 @@ export const SingleChallengeCompleteDialog = ({
               {dayNumber}/{totalDays} completed
             </motion.p>
 
-            {/* Tap to continue hint */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.6 }}
-              transition={{ delay: 1 }}
-              className="text-xs text-muted-foreground mt-4"
-            >
-              Tap to continue
-            </motion.p>
+            {/* Dismiss button */}
+            <AnimatePresence>
+              {showDismiss && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-6"
+                >
+                  <Button
+                    onClick={onContinue}
+                    variant="outline"
+                    className="rounded-full px-8"
+                  >
+                    Continue
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
       )}
