@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Mic, Square, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { MultiEntryReview, ExtractedEntry } from "@/components/MultiEntryReview";
 import remiLogging1 from "@/assets/remi-logging-1.webp";
 import remiLogging2 from "@/assets/remi-logging-2.webp";
 import remiLogging3 from "@/assets/remi-logging-3.webp";
@@ -48,6 +49,7 @@ export const LogHelloScreen = ({
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasAutoStarted, setHasAutoStarted] = useState(false);
+  const [multiEntries, setMultiEntries] = useState<ExtractedEntry[] | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -167,7 +169,7 @@ export const LogHelloScreen = ({
         return;
       }
 
-      // Step 2: Extract name, location, and notes using AI
+      // Step 2: Extract name, location, and notes using AI (now supports multiple entries)
       const extractResponse = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-name`,
         {
@@ -189,7 +191,32 @@ export const LogHelloScreen = ({
 
       const extracted = await extractResponse.json();
 
-      // Update fields
+      // Handle multi-entry response
+      if (extracted.entries && Array.isArray(extracted.entries)) {
+        if (extracted.entries.length > 1) {
+          // Multiple people detected - show multi-entry review
+          setMultiEntries(extracted.entries);
+          toast.success(`Detected ${extracted.entries.length} people!`);
+          return;
+        } else if (extracted.entries.length === 1) {
+          // Single entry - populate form fields
+          const entry = extracted.entries[0];
+          if (entry.name && !name) {
+            setName(entry.name);
+            setNoNameFlag(false);
+          }
+          if (entry.location && !location) {
+            setLocation(entry.location);
+          }
+          if (entry.notes) {
+            setNotes((prev) => (prev ? `${prev}\n${entry.notes}` : entry.notes));
+          }
+          toast.success("Voice notes added!");
+          return;
+        }
+      }
+
+      // Legacy single-entry fallback
       if (extracted.name && !name) {
         setName(extracted.name);
         setNoNameFlag(false);
@@ -242,6 +269,46 @@ export const LogHelloScreen = ({
       setIsLogging(false);
     }
   };
+
+  // Handler for multi-entry submission
+  const handleMultiEntrySubmit = async (entries: ExtractedEntry[]) => {
+    setIsLogging(true);
+    try {
+      // Log each entry one by one
+      for (const entry of entries) {
+        await onLog({
+          name: entry.name || undefined,
+          location: entry.location || undefined,
+          notes: entry.notes || undefined,
+          no_name_flag: !entry.name.trim(),
+        });
+      }
+      toast.success(`Logged ${entries.length} ${entries.length === 1 ? "hello" : "hellos"}!`);
+      setMultiEntries(null);
+      setName("");
+      setLocation("");
+      setNotes("");
+      setNoNameFlag(false);
+      onBack();
+    } catch (error) {
+      console.error("Error logging entries:", error);
+      toast.error("Failed to log entries. Please try again.");
+    } finally {
+      setIsLogging(false);
+    }
+  };
+
+  // Show multi-entry review if multiple people detected
+  if (multiEntries && multiEntries.length > 1) {
+    return (
+      <MultiEntryReview
+        entries={multiEntries}
+        onBack={() => setMultiEntries(null)}
+        onSubmit={handleMultiEntrySubmit}
+        isSubmitting={isLogging}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
