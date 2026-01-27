@@ -27,6 +27,7 @@ const getDailyRemiCurious = () => {
 
 export const DailySuggestionCard = () => {
   const [shuffledHello, setShuffledHello] = useState<DailyHello | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
   const remiImage = getDailyRemiCurious();
   
   // Load persisted shuffle on mount
@@ -51,22 +52,30 @@ export const DailySuggestionCard = () => {
   const displayHello = shuffledHello || defaultHello;
 
   const handleShuffle = () => {
-    // Pick a random hello different from current
-    let newHello: DailyHello;
-    const currentId = displayHello.id;
+    // Trigger exit animation
+    setIsAnimating(true);
     
-    do {
-      const randomIndex = Math.floor(Math.random() * dailyHellos.length);
-      newHello = dailyHellos[randomIndex];
-    } while (newHello.id === currentId && dailyHellos.length > 1);
-    
-    setShuffledHello(newHello);
-    
-    // Persist to localStorage
-    localStorage.setItem('todays-hello-selection', JSON.stringify({
-      dateKey: getTodayKey(),
-      helloId: newHello.id
-    }));
+    setTimeout(() => {
+      // Pick a random hello different from current
+      let newHello: DailyHello;
+      const currentId = displayHello.id;
+      
+      do {
+        const randomIndex = Math.floor(Math.random() * dailyHellos.length);
+        newHello = dailyHellos[randomIndex];
+      } while (newHello.id === currentId && dailyHellos.length > 1);
+      
+      setShuffledHello(newHello);
+      
+      // Persist to localStorage
+      localStorage.setItem('todays-hello-selection', JSON.stringify({
+        dateKey: getTodayKey(),
+        helloId: newHello.id
+      }));
+      
+      // Re-enable for enter animation
+      setIsAnimating(false);
+    }, 150);
   };
 
   return (
@@ -94,7 +103,11 @@ export const DailySuggestionCard = () => {
       </div>
       
       {/* Content - fixed height for 2 lines */}
-      <div className="mt-3 pr-16">
+      <div 
+        className={`mt-3 pr-16 transition-all duration-150 ${
+          isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+        }`}
+      >
         <h3 className="text-sm font-medium text-foreground mb-1">{displayHello.title}</h3>
         <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
           {displayHello.description}

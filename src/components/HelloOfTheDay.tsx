@@ -21,6 +21,7 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
   const [shuffledIndex, setShuffledIndex] = useState<number | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isNotesOverflowing, setIsNotesOverflowing] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const notesRef = useRef<HTMLParagraphElement | null>(null);
   const { formatTimestamp } = useTimezone();
 
@@ -65,26 +66,34 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
     e.stopPropagation();
     if (eligibleLogs.length <= 1) return;
     
-    // Pick a random index different from current
-    let newIndex: number;
-    const currentIndex = shuffledIndex ?? ((() => {
-      const today = new Date();
-      const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-      return seed % eligibleLogs.length;
-    })());
+    // Trigger exit animation
+    setIsAnimating(true);
     
-    do {
-      newIndex = Math.floor(Math.random() * eligibleLogs.length);
-    } while (newIndex === currentIndex && eligibleLogs.length > 1);
-    
-    setShuffledIndex(newIndex);
-    setIsExpanded(false);
-    
-    // Persist to localStorage
-    localStorage.setItem('memory-of-day-selection', JSON.stringify({
-      dateKey: getTodayKey(),
-      index: newIndex
-    }));
+    setTimeout(() => {
+      // Pick a random index different from current
+      let newIndex: number;
+      const currentIndex = shuffledIndex ?? ((() => {
+        const today = new Date();
+        const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+        return seed % eligibleLogs.length;
+      })());
+      
+      do {
+        newIndex = Math.floor(Math.random() * eligibleLogs.length);
+      } while (newIndex === currentIndex && eligibleLogs.length > 1);
+      
+      setShuffledIndex(newIndex);
+      setIsExpanded(false);
+      
+      // Persist to localStorage
+      localStorage.setItem('memory-of-day-selection', JSON.stringify({
+        dateKey: getTodayKey(),
+        index: newIndex
+      }));
+      
+      // Re-enable for enter animation
+      setIsAnimating(false);
+    }, 150);
   };
 
   const handleCardClick = () => {
@@ -128,7 +137,11 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
       onClick={handleCardClick}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0 pr-12">
+        <div 
+          className={`flex-1 min-w-0 pr-12 transition-all duration-150 ${
+            isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+          }`}
+        >
           {/* Header */}
           <div className="mb-2">
             <div className="flex items-center gap-2">
