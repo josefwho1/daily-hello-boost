@@ -249,12 +249,13 @@ const Hellobook = () => {
           </Card>
         )}
 
-        {/* Throwback Section */}
-        <HelloOfTheDay 
-          logs={logs} 
-          onEditLog={handleEditClick}
-        />
-
+        {/* Memory Section */}
+        <div className="mb-6">
+          <HelloOfTheDay 
+            logs={logs} 
+            onEditLog={handleEditClick}
+          />
+        </div>
 
         {/* Toggle Stats Bar */}
         <div className="flex gap-2 mb-4">

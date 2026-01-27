@@ -133,11 +133,8 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
           <div className="mb-2">
             <div className="flex items-center gap-2">
               <span className="text-lg">📖</span>
-              <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>Throwback</span>
+              <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>A memory from your hellobook</span>
             </div>
-            <p className="text-xs text-muted-foreground/70 mt-0.5">
-              A memory from your hellobook
-            </p>
           </div>
           
           {/* Name row */}
