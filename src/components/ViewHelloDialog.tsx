@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, MapPin, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, MapPin, Check, X, ChevronLeft, ChevronRight, Bookmark } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { motion, AnimatePresence } from "framer-motion";
@@ -37,6 +37,7 @@ interface ViewHelloDialogProps {
     difficulty_rating?: number | null;
   }) => Promise<any>;
   onDelete?: (id: string) => Promise<void>;
+  onToggleFavorite?: (id: string, isFavorite: boolean) => void;
 }
 
 type EditingField = 'name' | 'location' | 'notes' | null;
@@ -49,7 +50,8 @@ const ViewHelloDialog = ({
   currentIndex = 0,
   onNavigate,
   onSave, 
-  onDelete 
+  onDelete,
+  onToggleFavorite
 }: ViewHelloDialogProps) => {
   const [editingField, setEditingField] = useState<EditingField>(null);
   const [name, setName] = useState("");
@@ -161,8 +163,28 @@ const ViewHelloDialog = ({
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="h-[95vh] rounded-t-2xl flex flex-col">
-        {/* Drag handle */}
-        <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted-foreground/20 my-3" />
+        {/* Drag handle + favorite button row */}
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="w-10" /> {/* Spacer for symmetry */}
+          <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20" />
+          {onToggleFavorite && log ? (
+            <button
+              onClick={() => onToggleFavorite(log.id, !log.is_favorite)}
+              className="p-2 rounded-lg hover:bg-muted/50 transition-colors"
+              aria-label={log.is_favorite ? "Remove from favorites" : "Add to favorites"}
+            >
+              <Bookmark 
+                className={`w-5 h-5 transition-colors ${
+                  log.is_favorite 
+                    ? 'fill-primary text-primary' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`} 
+              />
+            </button>
+          ) : (
+            <div className="w-10" /> 
+          )}
+        </div>
 
         {/* Content area - scrollable */}
         <div className="flex-1 overflow-y-auto px-4 pb-4">
