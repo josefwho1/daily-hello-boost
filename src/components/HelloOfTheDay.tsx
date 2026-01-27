@@ -97,12 +97,12 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
   if (!selectedMemory) return null;
 
   const notesText = selectedMemory.notes || "";
-  const isLongNote = notesText.length > 100;
+  const isLongNote = notesText.length > 80;
   const displayLocation = selectedMemory.location?.trim();
 
-  // For inline "Read more", we truncate the text and append the button
+  // Truncate at word boundary for cleaner cut
   const truncatedNotes = isLongNote && !isExpanded 
-    ? notesText.slice(0, 100).trim() 
+    ? notesText.slice(0, 80).replace(/\s+\S*$/, '') 
     : notesText;
 
   return (
@@ -134,34 +134,34 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
             )}
           </div>
           
-          {/* Notes - always 2 lines with Read more */}
-          {isExpanded ? (
-            <p className="text-sm text-muted-foreground">
-              {notesText}
-              {isLongNote && (
-                <button
-                  onClick={handleExpandToggle}
-                  className="text-xs text-primary hover:text-primary/80 ml-1 inline"
-                >
-                  Read less
-                </button>
-              )}
-            </p>
-          ) : (
-            <div className="relative">
-              <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+          {/* Notes - inline read more */}
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {isExpanded ? (
+              <>
                 {notesText}
-              </p>
-              {isLongNote && (
-                <button
-                  onClick={handleExpandToggle}
-                  className="absolute bottom-0 right-0 text-xs text-primary hover:text-primary/80 bg-card pl-1"
-                >
-                  Read more
-                </button>
-              )}
-            </div>
-          )}
+                {isLongNote && (
+                  <button
+                    onClick={handleExpandToggle}
+                    className="text-primary/70 hover:text-primary ml-1 transition-colors"
+                  >
+                    less
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                {truncatedNotes}
+                {isLongNote && (
+                  <button
+                    onClick={handleExpandToggle}
+                    className="text-primary/70 hover:text-primary transition-colors"
+                  >
+                    ... more
+                  </button>
+                )}
+              </>
+            )}
+          </p>
         </div>
         
         {eligibleLogs.length > 1 && (
