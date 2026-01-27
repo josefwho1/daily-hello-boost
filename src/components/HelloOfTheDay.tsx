@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Shuffle, MapPin } from "lucide-react";
 import remiLogging1 from "@/assets/remi-logging-1.webp";
 import { HelloLog } from "@/hooks/useHelloLogs";
+import { useTimezone } from "@/hooks/useTimezone";
 
 interface HelloOfTheDayProps {
   logs: HelloLog[];
@@ -21,6 +22,7 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isNotesOverflowing, setIsNotesOverflowing] = useState(false);
   const notesRef = useRef<HTMLParagraphElement | null>(null);
+  const { formatTimestamp } = useTimezone();
 
   // Filter logs with both name AND notes
   const eligibleLogs = useMemo(() => {
@@ -139,7 +141,7 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
           </div>
           
           {/* Name row */}
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-base font-semibold text-foreground">{selectedMemory.name}</span>
             {displayLocation && (
               <div className="flex items-center gap-1 text-muted-foreground">
@@ -148,6 +150,11 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
               </div>
             )}
           </div>
+          
+          {/* Timestamp - small and subtle */}
+          <p className="text-xs text-muted-foreground/70 mb-2">
+            {formatTimestamp(selectedMemory.created_at, false)}
+          </p>
           
           {/* Notes - always reserve 2 lines when collapsed */}
           <div className={isExpanded ? "" : "relative h-[2.75rem] overflow-hidden"}>

@@ -883,15 +883,15 @@ export default function Dashboard() {
 
         {/* Friendly Header Greeting */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold text-foreground">
-            Hello, {username} 👋
+          <h1 className="text-2xl font-semibold" style={{ fontFamily: 'Fredoka, sans-serif' }}>
+            <span style={{ color: '#ff6f3b' }}>Hello</span>, {username} 👋
           </h1>
         </div>
 
         {/* Stats Dashboard */}
         <HomeStatsBar 
           logs={logs} 
-          lifetimeHellos={progress.total_hellos || 0} 
+          lifetimeHellos={logs.length} 
         />
 
         {/* Main Dashboard - Connection-focused layout */}

@@ -232,14 +232,6 @@ const Hellobook = () => {
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    {/* Thumbnail */}
-                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center flex-shrink-0 text-2xl ${
-                      hasName 
-                        ? 'bg-muted border-border' 
-                        : 'bg-muted/50 border-border/50'
-                    }`}>
-                      {hasName ? "👤" : <span className="text-muted-foreground">?</span>}
-                    </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
@@ -277,9 +269,9 @@ const Hellobook = () => {
                         </div>
                       )}
 
-                      {/* Timestamp */}
+                      {/* Timestamp - date only */}
                       <p className="text-xs text-muted-foreground/70 mt-0.5">
-                        {formatTimestamp(log.created_at, true)}
+                        {formatTimestamp(log.created_at, false)}
                       </p>
 
                       {/* Notes */}
