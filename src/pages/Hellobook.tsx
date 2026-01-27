@@ -401,6 +401,7 @@ const Hellobook = () => {
         onNavigate={handleNavigate}
         onSave={handleSaveEdit}
         onDelete={handleDeleteLog}
+        onToggleFavorite={handleToggleFavorite}
       />
 
       <SaveProgressDialog
