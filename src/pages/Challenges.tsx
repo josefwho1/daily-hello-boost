@@ -26,8 +26,8 @@ const Challenges = () => {
   const { progress: cloudProgress, updateProgress: updateCloudProgress } = useUserProgress();
   const [restartingPackId, setRestartingPackId] = useState<string | null>(null);
   const [confirmRestartPackId, setConfirmRestartPackId] = useState<string | null>(null);
-  const { guestProgress, updateProgress: updateGuestProgress, isAnonymous, clearPackCompletions: clearGuestPackCompletions } = useGuestMode();
-  const { completions, clearPackCompletions, refetch: refetchCompletions } = useChallengeCompletions();
+  const { guestProgress, updateProgress: updateGuestProgress, isAnonymous } = useGuestMode();
+  const { completions, clearCompletionsByTags, refetch: refetchCompletions } = useChallengeCompletions();
   
   const progress = isAnonymous ? guestProgress : cloudProgress;
   const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
@@ -90,11 +90,13 @@ const Challenges = () => {
     setConfirmRestartPackId(null);
     try {
       // Clear challenge completions for this pack (preserves hello logs)
-      if (isAnonymous) {
-        await clearGuestPackCompletions?.(packId);
-      } else {
-        await clearPackCompletions(packId);
-      }
+      // IMPORTANT: pack ids and challenge tag prefixes are not guaranteed to match.
+      const pack = getPackById(packId);
+      const tagsToClear = (pack?.challenges || [])
+        .map((c) => c.tag)
+        .filter((t): t is string => typeof t === 'string' && t.length > 0);
+
+      await clearCompletionsByTags(tagsToClear);
       
       // Refetch completions to update UI immediately
       await refetchCompletions();
