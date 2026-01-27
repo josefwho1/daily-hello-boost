@@ -134,11 +134,12 @@ export const ActiveChallengeCard = ({
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        {/* Challenge Content */}
+        {/* Challenge Content - Fixed height container */}
         <div className={cn(
-          "bg-card rounded-xl p-4 mx-4 text-center transition-all",
+          "bg-card rounded-xl p-4 mx-4 text-center transition-all min-h-[220px] flex flex-col",
           !challengeUnlocked && "relative"
         )}>
+          {/* Header row */}
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="text-xs font-semibold text-muted-foreground">
               DAY {currentChallenge.day}
@@ -156,49 +157,64 @@ export const ActiveChallengeCard = ({
             )}
           </div>
           
+          {/* Icon */}
           <div className={cn(
-            "text-3xl mb-2",
+            "text-2xl mb-2",
             !challengeUnlocked && "grayscale opacity-50"
           )}>
             {currentChallenge.icon}
           </div>
           
+          {/* Title - fixed height */}
           <h3 className={cn(
-            "font-bold text-lg mb-1",
+            "font-bold text-base mb-1 line-clamp-1",
             !challengeUnlocked && "blur-sm select-none"
           )}>
             {currentChallenge.title}
           </h3>
           
+          {/* Description - fixed height with line clamp */}
           <p className={cn(
-            "text-sm text-muted-foreground mb-2",
+            "text-sm text-muted-foreground line-clamp-2 min-h-[40px]",
             !challengeUnlocked && "blur-sm select-none"
           )}>
             {currentChallenge.description}
           </p>
 
-          {challengeUnlocked && currentChallenge.tips && (
-            <p className="text-xs text-muted-foreground/70 italic mb-3">
-              💡 {currentChallenge.tips}
-            </p>
-          )}
+          {/* Spacer to push button/info to bottom */}
+          <div className="flex-1 min-h-2" />
 
-          {!challengeUnlocked && (
-            <p className="text-xs text-muted-foreground mb-3 flex items-center justify-center gap-1">
-              <Lock size={12} />
-              Unlocks {getUnlockDate(currentIndex)}
-            </p>
-          )}
+          {/* Bottom section - consistent positioning */}
+          <div className="mt-auto">
+            {challengeUnlocked && currentChallenge.tips && !challengeCompleted && (
+              <p className="text-xs text-muted-foreground/70 italic mb-2 line-clamp-1">
+                💡 {currentChallenge.tips}
+              </p>
+            )}
 
-          {challengeUnlocked && !challengeCompleted && (
-            <Button 
-              onClick={() => onLogHello(currentChallenge)}
-              className="w-full rounded-full font-semibold"
-              size="sm"
-            >
-              Complete Challenge
-            </Button>
-          )}
+            {!challengeUnlocked && (
+              <p className="text-xs text-muted-foreground mb-2 flex items-center justify-center gap-1">
+                <Lock size={12} />
+                Unlocks {getUnlockDate(currentIndex)}
+              </p>
+            )}
+
+            {challengeUnlocked && !challengeCompleted && (
+              <Button 
+                onClick={() => onLogHello(currentChallenge)}
+                className="w-full rounded-full font-semibold"
+                size="sm"
+              >
+                Complete Challenge
+              </Button>
+            )}
+
+            {challengeCompleted && (
+              <p className="text-xs text-success font-medium">
+                ✓ Completed
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Right Arrow */}
