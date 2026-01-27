@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shuffle } from "lucide-react";
+import { Shuffle, MapPin } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface HelloOfTheDayProps {
@@ -99,6 +99,11 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
   const isLongNote = notesText.length > 80;
   const displayLocation = selectedMemory.location?.trim();
 
+  // For inline "Read more", we truncate the text and append the button
+  const truncatedNotes = isLongNote && !isExpanded 
+    ? notesText.slice(0, 80).trim() 
+    : notesText;
+
   return (
     <Card 
       className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20 cursor-pointer hover:from-amber-500/15 hover:to-amber-500/10 transition-colors"
@@ -106,45 +111,53 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-1">
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-2">
             <span className="text-lg">📖</span>
             <span className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide">Hello of the Day</span>
           </div>
+          
+          {/* Name row */}
           <div className="flex items-center gap-1.5 mb-2">
             <span className="text-base font-semibold text-foreground">{selectedMemory.name}</span>
             {displayLocation && (
-              <>
-                <span className="text-muted-foreground">📍</span>
-                <span className="text-sm text-muted-foreground truncate">{displayLocation}</span>
-              </>
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <MapPin className="w-3 h-3" />
+                <span className="text-sm truncate">{displayLocation}</span>
+              </div>
             )}
           </div>
-          {isExpanded ? (
-            <p className="text-sm text-muted-foreground">
-              {notesText}
-              {isLongNote && (
-                <button
-                  onClick={handleExpandToggle}
-                  className="text-xs text-primary hover:text-primary/80 ml-1 inline"
-                >
-                  Read less
-                </button>
-              )}
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {notesText}
-              {isLongNote && (
-                <button
-                  onClick={handleExpandToggle}
-                  className="text-xs text-primary hover:text-primary/80 ml-1 inline"
-                >
-                  ...Read more
-                </button>
-              )}
-            </p>
-          )}
+          
+          {/* Notes with inline Read more */}
+          <p className="text-sm text-muted-foreground">
+            {isExpanded ? (
+              <>
+                {notesText}
+                {isLongNote && (
+                  <button
+                    onClick={handleExpandToggle}
+                    className="text-xs text-primary hover:text-primary/80 ml-1 inline"
+                  >
+                    Read less
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                {truncatedNotes}
+                {isLongNote && (
+                  <button
+                    onClick={handleExpandToggle}
+                    className="text-xs text-primary hover:text-primary/80 inline"
+                  >
+                    ...Read more
+                  </button>
+                )}
+              </>
+            )}
+          </p>
         </div>
+        
         {eligibleLogs.length > 1 && (
           <Button
             variant="ghost"
