@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shuffle, MapPin } from "lucide-react";
+import remiLogging1 from "@/assets/remi-logging-1.webp";
 import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface HelloOfTheDayProps {
@@ -106,15 +107,15 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
 
   return (
     <Card 
-      className="p-4 rounded-xl bg-card border-border/50 cursor-pointer hover:bg-muted/30 transition-colors"
+      className="p-4 rounded-xl bg-card border-border/50 cursor-pointer hover:bg-muted/30 transition-colors relative overflow-hidden"
       onClick={handleCardClick}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-12">
           {/* Header */}
           <div className="flex items-center gap-2 mb-2">
             <span className="text-lg">📖</span>
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Hello of the Day</span>
+            <span className="text-base font-semibold text-orange-600">Throwback</span>
           </div>
           
           {/* Name row */}
@@ -169,6 +170,13 @@ export const HelloOfTheDay = ({ logs, onEditLog }: HelloOfTheDayProps) => {
           </Button>
         )}
       </div>
+      
+      {/* Remi Logging - positioned bottom right */}
+      <img 
+        src={remiLogging1} 
+        alt="Remi the logging raccoon" 
+        className="absolute bottom-2 right-2 w-14 h-auto object-contain opacity-90"
+      />
     </Card>
   );
 };
