@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Pencil, ChevronDown, ChevronUp, Mail, MapPin } from "lucide-react";
+import { Search, Mail } from "lucide-react";
 import { useHelloLogs, HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,45 +13,15 @@ import hellobookIcon from "@/assets/hellobook-icon.webp";
 import vaultIcon from "@/assets/vault-icon.webp";
 import EditHelloDialog from "@/components/EditHelloDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
+import HellobookPersonCard from "@/components/HellobookPersonCard";
 
 type FilterType = 'all' | 'names' | 'unknown';
 
-// Expandable text component for long notes
-const ExpandableText = ({ text }: { text: string }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const needsExpansion = text.length > 80;
-
-  if (!needsExpansion) {
-    return <p className="text-sm text-muted-foreground mt-2">{text}</p>;
-  }
-
-  return (
-    <div className="mt-2">
-      <p className={`text-sm text-muted-foreground ${!isExpanded ? 'line-clamp-2' : ''}`}>
-        {text}
-      </p>
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 mt-1 transition-colors"
-      >
-        {isExpanded ? (
-          <>
-            <ChevronUp className="w-3 h-3" />
-            Show less
-          </>
-        ) : (
-          <>
-            <ChevronDown className="w-3 h-3" />
-            Read more
-          </>
-        )}
-      </button>
-    </div>
-  );
-};
-
-// All hellos are personal hellos now - no filtering needed
-// The only distinction is whether they have a name or not
+// Group logs by person - entries linked together are grouped
+interface GroupedPerson {
+  primaryLog: HelloLog;
+  linkedLogs: HelloLog[];
+}
 
 const Hellobook = () => {
   const navigate = useNavigate();
@@ -67,16 +37,55 @@ const Hellobook = () => {
 
   const showGuestPrompt = isAnonymous && logs.length > 0;
   
+  // Group logs by person - entries with same linked_to or that are linked to each other
+  const groupedPeople = useMemo(() => {
+    const groups: Map<string, GroupedPerson> = new Map();
+    const processedIds = new Set<string>();
+
+    // First pass: identify primary logs (ones that others link to, or standalone)
+    logs.forEach(log => {
+      if (processedIds.has(log.id)) return;
+
+      // If this log is linked to another, skip it for now (it will be added as a linked log)
+      if (log.linked_to) return;
+
+      // Find all logs that link to this one
+      const linkedLogs = logs.filter(l => l.linked_to === log.id);
+      
+      groups.set(log.id, {
+        primaryLog: log,
+        linkedLogs: linkedLogs
+      });
+
+      processedIds.add(log.id);
+      linkedLogs.forEach(l => processedIds.add(l.id));
+    });
+
+    // Second pass: handle logs that are linked but their parent wasn't found
+    // (edge case - treat them as standalone)
+    logs.forEach(log => {
+      if (processedIds.has(log.id)) return;
+      
+      groups.set(log.id, {
+        primaryLog: log,
+        linkedLogs: []
+      });
+      processedIds.add(log.id);
+    });
+
+    return Array.from(groups.values());
+  }, [logs]);
+
   // Calculate stats for the toggle bar
   const stats = useMemo(() => {
-    const withNames = logs.filter(log => log.name && log.name.trim() !== "");
-    const withoutNames = logs.filter(log => !log.name || log.name.trim() === "");
+    const withNames = groupedPeople.filter(g => g.primaryLog.name && g.primaryLog.name.trim() !== "");
+    const withoutNames = groupedPeople.filter(g => !g.primaryLog.name || g.primaryLog.name.trim() === "");
     return {
-      all: logs.length,
+      all: groupedPeople.length,
       names: withNames.length,
       unknown: withoutNames.length
     };
-  }, [logs]);
+  }, [groupedPeople]);
   
   const handleEditClick = (log: HelloLog) => {
     setEditingLog(log);
@@ -100,23 +109,34 @@ const Hellobook = () => {
   };
 
   // Apply toggle filter and search - all hellos are shown
-  const filteredLogs = logs
-    .filter(log => {
+  const filteredPeople = groupedPeople
+    .filter(group => {
       if (activeFilter === 'names') {
-        return log.name && log.name.trim() !== "";
+        return group.primaryLog.name && group.primaryLog.name.trim() !== "";
       }
       if (activeFilter === 'unknown') {
-        return !log.name || log.name.trim() === "";
+        return !group.primaryLog.name || group.primaryLog.name.trim() === "";
       }
       return true;
     })
-    .filter(log => {
+    .filter(group => {
       const query = searchQuery.toLowerCase();
-      const nameMatch = log.name?.toLowerCase().includes(query);
-      const notesMatch = log.notes?.toLowerCase().includes(query);
-      const locationMatch = log.location?.toLowerCase().includes(query);
-      const dateMatch = formatTimestamp(log.created_at, true).toLowerCase().includes(query);
-      return nameMatch || notesMatch || locationMatch || dateMatch || !query;
+      if (!query) return true;
+      
+      // Search in primary log
+      const nameMatch = group.primaryLog.name?.toLowerCase().includes(query);
+      const notesMatch = group.primaryLog.notes?.toLowerCase().includes(query);
+      const locationMatch = group.primaryLog.location?.toLowerCase().includes(query);
+      const dateMatch = formatTimestamp(group.primaryLog.created_at, true).toLowerCase().includes(query);
+      
+      // Also search in linked logs
+      const linkedMatch = group.linkedLogs.some(log => 
+        log.notes?.toLowerCase().includes(query) ||
+        log.location?.toLowerCase().includes(query) ||
+        formatTimestamp(log.created_at, true).toLowerCase().includes(query)
+      );
+      
+      return nameMatch || notesMatch || locationMatch || dateMatch || linkedMatch;
     });
 
   if (loading) {
@@ -211,7 +231,7 @@ const Hellobook = () => {
         </div>
 
         {/* Logs */}
-        {filteredLogs.length === 0 ? (
+        {filteredPeople.length === 0 ? (
           <Card className="p-8 text-center rounded-2xl">
             <img src={hellobookIcon} alt="Hellobook" className="w-16 h-auto max-h-16 mx-auto mb-4 opacity-50 object-contain" />
             <p className="text-muted-foreground">
@@ -220,73 +240,22 @@ const Hellobook = () => {
           </Card>
         ) : (
           <div className="space-y-3">
-            {filteredLogs.map((log) => {
-              // Determine thumbnail: ? for no name, 👤 for named entries
-              const hasName = log.name && log.name.trim() !== "";
-              
-              return (
-                <Card 
-                  key={log.id} 
-                  className={`p-4 rounded-2xl hover:shadow-md transition-shadow duration-200 animate-fade-in ${
-                    !hasName ? 'opacity-75' : ''
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-
-                    <div className="flex-1 min-w-0">
-                      {/* Top row: Name, Location, and Edit button */}
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-foreground truncate">
-                          {log.name || "Unknown"}
-                        </h3>
-                        
-                        {/* Location - inline with name */}
-                        {log.location && (
-                          <div className="flex items-center gap-1 text-muted-foreground flex-shrink-0">
-                            <MapPin className="w-3 h-3" />
-                            <span className="text-sm">{log.location}</span>
-                          </div>
-                        )}
-
-                        {/* Edit/Add Name button - pushed to right */}
-                        {hasName ? (
-                          <button
-                            onClick={() => handleEditClick(log)}
-                            className="ml-auto p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
-                            aria-label="Edit hello"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleEditClick(log)}
-                            className="ml-auto px-2 py-1 text-xs rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex-shrink-0"
-                            aria-label="Add name"
-                          >
-                            Add Name
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Timestamp - date only */}
-                      <p className="text-xs text-muted-foreground/70 mt-0.5">
-                        {formatTimestamp(log.created_at, false)}
-                      </p>
-
-                      {/* Notes */}
-                      {log.notes && <ExpandableText text={log.notes} />}
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
+            {filteredPeople.map((group) => (
+              <HellobookPersonCard
+                key={group.primaryLog.id}
+                primaryLog={group.primaryLog}
+                linkedLogs={group.linkedLogs}
+                formatTimestamp={formatTimestamp}
+                onEditClick={handleEditClick}
+              />
+            ))}
           </div>
         )}
 
         {/* Stats footer */}
-        {filteredLogs.length > 0 && (
+        {filteredPeople.length > 0 && (
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>📖 {filteredLogs.length} hello{filteredLogs.length !== 1 ? 's' : ''} in your book</p>
+            <p>📖 {stats.names} name{stats.names !== 1 ? 's' : ''} remembered · {logs.length} total hello{logs.length !== 1 ? 's' : ''}</p>
           </div>
         )}
 
