@@ -21,7 +21,7 @@ import { RecentHellosSection } from "@/components/RecentHellosSection";
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
 
-import EditHelloDialog from "@/components/EditHelloDialog";
+import ViewHelloDialog from "@/components/ViewHelloDialog";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { LogHelloButton } from "@/components/LogHelloButton";
 import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
@@ -945,7 +945,7 @@ export default function Dashboard() {
             <RecentHellosSection
               logs={logs}
               onViewAll={() => navigate('/hellobook')}
-              onEditLog={(log) => {
+              onViewLog={(log) => {
                 setEditingLog(log);
                 setIsEditDialogOpen(true);
               }}
@@ -1081,8 +1081,8 @@ export default function Dashboard() {
         }}
       />
 
-      {/* Edit Hello Dialog */}
-      <EditHelloDialog
+      {/* View Hello Dialog */}
+      <ViewHelloDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         log={editingLog}

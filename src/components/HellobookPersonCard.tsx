@@ -8,7 +8,7 @@ interface HellobookPersonCardProps {
   primaryLog: HelloLog;
   linkedLogs: HelloLog[];
   formatTimestamp: (timestamp: string, includeTime?: boolean) => string;
-  onEditClick: (log: HelloLog) => void;
+  onViewClick: (log: HelloLog) => void;
 }
 
 // Expandable text component for long notes
@@ -52,7 +52,7 @@ const HellobookPersonCard = ({
   primaryLog, 
   linkedLogs, 
   formatTimestamp, 
-  onEditClick 
+  onViewClick 
 }: HellobookPersonCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const hasName = primaryLog.name && primaryLog.name.trim() !== "";
@@ -70,7 +70,7 @@ const HellobookPersonCard = ({
       className={`p-4 rounded-2xl hover:shadow-md transition-all duration-200 animate-fade-in cursor-pointer active:scale-[0.98] ${
         !hasName ? 'opacity-75' : ''
       }`}
-      onClick={() => onEditClick(primaryLog)}
+      onClick={() => onViewClick(primaryLog)}
     >
       {hasMultipleInteractions ? (
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
