@@ -5,105 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Daily hellos data (must match src/data/dailyHellos.ts)
-const dailyHellos = [
-  { id: 1, title: "Dream Ask", description: "Ask a stranger 'If money was no object, what would you do tomorrow?'" },
-  { id: 2, title: "Secret Share", description: "Tell a stranger one harmless secret ('I'm terrified of elevators')" },
-  { id: 3, title: "Biceps.", description: "Say hello to someone in your gym or on your run or walk if it's a rest day" },
-  { id: 4, title: "Old timer", description: "Say hello to someone older than you" },
-  { id: 5, title: "Long lines suck", description: "Start small talk in a queue" },
-  { id: 6, title: "Super random", description: "Start with: 'Mind if I say something random?' then give a compliment" },
-  { id: 7, title: "I appreciate you", description: "Tell someone you appreciate them 'thanks, appreciate you!'" },
-  { id: 8, title: "Love your energy", description: "Tell someone they have great energy" },
-  { id: 9, title: "Happy Monday!", description: "Wish someone 'Happy [day of the week]!'" },
-  { id: 10, title: "Fit Checkkkk", description: "Ask for an opinion on your outfit" },
-  { id: 11, title: "Learn & Repeat", description: "Get someone's name and use it during your interaction." },
-  { id: 12, title: "Shameless plug", description: "Name drop One Hello and use it as an excuse to meet someone." },
-  { id: 13, title: "Opposites attract", description: "Meet someone new from the opposite gender" },
-  { id: 14, title: "Influenceerrrrr", description: "Ask someone to take a photo of you." },
-  { id: 15, title: "High Five", description: "Get a highfive from a stranger" },
-  { id: 16, title: "Bump it 🤜🤛", description: "Get a fist bump" },
-  { id: 17, title: "Recommendation", description: "Ask someone for a recommendation, café, lunch spot, anything" },
-  { id: 18, title: "Cute dog", description: "Ask someone about their pet (if they have one)" },
-  { id: 19, title: "Staff favourite", description: "When ordering something from a store, ask the staff what is their favourite item?" },
-  { id: 20, title: "Small favour", description: "Ask someone for a small favour (napkin, direction, time)" },
-  { id: 21, title: "Feeling Thirsty", description: "Ask someone what they're drinking (if in a café or bar)" },
-  { id: 22, title: "Weekend feels", description: "Ask someone what their weekend plans are" },
-  { id: 23, title: "Mondays am I right?", description: "Make a comment on the day of the week" },
-  { id: 24, title: "Good morning?", description: "Ask someone how their morning has been" },
-  { id: 25, title: "Local or nah", description: "Ask someone if they're from around here" },
-  { id: 26, title: "Book Club", description: "Talk to someone about the book they are reading (or simply ask about it)" },
-  { id: 27, title: "What brings?", description: "Ask someone what brings them here" },
-  { id: 28, title: "Orange obviously", description: "Ask someone what their favourite colour is" },
-  { id: 29, title: "Raccoons obviously", description: "Ask someone what their favourite animal is" },
-  { id: 30, title: "Feeling snacky", description: "Ask someone what they're eating/drinking & where they got it from" },
-  { id: 31, title: "Keyboard warrior", description: "Ask someone what they're working on (if they're on a laptop)" },
-  { id: 32, title: "I want a Remi Tee", description: "Ask someone where they got their shirt from" },
-  { id: 33, title: "Style points", description: "Compliment someone's style" },
-  { id: 34, title: "Lone wolf", description: "Greet someone sitting alone" },
-  { id: 35, title: "Doorman (or woman)", description: "Hold the door for someone & say something" },
-  { id: 36, title: "Vibin", description: "Tell someone random that you like their vibe" },
-  { id: 37, title: "Cool Glasses", description: "Compliment someone's sunglasses (or regular glasses)" },
-  { id: 38, title: "Awkward Elevator", description: "Break the silence & say hello to someone in an elevator" }
-];
-
-// Weekly challenges data (must match src/data/weeklyChallenges.ts)
-const weeklyChallenges = [
-  { id: 1, title: "Future Friend", description: "Get the contact of someone new and suggest to go for a coffee, walk or bite to eat" },
-  { id: 2, title: "Forget & Forgive", description: "Ask for someone's name that you should already know" },
-  { id: 3, title: "Old Flame", description: "Reach out to someone (friend, family or colleague) that you haven't spoken to in a while." },
-  { id: 4, title: "Free Coffee", description: "Buy someone a coffee, tis the season of giving." },
-  { id: 5, title: "Neighborino", description: "Introduce yourself to a neighbour you've never met properly and get their name" },
-  { id: 6, title: "Name to the Face", description: "Introduce yourself to someone you've seen many times before but never got their name" }
-];
-
-// Reference date for weekly challenges: Monday Dec 8, 2025
-const WEEKLY_REFERENCE_DATE = new Date(Date.UTC(2025, 11, 8));
-
-// Seeded random shuffle - same seed = same order for all users
-const seededShuffle = <T>(array: T[], seed: number): T[] => {
-  const shuffled = [...array];
-  let currentSeed = seed;
-  
-  const random = () => {
-    currentSeed = (currentSeed + 0x6D2B79F5) | 0;
-    let t = currentSeed;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-  
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  
-  return shuffled;
-};
-
-// Get today's hello (same logic as client-side)
-const getTodaysHello = () => {
-  const now = new Date();
-  const yearSeed = now.getFullYear();
-  const shuffledHellos = seededShuffle(dailyHellos, yearSeed);
-  
-  const startOfYear = new Date(now.getFullYear(), 0, 0);
-  const diff = now.getTime() - startOfYear.getTime();
-  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
-  
-  const index = dayOfYear % shuffledHellos.length;
-  return shuffledHellos[index];
-};
-
-// Get this week's challenge (same logic as client-side)
-const getThisWeeksChallenge = () => {
-  const now = new Date();
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-  const weeksSinceReference = Math.floor((now.getTime() - WEEKLY_REFERENCE_DATE.getTime()) / msPerWeek);
-  const index = ((weeksSinceReference % weeklyChallenges.length) + weeklyChallenges.length) % weeklyChallenges.length;
-  return weeklyChallenges[index];
-};
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -150,29 +51,6 @@ Deno.serve(async (req) => {
       .gte('created_at', todayStart)
       .lt('created_at', todayEnd);
 
-    // Count unique users who logged hellos today (any hello counts)
-    const { data: todayHelloUsers } = await supabase
-      .from('hello_logs')
-      .select('user_id')
-      .gte('created_at', todayStart)
-      .lt('created_at', todayEnd);
-    
-    const uniqueTodayHelloUsers = new Set(todayHelloUsers?.map(u => u.user_id) || []).size;
-
-    // Count unique users who logged hellos this week
-    const { data: weeklyCompletionUsers } = await supabase
-      .from('hello_logs')
-      .select('user_id')
-      .gte('created_at', weekStartStr);
-    
-    const uniqueWeeklyCompletions = new Set(weeklyCompletionUsers?.map(u => u.user_id) || []).size;
-
-    // Get today's hello using client-side logic
-    const todaysHello = getTodaysHello();
-
-    // Get this week's challenge using client-side logic
-    const thisWeeksChallenge = getThisWeeksChallenge();
-
     // Get all profiles to check hide_from_leaderboard and is_anonymous
     const { data: allProfiles } = await supabase
       .from('profiles')
@@ -182,47 +60,19 @@ Deno.serve(async (req) => {
       (allProfiles || []).map(p => [p.id, p])
     );
 
-    // Top 10 by daily_streak (exclude hidden users)
-    const { data: streakLeaders } = await supabase
-      .from('user_progress')
-      .select('user_id, daily_streak, username')
-      .gt('daily_streak', 0)
-      .order('daily_streak', { ascending: false })
-      .limit(50); // Get more to filter
-
-    // Filter and enrich streak leaders
-    const enrichedStreakLeaders = (streakLeaders || [])
-      .filter(leader => {
-        const profile = profileMap.get(leader.user_id);
-        return !profile?.hide_from_leaderboard;
-      })
-      .slice(0, 10)
-      .map(leader => {
-        const profile = profileMap.get(leader.user_id);
-        const displayName = leader.username || profile?.username || 'Anonymous';
-        const isGuest = profile?.is_anonymous === true;
-        
-        return {
-          displayName: isGuest ? `${displayName} (guest)` : displayName,
-          streak: leader.daily_streak,
-          isGuest,
-        };
-      });
-
-    // Top 10 by hellos this week - count actual hello_logs for accuracy
-    const { data: weeklyHelloData } = await supabase
+    // Top 10 by lifetime hellos - count all hello_logs per user
+    const { data: allHelloData } = await supabase
       .from('hello_logs')
-      .select('user_id')
-      .gte('created_at', weekStartStr);
+      .select('user_id');
     
-    // Count hellos per user this week
-    const weeklyHellosPerUser: Record<string, number> = {};
-    (weeklyHelloData || []).forEach((log) => {
-      weeklyHellosPerUser[log.user_id] = (weeklyHellosPerUser[log.user_id] || 0) + 1;
+    // Count hellos per user (lifetime)
+    const lifetimeHellosPerUser: Record<string, number> = {};
+    (allHelloData || []).forEach((log) => {
+      lifetimeHellosPerUser[log.user_id] = (lifetimeHellosPerUser[log.user_id] || 0) + 1;
     });
     
     // Sort by count, filter hidden users, and take top 10
-    const sortedWeeklyLeaders = Object.entries(weeklyHellosPerUser)
+    const sortedLifetimeLeaders = Object.entries(lifetimeHellosPerUser)
       .filter(([userId]) => {
         const profile = profileMap.get(userId);
         return !profile?.hide_from_leaderboard;
@@ -230,9 +80,9 @@ Deno.serve(async (req) => {
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10);
     
-    // Enrich weekly leaders with profile/progress data
-    const enrichedWeeklyLeaders = await Promise.all(
-      sortedWeeklyLeaders.map(async ([userId, count]) => {
+    // Enrich lifetime leaders with profile/progress data
+    const enrichedLifetimeLeaders = await Promise.all(
+      sortedLifetimeLeaders.map(async ([userId, count]) => {
         const profile = profileMap.get(userId);
         
         const { data: progress } = await supabase
@@ -246,7 +96,7 @@ Deno.serve(async (req) => {
         
         return {
           displayName: isGuest ? `${displayName} (guest)` : displayName,
-          hellosThisWeek: count,
+          totalHellos: count,
           isGuest,
         };
       })
@@ -259,17 +109,9 @@ Deno.serve(async (req) => {
           totalNames: totalNames || 0,
           hellosThisWeek: hellosThisWeek || 0,
           hellosToday: hellosToday || 0,
-          weeklyChallengeCompletions: uniqueWeeklyCompletions,
-          weeklyChallenge: thisWeeksChallenge,
-        },
-        todayStats: {
-          hellosToday: hellosToday || 0,
-          usersCompletedTodaysHello: uniqueTodayHelloUsers,
-          dailyChallenge: todaysHello,
         },
         leaderboards: {
-          streakLeaders: enrichedStreakLeaders,
-          weeklyLeaders: enrichedWeeklyLeaders,
+          lifetimeLeaders: enrichedLifetimeLeaders,
         },
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -1,27 +1,20 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Flame, Users, Heart, Calendar, Trophy, Sparkles, Hand, Mail } from "lucide-react";
+import { Users, Heart, Trophy, Hand, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
+
 interface CommunityStats {
   collectiveImpact: {
     totalHellos: number;
     totalNames: number;
     hellosThisWeek: number;
     hellosToday: number;
-    weeklyChallengeCompletions: number;
-    weeklyChallenge: { title: string; description: string };
-  };
-  todayStats: {
-    hellosToday: number;
-    usersCompletedTodaysHello: number;
-    dailyChallenge: { title: string; description: string };
   };
   leaderboards: {
-    streakLeaders: { displayName: string; streak: number; isGuest?: boolean }[];
-    weeklyLeaders: { displayName: string; hellosThisWeek: number; isGuest?: boolean }[];
+    lifetimeLeaders: { displayName: string; totalHellos: number; isGuest?: boolean }[];
   };
 }
 
@@ -137,67 +130,25 @@ const Community = () => {
           </div>
         </div>
 
-        {/* Section 2: Challenges */}
-        <div className="space-y-3">
-
-          {/* Today's Hello Card */}
-          <Card className="bg-gradient-to-br from-primary/5 to-transparent border-primary/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-primary" />
-                Today's Hello
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm font-medium text-foreground mb-1">{stats.todayStats.dailyChallenge.title}</p>
-              <p className="text-xs text-muted-foreground mb-2">{stats.todayStats.dailyChallenge.description}</p>
-              <div className="flex items-center gap-1 text-primary">
-                <Trophy className="w-4 h-4" />
-                <span className="text-sm font-semibold">{formatNumber(stats.todayStats.usersCompletedTodaysHello)}</span>
-                <span className="text-xs text-muted-foreground">users completed today</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Remi's Weekly Challenge Card */}
-          <Card className="bg-gradient-to-br from-primary/5 to-transparent border-primary/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" />
-                Remi's Weekly Challenge
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm font-medium text-foreground mb-1">{stats.collectiveImpact.weeklyChallenge.title}</p>
-              <p className="text-xs text-muted-foreground mb-2">{stats.collectiveImpact.weeklyChallenge.description}</p>
-              <div className="flex items-center gap-1 text-primary">
-                <Trophy className="w-4 h-4" />
-                <span className="text-sm font-semibold">{formatNumber(stats.collectiveImpact.weeklyChallengeCompletions)}</span>
-                <span className="text-xs text-muted-foreground">users completed this week</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Section 3: Community Leaders */}
+        {/* Section 2: Community Leaders */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground flex items-center justify-center gap-2">
             <Trophy className="w-5 h-5 text-primary" />
             Community Leaders
           </h2>
 
-          {/* Streak Leaderboard */}
+          {/* Lifetime Hellos Leaderboard */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
-                <Flame className="w-4 h-4 text-orange-500" />
-                Longest Active Streaks
+                <Hand className="w-4 h-4 text-primary" />
+                Lifetime Hellos
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              {stats.leaderboards.streakLeaders.length > 0 ? (
+              {stats.leaderboards.lifetimeLeaders.length > 0 ? (
                 <div className="space-y-2">
-                  {stats.leaderboards.streakLeaders.map((leader, index) => (
+                  {stats.leaderboards.lifetimeLeaders.map((leader, index) => (
                     <div 
                       key={index} 
                       className={`flex items-center justify-between py-2 px-3 rounded-lg ${
@@ -218,60 +169,15 @@ const Community = () => {
                         </span>
                         <span className="text-sm font-medium text-foreground">{leader.displayName}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-orange-500">
-                        <Flame className="w-4 h-4" />
-                        <span className="font-semibold">{leader.streak}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">No active streaks yet. Be the first!</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Weekly Leaderboard */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" />
-                Most Active This Week
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {stats.leaderboards.weeklyLeaders.length > 0 ? (
-                <div className="space-y-2">
-                  {stats.leaderboards.weeklyLeaders.map((leader, index) => (
-                    <div 
-                      key={index} 
-                      className={`flex items-center justify-between py-2 px-3 rounded-lg ${
-                        index === 0 ? 'bg-gradient-to-r from-primary/10 to-primary/5' :
-                        index === 1 ? 'bg-gradient-to-r from-gray-300/10 to-gray-400/10' :
-                        index === 2 ? 'bg-gradient-to-r from-amber-600/10 to-amber-700/10' :
-                        'bg-muted/30'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
-                          index === 0 ? 'bg-primary text-primary-foreground' :
-                          index === 1 ? 'bg-gray-400 text-gray-900' :
-                          index === 2 ? 'bg-amber-600 text-amber-950' :
-                          'bg-muted text-muted-foreground'
-                        }`}>
-                          {index + 1}
-                        </span>
-                        <span className="text-sm font-medium text-foreground">{leader.displayName}</span>
-                      </div>
                       <div className="flex items-center gap-1 text-primary">
                         <Hand className="w-4 h-4" />
-                        <span className="font-semibold">{leader.hellosThisWeek}</span>
+                        <span className="font-semibold">{leader.totalHellos}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">No hellos logged this week yet. Be the first!</p>
+                <p className="text-sm text-muted-foreground text-center py-4">No hellos logged yet. Be the first!</p>
               )}
             </CardContent>
           </Card>
