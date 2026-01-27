@@ -26,6 +26,10 @@ Deno.serve(async (req) => {
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysToMonday);
     const weekStartStr = weekStart.toISOString();
 
+    // Calculate month start (1st of current month)
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthStartStr = monthStart.toISOString();
+
     // Total hellos logged
     const { count: totalHellos } = await supabase
       .from('hello_logs')
@@ -37,6 +41,12 @@ Deno.serve(async (req) => {
       .select('*', { count: 'exact', head: true })
       .not('name', 'is', null)
       .neq('name', '');
+
+    // Hellos this month
+    const { count: hellosThisMonth } = await supabase
+      .from('hello_logs')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', monthStartStr);
 
     // Hellos this week
     const { count: hellosThisWeek } = await supabase
@@ -60,58 +70,111 @@ Deno.serve(async (req) => {
       (allProfiles || []).map(p => [p.id, p])
     );
 
-    // Top 10 by lifetime hellos - count all hello_logs per user
+    // Get all hello logs for leaderboard calculations
     const { data: allHelloData } = await supabase
       .from('hello_logs')
-      .select('user_id');
+      .select('user_id, name, created_at');
     
-    // Count hellos per user (lifetime)
-    const lifetimeHellosPerUser: Record<string, number> = {};
-    (allHelloData || []).forEach((log) => {
-      lifetimeHellosPerUser[log.user_id] = (lifetimeHellosPerUser[log.user_id] || 0) + 1;
-    });
-    
-    // Sort by count, filter hidden users, and take top 10
-    const sortedLifetimeLeaders = Object.entries(lifetimeHellosPerUser)
-      .filter(([userId]) => {
-        const profile = profileMap.get(userId);
-        return !profile?.hide_from_leaderboard;
-      })
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 10);
-    
-    // Enrich lifetime leaders with profile/progress data
-    const enrichedLifetimeLeaders = await Promise.all(
-      sortedLifetimeLeaders.map(async ([userId, count]) => {
-        const profile = profileMap.get(userId);
-        
-        const { data: progress } = await supabase
-          .from('user_progress')
-          .select('username')
-          .eq('user_id', userId)
-          .maybeSingle();
-        
-        const displayName = progress?.username || profile?.username || 'Anonymous';
-        const isGuest = profile?.is_anonymous === true;
-        
-        return {
-          displayName: isGuest ? `${displayName} (guest)` : displayName,
-          totalHellos: count,
-          isGuest,
-        };
-      })
-    );
+    // Helper function to count hellos per user with optional date filter
+    const countHellosPerUser = (logs: typeof allHelloData, sinceDate?: string) => {
+      const counts: Record<string, number> = {};
+      (logs || []).forEach((log) => {
+        if (sinceDate && log.created_at < sinceDate) return;
+        counts[log.user_id] = (counts[log.user_id] || 0) + 1;
+      });
+      return counts;
+    };
+
+    // Helper function to count names per user with optional date filter
+    const countNamesPerUser = (logs: typeof allHelloData, sinceDate?: string) => {
+      const counts: Record<string, number> = {};
+      (logs || []).forEach((log) => {
+        if (sinceDate && log.created_at < sinceDate) return;
+        if (log.name && log.name.trim() !== '') {
+          counts[log.user_id] = (counts[log.user_id] || 0) + 1;
+        }
+      });
+      return counts;
+    };
+
+    // Helper function to get top 10 leaders from counts
+    const getTopLeaders = async (counts: Record<string, number>) => {
+      const sorted = Object.entries(counts)
+        .filter(([userId]) => {
+          const profile = profileMap.get(userId);
+          return !profile?.hide_from_leaderboard;
+        })
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 10);
+      
+      return Promise.all(
+        sorted.map(async ([userId, count]) => {
+          const profile = profileMap.get(userId);
+          
+          const { data: progress } = await supabase
+            .from('user_progress')
+            .select('username')
+            .eq('user_id', userId)
+            .maybeSingle();
+          
+          const displayName = progress?.username || profile?.username || 'Anonymous';
+          const isGuest = profile?.is_anonymous === true;
+          
+          return {
+            displayName: isGuest ? `${displayName} (guest)` : displayName,
+            count,
+            isGuest,
+          };
+        })
+      );
+    };
+
+    // Calculate all leaderboard variants
+    const hellosAllTime = countHellosPerUser(allHelloData);
+    const hellosMonth = countHellosPerUser(allHelloData, monthStartStr);
+    const hellosWeek = countHellosPerUser(allHelloData, weekStartStr);
+
+    const namesAllTime = countNamesPerUser(allHelloData);
+    const namesMonth = countNamesPerUser(allHelloData, monthStartStr);
+    const namesWeek = countNamesPerUser(allHelloData, weekStartStr);
+
+    // Get top 10 for each category
+    const [
+      hellosAllTimeLeaders,
+      hellosMonthLeaders,
+      hellosWeekLeaders,
+      namesAllTimeLeaders,
+      namesMonthLeaders,
+      namesWeekLeaders,
+    ] = await Promise.all([
+      getTopLeaders(hellosAllTime),
+      getTopLeaders(hellosMonth),
+      getTopLeaders(hellosWeek),
+      getTopLeaders(namesAllTime),
+      getTopLeaders(namesMonth),
+      getTopLeaders(namesWeek),
+    ]);
 
     return new Response(
       JSON.stringify({
         collectiveImpact: {
           totalHellos: totalHellos || 0,
           totalNames: totalNames || 0,
+          hellosThisMonth: hellosThisMonth || 0,
           hellosThisWeek: hellosThisWeek || 0,
           hellosToday: hellosToday || 0,
         },
         leaderboards: {
-          lifetimeLeaders: enrichedLifetimeLeaders,
+          hellos: {
+            allTime: hellosAllTimeLeaders,
+            thisMonth: hellosMonthLeaders,
+            thisWeek: hellosWeekLeaders,
+          },
+          names: {
+            allTime: namesAllTimeLeaders,
+            thisMonth: namesMonthLeaders,
+            thisWeek: namesWeekLeaders,
+          },
         },
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -1,22 +1,41 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Heart, Trophy, Hand, Mail } from "lucide-react";
+import { Users, Heart, Trophy, Hand, Mail, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface LeaderEntry {
+  displayName: string;
+  count: number;
+  isGuest?: boolean;
+}
 
 interface CommunityStats {
   collectiveImpact: {
     totalHellos: number;
     totalNames: number;
+    hellosThisMonth: number;
     hellosThisWeek: number;
     hellosToday: number;
   };
   leaderboards: {
-    lifetimeLeaders: { displayName: string; totalHellos: number; isGuest?: boolean }[];
+    hellos: {
+      allTime: LeaderEntry[];
+      thisMonth: LeaderEntry[];
+      thisWeek: LeaderEntry[];
+    };
+    names: {
+      allTime: LeaderEntry[];
+      thisMonth: LeaderEntry[];
+      thisWeek: LeaderEntry[];
+    };
   };
 }
+
+type TimeFilter = 'allTime' | 'thisMonth' | 'thisWeek';
 
 const Community = () => {
   const { user } = useAuth();
@@ -24,6 +43,8 @@ const Community = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [hellosFilter, setHellosFilter] = useState<TimeFilter>('allTime');
+  const [namesFilter, setNamesFilter] = useState<TimeFilter>('allTime');
 
   // Check if user is anonymous (guest)
   const isGuest = user?.is_anonymous === true;
@@ -80,6 +101,64 @@ const Community = () => {
     return (num ?? 0).toLocaleString();
   };
 
+  const getHellosLeaders = (): LeaderEntry[] => {
+    return stats.leaderboards?.hellos?.[hellosFilter] || [];
+  };
+
+  const getNamesLeaders = (): LeaderEntry[] => {
+    return stats.leaderboards?.names?.[namesFilter] || [];
+  };
+
+  const renderLeaderboard = (
+    leaders: LeaderEntry[],
+    icon: React.ReactNode,
+    emptyMessage: string
+  ) => {
+    if (leaders.length === 0) {
+      return (
+        <p className="text-sm text-muted-foreground text-center py-4">{emptyMessage}</p>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {leaders.map((leader, index) => (
+          <div 
+            key={index} 
+            className={`flex items-center justify-between py-2 px-3 rounded-lg ${
+              index === 0 ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10' :
+              index === 1 ? 'bg-gradient-to-r from-gray-300/10 to-gray-400/10' :
+              index === 2 ? 'bg-gradient-to-r from-amber-600/10 to-amber-700/10' :
+              'bg-muted/30'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
+                index === 0 ? 'bg-yellow-500 text-yellow-950' :
+                index === 1 ? 'bg-gray-400 text-gray-900' :
+                index === 2 ? 'bg-amber-600 text-amber-950' :
+                'bg-muted text-muted-foreground'
+              }`}>
+                {index + 1}
+              </span>
+              <span className="text-sm font-medium text-foreground">{leader.displayName}</span>
+            </div>
+            <div className="flex items-center gap-1 text-primary">
+              {icon}
+              <span className="font-semibold">{leader.count}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const filterLabels: Record<TimeFilter, string> = {
+    allTime: 'All time',
+    thisMonth: 'This month',
+    thisWeek: 'This week',
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24 pt-6 px-4">
       <div className="max-w-md mx-auto space-y-6">
@@ -116,12 +195,19 @@ const Community = () => {
             
             <Card className="bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
               <CardContent className="pt-4 pb-4 text-center">
+                <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosThisMonth)}</p>
+                <p className="text-sm text-muted-foreground">hellos this month</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
+              <CardContent className="pt-4 pb-4 text-center">
                 <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosThisWeek)}</p>
                 <p className="text-sm text-muted-foreground">hellos this week</p>
               </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
+            <Card className="col-span-2 bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
               <CardContent className="pt-4 pb-4 text-center">
                 <p className="text-3xl font-bold text-foreground">{formatNumber(stats.collectiveImpact.hellosToday)}</p>
                 <p className="text-sm text-muted-foreground">hellos today</p>
@@ -137,47 +223,54 @@ const Community = () => {
             Community Leaders
           </h2>
 
-          {/* Lifetime Hellos Leaderboard */}
+          {/* Hellos Logged Leaderboard */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Hand className="w-4 h-4 text-primary" />
-                Lifetime Hellos
+                Hellos Logged
               </CardTitle>
+              <Tabs value={hellosFilter} onValueChange={(v) => setHellosFilter(v as TimeFilter)} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 h-8">
+                  {(Object.keys(filterLabels) as TimeFilter[]).map((key) => (
+                    <TabsTrigger key={key} value={key} className="text-xs px-2">
+                      {filterLabels[key]}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </CardHeader>
             <CardContent className="pt-0">
-              {(stats.leaderboards?.lifetimeLeaders?.length ?? 0) > 0 ? (
-                <div className="space-y-2">
-                  {stats.leaderboards.lifetimeLeaders.map((leader, index) => (
-                    <div 
-                      key={index} 
-                      className={`flex items-center justify-between py-2 px-3 rounded-lg ${
-                        index === 0 ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10' :
-                        index === 1 ? 'bg-gradient-to-r from-gray-300/10 to-gray-400/10' :
-                        index === 2 ? 'bg-gradient-to-r from-amber-600/10 to-amber-700/10' :
-                        'bg-muted/30'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
-                          index === 0 ? 'bg-yellow-500 text-yellow-950' :
-                          index === 1 ? 'bg-gray-400 text-gray-900' :
-                          index === 2 ? 'bg-amber-600 text-amber-950' :
-                          'bg-muted text-muted-foreground'
-                        }`}>
-                          {index + 1}
-                        </span>
-                        <span className="text-sm font-medium text-foreground">{leader.displayName}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-primary">
-                        <Hand className="w-4 h-4" />
-                        <span className="font-semibold">{leader.totalHellos}</span>
-                      </div>
-                    </div>
+              {renderLeaderboard(
+                getHellosLeaders(),
+                <Hand className="w-4 h-4" />,
+                "No hellos logged yet. Be the first!"
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Names Logged Leaderboard */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <User className="w-4 h-4 text-primary" />
+                Names Logged
+              </CardTitle>
+              <Tabs value={namesFilter} onValueChange={(v) => setNamesFilter(v as TimeFilter)} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 h-8">
+                  {(Object.keys(filterLabels) as TimeFilter[]).map((key) => (
+                    <TabsTrigger key={key} value={key} className="text-xs px-2">
+                      {filterLabels[key]}
+                    </TabsTrigger>
                   ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">No hellos logged yet. Be the first!</p>
+                </TabsList>
+              </Tabs>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {renderLeaderboard(
+                getNamesLeaders(),
+                <User className="w-4 h-4" />,
+                "No names logged yet. Be the first!"
               )}
             </CardContent>
           </Card>
