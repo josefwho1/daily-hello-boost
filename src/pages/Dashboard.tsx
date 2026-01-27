@@ -54,7 +54,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress: cloudProgress, loading: progressLoading, updateProgress: updateCloudProgress, refetch } = useUserProgress();
-  const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, getLogsTodayCount } = useHelloLogs();
+  const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, deleteLog: deleteCloudLog, getLogsTodayCount } = useHelloLogs();
   const { timezoneOffset, loading: timezoneLoading } = useTimezone();
   const { 
     guestProgress, 
@@ -1067,6 +1067,14 @@ export default function Dashboard() {
             toast.error("Failed to update hello");
           }
           return result;
+        }}
+        onDelete={async (id) => {
+          try {
+            await deleteCloudLog(id);
+            toast.success("Hello deleted");
+          } catch {
+            toast.error("Failed to delete hello");
+          }
         }}
       />
     </div>
