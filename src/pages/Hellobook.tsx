@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Mail } from "lucide-react";
+import { Search, Mail, Globe } from "lucide-react";
 import { useHelloLogs, HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,8 +14,10 @@ import vaultIcon from "@/assets/vault-icon.webp";
 import EditHelloDialog from "@/components/EditHelloDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import HellobookPersonCard from "@/components/HellobookPersonCard";
+import Community from "@/pages/Community";
 
 type FilterType = 'all' | 'names' | 'unknown';
+type ViewType = 'mybook' | 'global';
 
 // Group logs by person - entries linked together are grouped
 interface GroupedPerson {
@@ -23,17 +25,50 @@ interface GroupedPerson {
   linkedLogs: HelloLog[];
 }
 
+// Shared toggle component
+const ViewToggle = ({ 
+  activeView, 
+  setActiveView 
+}: { 
+  activeView: ViewType; 
+  setActiveView: (view: ViewType) => void;
+}) => (
+  <div className="flex gap-2 mb-4">
+    <button
+      onClick={() => setActiveView('mybook')}
+      className={`flex-1 py-2.5 px-4 rounded-xl text-center transition-all flex items-center justify-center gap-2 ${
+        activeView === 'mybook'
+          ? 'bg-primary text-primary-foreground shadow-md'
+          : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+      }`}
+    >
+      <span className="text-sm font-medium">My Book</span>
+    </button>
+    <button
+      onClick={() => setActiveView('global')}
+      className={`flex-1 py-2.5 px-4 rounded-xl text-center transition-all flex items-center justify-center gap-2 ${
+        activeView === 'global'
+          ? 'bg-primary text-primary-foreground shadow-md'
+          : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+      }`}
+    >
+      <Globe className="w-4 h-4" />
+      <span className="text-sm font-medium">Global</span>
+    </button>
+  </div>
+);
+
 const Hellobook = () => {
   const navigate = useNavigate();
   const { logs, loading, updateLog, deleteLog } = useHelloLogs();
-  const { formatTimestamp, timezoneOffset } = useTimezone();
-  const { user } = useAuth();
-  const { isGuest, isAnonymous } = useGuestMode();
+  const { formatTimestamp } = useTimezone();
+  const { isAnonymous } = useGuestMode();
   const [searchQuery, setSearchQuery] = useState("");
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [activeView, setActiveView] = useState<ViewType>('mybook');
 
   const showGuestPrompt = isAnonymous && logs.length > 0;
   
@@ -159,14 +194,38 @@ const Hellobook = () => {
     );
   }
 
+  // If viewing global, render Community page content
+  if (activeView === 'global') {
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <div className="max-w-md mx-auto px-4 py-6">
+          {/* Header with toggle */}
+          <div className="flex items-center gap-3 mb-4">
+            <img src={hellobookIcon} alt="Hellobook" className="w-10 h-auto max-h-10 object-contain" />
+            <h1 className="text-2xl font-bold text-foreground">Hellobook</h1>
+          </div>
+
+          {/* View Toggle */}
+          <ViewToggle activeView={activeView} setActiveView={setActiveView} />
+
+          {/* Community Content */}
+          <Community embedded />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-4">
           <img src={hellobookIcon} alt="Hellobook" className="w-10 h-auto max-h-10 object-contain" />
           <h1 className="text-2xl font-bold text-foreground">Hellobook</h1>
         </div>
+
+        {/* View Toggle */}
+        <ViewToggle activeView={activeView} setActiveView={setActiveView} />
 
         {/* Guest save prompt - at the top */}
         {showGuestPrompt && (

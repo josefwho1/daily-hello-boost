@@ -19,6 +19,7 @@ import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
 import Landing from "./pages/Landing";
 import Community from "./pages/Community";
+import Challenges from "./pages/Challenges";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -187,11 +188,11 @@ const App = () => {
             } 
           />
           <Route 
-            path="/community" 
+            path="/challenges" 
             element={
               <AppRoute>
                 <OnboardingCheck>
-                  <Community />
+                  <Challenges />
                 </OnboardingCheck>
               </AppRoute>
             } 
