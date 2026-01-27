@@ -176,7 +176,7 @@ const Community = () => {
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground flex items-center justify-center gap-2">
             <Heart className="w-5 h-5 text-primary" />
-            Collective Impact
+            Global Hellos
           </h2>
           
           <div className="grid grid-cols-2 gap-3">
