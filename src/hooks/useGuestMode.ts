@@ -155,10 +155,10 @@ export const useGuestMode = (): UseGuestModeReturn => {
   // Initialize anonymous auth for guests
   const initializeAnonymous = useCallback(async (): Promise<{ success: boolean; userId?: string; error?: string }> => {
     try {
-      // Check if already signed in
-      const { data: { user: existingUser } } = await supabase.auth.getUser();
-      if (existingUser) {
-        return { success: true, userId: existingUser.id };
+      // Check if already signed in using local session first (avoids network call that can fail)
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      if (existingSession?.user) {
+        return { success: true, userId: existingSession.user.id };
       }
 
       // Sign in anonymously
