@@ -168,6 +168,38 @@ export const useHelloLogs = () => {
     }
   };
 
+  const deleteLog = async (id: string) => {
+    if (!user) return;
+
+    try {
+      // First, update any logs that link to this one to unlink them
+      await supabase
+        .from('hello_logs')
+        .update({ linked_to: null })
+        .eq('linked_to', id)
+        .eq('user_id', user.id);
+
+      // Then delete the log
+      const { error } = await supabase
+        .from('hello_logs')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      
+      // Optimistically update cache
+      queryClient.setQueryData(['hello-logs', user.id, isGuest], (old: HelloLog[] = []) =>
+        old.filter(log => log.id !== id).map(log => 
+          log.linked_to === id ? { ...log, linked_to: null } : log
+        )
+      );
+    } catch (error) {
+      console.error('Error deleting hello log:', error);
+      throw error;
+    }
+  };
+
   const getLogsThisWeek = (timezoneOffset: string = '+00:00') => {
     // Calculate week start in user's timezone
     const nowInTz = formatInTimeZone(new Date(), timezoneOffset, "yyyy-MM-dd");
@@ -193,6 +225,7 @@ export const useHelloLogs = () => {
     loading,
     addLog,
     updateLog,
+    deleteLog,
     refetch,
     getLogsThisWeek,
     getLogsTodayCount,

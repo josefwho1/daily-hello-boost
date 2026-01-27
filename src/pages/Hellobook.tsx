@@ -25,7 +25,7 @@ interface GroupedPerson {
 
 const Hellobook = () => {
   const navigate = useNavigate();
-  const { logs, loading, updateLog } = useHelloLogs();
+  const { logs, loading, updateLog, deleteLog } = useHelloLogs();
   const { formatTimestamp, timezoneOffset } = useTimezone();
   const { user } = useAuth();
   const { isGuest, isAnonymous } = useGuestMode();
@@ -106,6 +106,15 @@ const Hellobook = () => {
       toast.error("Failed to update hello");
     }
     return result;
+  };
+
+  const handleDeleteLog = async (id: string) => {
+    try {
+      await deleteLog(id);
+      toast.success("Hello deleted");
+    } catch {
+      toast.error("Failed to delete hello");
+    }
   };
 
   // Apply toggle filter and search - all hellos are shown
@@ -280,6 +289,7 @@ const Hellobook = () => {
         onOpenChange={setIsEditDialogOpen}
         log={editingLog}
         onSave={handleSaveEdit}
+        onDelete={handleDeleteLog}
       />
 
       <SaveProgressDialog

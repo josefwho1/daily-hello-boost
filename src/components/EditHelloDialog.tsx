@@ -6,10 +6,22 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Trash2 } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface EditHelloDialogProps {
@@ -26,11 +38,12 @@ interface EditHelloDialogProps {
   onDelete?: (id: string) => Promise<void>;
 }
 
-const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogProps) => {
+const EditHelloDialog = ({ open, onOpenChange, log, onSave, onDelete }: EditHelloDialogProps) => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (log) {
@@ -55,6 +68,15 @@ const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogPro
       onOpenChange(false);
     }
     setIsSubmitting(false);
+  };
+
+  const handleDelete = async () => {
+    if (!log || !onDelete) return;
+    
+    setIsDeleting(true);
+    await onDelete(log.id);
+    setIsDeleting(false);
+    onOpenChange(false);
   };
 
 
@@ -99,22 +121,56 @@ const EditHelloDialog = ({ open, onOpenChange, log, onSave }: EditHelloDialogPro
             />
           </div>
 
-          <DialogFooter className="gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="rounded-xl"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="rounded-xl"
-            >
-              {isSubmitting ? "Saving..." : "Save Changes"}
-            </Button>
+          <DialogFooter className="flex-row justify-between gap-2">
+            {onDelete && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-2xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this hello?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently remove this entry from your Hellobook. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleDelete}
+                      className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            <div className="flex gap-2 ml-auto">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-xl"
+              >
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
