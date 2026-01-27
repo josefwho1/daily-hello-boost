@@ -124,6 +124,7 @@ export type Database = {
           difficulty_rating: number | null
           hello_type: string | null
           id: string
+          is_favorite: boolean | null
           linked_to: string | null
           location: string | null
           name: string | null
@@ -138,6 +139,7 @@ export type Database = {
           difficulty_rating?: number | null
           hello_type?: string | null
           id?: string
+          is_favorite?: boolean | null
           linked_to?: string | null
           location?: string | null
           name?: string | null
@@ -152,6 +154,7 @@ export type Database = {
           difficulty_rating?: number | null
           hello_type?: string | null
           id?: string
+          is_favorite?: boolean | null
           linked_to?: string | null
           location?: string | null
           name?: string | null

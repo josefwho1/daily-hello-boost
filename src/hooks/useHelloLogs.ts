@@ -18,6 +18,7 @@ export interface HelloLog {
   created_at: string;
   timezone_offset: string;
   linked_to?: string | null;
+  is_favorite?: boolean;
 }
 
 export const useHelloLogs = () => {
@@ -124,6 +125,7 @@ export const useHelloLogs = () => {
     notes?: string | null;
     rating?: 'positive' | 'neutral' | 'negative' | null;
     difficulty_rating?: number | null;
+    is_favorite?: boolean;
   }) => {
     // Handle guest log updates
     if (isGuest && !user) {
@@ -141,15 +143,17 @@ export const useHelloLogs = () => {
     if (!user) return null;
 
     try {
+      const updatePayload: Record<string, any> = {};
+      if (updates.name !== undefined) updatePayload.name = updates.name;
+      if (updates.location !== undefined) updatePayload.location = updates.location;
+      if (updates.notes !== undefined) updatePayload.notes = updates.notes;
+      if (updates.rating !== undefined) updatePayload.rating = updates.rating;
+      if (updates.difficulty_rating !== undefined) updatePayload.difficulty_rating = updates.difficulty_rating;
+      if (updates.is_favorite !== undefined) updatePayload.is_favorite = updates.is_favorite;
+
       const { data, error } = await supabase
         .from('hello_logs')
-        .update({
-          name: updates.name,
-          location: updates.location,
-          notes: updates.notes,
-          rating: updates.rating,
-          difficulty_rating: updates.difficulty_rating
-        })
+        .update(updatePayload)
         .eq('id', id)
         .eq('user_id', user.id)
         .select()
@@ -166,6 +170,10 @@ export const useHelloLogs = () => {
       console.error('Error updating hello log:', error);
       return null;
     }
+  };
+
+  const toggleFavorite = async (id: string, isFavorite: boolean) => {
+    return updateLog(id, { is_favorite: isFavorite });
   };
 
   const deleteLog = async (id: string) => {
@@ -226,6 +234,7 @@ export const useHelloLogs = () => {
     addLog,
     updateLog,
     deleteLog,
+    toggleFavorite,
     refetch,
     getLogsThisWeek,
     getLogsTodayCount,
