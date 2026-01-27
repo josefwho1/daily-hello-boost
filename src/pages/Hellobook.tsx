@@ -298,20 +298,6 @@ const Hellobook = () => {
             <div className="text-xs">All</div>
           </button>
           <button
-            onClick={() => setActiveFilter('favorites')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
-              activeFilter === 'favorites'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-            }`}
-          >
-            <div className="text-xl font-bold flex items-center justify-center gap-1">
-              <Bookmark className="w-4 h-4" />
-              {stats.favorites}
-            </div>
-            <div className="text-xs">Favorites</div>
-          </button>
-          <button
             onClick={() => setActiveFilter('names')}
             className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
               activeFilter === 'names'
@@ -332,6 +318,20 @@ const Hellobook = () => {
           >
             <div className="text-xl font-bold">{stats.unknown}</div>
             <div className="text-xs">????</div>
+          </button>
+          <button
+            onClick={() => setActiveFilter('favorites')}
+            className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
+              activeFilter === 'favorites'
+                ? 'bg-primary text-primary-foreground shadow-md'
+                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+            }`}
+          >
+            <div className="text-xl font-bold flex items-center justify-center gap-1">
+              <Bookmark className="w-4 h-4" />
+              {stats.favorites}
+            </div>
+            <div className="text-xs">Favorites</div>
           </button>
         </div>
 
