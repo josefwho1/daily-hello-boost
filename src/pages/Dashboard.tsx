@@ -469,19 +469,28 @@ export default function Dashboard() {
       ...data
     });
 
-    // Record pack challenge completion if applicable
-    if (result && isPackChallenge && selectedDayNumber && data.rating) {
+    // Record pack challenge completion if applicable.
+    // NOTE: LogHelloScreen currently doesn't collect a rating, so default to 'neutral'
+    // to ensure pack challenges can still be completed and reflected in the UI.
+    if (
+      result &&
+      isPackChallenge &&
+      selectedDayNumber != null &&
+      typeof selectedChallengeTag === 'string' &&
+      selectedChallengeTag.length > 0
+    ) {
       try {
+        const completionRating = data.rating ?? 'neutral';
         await addCompletion({
           challenge_day: selectedDayNumber,
           challenge_tag: selectedChallengeTag,
           interaction_name: data.name || null,
           notes: data.notes || null,
-          rating: data.rating,
+          rating: completionRating,
           difficulty_rating: data.difficulty_rating || null,
         });
         // Refetch to ensure UI updates
-        refetchCompletions();
+        await refetchCompletions();
       } catch (error) {
         console.error('Failed to record challenge completion:', error);
       }
