@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Mail, Globe } from "lucide-react";
+import { Search, Mail, Globe, Bookmark } from "lucide-react";
 import { useHelloLogs, HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
@@ -16,7 +16,7 @@ import HellobookPersonCard from "@/components/HellobookPersonCard";
 import Community from "@/pages/Community";
 import { HelloOfTheDay } from "@/components/HelloOfTheDay";
 
-type FilterType = 'all' | 'names' | 'unknown';
+type FilterType = 'all' | 'names' | 'unknown' | 'favorites';
 type ViewType = 'mybook' | 'global';
 
 // Group logs by person - entries linked together are grouped
@@ -60,7 +60,7 @@ const ViewToggle = ({
 
 const Hellobook = () => {
   const navigate = useNavigate();
-  const { logs, loading, updateLog, deleteLog } = useHelloLogs();
+  const { logs, loading, updateLog, deleteLog, toggleFavorite } = useHelloLogs();
   const { formatTimestamp } = useTimezone();
   const { isAnonymous } = useGuestMode();
   const [searchQuery, setSearchQuery] = useState("");
@@ -116,10 +116,12 @@ const Hellobook = () => {
   const stats = useMemo(() => {
     const withNames = groupedPeople.filter(g => g.primaryLog.name && g.primaryLog.name.trim() !== "");
     const withoutNames = groupedPeople.filter(g => !g.primaryLog.name || g.primaryLog.name.trim() === "");
+    const favorites = groupedPeople.filter(g => g.primaryLog.is_favorite);
     return {
       all: groupedPeople.length,
       names: withNames.length,
-      unknown: withoutNames.length
+      unknown: withoutNames.length,
+      favorites: favorites.length
     };
   }, [groupedPeople]);
   
@@ -167,6 +169,13 @@ const Hellobook = () => {
     }
   };
 
+  const handleToggleFavorite = async (id: string, isFavorite: boolean) => {
+    const result = await toggleFavorite(id, isFavorite);
+    if (result) {
+      toast.success(isFavorite ? "Added to favorites" : "Removed from favorites");
+    }
+  };
+
   // Apply toggle filter and search - all hellos are shown
   const filteredPeople = groupedPeople
     .filter(group => {
@@ -175,6 +184,9 @@ const Hellobook = () => {
       }
       if (activeFilter === 'unknown') {
         return !group.primaryLog.name || group.primaryLog.name.trim() === "";
+      }
+      if (activeFilter === 'favorites') {
+        return group.primaryLog.is_favorite;
       }
       return true;
     })
@@ -286,6 +298,20 @@ const Hellobook = () => {
             <div className="text-xs">All</div>
           </button>
           <button
+            onClick={() => setActiveFilter('favorites')}
+            className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
+              activeFilter === 'favorites'
+                ? 'bg-primary text-primary-foreground shadow-md'
+                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+            }`}
+          >
+            <div className="text-xl font-bold flex items-center justify-center gap-1">
+              <Bookmark className="w-4 h-4" />
+              {stats.favorites}
+            </div>
+            <div className="text-xs">Favorites</div>
+          </button>
+          <button
             onClick={() => setActiveFilter('names')}
             className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
               activeFilter === 'names'
@@ -337,7 +363,7 @@ const Hellobook = () => {
                 linkedLogs={group.linkedLogs}
                 formatTimestamp={formatTimestamp}
                 onViewClick={handleViewClick}
-                onDelete={handleDeleteLog}
+                onToggleFavorite={handleToggleFavorite}
               />
             ))}
           </div>
