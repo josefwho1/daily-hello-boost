@@ -35,7 +35,7 @@ interface CommunityStats {
   };
 }
 
-type TimeFilter = 'allTime' | 'thisMonth' | 'thisWeek';
+type TimeFilter = 'allTime' | 'thisMonth' | 'thisWeek' | 'today';
 
 const Community = () => {
   const { user } = useAuth();
@@ -157,6 +157,7 @@ const Community = () => {
     allTime: 'All',
     thisMonth: 'Month',
     thisWeek: 'Week',
+    today: 'Today',
   };
 
   return (
