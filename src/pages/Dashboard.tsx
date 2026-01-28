@@ -93,6 +93,7 @@ export default function Dashboard() {
     onboarding_week_start: guestProgress.onboarding_week_start,
     week_start_date: guestProgress.week_start_date,
     has_completed_onboarding: guestProgress.has_completed_onboarding,
+    has_seen_welcome_messages: guestProgress.has_seen_welcome_messages,
     orbs: guestProgress.orbs,
     has_received_first_orb: guestProgress.has_received_first_orb,
     total_hellos: guestProgress.total_hellos,
@@ -216,26 +217,35 @@ export default function Dashboard() {
 
   // Show walkthrough tutorial for users coming from onboarding
   useEffect(() => {
-    if (progressLoading || !progress) return;
+    if (progressLoading || guestLoading || !progress) return;
     
     // Check if user hasn't seen the welcome walkthrough yet
-    if (progress.has_seen_welcome_messages === false && progress.has_completed_onboarding) {
+    // Use explicit false check OR undefined (for users who just completed onboarding)
+    const hasNotSeenWelcome = progress.has_seen_welcome_messages === false || 
+      (progress.has_completed_onboarding && progress.has_seen_welcome_messages === undefined);
+    
+    if (hasNotSeenWelcome && progress.has_completed_onboarding) {
       // Small delay to let the page render first
       const timer = setTimeout(() => {
         setShowHomeTutorial(true);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [progress, progressLoading]);
+  }, [progress, progressLoading, guestLoading]);
 
   // Mark tutorial as seen when completed
   const handleTutorialComplete = async () => {
     setShowHomeTutorial(false);
-    if (user?.id && progress?.has_seen_welcome_messages === false) {
+    if (user?.id) {
       await supabase
         .from('user_progress')
         .update({ has_seen_welcome_messages: true })
         .eq('user_id', user.id);
+      
+      // Also update local state for anonymous users
+      if (isAnonymous) {
+        updateGuestProgress({ has_seen_welcome_messages: true } as any);
+      }
     }
     toast.success("🎉 You're all set!");
   };

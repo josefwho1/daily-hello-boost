@@ -17,6 +17,7 @@ export interface GuestProgress {
   onboarding_week_start: string | null;
   week_start_date: string | null;
   has_completed_onboarding: boolean;
+  has_seen_welcome_messages?: boolean;
   orbs: number;
   has_received_first_orb: boolean;
   total_hellos: number;
