@@ -7,15 +7,13 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import remiCelebrating from "@/assets/remi-celebrating-3.webp";
-import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
-import orbImage from "@/assets/orb.webp";
 
 interface OnboardingCompleteMilestoneDialogProps {
   open: boolean;
   onContinue: () => void;
 }
 
-type AnimationPhase = 'celebration' | 'orb_appear' | 'orb_glow' | 'orb_claimed' | 'welcome';
+type AnimationPhase = 'celebration' | 'welcome';
 
 export const OnboardingCompleteMilestoneDialog = ({
   open,
@@ -65,17 +63,11 @@ export const OnboardingCompleteMilestoneDialog = ({
       setShowSkip(false);
       
       const skipTimer = setTimeout(() => setShowSkip(true), 1000);
-      const timer1 = setTimeout(() => setPhase('orb_appear'), 2000);
-      const timer2 = setTimeout(() => setPhase('orb_glow'), 3500);
-      const timer3 = setTimeout(() => setPhase('orb_claimed'), 5000);
-      const timer4 = setTimeout(() => setPhase('welcome'), 6500);
+      const timer1 = setTimeout(() => setPhase('welcome'), 3000);
       
       return () => {
         clearTimeout(skipTimer);
         clearTimeout(timer1);
-        clearTimeout(timer2);
-        clearTimeout(timer3);
-        clearTimeout(timer4);
       };
     }
   }, [open]);
@@ -87,14 +79,6 @@ export const OnboardingCompleteMilestoneDialog = ({
     if (phase === 'celebration') {
       playSound([523.25, 659.25, 783.99, 1046.50]);
       triggerVibration([100, 50, 100, 50, 200]);
-    } else if (phase === 'orb_appear') {
-      playSound([392, 440, 494], 0);
-    } else if (phase === 'orb_glow') {
-      playSound([523.25, 659.25, 783.99, 1046.50], 0);
-      triggerVibration([50, 30, 100, 30, 150]);
-    } else if (phase === 'orb_claimed') {
-      playSound([783.99, 880, 1046.50], 0);
-      triggerVibration([100, 50, 200]);
     }
   }, [phase, open, playSound, triggerVibration]);
 
@@ -193,146 +177,7 @@ export const OnboardingCompleteMilestoneDialog = ({
               </motion.div>
             )}
 
-            {/* Phase 2: Orb Appears */}
-            {phase === 'orb_appear' && (
-              <motion.div
-                key="orb_appear"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center"
-              >
-                <motion.h2 
-                  className="text-2xl font-bold text-foreground mb-8"
-                  initial={{ y: -20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                >
-                  You've earned a reward...
-                </motion.h2>
-
-                <motion.div 
-                  className="relative inline-block"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: "spring", damping: 10, stiffness: 80, delay: 0.3 }}
-                >
-                  <img 
-                    src={orbImage} 
-                    alt="Orb" 
-                    className="w-32 h-32 object-contain mx-auto opacity-60"
-                  />
-                </motion.div>
-              </motion.div>
-            )}
-
-            {/* Phase 3: Orb Glows */}
-            {phase === 'orb_glow' && (
-              <motion.div
-                key="orb_glow"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, scale: 1.2 }}
-                className="text-center"
-              >
-                <motion.div 
-                  className="relative inline-block mb-6"
-                  animate={{ 
-                    rotate: [0, 5, -5, 0],
-                  }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  <motion.div
-                    className="absolute inset-0 rounded-full"
-                    style={{ 
-                      background: 'radial-gradient(circle, rgba(147,51,234,0.4) 0%, transparent 70%)',
-                    }}
-                    animate={{
-                      scale: [1, 1.5, 1],
-                      opacity: [0.5, 1, 0.5]
-                    }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  />
-                  <img 
-                    src={orbImage} 
-                    alt="Orb" 
-                    className="w-40 h-40 object-contain mx-auto relative z-10"
-                  />
-                  {/* Sparkles around orb */}
-                  {[...Array(8)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute z-20"
-                      style={{
-                        top: '50%',
-                        left: '50%',
-                      }}
-                      animate={{
-                        opacity: [0, 1, 0],
-                        scale: [0.5, 1.2, 0.5],
-                        x: [0, Math.cos(i * 45 * Math.PI / 180) * 80],
-                        y: [0, Math.sin(i * 45 * Math.PI / 180) * 80],
-                      }}
-                      transition={{ 
-                        duration: 1.2, 
-                        delay: i * 0.08,
-                        repeat: Infinity
-                      }}
-                    >
-                      <Sparkles className="w-5 h-5 text-yellow-400" />
-                    </motion.div>
-                  ))}
-                </motion.div>
-
-                <motion.h2 
-                  className="text-2xl font-bold text-foreground"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  ✨ Another Orb! ✨
-                </motion.h2>
-              </motion.div>
-            )}
-
-            {/* Phase 4: Orb Claimed */}
-            {phase === 'orb_claimed' && (
-              <motion.div
-                key="orb_claimed"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center"
-              >
-                <motion.img 
-                  src={remiHoldingOrb} 
-                  alt="Remi with Orb" 
-                  className="w-36 h-auto max-h-36 object-contain mx-auto mb-6"
-                  initial={{ y: 30, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ type: "spring", damping: 12 }}
-                />
-
-                <motion.h2 
-                  className="text-2xl font-bold text-foreground mb-2"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  Orb Claimed! 🔮
-                </motion.h2>
-
-                <motion.p 
-                  className="text-foreground/70"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  A reward for completing your initiation!
-                </motion.p>
-              </motion.div>
-            )}
-
-            {/* Phase 5: Welcome */}
+            {/* Phase 2: Welcome */}
             {phase === 'welcome' && (
               <motion.div
                 key="welcome"
@@ -341,8 +186,8 @@ export const OnboardingCompleteMilestoneDialog = ({
                 className="text-center max-w-sm"
               >
                 <motion.img 
-                  src={remiHoldingOrb} 
-                  alt="Remi with Orb" 
+                  src={remiCelebrating} 
+                  alt="Remi celebrating" 
                   className="w-32 h-auto max-h-32 object-contain mx-auto mb-6"
                   initial={{ y: 30, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}

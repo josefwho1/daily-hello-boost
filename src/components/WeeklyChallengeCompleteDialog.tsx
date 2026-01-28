@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import remiOrbCelebration from "@/assets/remi-orb-celebration.webp";
+import remiCelebrating from "@/assets/remi-celebrating-3.webp";
 
 interface WeeklyChallengeCompleteDialogProps {
   open: boolean;
@@ -12,14 +12,12 @@ interface WeeklyChallengeCompleteDialogProps {
 export const WeeklyChallengeCompleteDialog = ({ 
   open, 
   onContinue,
-  orbsAwarded
 }: WeeklyChallengeCompleteDialogProps) => {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
     if (open) {
       setShowContent(false);
-      // Stagger content appearance
       const timer = setTimeout(() => setShowContent(true), 300);
       return () => clearTimeout(timer);
     }
@@ -68,7 +66,7 @@ export const WeeklyChallengeCompleteDialog = ({
                 }}
                 className="absolute text-2xl"
               >
-                {i % 3 === 0 ? '✨' : i % 3 === 1 ? '🔮' : '⭐'}
+                {i % 3 === 0 ? '✨' : i % 3 === 1 ? '🎉' : '⭐'}
               </motion.div>
             ))}
           </div>
@@ -89,8 +87,8 @@ export const WeeklyChallengeCompleteDialog = ({
               className="flex-shrink-0"
             >
               <img 
-                src={remiOrbCelebration} 
-                alt="Remi celebrating with orb" 
+                src={remiCelebrating} 
+                alt="Remi celebrating" 
                 className="w-48 h-auto max-h-52 object-contain"
               />
             </motion.div>
@@ -114,24 +112,14 @@ export const WeeklyChallengeCompleteDialog = ({
                   transition={{ delay: 0.1, duration: 0.4 }}
                   className="flex flex-col items-center gap-3 max-w-xs"
                 >
-                  {orbsAwarded ? (
-                    <p className="text-muted-foreground">
-                      Amazing work. Here's an <span className="font-semibold text-primary">Orb</span> for your efforts.
-                    </p>
-                  ) : (
-                    <p className="text-muted-foreground">
-                      Amazing work completing this week's challenge!
-                    </p>
-                  )}
-                  
-                  <p className="text-sm text-muted-foreground">
-                    Remember these can be used to save your streak in case you miss a day.
+                  <p className="text-muted-foreground">
+                    Amazing work completing this week's challenge!
                   </p>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Orb Button */}
+            {/* Continue Button */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -139,7 +127,7 @@ export const WeeklyChallengeCompleteDialog = ({
               className="w-full max-w-xs mt-4"
             >
               <Button onClick={onContinue} className="w-full" size="lg">
-                🔮
+                Continue
               </Button>
             </motion.div>
           </div>
