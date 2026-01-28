@@ -214,6 +214,32 @@ export default function Dashboard() {
     fetchUsername();
   }, [user?.id, user?.user_metadata?.name, guestProgress?.username, (progress as any)?.username]);
 
+  // Show walkthrough tutorial for users coming from onboarding
+  useEffect(() => {
+    if (progressLoading || !progress) return;
+    
+    // Check if user hasn't seen the welcome walkthrough yet
+    if (progress.has_seen_welcome_messages === false && progress.has_completed_onboarding) {
+      // Small delay to let the page render first
+      const timer = setTimeout(() => {
+        setShowHomeTutorial(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [progress, progressLoading]);
+
+  // Mark tutorial as seen when completed
+  const handleTutorialComplete = async () => {
+    setShowHomeTutorial(false);
+    if (user?.id && progress?.has_seen_welcome_messages === false) {
+      await supabase
+        .from('user_progress')
+        .update({ has_seen_welcome_messages: true })
+        .eq('user_id', user.id);
+    }
+    toast.success("🎉 You're all set!");
+  };
+
   // Fix for existing users who completed first hello but have streak 0
   useEffect(() => {
     const fixStreakIfNeeded = async () => {
@@ -1074,14 +1100,10 @@ export default function Dashboard() {
         totalHellos={guestState?.total_hellos_logged || 0}
       />
 
-      {/* Home Screen Tutorial - shows after mode selection */}
+      {/* Home Screen Tutorial - shows after onboarding */}
       <HomeScreenTutorial
         open={showHomeTutorial}
-        mode={tutorialMode}
-        onComplete={() => {
-          setShowHomeTutorial(false);
-          toast.success(`🎉 You're all set in ${tutorialMode === 'daily' ? 'Daily' : 'Chill'} Mode!`);
-        }}
+        onComplete={handleTutorialComplete}
       />
 
       {/* View Hello Dialog */}

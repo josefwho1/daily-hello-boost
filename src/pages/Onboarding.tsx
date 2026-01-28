@@ -10,7 +10,8 @@ import remiWaving4 from "@/assets/remi-waving-4.webp";
 import remiShakingHand from "@/assets/remi-shaking-hand.webp";
 import remiCurious1 from "@/assets/remi-curious-1.webp";
 import remiCurious4 from "@/assets/remi-curious-4.webp";
-import remiSurprised1 from "@/assets/remi-surprised-1.webp";
+import remiLogging4 from "@/assets/remi-logging-4.webp";
+import remiLogging5 from "@/assets/remi-logging-5.webp";
 import hellobookIcon from "@/assets/hellobook-icon.webp";
 
 export type OnboardingStep = 
@@ -18,32 +19,16 @@ export type OnboardingStep =
   | 'greeting'          // Screen 2 - Nice to meet you animation
   | 'how_it_works'      // Screen 3 - How it works
   | 'last_connection'   // Screen 4 - When did you last meet someone
-  | 'save_connection'   // Screen 5 - Save your connection
-  | 'hellobook_intro'   // Screen 6 - Hellobook introduction
-  | 'stats';            // Screen 7 - Stats and final CTA
+  | 'save_connection'   // Screen 5a - Save your connection (if recent)
+  | 'no_worries'        // Screen 5b - No worries encouragement (if not recent)
+  | 'hellobook_intro';  // Screen 6a - Hellobook introduction (after save_connection)
 
-// Map each step to its image for preloading
-const stepImageMap: Record<OnboardingStep, string | null> = {
-  'welcome': remiWaving4,
-  'greeting': remiShakingHand,
-  'how_it_works': remiCurious1,
-  'last_connection': remiCurious4,
-  'save_connection': null, // No main image, just form
-  'hellobook_intro': hellobookIcon,
-  'stats': remiSurprised1,
+type LastConnectionAnswer = 'today_yesterday' | 'this_week' | 'been_a_while' | 'dont_remember' | null;
+
+// Check if answer indicates a recent connection
+const isRecentConnection = (answer: LastConnectionAnswer): boolean => {
+  return answer === 'today_yesterday' || answer === 'this_week';
 };
-
-// Define the next step for each step (for preloading)
-const nextStepMap: Partial<Record<OnboardingStep, OnboardingStep>> = {
-  'welcome': 'greeting',
-  'greeting': 'how_it_works',
-  'how_it_works': 'last_connection',
-  'last_connection': 'save_connection',
-  'save_connection': 'hellobook_intro',
-  'hellobook_intro': 'stats',
-};
-
-type LastConnectionAnswer = 'today' | 'this_week' | 'over_week' | 'dont_remember' | null;
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -58,24 +43,24 @@ export default function Onboarding() {
   const [connectionLocation, setConnectionLocation] = useState('');
   const [connectionNotes, setConnectionNotes] = useState('');
 
-  // Preload next screen's image when current step changes
+  // Preload images for next screens
   useEffect(() => {
-    const nextStep = nextStepMap[step];
-    if (!nextStep) return;
-
-    const imageSrc = stepImageMap[nextStep];
-    if (imageSrc) {
+    const imagesToPreload = [
+      remiShakingHand, remiCurious1, remiCurious4, 
+      remiLogging4, remiLogging5, hellobookIcon
+    ];
+    imagesToPreload.forEach(src => {
       const img = new Image();
-      img.src = imageSrc;
-    }
-  }, [step]);
+      img.src = src;
+    });
+  }, []);
 
   // Auto-advance from greeting to how_it_works
   useEffect(() => {
     if (step === 'greeting' && userName.trim()) {
       const timer = setTimeout(() => {
         setStep('how_it_works');
-      }, 1500);
+      }, 1800);
       
       return () => clearTimeout(timer);
     }
@@ -112,7 +97,6 @@ export default function Onboarding() {
     if (profileError) throw profileError;
 
     // Ensure user_progress exists and mark onboarding complete.
-    // IMPORTANT: do NOT reset existing users' stats here.
     const { data: existingProgress, error: progressReadError } = await supabase
       .from('user_progress')
       .select('id')
@@ -130,6 +114,7 @@ export default function Onboarding() {
           mode: 'daily',
           current_phase: 'active',
           username: displayName,
+          has_seen_welcome_messages: false, // Reset to show walkthrough
         })
         .eq('user_id', userId);
       if (progressUpdateError) throw progressUpdateError;
@@ -148,6 +133,7 @@ export default function Onboarding() {
           username: displayName,
           target_hellos_per_week: 7,
           selected_pack_id: 'starter-pack',
+          has_seen_welcome_messages: false, // Show walkthrough
         });
       if (progressInsertError) throw progressInsertError;
     }
@@ -220,10 +206,38 @@ export default function Onboarding() {
     }
   };
 
-  // Complete onboarding and go to dashboard
+  // Handle completing from the "no worries" path
+  const handleNoWorriesComplete = async () => {
+    try {
+      setIsSubmitting(true);
+      await ensureUserAndProgress();
+      // Force a hard navigation so route guards read the just-written progress state.
+      window.location.replace('/');
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Complete onboarding and go to dashboard (from hellobook_intro)
   const handleComplete = () => {
-    // Force a hard navigation so route guards read the just-written progress state.
     window.location.replace('/');
+  };
+
+  // Handle last connection answer selection
+  const handleLastConnectionSelect = (answer: LastConnectionAnswer) => {
+    setLastConnectionAnswer(answer);
+    if (isRecentConnection(answer)) {
+      setStep('save_connection');
+    } else {
+      setStep('no_worries');
+    }
   };
 
   const renderScreen = () => {
@@ -235,18 +249,18 @@ export default function Onboarding() {
             <img 
               src={remiWaving4} 
               alt="Remi waving" 
-              className="w-64 h-auto max-h-64 mx-auto object-contain animate-bounce-soft" 
+              className="w-56 h-auto max-h-56 mx-auto object-contain animate-bounce-soft" 
             />
             <div className="space-y-3">
               <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-lg text-muted-foreground leading-relaxed">
                 I'm Remi.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Your reminder raccoon.
               </p>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 pt-2">
               <label htmlFor="userName" className="text-sm font-medium text-foreground">
                 What's your name?
               </label>
@@ -256,7 +270,7 @@ export default function Onboarding() {
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 placeholder="Enter your name"
-                className="text-center"
+                className="text-center text-lg h-12"
                 autoComplete="given-name"
               />
             </div>
@@ -284,7 +298,7 @@ export default function Onboarding() {
             <img 
               src={remiShakingHand} 
               alt="Remi shaking hand" 
-              className="w-64 h-auto max-h-64 mx-auto object-contain" 
+              className="w-56 h-auto max-h-56 mx-auto object-contain" 
             />
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200 delay-150">
               <h1 className="text-2xl font-bold text-foreground">
@@ -301,16 +315,30 @@ export default function Onboarding() {
             <img 
               src={remiCurious1} 
               alt="Remi curious" 
-              className="w-64 h-auto max-h-64 mx-auto object-contain" 
+              className="w-48 h-auto max-h-48 mx-auto object-contain" 
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">How it works</h1>
               <p className="text-muted-foreground leading-relaxed">
-                Every connection starts with a hello. I'll give you gentle reminders to help you start conversations, remember names, and feel more connected to the people around you.
+                I'll give you friendly reminders and prompts to help you
               </p>
+              <ul className="text-left space-y-2 max-w-xs mx-auto">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">•</span>
+                  <span className="text-foreground">Start conversations</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">•</span>
+                  <span className="text-foreground">Meet more people</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">•</span>
+                  <span className="text-foreground">& never forget a name again</span>
+                </li>
+              </ul>
             </div>
             <Button onClick={() => setStep('last_connection')} className="w-full" size="lg">
-              Sounds good
+              Sounds good, Remi
             </Button>
           </div>
         );
@@ -322,57 +350,45 @@ export default function Onboarding() {
             <img 
               src={remiCurious4} 
               alt="Remi curious" 
-              className="w-48 h-auto max-h-48 mx-auto object-contain" 
+              className="w-44 h-auto max-h-44 mx-auto object-contain" 
             />
-            <div className="space-y-4">
-              <p className="text-muted-foreground leading-relaxed">
+            <div className="space-y-3">
+              <p className="text-lg text-foreground leading-relaxed font-medium">
                 When was the last time you met someone new and remembered their name?
               </p>
               <p className="text-sm text-muted-foreground italic">
                 (No cheating - can you picture them right now?)
               </p>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3 pt-2">
               <Button 
-                onClick={() => {
-                  setLastConnectionAnswer('today');
-                  setStep('save_connection');
-                }}
-                variant={lastConnectionAnswer === 'today' ? 'default' : 'outline'}
-                className="w-full" 
+                onClick={() => handleLastConnectionSelect('today_yesterday')}
+                variant="outline"
+                className="w-full h-12 text-base" 
                 size="lg"
               >
-                Today
+                Today or yesterday
               </Button>
               <Button 
-                onClick={() => {
-                  setLastConnectionAnswer('this_week');
-                  setStep('save_connection');
-                }}
-                variant={lastConnectionAnswer === 'this_week' ? 'default' : 'outline'}
-                className="w-full" 
+                onClick={() => handleLastConnectionSelect('this_week')}
+                variant="outline"
+                className="w-full h-12 text-base" 
                 size="lg"
               >
                 This week
               </Button>
               <Button 
-                onClick={() => {
-                  setLastConnectionAnswer('over_week');
-                  setStep('save_connection');
-                }}
-                variant={lastConnectionAnswer === 'over_week' ? 'default' : 'outline'}
-                className="w-full" 
+                onClick={() => handleLastConnectionSelect('been_a_while')}
+                variant="outline"
+                className="w-full h-12 text-base" 
                 size="lg"
               >
-                Over a week ago
+                It's been a while
               </Button>
               <Button 
-                onClick={() => {
-                  setLastConnectionAnswer('dont_remember');
-                  setStep('save_connection');
-                }}
-                variant={lastConnectionAnswer === 'dont_remember' ? 'default' : 'outline'}
-                className="w-full" 
+                onClick={() => handleLastConnectionSelect('dont_remember')}
+                variant="outline"
+                className="w-full h-12 text-base" 
                 size="lg"
               >
                 I don't remember
@@ -381,10 +397,15 @@ export default function Onboarding() {
           </div>
         );
 
-      // Screen 5 - Save your connection
+      // Screen 5a - Save your connection (if recent)
       case 'save_connection':
         return (
           <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiLogging4} 
+              alt="Remi logging" 
+              className="w-44 h-auto max-h-44 mx-auto object-contain" 
+            />
             <div className="space-y-2">
               <h1 className="text-xl font-bold text-foreground">
                 Great - let's save your most recent connection.
@@ -402,6 +423,7 @@ export default function Onboarding() {
                   value={connectionName}
                   onChange={(e) => setConnectionName(e.target.value)}
                   placeholder="Who did you meet?"
+                  className="h-11"
                   autoComplete="off"
                 />
               </div>
@@ -416,6 +438,7 @@ export default function Onboarding() {
                   value={connectionLocation}
                   onChange={(e) => setConnectionLocation(e.target.value)}
                   placeholder="Coffee shop, gym, work..."
+                  className="h-11"
                   autoComplete="off"
                 />
               </div>
@@ -430,6 +453,7 @@ export default function Onboarding() {
                   value={connectionNotes}
                   onChange={(e) => setConnectionNotes(e.target.value)}
                   placeholder="Anything to remember them by..."
+                  className="h-11"
                   autoComplete="off"
                 />
               </div>
@@ -446,14 +470,45 @@ export default function Onboarding() {
           </div>
         );
 
-      // Screen 6 - Hellobook introduction
+      // Screen 5b - No worries encouragement (if not recent)
+      case 'no_worries':
+        return (
+          <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <img 
+              src={remiLogging5} 
+              alt="Remi encouraging" 
+              className="w-48 h-auto max-h-48 mx-auto object-contain" 
+            />
+            <div className="space-y-4">
+              <h1 className="text-xl font-bold text-foreground">
+                No worries - that's exactly why you're here! 🦝
+              </h1>
+              <p className="text-muted-foreground leading-relaxed">
+                One Hello will help you meet more people, build connections and remember names.
+              </p>
+              <p className="text-lg font-medium text-foreground mt-4">
+                Ready to start?
+              </p>
+            </div>
+            <Button 
+              onClick={handleNoWorriesComplete}
+              className="w-full" 
+              size="lg"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Loading..." : "I'm in"}
+            </Button>
+          </div>
+        );
+
+      // Screen 6a - Hellobook introduction (after saving connection)
       case 'hellobook_intro':
         return (
           <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <img 
               src={hellobookIcon} 
               alt="Hellobook" 
-              className="w-48 h-auto max-h-48 mx-auto object-contain" 
+              className="w-44 h-auto max-h-44 mx-auto object-contain" 
             />
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-foreground">First Hello complete 🎉</h1>
@@ -464,45 +519,8 @@ export default function Onboarding() {
                 Storing them here means you will never forget 💡
               </p>
             </div>
-            <Button onClick={() => setStep('stats')} className="w-full" size="lg">
-              Great
-            </Button>
-          </div>
-        );
-
-      // Screen 7 - Stats
-      case 'stats':
-        return (
-          <div className="text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <img 
-              src={remiSurprised1} 
-              alt="Remi surprised" 
-              className="w-48 h-auto max-h-48 mx-auto object-contain" 
-            />
-            <div className="space-y-4">
-              <h1 className="text-xl font-bold text-foreground">
-                What people notice after using One Hello for a week
-              </h1>
-              
-              <div className="space-y-2">
-                <div className="bg-success/10 rounded-xl p-3">
-                  <p className="text-3xl font-bold text-success">100%</p>
-                  <p className="text-sm text-muted-foreground">improved their week</p>
-                </div>
-                
-                <div className="bg-primary/10 rounded-xl p-3">
-                  <p className="text-3xl font-bold text-primary">93%</p>
-                  <p className="text-sm text-muted-foreground">felt more confident</p>
-                </div>
-                
-                <div className="bg-accent/20 rounded-xl p-3">
-                  <p className="text-3xl font-bold text-accent-foreground">86%</p>
-                  <p className="text-sm text-muted-foreground">felt more connected in their communities</p>
-                </div>
-              </div>
-            </div>
             <Button onClick={handleComplete} className="w-full" size="lg">
-              Let's do it
+              Great
             </Button>
           </div>
         );
@@ -511,10 +529,22 @@ export default function Onboarding() {
 
   // Calculate progress for progress bar
   const getProgress = () => {
-    const steps: OnboardingStep[] = [
-      'welcome', 'greeting', 'how_it_works', 'last_connection',
-      'save_connection', 'hellobook_intro', 'stats'
+    const baseSteps: OnboardingStep[] = [
+      'welcome', 'greeting', 'how_it_works', 'last_connection'
     ];
+    
+    // Add conditional steps based on path
+    let steps: OnboardingStep[];
+    if (step === 'no_worries') {
+      steps = [...baseSteps, 'no_worries'];
+    } else if (step === 'hellobook_intro') {
+      steps = [...baseSteps, 'save_connection', 'hellobook_intro'];
+    } else if (step === 'save_connection') {
+      steps = [...baseSteps, 'save_connection', 'hellobook_intro'];
+    } else {
+      steps = [...baseSteps, 'save_connection', 'hellobook_intro'];
+    }
+    
     const index = steps.indexOf(step);
     return Math.max(0.1, (index + 1) / steps.length);
   };
