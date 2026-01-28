@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -216,8 +216,12 @@ export default function Dashboard() {
   }, [user?.id, user?.user_metadata?.name, guestProgress?.username, (progress as any)?.username]);
 
   // Show walkthrough tutorial for users coming from onboarding
+  // Use a ref to prevent double-trigger from effect re-runs
+  const tutorialShownRef = useRef(false);
+  
   useEffect(() => {
     if (progressLoading || guestLoading || !progress) return;
+    if (tutorialShownRef.current) return; // Already shown this session
     
     // Check if user hasn't seen the welcome walkthrough yet
     // Use explicit false check OR undefined (for users who just completed onboarding)
@@ -225,6 +229,7 @@ export default function Dashboard() {
       (progress.has_completed_onboarding && progress.has_seen_welcome_messages === undefined);
     
     if (hasNotSeenWelcome && progress.has_completed_onboarding) {
+      tutorialShownRef.current = true; // Mark as shown
       // Small delay to let the page render first
       const timer = setTimeout(() => {
         setShowHomeTutorial(true);
