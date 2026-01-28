@@ -7,18 +7,8 @@ import { getPackById } from "@/data/packs";
 import { cn } from "@/lib/utils";
 import { differenceInDays, parseISO, startOfDay, addDays, format } from "date-fns";
 
-// Import Remi celebrating/proud images
-import remiCongrats1 from "@/assets/remi-congrats-1.webp";
-import remiCongrats2 from "@/assets/remi-congrats-2.webp";
-import remiCongrats3 from "@/assets/remi-congrats-3.webp";
-
-const remiProudImages = [remiCongrats1, remiCongrats2, remiCongrats3];
-
-const getDailyRemiProud = () => {
-  const today = new Date();
-  const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-  return remiProudImages[dayOfYear % remiProudImages.length];
-};
+// Import Remi Proud image
+import remiProud from "@/assets/remi-proud.webp";
 
 interface ActiveChallengeCardProps {
   packId: string;
@@ -39,7 +29,6 @@ export const ActiveChallengeCard = ({
 }: ActiveChallengeCardProps) => {
   const pack = getPackById(packId);
   const [isExpanded, setIsExpanded] = useState(false);
-  const remiImage = getDailyRemiProud();
 
   if (!pack || pack.challenges.length === 0) {
     return null;
@@ -91,7 +80,7 @@ export const ActiveChallengeCard = ({
   };
 
   return (
-    <Card id="tutorial-todays-hello-card" className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden">
+    <Card id="tutorial-todays-hello-card" className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden min-h-[180px]">
       {/* Header row */}
       <div className="flex items-start justify-between mb-1">
         <div>
@@ -143,7 +132,7 @@ export const ActiveChallengeCard = ({
         onClick={handleCardTap}
       >
         {/* Status badges */}
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2 mb-1 min-h-[18px]">
           {challengeCompleted && (
             <span className="flex items-center gap-1 text-success text-xs font-medium">
               <Check size={12} /> Completed
@@ -158,17 +147,16 @@ export const ActiveChallengeCard = ({
 
         {/* Title */}
         <h3 className={cn(
-          "text-sm font-medium text-foreground mb-1",
+          "text-sm font-medium text-foreground mb-1 line-clamp-1",
           !challengeUnlocked && "blur-sm select-none"
         )}>
           {currentChallenge.title}
         </h3>
         
-        {/* Description */}
+        {/* Description - fixed 2 lines */}
         <p className={cn(
-          "text-sm text-muted-foreground",
-          !challengeUnlocked && "blur-sm select-none",
-          !isExpanded && "line-clamp-2 min-h-[2.5rem]"
+          "text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]",
+          !challengeUnlocked && "blur-sm select-none"
         )}>
           {currentChallenge.description}
         </p>
@@ -204,9 +192,9 @@ export const ActiveChallengeCard = ({
 
       {/* Remi Proud - positioned bottom right */}
       <img 
-        src={remiImage} 
+        src={remiProud} 
         alt="Remi" 
-        className="absolute bottom-2 right-2 w-14 h-auto object-contain opacity-90 pointer-events-none"
+        className="absolute bottom-2 right-2 w-12 h-auto object-contain opacity-90 pointer-events-none"
       />
     </Card>
   );
