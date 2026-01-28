@@ -220,20 +220,25 @@ export default function Dashboard() {
   const tutorialShownRef = useRef(false);
   
   useEffect(() => {
-    if (progressLoading || guestLoading || !progress) return;
+    // Wait for all loading to complete
+    if (progressLoading || guestLoading) return;
+    if (!progress) return;
     if (tutorialShownRef.current) return; // Already shown this session
     
     // Check if user hasn't seen the welcome walkthrough yet
-    // Use explicit false check OR undefined (for users who just completed onboarding)
-    const hasNotSeenWelcome = progress.has_seen_welcome_messages === false || 
-      (progress.has_completed_onboarding && progress.has_seen_welcome_messages === undefined);
+    const hasSeenWelcome = progress.has_seen_welcome_messages;
+    const hasCompletedOnboarding = progress.has_completed_onboarding;
     
-    if (hasNotSeenWelcome && progress.has_completed_onboarding) {
+    // Show tutorial if: onboarding is complete AND user hasn't seen welcome messages
+    // has_seen_welcome_messages can be false, null, or undefined - all mean "not seen"
+    const shouldShowTutorial = hasCompletedOnboarding && hasSeenWelcome !== true;
+    
+    if (shouldShowTutorial) {
       tutorialShownRef.current = true; // Mark as shown
       // Small delay to let the page render first
       const timer = setTimeout(() => {
         setShowHomeTutorial(true);
-      }, 500);
+      }, 600);
       return () => clearTimeout(timer);
     }
   }, [progress, progressLoading, guestLoading]);
