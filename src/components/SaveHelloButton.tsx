@@ -10,6 +10,7 @@ export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProp
   return (
     <div className="flex gap-2">
       <Button 
+        id="tutorial-log-hello-btn"
         onClick={onClick}
         size="lg"
         className="flex-1 h-14 text-lg font-semibold shadow-md hover:shadow-lg transition-all"
@@ -19,6 +20,7 @@ export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProp
       </Button>
       {onDictateClick && (
         <Button 
+          id="tutorial-dictate-btn"
           onClick={onDictateClick}
           size="lg"
           variant="outline"

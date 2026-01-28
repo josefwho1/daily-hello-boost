@@ -79,7 +79,7 @@ export const DailySuggestionCard = () => {
   };
 
   return (
-    <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden">
+    <Card id="tutorial-todays-hello-card" className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden">
       {/* Header row with shuffle button */}
       <div className="flex items-start justify-between mb-1">
         <div>
