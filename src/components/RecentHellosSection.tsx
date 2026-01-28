@@ -10,11 +10,8 @@ interface RecentHellosSectionProps {
 }
 
 export const RecentHellosSection = ({ logs, onViewAll, onViewLog }: RecentHellosSectionProps) => {
-  // Only show logs that have names (meaningful connections)
-  const namedLogs = logs.filter(log => log.name && log.name.trim() !== '');
-  
-  // Take last 3 entries
-  const recentLogs = namedLogs.slice(0, 3);
+  // Take last 3 entries (show all hellos, not just named ones)
+  const recentLogs = logs.slice(0, 3);
 
   if (recentLogs.length === 0) {
     return (
@@ -33,7 +30,7 @@ export const RecentHellosSection = ({ logs, onViewAll, onViewLog }: RecentHellos
     <div>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-medium text-foreground">Recent Hellos</h2>
-        {namedLogs.length > 3 && onViewAll && (
+        {logs.length > 3 && onViewAll && (
           <button 
             onClick={onViewAll}
             className="text-xs text-primary hover:underline"
@@ -58,7 +55,7 @@ export const RecentHellosSection = ({ logs, onViewAll, onViewLog }: RecentHellos
                   {/* First row: Name + Location */}
                   <div className="flex items-center gap-2 min-w-0">
                     <p className="font-medium text-foreground truncate">
-                      {log.name}
+                      {log.name || 'Hello'}
                     </p>
                     {log.location && (
                       <div className="flex items-center gap-1 text-muted-foreground shrink-0">

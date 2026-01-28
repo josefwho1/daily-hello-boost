@@ -82,7 +82,7 @@ export const ActiveChallengeCard = ({
   return (
     <Card id="tutorial-todays-hello-card" className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden min-h-[180px]">
       {/* Header row */}
-      <div className="flex items-start justify-between mb-1">
+      <div className="flex items-start justify-between">
         <div>
           <button
             onClick={onViewPack}
@@ -91,7 +91,7 @@ export const ActiveChallengeCard = ({
             <Trophy size={18} style={{ color: '#ff6f3b' }} />
             <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>{pack.name}</span>
           </button>
-          <p className="text-xs text-muted-foreground/70 mt-0.5">
+          <p className="text-xs text-muted-foreground/70">
             Day {currentChallenge.day} of {pack.challenges.length} • {completedCount} completed
           </p>
         </div>
@@ -126,13 +126,21 @@ export const ActiveChallengeCard = ({
       {/* Content area - tap to expand */}
       <div 
         className={cn(
-          "mt-3 pr-16 cursor-pointer transition-all duration-200",
+          "mt-2 pr-16 cursor-pointer transition-all duration-200",
           !challengeUnlocked && "opacity-60"
         )}
         onClick={handleCardTap}
       >
-        {/* Status badges */}
-        <div className="flex items-center gap-2 mb-1 min-h-[18px]">
+        {/* Title */}
+        <h3 className={cn(
+          "text-sm font-medium text-foreground line-clamp-1",
+          !challengeUnlocked && "blur-sm select-none"
+        )}>
+          {currentChallenge.title}
+        </h3>
+        
+        {/* Status badges - fixed height */}
+        <div className="flex items-center gap-2 h-5 mt-0.5">
           {challengeCompleted && (
             <span className="flex items-center gap-1 text-success text-xs font-medium">
               <Check size={12} /> Completed
@@ -144,18 +152,10 @@ export const ActiveChallengeCard = ({
             </span>
           )}
         </div>
-
-        {/* Title */}
-        <h3 className={cn(
-          "text-sm font-medium text-foreground mb-1 line-clamp-1",
-          !challengeUnlocked && "blur-sm select-none"
-        )}>
-          {currentChallenge.title}
-        </h3>
         
         {/* Description - fixed 2 lines */}
         <p className={cn(
-          "text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]",
+          "text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem] mt-1",
           !challengeUnlocked && "blur-sm select-none"
         )}>
           {currentChallenge.description}
