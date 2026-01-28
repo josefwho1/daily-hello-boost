@@ -211,6 +211,9 @@ export default function Onboarding() {
     try {
       setIsSubmitting(true);
       await ensureUserAndProgress();
+      // Ensure the home walkthrough triggers reliably after the hard reload.
+      // sessionStorage survives window.location.replace() but resets on a new tab.
+      sessionStorage.setItem('pending_home_tutorial', '1');
       // Force a hard navigation so route guards read the just-written progress state.
       window.location.replace('/');
     } catch (error) {
@@ -227,6 +230,7 @@ export default function Onboarding() {
 
   // Complete onboarding and go to dashboard (from hellobook_intro)
   const handleComplete = () => {
+    sessionStorage.setItem('pending_home_tutorial', '1');
     window.location.replace('/');
   };
 

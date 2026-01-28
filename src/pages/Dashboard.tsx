@@ -216,32 +216,44 @@ export default function Dashboard() {
   }, [user?.id, user?.user_metadata?.name, guestProgress?.username, (progress as any)?.username]);
 
   // Show walkthrough tutorial for users coming from onboarding
-  // Use a ref to prevent double-trigger from effect re-runs
+  // Use refs to prevent double-trigger + prevent a scheduled timer from being cleared
+  // by unrelated re-renders (important because `progress` is reconstructed for guests).
   const tutorialShownRef = useRef(false);
-  
+  const tutorialTimerRef = useRef<number | null>(null);
+
   useEffect(() => {
-    // Wait for all loading to complete
-    if (progressLoading || guestLoading) return;
-    if (!progress) return;
-    if (tutorialShownRef.current) return; // Already shown this session
-    
-    // Check if user hasn't seen the welcome walkthrough yet
-    const hasSeenWelcome = progress.has_seen_welcome_messages;
-    const hasCompletedOnboarding = progress.has_completed_onboarding;
-    
-    // Show tutorial if: onboarding is complete AND user hasn't seen welcome messages
-    // has_seen_welcome_messages can be false, null, or undefined - all mean "not seen"
-    const shouldShowTutorial = hasCompletedOnboarding && hasSeenWelcome !== true;
-    
-    if (shouldShowTutorial) {
-      tutorialShownRef.current = true; // Mark as shown
-      // Small delay to let the page render first
-      const timer = setTimeout(() => {
-        setShowHomeTutorial(true);
-      }, 600);
-      return () => clearTimeout(timer);
+    const loadingForTutorial = isAnonymous ? guestLoading : progressLoading;
+    if (loadingForTutorial) return;
+    if (showHomeTutorial) return;
+
+    const hasCompletedOnboarding = Boolean(progress?.has_completed_onboarding);
+    const hasSeenWelcome = progress?.has_seen_welcome_messages === true;
+    const eligible = hasCompletedOnboarding && !hasSeenWelcome;
+
+    const pending = sessionStorage.getItem('pending_home_tutorial') === '1';
+    if (!eligible) {
+      // Clear any stale pending flag to avoid surprises later.
+      if (pending) sessionStorage.removeItem('pending_home_tutorial');
+      return;
     }
-  }, [progress, progressLoading, guestLoading]);
+
+    if (tutorialShownRef.current) return;
+    tutorialShownRef.current = true;
+
+    if (pending) sessionStorage.removeItem('pending_home_tutorial');
+
+    // Small delay so the home UI is rendered before spotlighting starts.
+    tutorialTimerRef.current = window.setTimeout(() => {
+      setShowHomeTutorial(true);
+    }, 400);
+
+    return () => {
+      if (tutorialTimerRef.current) {
+        window.clearTimeout(tutorialTimerRef.current);
+        tutorialTimerRef.current = null;
+      }
+    };
+  }, [isAnonymous, guestLoading, progressLoading, showHomeTutorial, progress?.has_completed_onboarding, progress?.has_seen_welcome_messages]);
 
   // Mark tutorial as seen when completed
   const handleTutorialComplete = async () => {
@@ -789,7 +801,7 @@ export default function Dashboard() {
       
       // Show tutorial after a brief delay
       setTimeout(() => {
-        setShowHomeTutorial(true);
+        if (progress?.has_seen_welcome_messages !== true) setShowHomeTutorial(true);
       }, 300);
     } else {
       // Chill mode - go directly to tutorial (skip confirmation dialog)
@@ -813,7 +825,7 @@ export default function Dashboard() {
       
       // Show tutorial after a brief delay
       setTimeout(() => {
-        setShowHomeTutorial(true);
+        if (progress?.has_seen_welcome_messages !== true) setShowHomeTutorial(true);
       }, 300);
     }
   };
@@ -846,7 +858,7 @@ export default function Dashboard() {
     
     // Show tutorial after a brief delay for the mode confirmation to close
     setTimeout(() => {
-      setShowHomeTutorial(true);
+      if (progress?.has_seen_welcome_messages !== true) setShowHomeTutorial(true);
     }, 300);
   };
 
