@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { flushSync } from "react-dom";
 import {
   Drawer,
   DrawerContent,
@@ -60,6 +61,7 @@ const ViewHelloDialog = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [direction, setDirection] = useState(0);
+  const [keyboardInset, setKeyboardInset] = useState(0);
   const { formatTimestamp } = useTimezone();
   
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,6 +70,7 @@ const ViewHelloDialog = ({
   const nameSectionRef = useRef<HTMLDivElement>(null);
   const locationSectionRef = useRef<HTMLDivElement>(null);
   const notesSectionRef = useRef<HTMLDivElement>(null);
+  const editTokenRef = useRef(0);
 
   useEffect(() => {
     if (log) {
@@ -78,43 +81,86 @@ const ViewHelloDialog = ({
     }
   }, [log]);
 
-  // Handle edit start - focus input and scroll section to top
-  const startEditing = (field: EditingField) => {
-    if (editingField === field) return;
-    setEditingField(field);
+  // Track on-screen keyboard (mobile) using Visual Viewport API
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const update = () => {
+      // Approximate keyboard height; works well on iOS/Android when keyboard is visible.
+      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKeyboardInset(inset);
+    };
+
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    window.addEventListener("orientationchange", update);
+
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+      window.removeEventListener("orientationchange", update);
+    };
+  }, []);
+
+  const getSectionRef = (field: Exclude<EditingField, null>) => {
+    return field === "name" ? nameSectionRef : field === "location" ? locationSectionRef : notesSectionRef;
   };
 
-  // Focus and scroll when editing field changes
+  const scrollSectionToTop = (field: Exclude<EditingField, null>) => {
+    const sectionRef = getSectionRef(field);
+    if (!sectionRef.current || !scrollContainerRef.current) return;
+
+    const containerRect = scrollContainerRef.current.getBoundingClientRect();
+    const sectionRect = sectionRef.current.getBoundingClientRect();
+    const scrollOffset = sectionRect.top - containerRect.top - 8; // 8px padding from top
+
+    scrollContainerRef.current.scrollTo({
+      top: scrollContainerRef.current.scrollTop + scrollOffset,
+      behavior: "auto",
+    });
+  };
+
+  const focusField = (field: Exclude<EditingField, null>) => {
+    const el = field === "notes" ? textareaRef.current : inputRef.current;
+    if (!el) return;
+
+    // preventScroll avoids Safari trying to scroll the page (not our drawer) while focusing
+    try {
+      (el as any).focus({ preventScroll: true });
+    } catch {
+      el.focus();
+    }
+  };
+
+  // Handle edit start: make the field editable + focus immediately (mobile keyboard) + pin into view
+  const startEditing = (field: Exclude<EditingField, null>) => {
+    // Token cancels any pending “re-pin” timeouts from previous edits
+    editTokenRef.current += 1;
+    const token = editTokenRef.current;
+
+    // Commit the edit-mode render synchronously, then focus within the same user gesture.
+    if (editingField !== field) {
+      flushSync(() => setEditingField(field));
+    }
+
+    scrollSectionToTop(field);
+    focusField(field);
+
+    // Keyboard opening can change the viewport; re-pin after it appears.
+    setTimeout(() => {
+      if (editTokenRef.current !== token) return;
+      scrollSectionToTop(field);
+    }, 350);
+  };
+
+  // When the keyboard height changes, re-pin the active field so it stays fully visible.
   useEffect(() => {
     if (!editingField) return;
-    
-    // Use requestAnimationFrame to ensure DOM has updated
-    requestAnimationFrame(() => {
-      const sectionRef = 
-        editingField === 'name' ? nameSectionRef :
-        editingField === 'location' ? locationSectionRef :
-        notesSectionRef;
-      
-      const inputElement = editingField === 'notes' ? textareaRef.current : inputRef.current;
-      
-      // Scroll the section to the top of the scroll container
-      if (sectionRef.current && scrollContainerRef.current) {
-        const containerTop = scrollContainerRef.current.getBoundingClientRect().top;
-        const sectionTop = sectionRef.current.getBoundingClientRect().top;
-        const scrollOffset = sectionTop - containerTop - 8; // 8px padding from top
-        
-        scrollContainerRef.current.scrollTo({
-          top: scrollContainerRef.current.scrollTop + scrollOffset,
-          behavior: 'smooth'
-        });
-      }
-      
-      // Focus the input to bring up keyboard
-      setTimeout(() => {
-        inputElement?.focus();
-      }, 100);
-    });
-  }, [editingField]);
+    scrollSectionToTop(editingField);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyboardInset]);
 
   const handleSaveField = async () => {
     if (!log) return;
@@ -195,7 +241,7 @@ const ViewHelloDialog = ({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="h-[95vh] rounded-t-2xl flex flex-col">
+      <DrawerContent className="h-[95dvh] rounded-t-2xl flex flex-col">
         {/* Drag handle + favorite button row */}
         <div className="flex items-center justify-between px-4 py-3">
           <div className="w-10" /> {/* Spacer for symmetry */}
@@ -220,7 +266,11 @@ const ViewHelloDialog = ({
         </div>
 
         {/* Content area - scrollable */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 pb-4">
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto px-4 overscroll-contain [-webkit-overflow-scrolling:touch]"
+          style={{ paddingBottom: 16 + keyboardInset }}
+        >
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={log.id}
@@ -249,7 +299,7 @@ const ViewHelloDialog = ({
                 ref={nameSectionRef}
                 className={`rounded-xl p-4 transition-colors scroll-mt-4 ${
                   editingField === 'name' 
-                    ? 'bg-primary/5 ring-1 ring-primary/20' 
+                    ? 'bg-primary/5 ring-1 ring-primary/20 sticky top-0 z-10' 
                     : 'bg-muted/30 active:bg-muted/50'
                 }`}
                 onClick={() => startEditing('name')}
@@ -300,7 +350,7 @@ const ViewHelloDialog = ({
                 ref={locationSectionRef}
                 className={`rounded-xl p-4 transition-colors scroll-mt-4 ${
                   editingField === 'location' 
-                    ? 'bg-primary/5 ring-1 ring-primary/20' 
+                    ? 'bg-primary/5 ring-1 ring-primary/20 sticky top-0 z-10' 
                     : 'bg-muted/30 active:bg-muted/50'
                 }`}
                 onClick={() => startEditing('location')}
@@ -352,7 +402,7 @@ const ViewHelloDialog = ({
                 ref={notesSectionRef}
                 className={`rounded-xl p-4 transition-colors scroll-mt-4 ${
                   editingField === 'notes' 
-                    ? 'bg-primary/5 ring-1 ring-primary/20' 
+                    ? 'bg-primary/5 ring-1 ring-primary/20 sticky top-0 z-10' 
                     : 'bg-muted/30 active:bg-muted/50'
                 }`}
                 onClick={() => startEditing('notes')}
