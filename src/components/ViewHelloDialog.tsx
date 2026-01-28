@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from "react";
-import { flushSync } from "react-dom";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Drawer,
   DrawerContent,
@@ -61,16 +60,12 @@ const ViewHelloDialog = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [direction, setDirection] = useState(0);
-  const [keyboardInset, setKeyboardInset] = useState(0);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const { formatTimestamp } = useTimezone();
   
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const nameSectionRef = useRef<HTMLDivElement>(null);
-  const locationSectionRef = useRef<HTMLDivElement>(null);
-  const notesSectionRef = useRef<HTMLDivElement>(null);
-  const editTokenRef = useRef(0);
+  const editorBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (log) {
@@ -81,86 +76,45 @@ const ViewHelloDialog = ({
     }
   }, [log]);
 
-  // Track on-screen keyboard (mobile) using Visual Viewport API
+  // Track keyboard height using Visual Viewport API
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
 
     const update = () => {
-      // Approximate keyboard height; works well on iOS/Android when keyboard is visible.
-      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      setKeyboardInset(inset);
+      // When keyboard opens, visualViewport.height shrinks
+      const keyboardH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKeyboardHeight(keyboardH);
     };
 
     update();
     vv.addEventListener("resize", update);
     vv.addEventListener("scroll", update);
-    window.addEventListener("orientationchange", update);
 
     return () => {
       vv.removeEventListener("resize", update);
       vv.removeEventListener("scroll", update);
-      window.removeEventListener("orientationchange", update);
     };
   }, []);
 
-  const getSectionRef = (field: Exclude<EditingField, null>) => {
-    return field === "name" ? nameSectionRef : field === "location" ? locationSectionRef : notesSectionRef;
-  };
-
-  const scrollSectionToTop = (field: Exclude<EditingField, null>) => {
-    const sectionRef = getSectionRef(field);
-    if (!sectionRef.current || !scrollContainerRef.current) return;
-
-    const containerRect = scrollContainerRef.current.getBoundingClientRect();
-    const sectionRect = sectionRef.current.getBoundingClientRect();
-    const scrollOffset = sectionRect.top - containerRect.top - 8; // 8px padding from top
-
-    scrollContainerRef.current.scrollTo({
-      top: scrollContainerRef.current.scrollTop + scrollOffset,
-      behavior: "auto",
-    });
-  };
-
-  const focusField = (field: Exclude<EditingField, null>) => {
-    const el = field === "notes" ? textareaRef.current : inputRef.current;
-    if (!el) return;
-
-    // preventScroll avoids Safari trying to scroll the page (not our drawer) while focusing
-    try {
-      (el as any).focus({ preventScroll: true });
-    } catch {
-      el.focus();
-    }
-  };
-
-  // Handle edit start: make the field editable + focus immediately (mobile keyboard) + pin into view
-  const startEditing = (field: Exclude<EditingField, null>) => {
-    // Token cancels any pending “re-pin” timeouts from previous edits
-    editTokenRef.current += 1;
-    const token = editTokenRef.current;
-
-    // Commit the edit-mode render synchronously, then focus within the same user gesture.
-    if (editingField !== field) {
-      flushSync(() => setEditingField(field));
-    }
-
-    scrollSectionToTop(field);
-    focusField(field);
-
-    // Keyboard opening can change the viewport; re-pin after it appears.
-    setTimeout(() => {
-      if (editTokenRef.current !== token) return;
-      scrollSectionToTop(field);
-    }, 350);
-  };
-
-  // When the keyboard height changes, re-pin the active field so it stays fully visible.
+  // Focus input when editing field changes
   useEffect(() => {
     if (!editingField) return;
-    scrollSectionToTop(editingField);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyboardInset]);
+    
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      const el = editingField === 'notes' ? textareaRef.current : inputRef.current;
+      if (el) {
+        el.focus({ preventScroll: true });
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [editingField]);
+
+  const startEditing = useCallback((field: Exclude<EditingField, null>) => {
+    setEditingField(field);
+  }, []);
 
   const handleSaveField = async () => {
     if (!log) return;
@@ -239,6 +193,41 @@ const ViewHelloDialog = ({
     }),
   };
 
+  const getFieldLabel = (field: EditingField) => {
+    switch (field) {
+      case 'name': return 'Name';
+      case 'location': return 'Location';
+      case 'notes': return 'Notes';
+      default: return '';
+    }
+  };
+
+  const getFieldPlaceholder = (field: EditingField) => {
+    switch (field) {
+      case 'name': return 'Who did you meet?';
+      case 'location': return 'Coffee shop, gym...';
+      case 'notes': return 'Details to remember...';
+      default: return '';
+    }
+  };
+
+  const getFieldValue = (field: EditingField) => {
+    switch (field) {
+      case 'name': return name;
+      case 'location': return location;
+      case 'notes': return notes;
+      default: return '';
+    }
+  };
+
+  const setFieldValue = (field: EditingField, value: string) => {
+    switch (field) {
+      case 'name': setName(value); break;
+      case 'location': setLocation(value); break;
+      case 'notes': setNotes(value); break;
+    }
+  };
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="h-[95dvh] rounded-t-2xl flex flex-col">
@@ -267,9 +256,8 @@ const ViewHelloDialog = ({
 
         {/* Content area - scrollable */}
         <div
-          ref={scrollContainerRef}
           className="flex-1 overflow-y-auto px-4 overscroll-contain [-webkit-overflow-scrolling:touch]"
-          style={{ paddingBottom: 16 + keyboardInset }}
+          style={{ paddingBottom: editingField ? 120 + keyboardHeight : 16 }}
         >
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
@@ -296,234 +284,210 @@ const ViewHelloDialog = ({
 
               {/* Name Section */}
               <div 
-                ref={nameSectionRef}
-                className={`rounded-xl p-4 transition-colors scroll-mt-4 ${
+                className={`rounded-xl p-4 transition-colors ${
                   editingField === 'name' 
-                    ? 'bg-primary/5 ring-1 ring-primary/20 sticky top-0 z-10' 
+                    ? 'bg-primary/10 ring-2 ring-primary/30' 
                     : 'bg-muted/30 active:bg-muted/50'
                 }`}
-                onClick={() => startEditing('name')}
+                onClick={() => !editingField && startEditing('name')}
               >
                 <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                   Name
                 </label>
-                {editingField === 'name' ? (
-                  <div className="mt-2 space-y-3">
-                    <Input
-                      ref={inputRef}
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Who did you meet?"
-                      className="rounded-lg h-10 text-base"
-                      autoComplete="off"
-                    />
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }}
-                        className="h-8 text-sm rounded-lg"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); handleSaveField(); }}
-                        disabled={isSubmitting}
-                        className="h-8 text-sm rounded-lg"
-                      >
-                        <Check className="w-4 h-4 mr-1" />
-                        Save
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className={`mt-1 text-lg ${name ? 'text-foreground font-medium' : 'text-muted-foreground/60 italic'}`}>
-                    {name || "Tap to add"}
-                  </p>
-                )}
+                <p className={`mt-1 text-lg ${name ? 'text-foreground font-medium' : 'text-muted-foreground/60 italic'}`}>
+                  {name || "Tap to add"}
+                </p>
               </div>
 
               {/* Location Section */}
               <div 
-                ref={locationSectionRef}
-                className={`rounded-xl p-4 transition-colors scroll-mt-4 ${
+                className={`rounded-xl p-4 transition-colors ${
                   editingField === 'location' 
-                    ? 'bg-primary/5 ring-1 ring-primary/20 sticky top-0 z-10' 
+                    ? 'bg-primary/10 ring-2 ring-primary/30' 
                     : 'bg-muted/30 active:bg-muted/50'
                 }`}
-                onClick={() => startEditing('location')}
+                onClick={() => !editingField && startEditing('location')}
               >
                 <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
                   Location
                 </label>
-                {editingField === 'location' ? (
-                  <div className="mt-2 space-y-3">
-                    <Input
-                      ref={inputRef}
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Coffee shop, gym..."
-                      className="rounded-lg h-10 text-base"
-                      autoComplete="off"
-                    />
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }}
-                        className="h-8 text-sm rounded-lg"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); handleSaveField(); }}
-                        disabled={isSubmitting}
-                        className="h-8 text-sm rounded-lg"
-                      >
-                        <Check className="w-4 h-4 mr-1" />
-                        Save
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className={`mt-1 text-base ${location ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
-                    {location || "Tap to add"}
-                  </p>
-                )}
+                <p className={`mt-1 text-base ${location ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
+                  {location || "Tap to add"}
+                </p>
               </div>
 
               {/* Notes Section */}
               <div 
-                ref={notesSectionRef}
-                className={`rounded-xl p-4 transition-colors scroll-mt-4 ${
+                className={`rounded-xl p-4 transition-colors ${
                   editingField === 'notes' 
-                    ? 'bg-primary/5 ring-1 ring-primary/20 sticky top-0 z-10' 
+                    ? 'bg-primary/10 ring-2 ring-primary/30' 
                     : 'bg-muted/30 active:bg-muted/50'
                 }`}
-                onClick={() => startEditing('notes')}
+                onClick={() => !editingField && startEditing('notes')}
               >
                 <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                   Notes
                 </label>
-                {editingField === 'notes' ? (
-                  <div className="mt-2 space-y-3">
-                    <Textarea
-                      ref={textareaRef}
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Escape') handleCancelEdit();
-                      }}
-                      placeholder="Details to remember..."
-                      className="rounded-lg min-h-[120px] text-base"
-                      autoComplete="off"
-                    />
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }}
-                        className="h-8 text-sm rounded-lg"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); handleSaveField(); }}
-                        disabled={isSubmitting}
-                        className="h-8 text-sm rounded-lg"
-                      >
-                        <Check className="w-4 h-4 mr-1" />
-                        Save
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className={`mt-1 text-base whitespace-pre-wrap ${notes ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
-                    {notes || "Tap to add"}
-                  </p>
-                )}
+                <p className={`mt-1 text-base whitespace-pre-wrap ${notes ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
+                  {notes || "Tap to add"}
+                </p>
               </div>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Bottom action bar */}
-        <div className="flex-shrink-0 border-t border-border bg-background px-4 py-3 safe-area-inset-bottom">
-          <div className="flex items-center justify-between">
-            {/* Left nav button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handlePrev}
-              disabled={!canNavigatePrev}
-              className="h-10 w-10 rounded-full"
+        {/* Pinned Editor Bar - appears when editing */}
+        <AnimatePresence>
+          {editingField && (
+            <motion.div
+              ref={editorBarRef}
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="fixed left-0 right-0 bg-background border-t border-border shadow-lg z-50"
+              style={{ 
+                bottom: keyboardHeight,
+              }}
             >
-              <ChevronLeft className="w-5 h-5" />
-            </Button>
+              <div className="px-4 py-3 space-y-3">
+                {/* Field label */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Editing {getFieldLabel(editingField)}
+                  </span>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="p-1 rounded-lg hover:bg-muted/50 text-muted-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
 
-            {/* Center actions */}
-            <div className="flex items-center gap-2">
-              {onDelete && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-10 w-10 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10"
-                      disabled={isDeleting}
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="rounded-2xl max-w-[90vw]">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete this hello?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently remove this entry. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-                      <AlertDialogAction 
-                        onClick={handleDelete}
-                        className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        {isDeleting ? "Deleting..." : "Delete"}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
+                {/* Input field */}
+                {editingField === 'notes' ? (
+                  <Textarea
+                    ref={textareaRef}
+                    value={getFieldValue(editingField)}
+                    onChange={(e) => setFieldValue(editingField, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') handleCancelEdit();
+                    }}
+                    placeholder={getFieldPlaceholder(editingField)}
+                    className="rounded-xl min-h-[80px] max-h-[120px] text-base resize-none"
+                    autoComplete="off"
+                    autoFocus
+                  />
+                ) : (
+                  <Input
+                    ref={inputRef}
+                    value={getFieldValue(editingField)}
+                    onChange={(e) => setFieldValue(editingField, e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={getFieldPlaceholder(editingField)}
+                    className="rounded-xl h-11 text-base"
+                    autoComplete="off"
+                    autoFocus
+                  />
+                )}
 
-              {/* Close button */}
+                {/* Action buttons */}
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="ghost"
+                    onClick={handleCancelEdit}
+                    className="h-10 px-4 rounded-xl"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveField}
+                    disabled={isSubmitting}
+                    className="h-10 px-5 rounded-xl"
+                  >
+                    <Check className="w-4 h-4 mr-1.5" />
+                    {isSubmitting ? "Saving..." : "Save"}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Bottom action bar - hide when editing */}
+        {!editingField && (
+          <div className="flex-shrink-0 border-t border-border bg-background px-4 py-3 safe-area-inset-bottom">
+            <div className="flex items-center justify-between">
+              {/* Left nav button */}
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => onOpenChange(false)}
+                onClick={handlePrev}
+                disabled={!canNavigatePrev}
                 className="h-10 w-10 rounded-full"
               >
-                <X className="w-5 h-5" />
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+
+              {/* Center actions */}
+              <div className="flex items-center gap-2">
+                {onDelete && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="rounded-2xl max-w-[90vw]">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this hello?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently remove this entry. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={handleDelete}
+                          className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {isDeleting ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+
+                {/* Close button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onOpenChange(false)}
+                  className="h-10 w-10 rounded-full"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              {/* Right nav button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleNext}
+                disabled={!canNavigateNext}
+                className="h-10 w-10 rounded-full"
+              >
+                <ChevronRight className="w-5 h-5" />
               </Button>
             </div>
-
-            {/* Right nav button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleNext}
-              disabled={!canNavigateNext}
-              className="h-10 w-10 rounded-full"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </Button>
           </div>
-        </div>
+        )}
       </DrawerContent>
     </Drawer>
   );
