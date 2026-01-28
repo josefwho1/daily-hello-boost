@@ -17,6 +17,8 @@ interface TutorialStep {
 interface HomeScreenTutorialProps {
   open: boolean;
   onComplete: () => void;
+  /** Called immediately when the tutorial opens so the caller can persist "seen" state */
+  onMarkSeen?: () => void;
 }
 
 const tutorialSteps: TutorialStep[] = [
@@ -61,12 +63,21 @@ const tutorialSteps: TutorialStep[] = [
   },
 ];
 
-export const HomeScreenTutorial = ({ open, onComplete }: HomeScreenTutorialProps) => {
+export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenTutorialProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const hasStartedRef = useRef(false);
+  const markedSeenRef = useRef(false);
+
+  // Mark as seen immediately when tutorial opens (only once)
+  useEffect(() => {
+    if (open && !markedSeenRef.current && onMarkSeen) {
+      markedSeenRef.current = true;
+      onMarkSeen();
+    }
+  }, [open, onMarkSeen]);
 
   const currentStepData = tutorialSteps[currentStep];
   const isLastStep = currentStep === tutorialSteps.length - 1;

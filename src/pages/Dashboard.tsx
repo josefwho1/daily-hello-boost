@@ -255,20 +255,24 @@ export default function Dashboard() {
     };
   }, [isAnonymous, guestLoading, progressLoading, showHomeTutorial, progress?.has_completed_onboarding, progress?.has_seen_welcome_messages]);
 
-  // Mark tutorial as seen when completed
-  const handleTutorialComplete = async () => {
-    setShowHomeTutorial(false);
+  // Mark tutorial as seen as soon as it opens (before user completes it)
+  const handleTutorialMarkSeen = async () => {
     if (user?.id) {
       await supabase
         .from('user_progress')
         .update({ has_seen_welcome_messages: true })
         .eq('user_id', user.id);
-      
-      // Also update local state for anonymous users
+
       if (isAnonymous) {
         updateGuestProgress({ has_seen_welcome_messages: true } as any);
       }
     }
+    sessionStorage.removeItem('pending_home_tutorial');
+  };
+
+  // Toast feedback when user finishes the tutorial
+  const handleTutorialComplete = () => {
+    setShowHomeTutorial(false);
     toast.success("🎉 You're all set!");
   };
 
@@ -1136,6 +1140,7 @@ export default function Dashboard() {
       <HomeScreenTutorial
         open={showHomeTutorial}
         onComplete={handleTutorialComplete}
+        onMarkSeen={handleTutorialMarkSeen}
       />
 
       {/* View Hello Dialog */}
