@@ -7,6 +7,19 @@ import { getPackById } from "@/data/packs";
 import { cn } from "@/lib/utils";
 import { differenceInDays, parseISO, startOfDay, addDays, format } from "date-fns";
 
+// Import Remi celebrating/proud images
+import remiCongrats1 from "@/assets/remi-congrats-1.webp";
+import remiCongrats2 from "@/assets/remi-congrats-2.webp";
+import remiCongrats3 from "@/assets/remi-congrats-3.webp";
+
+const remiProudImages = [remiCongrats1, remiCongrats2, remiCongrats3];
+
+const getDailyRemiProud = () => {
+  const today = new Date();
+  const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+  return remiProudImages[dayOfYear % remiProudImages.length];
+};
+
 interface ActiveChallengeCardProps {
   packId: string;
   completedDays: number[];
@@ -25,6 +38,8 @@ export const ActiveChallengeCard = ({
   onViewPack,
 }: ActiveChallengeCardProps) => {
   const pack = getPackById(packId);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const remiImage = getDailyRemiProud();
 
   if (!pack || pack.challenges.length === 0) {
     return null;
@@ -69,151 +84,130 @@ export const ActiveChallengeCard = ({
   const challengeUnlocked = isUnlocked(currentIndex);
   const completedCount = pack.challenges.filter(isCompleted).length;
 
+  const handleCardTap = () => {
+    if (challengeUnlocked && !challengeCompleted) {
+      setIsExpanded(!isExpanded);
+    }
+  };
+
   return (
-    <Card id="tutorial-todays-hello-card" className="p-4 rounded-2xl border-primary/20 bg-card overflow-hidden">
-      {/* Compact header row: icon + title left, nav arrows + counter right */}
-      <div className="flex items-center justify-between mb-3">
-        <button
-          onClick={onViewPack}
-          className="flex items-center gap-1.5 text-primary hover:opacity-80 transition-opacity"
-        >
-          <Trophy size={16} />
-          <span className="text-sm font-semibold">{pack.name}</span>
-        </button>
-
-        {/* Navigation + progress dots */}
-        <div className="flex items-center gap-2">
-          {/* Progress dots */}
-          <div className="flex gap-0.5">
-            {pack.challenges.map((c, idx) => (
-              <span
-                key={idx}
-                className={cn(
-                  "w-1.5 h-1.5 rounded-full",
-                  isCompleted(c)
-                    ? "bg-success"
-                    : isUnlocked(idx)
-                    ? "bg-muted-foreground/40"
-                    : "bg-muted-foreground/15"
-                )}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {completedCount}/{pack.challenges.length}
-          </span>
-        </div>
-      </div>
-
-      {/* Challenge body: left arrow | content | right arrow */}
-      <div className="flex items-stretch gap-2">
-        {/* Left nav */}
-        <button
-          onClick={goLeft}
-          disabled={!canGoLeft}
-          aria-label="Previous challenge"
-          className={cn(
-            "flex-shrink-0 w-8 flex items-center justify-center rounded-lg border border-border/50 bg-background/50 transition-colors",
-            canGoLeft ? "hover:bg-muted" : "opacity-30 pointer-events-none"
-          )}
-        >
-          <ChevronLeft size={18} />
-        </button>
-
-        {/* Content */}
-        <div
-          className={cn(
-            "flex-1 flex flex-col items-center text-center px-2 py-3 rounded-xl bg-muted/30 min-h-[180px]",
-            !challengeUnlocked && "relative"
-          )}
-        >
-          {/* Day badge + status */}
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[10px] uppercase font-bold tracking-wide text-muted-foreground">
-              Day {currentChallenge.day}
-            </span>
-            {challengeCompleted && (
-              <span className="flex items-center gap-0.5 text-success text-[10px] font-semibold uppercase">
-                <Check size={12} /> Done
-              </span>
-            )}
-            {!challengeUnlocked && <Lock size={12} className="text-muted-foreground/70" />}
-          </div>
-
-          {/* Icon */}
-          <span
-            className={cn(
-              "text-2xl mb-1",
-              !challengeUnlocked && "grayscale opacity-40"
-            )}
+    <Card id="tutorial-todays-hello-card" className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden">
+      {/* Header row */}
+      <div className="flex items-start justify-between mb-1">
+        <div>
+          <button
+            onClick={onViewPack}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            {currentChallenge.icon}
-          </span>
-
-          {/* Title */}
-          <h3
-            className={cn(
-              "text-base font-bold leading-tight line-clamp-1 mb-1",
-              !challengeUnlocked && "blur-sm select-none"
-            )}
-          >
-            {currentChallenge.title}
-          </h3>
-
-          {/* Description */}
-          <p
-            className={cn(
-              "text-sm text-muted-foreground line-clamp-2 min-h-[40px]",
-              !challengeUnlocked && "blur-sm select-none"
-            )}
-          >
-            {currentChallenge.description}
+            <Trophy size={18} style={{ color: '#ff6f3b' }} />
+            <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>{pack.name}</span>
+          </button>
+          <p className="text-xs text-muted-foreground/70 mt-0.5">
+            Day {currentChallenge.day} of {pack.challenges.length} • {completedCount} completed
           </p>
+        </div>
+        
+        {/* Navigation arrows */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={goLeft}
+            disabled={!canGoLeft}
+            aria-label="Previous challenge"
+            className={cn(
+              "h-7 w-7 flex items-center justify-center rounded-lg transition-colors",
+              canGoLeft ? "text-muted-foreground hover:text-foreground hover:bg-muted" : "text-muted-foreground/30 pointer-events-none"
+            )}
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            onClick={goRight}
+            disabled={!canGoRight}
+            aria-label="Next challenge"
+            className={cn(
+              "h-7 w-7 flex items-center justify-center rounded-lg transition-colors",
+              canGoRight ? "text-muted-foreground hover:text-foreground hover:bg-muted" : "text-muted-foreground/30 pointer-events-none"
+            )}
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
 
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* Footer: unlock text OR tips OR button OR completed */}
-          {!challengeUnlocked && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Lock size={12} /> Unlocks {getUnlockDay(currentIndex)}
-            </p>
-          )}
-
-          {challengeUnlocked && !challengeCompleted && currentChallenge.tips && (
-            <p className="text-[11px] text-muted-foreground/70 italic line-clamp-1 mb-2">
-              💡 {currentChallenge.tips}
-            </p>
-          )}
-
-          {challengeUnlocked && !challengeCompleted && (
-            <Button
-              onClick={() => onLogHello(currentChallenge)}
-              className="mt-auto w-full max-w-[200px] rounded-full font-semibold"
-              size="sm"
-            >
-              Complete Challenge
-            </Button>
-          )}
-
+      {/* Content area - tap to expand */}
+      <div 
+        className={cn(
+          "mt-3 pr-16 cursor-pointer transition-all duration-200",
+          !challengeUnlocked && "opacity-60"
+        )}
+        onClick={handleCardTap}
+      >
+        {/* Status badges */}
+        <div className="flex items-center gap-2 mb-1">
           {challengeCompleted && (
-            <span className="text-xs text-success font-medium mt-1">✓ Completed</span>
+            <span className="flex items-center gap-1 text-success text-xs font-medium">
+              <Check size={12} /> Completed
+            </span>
+          )}
+          {!challengeUnlocked && (
+            <span className="flex items-center gap-1 text-muted-foreground text-xs">
+              <Lock size={12} /> Unlocks {getUnlockDay(currentIndex)}
+            </span>
           )}
         </div>
 
-        {/* Right nav */}
-        <button
-          onClick={goRight}
-          disabled={!canGoRight}
-          aria-label="Next challenge"
-          className={cn(
-            "flex-shrink-0 w-8 flex items-center justify-center rounded-lg border border-border/50 bg-background/50 transition-colors",
-            canGoRight ? "hover:bg-muted" : "opacity-30 pointer-events-none"
-          )}
-        >
-          <ChevronRight size={18} />
-        </button>
+        {/* Title */}
+        <h3 className={cn(
+          "text-sm font-medium text-foreground mb-1",
+          !challengeUnlocked && "blur-sm select-none"
+        )}>
+          {currentChallenge.title}
+        </h3>
+        
+        {/* Description */}
+        <p className={cn(
+          "text-sm text-muted-foreground",
+          !challengeUnlocked && "blur-sm select-none",
+          !isExpanded && "line-clamp-2 min-h-[2.5rem]"
+        )}>
+          {currentChallenge.description}
+        </p>
+
+        {/* Expanded content: tips */}
+        {isExpanded && challengeUnlocked && !challengeCompleted && currentChallenge.tips && (
+          <div className="mt-3 pt-3 border-t border-border/50">
+            <p className="text-xs font-medium text-muted-foreground mb-1.5">Try saying</p>
+            <p className="text-sm text-foreground/90 italic">
+              {currentChallenge.tips}
+            </p>
+          </div>
+        )}
+
+        {/* Tap hint for unlocked incomplete challenges */}
+        {challengeUnlocked && !challengeCompleted && !isExpanded && currentChallenge.tips && (
+          <p className="text-[10px] text-muted-foreground/50 mt-2">
+            Tap for suggestions
+          </p>
+        )}
       </div>
+
+      {/* Complete button - only for unlocked, incomplete challenges */}
+      {challengeUnlocked && !challengeCompleted && (
+        <Button
+          onClick={() => onLogHello(currentChallenge)}
+          className="mt-4 w-full rounded-full font-semibold"
+          size="sm"
+        >
+          Complete Challenge
+        </Button>
+      )}
+
+      {/* Remi Proud - positioned bottom right */}
+      <img 
+        src={remiImage} 
+        alt="Remi" 
+        className="absolute bottom-2 right-2 w-14 h-auto object-contain opacity-90 pointer-events-none"
+      />
     </Card>
   );
 };

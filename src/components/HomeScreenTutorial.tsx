@@ -324,13 +324,27 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
                 ))}
               </div>
 
-              {/* Next button */}
-              <button
-                onClick={handleNext}
-                className="w-full bg-primary text-primary-foreground font-medium py-3 px-6 rounded-xl hover:bg-primary/90 transition-colors"
-              >
-                {isLastStep ? "Let's go! ✨" : "Next"}
-              </button>
+              {/* Buttons */}
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleNext}
+                  className="w-full bg-primary text-primary-foreground font-medium py-3 px-6 rounded-xl hover:bg-primary/90 transition-colors"
+                >
+                  {isLastStep ? "Let's go! ✨" : "Next"}
+                </button>
+                {!isLastStep && (
+                  <button
+                    onClick={() => {
+                      setCurrentStep(0);
+                      hasStartedRef.current = false;
+                      onComplete();
+                    }}
+                    className="w-full text-muted-foreground font-medium py-2 px-6 rounded-xl hover:text-foreground transition-colors text-sm"
+                  >
+                    Skip tutorial
+                  </button>
+                )}
+              </div>
             </motion.div>
           </motion.div>
         </>
