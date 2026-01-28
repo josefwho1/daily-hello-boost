@@ -46,7 +46,7 @@ export const TodaysHelloCard = ({
           <div className="flex items-center gap-2">
             <span className="text-lg">💡</span>
             <h2 className={`text-lg font-semibold ${isCompleted ? 'text-muted-foreground' : 'text-foreground'}`}>
-              Remi's Hello
+              Today's Hello
             </h2>
           </div>
           {isCompleted && (
