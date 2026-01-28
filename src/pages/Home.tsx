@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { getPackById } from "@/data/packs";
 import { ChallengeCard } from "@/components/ChallengeCard";
-import { StreakDisplay } from "@/components/StreakDisplay";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -80,19 +79,7 @@ const Home = () => {
     checkWelcomeStatus();
   }, [progress, loading]);
 
-  useEffect(() => {
-    if (!progress) return;
-    
-    // Check if streak should be reset
-    if (progress.last_completed_date) {
-      const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date());
-      
-      if (daysDiff > 1) {
-        updateProgress({ current_streak: 0 });
-        toast.error("Your streak was reset. Start fresh today!");
-      }
-    }
-  }, [progress]);
+  // Streak checking removed - streaks are no longer tracked
 
   const isChallengAvailable = (challengeDay: number) => {
     // If completed, always available
@@ -199,35 +186,13 @@ const Home = () => {
       const tzOffset = detectBrowserTimezoneOffset();
       const today = getDayKeyInOffset(new Date(), tzOffset);
       
-      // Update streak
-      if (!progress.last_completed_date) {
-        await updateProgress({
-          current_streak: 1,
-          current_day: completingChallengeId + 1,
-          last_completed_date: today
-        });
-      } else {
-        const daysDiff = getDaysDifferenceInTimezone(progress.last_completed_date, new Date(), tzOffset);
-        
-        if (daysDiff === 1) {
-          const newStreak = progress.current_streak + 1;
-          await updateProgress({
-            current_streak: newStreak,
-            current_day: completingChallengeId + 1,
-            last_completed_date: today
-          });
-          toast.success(`🔥 ${newStreak} day streak! Keep going!`);
-        } else if (daysDiff === 0) {
-          toast.success("Challenge completed!");
-        } else {
-          await updateProgress({
-            current_streak: 1,
-            current_day: completingChallengeId + 1,
-            last_completed_date: today
-          });
-          toast.success("Challenge completed! Starting a new streak!");
-        }
-      }
+      // Update last completed date
+      await updateProgress({
+        current_day: completingChallengeId + 1,
+        last_completed_date: today
+      });
+      
+      toast.success("Challenge completed!");
       
       setShowNoteDialog(false);
       setCompletingChallengeId(null);
@@ -323,9 +288,6 @@ const Home = () => {
             Log a Hello
           </Button>
         </Card>
-
-        {/* Streak Display */}
-        <StreakDisplay streak={progress.current_streak} className="my-6" />
 
         {/* Today's Challenge */}
         <div className="mb-6">

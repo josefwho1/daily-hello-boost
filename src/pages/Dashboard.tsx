@@ -8,10 +8,7 @@ import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
-import { FirstOrbGiftDialog } from "@/components/FirstOrbGiftDialog";
 import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
-import { UseOrbDialog } from "@/components/UseOrbDialog";
-import { StreakSaverDialog, StreakSaverScenario } from "@/components/StreakSaverDialog";
 import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ActiveChallengeCard } from "@/components/ActiveChallengeCard";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
@@ -28,8 +25,6 @@ import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog"
 import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
 import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingCompleteMilestoneDialog";
 import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompleteDialog";
-import { WeeklyGoalCelebrationDialog } from "@/components/WeeklyGoalCelebrationDialog";
-import { DailyStreakCelebrationDialog } from "@/components/DailyStreakCelebrationDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { SingleChallengeCompleteDialog } from "@/components/SingleChallengeCompleteDialog";
@@ -42,13 +37,9 @@ import { toast } from "sonner";
 import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 
-
-
 import { normalizeTimezoneOffset, getDayKeyInOffset, getDayKeyDifference, getYesterdayKeyInOffset } from "@/lib/timezone";
 
 const getWeekStartKeyInOffset = (date: Date, offset: string) => {
-  // Use date-fns-tz to avoid off-by-one issues when the browser timezone differs
-  // from the user's chosen offset.
   const normalizedOffset = normalizeTimezoneOffset(offset);
   const zonedNow = toZonedTime(date, normalizedOffset);
   const weekStart = startOfWeek(zonedNow, { weekStartsOn: 1 });
@@ -76,8 +67,6 @@ export default function Dashboard() {
   } = useGuestMode();
   
   // Unified progress and logs
-  // For anonymous users (isAnonymous), use guestProgress which comes from useGuestMode
-  // For regular authenticated users, use cloudProgress from useUserProgress
   const progress = isAnonymous ? (guestProgress ? {
     current_streak: guestProgress.current_streak,
     current_day: guestProgress.current_day,
@@ -94,8 +83,6 @@ export default function Dashboard() {
     week_start_date: guestProgress.week_start_date,
     has_completed_onboarding: guestProgress.has_completed_onboarding,
     has_seen_welcome_messages: guestProgress.has_seen_welcome_messages,
-    orbs: guestProgress.orbs,
-    has_received_first_orb: guestProgress.has_received_first_orb,
     total_hellos: guestProgress.total_hellos,
   } : null) : cloudProgress;
   
@@ -127,25 +114,15 @@ export default function Dashboard() {
   const [username, setUsername] = useState("");
   
   // Dialog states
-  const [showFirstOrbGift, setShowFirstOrbGift] = useState(false);
   const [showComeBackTomorrow, setShowComeBackTomorrow] = useState(false);
   const [showModeSelection, setShowModeSelection] = useState(false);
   const [showDailyModeConfirm, setShowDailyModeConfirm] = useState(false);
   const [showChillModeConfirm, setShowChillModeConfirm] = useState(false);
-  const [showWeeklyOrbDialog, setShowWeeklyOrbDialog] = useState(false);
-  const [showStreakSaverDialog, setShowStreakSaverDialog] = useState(false);
-  const [streakSaverScenario, setStreakSaverScenario] = useState<StreakSaverScenario>('can_save');
-  const [missedDays, setMissedDays] = useState(0);
-  const [previousStreak, setPreviousStreak] = useState(0);
   const [showDayReveal, setShowDayReveal] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showMilestone, setShowMilestone] = useState(false);
   const [showWeeklyChallengeComplete, setShowWeeklyChallengeComplete] = useState(false);
   const [weeklyChallengeOrbAwarded, setWeeklyChallengeOrbAwarded] = useState(false);
-  const [showWeeklyGoalCelebration, setShowWeeklyGoalCelebration] = useState(false);
-  const [newWeeklyStreakValue, setNewWeeklyStreakValue] = useState(1);
-  const [showDailyStreakCelebration, setShowDailyStreakCelebration] = useState(false);
-  const [newDailyStreakValue, setNewDailyStreakValue] = useState(1);
   const [pendingMode, setPendingMode] = useState<'daily' | 'chill' | null>(null);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [autoStartRecording, setAutoStartRecording] = useState(false);
@@ -162,7 +139,6 @@ export default function Dashboard() {
   const [milestoneValue, setMilestoneValue] = useState(0);
   const [milestoneType, setMilestoneType] = useState<MilestoneType>('hellos');
   
-  
   // Edit hello dialog states
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
   const [editingLogIndex, setEditingLogIndex] = useState(0);
@@ -170,14 +146,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchUsername = async () => {
-      // Resolve a display name that works for:
-      // - Signed-in users
-      // - Anonymous (guest) users
-      // - Legacy/non-auth guest state (fallback)
       let resolvedName: string | null = null;
 
       if (user) {
-        // For authenticated users (including anonymous), check profiles table first
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('username')
@@ -188,12 +159,10 @@ export default function Dashboard() {
           resolvedName = profile.username;
         }
 
-        // Next, try auth metadata (may be empty for anonymous users)
         if (!resolvedName && user.user_metadata?.name) {
           resolvedName = user.user_metadata.name;
         }
 
-        // Finally, fall back to progress-derived names (covers anonymous users even if profiles SELECT fails)
         if (!resolvedName && (progress as any)?.username) {
           resolvedName = (progress as any).username;
         }
@@ -201,7 +170,6 @@ export default function Dashboard() {
           resolvedName = guestProgress.username;
         }
       } else {
-        // Legacy non-auth guest fallback
         if (guestProgress?.username) {
           resolvedName = guestProgress.username;
         }
@@ -216,8 +184,6 @@ export default function Dashboard() {
   }, [user?.id, user?.user_metadata?.name, guestProgress?.username, (progress as any)?.username]);
 
   // Show walkthrough tutorial for users coming from onboarding
-  // Use refs to prevent double-trigger + prevent a scheduled timer from being cleared
-  // by unrelated re-renders (important because `progress` is reconstructed for guests).
   const tutorialShownRef = useRef(false);
   const tutorialTimerRef = useRef<number | null>(null);
 
@@ -232,7 +198,6 @@ export default function Dashboard() {
 
     const pending = sessionStorage.getItem('pending_home_tutorial') === '1';
     if (!eligible) {
-      // Clear any stale pending flag to avoid surprises later.
       if (pending) sessionStorage.removeItem('pending_home_tutorial');
       return;
     }
@@ -242,7 +207,6 @@ export default function Dashboard() {
 
     if (pending) sessionStorage.removeItem('pending_home_tutorial');
 
-    // Small delay so the home UI is rendered before spotlighting starts.
     tutorialTimerRef.current = window.setTimeout(() => {
       setShowHomeTutorial(true);
     }, 400);
@@ -255,7 +219,7 @@ export default function Dashboard() {
     };
   }, [isAnonymous, guestLoading, progressLoading, showHomeTutorial, progress?.has_completed_onboarding, progress?.has_seen_welcome_messages]);
 
-  // Mark tutorial as seen as soon as it opens (before user completes it)
+  // Mark tutorial as seen as soon as it opens
   const handleTutorialMarkSeen = async () => {
     if (user?.id) {
       await supabase
@@ -270,34 +234,10 @@ export default function Dashboard() {
     sessionStorage.removeItem('pending_home_tutorial');
   };
 
-  // Toast feedback when user finishes the tutorial
   const handleTutorialComplete = () => {
     setShowHomeTutorial(false);
     toast.success("🎉 You're all set!");
   };
-
-  // Fix for existing users who completed first hello but have streak 0
-  useEffect(() => {
-    const fixStreakIfNeeded = async () => {
-      if (!progress) return;
-      
-      // If user has logs but daily_streak is 0, fix it
-      const hasLogs = logs.length > 0;
-      const streakIsZero = (progress.daily_streak || 0) === 0;
-      
-      if (hasLogs && streakIsZero) {
-        const today = getDayKeyInOffset(new Date(), tzOffset);
-        await updateProgress({
-          daily_streak: 1,
-          current_streak: 1,
-          last_completed_date: progress.last_completed_date || today,
-          total_hellos: logs.length,
-        });
-      }
-    };
-    
-    fixStreakIfNeeded();
-  }, [progress?.daily_streak, logs.length]);
 
   // Determine which day of onboarding the user is on
   const getOnboardingDay = () => {
@@ -313,7 +253,6 @@ export default function Dashboard() {
   const currentOnboardingDay = getOnboardingDay();
 
   // Get completed days from logs (for legacy 7-day-starter mode)
-  // Since hello_type is removed, we just count unique days with hellos
   const getCompletedDaysCount = () => {
     if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return 0;
     
@@ -333,10 +272,7 @@ export default function Dashboard() {
   const completedDaysCount = getCompletedDaysCount();
   const allOnboardingComplete = completedDaysCount >= 7;
 
-  // isFirstHellosMode is no longer needed - always show main dashboard
-
-  // Weekly reset logic - check for missed weekly goal (Chill Mode)
-  // Use a ref to prevent the effect from running multiple times
+  // Weekly reset logic
   const [weeklyResetDone, setWeeklyResetDone] = useState(false);
   
   useEffect(() => {
@@ -349,35 +285,15 @@ export default function Dashboard() {
       const storedWeekStart = parseISO(progress.week_start_date);
       const currentWeekStart = parseISO(weekStartStr);
 
-      // Only reset if the stored week is BEFORE the current week start
       if (isBefore(storedWeekStart, currentWeekStart)) {
-        const mode = progress.mode || 'daily';
-        const target = mode === 'chill' ? 3 : 7;
-        const targetMet = (progress.hellos_this_week || 0) >= target;
-        
-        setWeeklyResetDone(true); // Prevent re-running
-        
-        if (mode === 'chill' && !targetMet && (progress.weekly_streak || 0) > 0) {
-          setShowWeeklyOrbDialog(true);
-        } else {
-          const newWeeklyStreak = targetMet ? (progress.weekly_streak || 0) + 1 : 0;
-          const newLongestStreak = Math.max(newWeeklyStreak, progress.longest_streak || 0);
-
-          updateProgress({
-            hellos_this_week: 0,
-            week_start_date: weekStartStr,
-            weekly_streak: newWeeklyStreak,
-            longest_streak: newLongestStreak,
-            weekly_goal_achieved_this_week: false,
-          });
-
-          if (targetMet) {
-            toast.success(`🎉 Week completed! Your streak is now ${newWeeklyStreak} weeks!`);
-          }
-        }
+        setWeeklyResetDone(true);
+        updateProgress({
+          hellos_this_week: 0,
+          week_start_date: weekStartStr,
+          weekly_goal_achieved_this_week: false,
+        });
       }
     } else {
-      // Initialize week_start_date if not set
       setWeeklyResetDone(true);
       updateProgress({
         week_start_date: weekStartStr,
@@ -386,156 +302,18 @@ export default function Dashboard() {
     }
   }, [progress, progressLoading, weeklyResetDone, timezoneLoading, tzOffset]);
 
-  // Check for missed daily streak with 48-hour (2 missed days) grace period
-  useEffect(() => {
-    // CRITICAL: Wait for timezone to load to avoid false positives with wrong date calculation
-    if (!progress || progressLoading || logsLoading || timezoneLoading) return;
-
-    // Check both daily mode and 7-day-starter mode for missed streak
-    const mode = progress.mode || '7-day-starter';
-    const shouldCheckDailyStreak = mode === 'daily' || mode === '7-day-starter';
-    if (!shouldCheckDailyStreak) return;
-
-    const dailyStreak = progress.daily_streak || 0;
-    const lastCompletedDate = progress.last_completed_date;
-    const saveOfferedForDate = progress.save_offered_for_date;
-    const today = getDayKeyInOffset(new Date(), tzOffset);
-    const currentOrbs = progress.orbs || 0;
-
-    // Only show dialog if user has a streak to save
-    if (dailyStreak > 0 && lastCompletedDate) {
-      // Normalize lastCompletedDate to date-only format
-      const normalizedLastDate = lastCompletedDate.includes('T') 
-        ? lastCompletedDate.split('T')[0] 
-        : lastCompletedDate;
-      
-      const hasHelloToday = normalizedLastDate === today;
-
-      if (!hasHelloToday) {
-        // Use stable day-key arithmetic instead of parseISO/differenceInDays 
-        // to avoid browser timezone drift issues
-        const daysSinceLastHello = getDayKeyDifference(normalizedLastDate, today);
-
-        // Only show dialog if we haven't already offered today
-        if (saveOfferedForDate !== today) {
-          setMissedDays(daysSinceLastHello);
-          setPreviousStreak(dailyStreak);
-
-          // CRITICAL FIX: d=1 means yesterday (still safe), d>=2 means missed days
-          // Only prompt when d >= 2 (missed at least 1 full day)
-          if (daysSinceLastHello >= 4) {
-            // Too late to save - missed 3+ days, streak must reset
-            setStreakSaverScenario('fresh_start');
-            setShowStreakSaverDialog(true);
-            updateProgress({ save_offered_for_date: today });
-          } else if (daysSinceLastHello >= 2) {
-            // Within 2-day forgiveness window (d=2 or d=3 means missed 1-2 days)
-            if (currentOrbs > 0) {
-              setStreakSaverScenario('can_save');
-              setShowStreakSaverDialog(true);
-              updateProgress({ save_offered_for_date: today });
-            } else {
-              setStreakSaverScenario('no_orbs');
-              setShowStreakSaverDialog(true);
-              updateProgress({ save_offered_for_date: today });
-            }
-          }
-          // If d === 1, do nothing - user logged yesterday, still safe today
-        }
-      }
-    }
-  }, [progress, progressLoading, logsLoading, timezoneLoading, logs, tzOffset]);
-
-  // Handle using an orb to save streak
-  const handleStreakSaverUseOrb = async () => {
-    const currentOrbs = progress?.orbs || 0;
-    if (currentOrbs > 0) {
-      // Set last_completed_date to YESTERDAY so the next real hello can increment the streak
-      const yesterday = getYesterdayKeyInOffset(new Date(), tzOffset);
-      
-      // Consume 1 orb, keep streak intact, set last_completed_date to yesterday
-      // This does NOT count as a real hello - no XP, no hello count increase
-      await updateProgress({
-        orbs: currentOrbs - 1,
-        last_completed_date: yesterday,
-        // Keep current streak - don't increment, just preserve
-      });
-      toast.success("✨ Orb used! Your streak is saved.");
-    }
-    setShowStreakSaverDialog(false);
-  };
-
-  // Handle letting streak reset (user choice)
-  const handleStreakSaverLetReset = async () => {
-    await updateProgress({ daily_streak: 0 });
-    toast.info("Your streak has been reset. Start fresh today!");
-    setShowStreakSaverDialog(false);
-  };
-
-  // Handle accepting gift orb when no orbs available
-  const handleStreakSaverAcceptGift = async () => {
-    const currentOrbs = progress?.orbs || 0;
-    await updateProgress({ 
-      daily_streak: 0,
-      orbs: Math.min(currentOrbs + 1, 3) // Gift 1 orb, max 3
-    });
-    toast.success("🎁 You received a gift orb! Use it to save your next streak.");
-    setShowStreakSaverDialog(false);
-  };
-
-  // Handle fresh start (streak was too far gone)
-  const handleStreakSaverFreshStart = async () => {
-    await updateProgress({ daily_streak: 0 });
-    toast.info("Fresh start! Let's build your streak again.");
-    setShowStreakSaverDialog(false);
-  };
-
-  const handleUseWeeklyOrb = async () => {
-    const currentOrbs = progress?.orbs || 0;
-
-    const weekStartStr = getWeekStartKeyInOffset(new Date(), tzOffset);
-
-    if (currentOrbs > 0) {
-      await updateProgress({
-        orbs: currentOrbs - 1,
-        hellos_this_week: 0,
-        week_start_date: weekStartStr,
-      });
-      toast.success("✨ Orb used! Your weekly streak is protected.");
-    }
-    setShowWeeklyOrbDialog(false);
-  };
-
-  const handleDeclineWeeklyOrb = async () => {
-    const weekStartStr = getWeekStartKeyInOffset(new Date(), tzOffset);
-
-    await updateProgress({
-      weekly_streak: 0,
-      hellos_this_week: 0,
-      week_start_date: weekStartStr,
-    });
-    toast.info("Your weekly streak has been reset to 0.");
-    setShowWeeklyOrbDialog(false);
-  };
-
-  // NOTE: Daily streak updates are handled exclusively in handleLogHello
-  // to prevent race conditions. Do not add duplicate streak logic here.
-
   const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string }) => {
-    const isFirstHelloEver = logs.length === 0 && !progress?.has_received_first_orb;
+    const isFirstHelloEver = logs.length === 0;
     const isOnboardingChallenge = onboardingChallenges.some(c => c.title === selectedChallenge);
     const isPackChallenge = selectedHelloType === 'pack_challenge';
 
     const today = getDayKeyInOffset(new Date(), tzOffset);
-    const isFirstHelloToday = !progress?.last_completed_date || progress.last_completed_date !== today;
 
     const result = await addLog({
       ...data
     });
 
-    // Record pack challenge completion if applicable.
-    // NOTE: LogHelloScreen currently doesn't collect a rating, so default to 'neutral'
-    // to ensure pack challenges can still be completed and reflected in the UI.
+    // Record pack challenge completion if applicable
     if (
       result &&
       isPackChallenge &&
@@ -553,26 +331,21 @@ export default function Dashboard() {
           rating: completionRating,
           difficulty_rating: data.difficulty_rating || null,
         });
-        // Refetch to ensure UI updates
         await refetchCompletions();
         
-        // Calculate pack progress to determine celebration type
         const selectedPackId = progress?.selected_pack_id || '';
         const pack = getPackById(selectedPackId);
         if (pack) {
-          // Get newly updated completions count
           const completedAfter = completions.filter(c => 
             c.challenge_tag?.startsWith(`${selectedPackId}-`) || pack.challenges.some(ch => ch.tag === c.challenge_tag)
-          ).length + 1; // +1 for the one we just added
+          ).length + 1;
           
           const totalChallenges = pack.challenges.length;
           const currentChallenge = pack.challenges.find(c => c.day === selectedDayNumber);
           
           if (completedAfter >= totalChallenges) {
-            // All challenges complete - show big celebration
             setTimeout(() => setShowPackComplete(true), 500);
           } else {
-            // Single challenge complete - show moderate celebration
             setCompletedChallengeTitle(currentChallenge?.title || '');
             setTimeout(() => setShowSingleChallengeComplete(true), 300);
           }
@@ -587,121 +360,37 @@ export default function Dashboard() {
       const newHellosThisWeek = previousHellosThisWeek + 1;
       const newTotalHellos = (progress?.total_hellos || logs.length) + 1;
 
-      // Check if this is a weekly challenge completion - award orb (max 3)
       const isWeeklyChallenge = selectedHelloType === "remis_challenge";
-      const isTodaysHello = selectedHelloType === "todays_hello";
-      const currentOrbs = progress?.orbs || 0;
       const lastChallengeDate = progress?.last_weekly_challenge_date;
 
-      // Prefer the stored week_start_date from user_progress (source of truth).
-      // Fallback to computing in user's timezone if it's missing.
       const thisWeekStartStr = progress?.week_start_date
         ? progress.week_start_date
-        : (() => {
-            return getWeekStartKeyInOffset(new Date(), tzOffset);
-          })();
+        : getWeekStartKeyInOffset(new Date(), tzOffset);
 
       const alreadyEarnedThisWeek = !!(lastChallengeDate && lastChallengeDate >= thisWeekStartStr);
-
-      // XP System - check if daily counts need reset
-      const lastXpResetDate = progress?.last_xp_reset_date;
-      const needsXpReset = lastXpResetDate !== today;
-
-      let hellosToday = needsXpReset ? 0 : (progress?.hellos_today_count || 0);
-      let namesToday = needsXpReset ? 0 : (progress?.names_today_count || 0);
-      let notesToday = needsXpReset ? 0 : (progress?.notes_today_count || 0);
-
-      // Check if this completes weekly goal (for XP bonus)
-      const mode = (progress?.mode === 'connect' ? 'chill' : (progress?.mode || 'daily')) as 'daily' | 'chill';
-      const isChillMode = mode === 'chill' && !progress?.is_onboarding_week;
-      const alreadyAchievedThisWeek = (progress as any)?.weekly_goal_achieved_this_week === true;
-      const justHitWeeklyGoal = isChillMode && newHellosThisWeek >= 3 && !alreadyAchievedThisWeek;
-
-      // Calculate the new daily streak
-      let newDailyStreak = progress?.daily_streak || 0;
-      let streakWasIncremented = false;
-
-      if (isFirstHelloToday) {
-        // First hello of the day - check if we should increment streak
-        const lastDate = progress?.last_completed_date;
-        if (lastDate) {
-          // Normalize to date-only format
-          const normalizedLastDate = lastDate.includes('T') 
-            ? lastDate.split('T')[0] 
-            : lastDate;
-          // Use stable day-key arithmetic instead of parseISO/differenceInDays
-          const diffDays = getDayKeyDifference(normalizedLastDate, today);
-
-          if (diffDays <= 1) {
-            // Yesterday was completed (or orb was used which sets to yesterday) - increment streak
-            newDailyStreak = (progress?.daily_streak || 0) + 1;
-            streakWasIncremented = true;
-          } else {
-            // Missed days - reset to 1
-            newDailyStreak = 1;
-          }
-        } else {
-          // First ever hello
-          newDailyStreak = 1;
-        }
-      }
-      // If not first hello today, keep current streak value
 
       const updates: Record<string, unknown> = {
         hellos_this_week: newHellosThisWeek,
         last_completed_date: today,
         total_hellos: newTotalHellos,
-        daily_streak: newDailyStreak,
       };
 
-      // Award orb for weekly challenge (max 3, once per week)
-      let orbAwardedThisTime = false;
-      if (isWeeklyChallenge && !alreadyEarnedThisWeek && currentOrbs < 3) {
-        updates.orbs = currentOrbs + 1;
+      if (isWeeklyChallenge) {
         updates.last_weekly_challenge_date = today;
-        orbAwardedThisTime = true;
-      } else if (isWeeklyChallenge) {
-        updates.last_weekly_challenge_date = today;
-      }
-
-      if (justHitWeeklyGoal) {
-        const currentWeeklyStreak = progress?.weekly_streak || 0;
-        const newWeeklyStreak = currentWeeklyStreak + 1;
-        updates.weekly_streak = newWeeklyStreak;
-        updates.longest_streak = Math.max(newWeeklyStreak, progress?.longest_streak || 0);
-        updates.weekly_goal_achieved_this_week = true;
-        setNewWeeklyStreakValue(newWeeklyStreak);
       }
 
       await updateProgress(updates);
 
-      // Show simple "Hello logged!" toast
       toast.success("Hello logged!");
 
       // Show celebration for onboarding challenges (only in 7-day-starter mode)
-      // For Day 1 (first hello ever), only show FirstOrbGiftDialog (skip ChallengeCompletionCelebrationDialog)
       if (isOnboardingChallenge && progress?.is_onboarding_week && progress?.mode === '7-day-starter') {
         if (!isFirstHelloEver) {
-          // Days 2-7: show the normal celebration dialog
           setShowCelebration(true);
         }
-      } else if (justHitWeeklyGoal) {
-        // Show weekly goal celebration in Chill mode
-        setShowWeeklyGoalCelebration(true);
-      } else if (streakWasIncremented && progress?.mode === 'daily') {
-        // Show daily streak celebration in Daily mode when streak increases
-        setNewDailyStreakValue(newDailyStreak);
-        setShowDailyStreakCelebration(true);
       } else if (isWeeklyChallenge) {
-        // Show weekly challenge completion celebration
-        setWeeklyChallengeOrbAwarded(orbAwardedThisTime);
+        setWeeklyChallengeOrbAwarded(false);
         setShowWeeklyChallengeComplete(true);
-      }
-
-      // First orb is now handled in onboarding flow, not here
-      // This is kept as a fallback for edge cases only
-      if (isFirstHelloEver && !progress?.has_received_first_orb) {
-        setShowFirstOrbGift(true);
       }
       
       // Check for hello/name milestones
@@ -710,14 +399,10 @@ export default function Dashboard() {
       if (helloMilestone) {
         setMilestoneValue(helloMilestone);
         setMilestoneType('hellos');
-        // Delay to not conflict with other celebrations
         setTimeout(() => setShowMilestoneCelebration(true), 1000);
       }
       
-      // Check for names milestone (unique names logged)
-      const previousNamesCount = progress?.names_today_count || 0;
-      const newNamesCount = data.name ? previousNamesCount + 1 : previousNamesCount;
-      // For names, we use total unique names from logs
+      // Check for names milestone
       const uniqueNamesCount = new Set(logs.filter(l => l.name).map(l => l.name?.toLowerCase())).size + (data.name ? 1 : 0);
       const previousUniqueNames = new Set(logs.filter(l => l.name).map(l => l.name?.toLowerCase())).size;
       const nameMilestone = checkMilestoneReached(previousUniqueNames, uniqueNamesCount, NAME_MILESTONES);
@@ -727,9 +412,8 @@ export default function Dashboard() {
         setTimeout(() => setShowMilestoneCelebration(true), 1000);
       }
       
-      // Show save prompt for guests at 2, 8, and 20 hellos
+      // Show save prompt for guests
       if (isAnonymous && shouldShowSavePrompt()) {
-        // Delay slightly so other dialogs can show first
         setTimeout(() => {
           setShowSavePrompt(true);
         }, 1000);
@@ -742,12 +426,9 @@ export default function Dashboard() {
   const handleCelebrationContinue = () => {
     setShowCelebration(false);
     
-    // Check if all 7 are now complete - completedDaysCount already includes the just-completed challenge
-    // since logs have been refetched, so no need to add +1
     if (completedDaysCount >= 7) {
       setShowMilestone(true);
     }
-    // Don't show ComeBackTomorrow - celebration messages now include this context
   };
 
   const handleMilestoneContinue = () => {
@@ -755,35 +436,19 @@ export default function Dashboard() {
     setShowModeSelection(true);
   };
 
-  const handleClaimFirstOrb = async () => {
-    const currentOrbs = progress?.orbs || 0;
-    await updateProgress({ 
-      orbs: Math.min(currentOrbs + 1, 3),
-      has_received_first_orb: true 
-    });
-    setShowFirstOrbGift(false);
-    // Don't show ComeBackTomorrow since FirstOrbGiftDialog now includes that messaging
-  };
-
-  // Check if all 7 onboarding challenges are complete - show mode selection (7-day starter only)
+  // Check if all 7 onboarding challenges are complete
   useEffect(() => {
-    // Only trigger in 7-day-starter mode
     if (progress?.mode !== '7-day-starter') return;
     if (allOnboardingComplete && progress?.is_onboarding_week && !progress?.has_completed_onboarding) {
       setShowMilestone(true);
     }
   }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode]);
 
-  // Track if we've already awarded the initiation orb this session to prevent duplicates
-  const [hasAwardedInitiationOrb, setHasAwardedInitiationOrb] = useState(false);
-
   const handleModeSelect = async (mode: 'daily' | 'chill') => {
     setPendingMode(mode);
     setShowModeSelection(false);
     
-    // For daily mode, skip the confirmation dialog and go straight to tutorial
     if (mode === 'daily') {
-      // Trigger mode confirmation immediately
       setTutorialMode('daily');
       
       const target = 7;
@@ -803,12 +468,10 @@ export default function Dashboard() {
       
       setPendingMode(null);
       
-      // Show tutorial after a brief delay
       setTimeout(() => {
         if (progress?.has_seen_welcome_messages !== true) setShowHomeTutorial(true);
       }, 300);
     } else {
-      // Chill mode - go directly to tutorial (skip confirmation dialog)
       const target = 3;
       
       await updateProgress({ 
@@ -827,7 +490,6 @@ export default function Dashboard() {
       setTutorialMode('chill');
       setPendingMode(null);
       
-      // Show tutorial after a brief delay
       setTimeout(() => {
         if (progress?.has_seen_welcome_messages !== true) setShowHomeTutorial(true);
       }, 300);
@@ -856,50 +518,14 @@ export default function Dashboard() {
     setShowDailyModeConfirm(false);
     setShowChillModeConfirm(false);
     
-    // Set up tutorial
     setTutorialMode(pendingMode);
     setPendingMode(null);
     
-    // Show tutorial after a brief delay for the mode confirmation to close
     setTimeout(() => {
       if (progress?.has_seen_welcome_messages !== true) setShowHomeTutorial(true);
     }, 300);
   };
 
-  // Check if today's hello is completed - now just checks if any hello was logged today
-  const isTodaysHelloComplete = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    return logs.some(log => {
-      const logDate = new Date(log.created_at);
-      logDate.setHours(0, 0, 0, 0);
-      return logDate.getTime() === today.getTime();
-    });
-  };
-
-  // Check if weekly challenge is completed this week
-  // Now uses stored progress field only (since hello_type is removed)
-  const isWeeklyChallengeComplete = () => {
-    if (!progress) return false;
-
-    const weekStartStr = progress.week_start_date
-      ? progress.week_start_date
-      : (() => {
-          if (timezoneLoading) return null;
-          return getWeekStartKeyInOffset(new Date(), tzOffset);
-        })();
-
-    if (!weekStartStr) return false;
-
-    // Primary source of truth - compare date strings
-    const lastChallengeDate = progress.last_weekly_challenge_date;
-    
-    return !!(lastChallengeDate && lastChallengeDate >= weekStartStr);
-  };
-
-  const todaysHello = getTodaysHello();
-  const thisWeeksChallenge = getThisWeeksChallenge();
   const todaysOnboardingChallenge = onboardingChallenges[currentOnboardingDay - 1];
 
   const isLoading = isAnonymous ? (guestLoading || timezoneLoading) : (progressLoading || logsLoading || timezoneLoading);
@@ -916,9 +542,6 @@ export default function Dashboard() {
   }
 
   if (!progress) return null;
-
-  // Full-screen milestone dialog for onboarding completion (with orb ceremony)
-  // Now uses a dialog overlay instead of replacing the whole page
 
   // Full-screen Log Hello
   if (showLogDialog) {
@@ -937,9 +560,6 @@ export default function Dashboard() {
       />
     );
   }
-
-  const mode = (progress.mode === 'connect' ? 'chill' : (progress.mode || 'daily')) as 'daily' | 'chill';
-  const targetHellos = mode === 'chill' ? 5 : 7;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -1007,7 +627,6 @@ export default function Dashboard() {
               logs={logs}
               onViewAll={() => navigate('/hellobook')}
               onViewLog={(log) => {
-                // Get sorted logs for navigation (same as RecentHellosSection uses)
                 const namedLogs = logs.filter(l => l.name && l.name.trim() !== '');
                 const index = namedLogs.findIndex(l => l.id === log.id);
                 setEditingLog(log);
@@ -1040,17 +659,11 @@ export default function Dashboard() {
         open={showCelebration}
         onContinue={handleCelebrationContinue}
         dayNumber={selectedDayNumber}
-        currentStreak={progress?.daily_streak || 0}
+        currentStreak={0}
         username={username}
         isFirstHelloEver={logs.length === 1}
-        isPerfectWeek={(progress?.daily_streak || 0) === 7 && selectedDayNumber === 7}
+        isPerfectWeek={false}
         totalChallengesCompleted={getCompletedDaysCount() + 1}
-      />
-
-      <FirstOrbGiftDialog
-        open={showFirstOrbGift}
-        onClaim={handleClaimFirstOrb}
-        username={username}
       />
 
       <OnboardingCompleteMilestoneDialog
@@ -1063,47 +676,11 @@ export default function Dashboard() {
         onContinue={() => setShowComeBackTomorrow(false)}
       />
 
-
-      {/* Streak Saver Dialog - handles all scenarios */}
-      <StreakSaverDialog
-        open={showStreakSaverDialog}
-        onClose={() => setShowStreakSaverDialog(false)}
-        scenario={streakSaverScenario}
-        orbsAvailable={progress?.orbs || 0}
-        missedDays={missedDays}
-        previousStreak={previousStreak}
-        onUseOrb={handleStreakSaverUseOrb}
-        onLetReset={handleStreakSaverLetReset}
-        onAcceptGift={handleStreakSaverAcceptGift}
-        onFreshStart={handleStreakSaverFreshStart}
-      />
-
-      <UseOrbDialog
-        open={showWeeklyOrbDialog}
-        onUseOrb={handleUseWeeklyOrb}
-        onDecline={handleDeclineWeeklyOrb}
-        type="weekly"
-        orbsAvailable={progress?.orbs || 0}
-      />
-
       <WeeklyChallengeCompleteDialog
         open={showWeeklyChallengeComplete}
         onContinue={() => setShowWeeklyChallengeComplete(false)}
         orbsAwarded={weeklyChallengeOrbAwarded}
       />
-
-      <WeeklyGoalCelebrationDialog
-        open={showWeeklyGoalCelebration}
-        onContinue={() => setShowWeeklyGoalCelebration(false)}
-        newStreak={newWeeklyStreakValue}
-      />
-
-      <DailyStreakCelebrationDialog
-        open={showDailyStreakCelebration}
-        onContinue={() => setShowDailyStreakCelebration(false)}
-        newStreak={newDailyStreakValue}
-      />
-
 
       {/* Pack Challenge Celebrations */}
       <SingleChallengeCompleteDialog
