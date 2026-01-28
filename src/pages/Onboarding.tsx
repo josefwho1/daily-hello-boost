@@ -68,10 +68,10 @@ export default function Onboarding() {
 
   // Initialize user/guest progress
   const ensureUserAndProgress = async (): Promise<{ userId: string }> => {
-    const { data: { user: existingUser }, error: getUserError } = await supabase.auth.getUser();
-    if (getUserError) throw getUserError;
-
-    let user = existingUser;
+    // Use getSession first to check if there's an existing session
+    // This avoids the AuthSessionMissingError that getUser throws when no session exists
+    const { data: sessionData } = await supabase.auth.getSession();
+    let user = sessionData?.session?.user || null;
 
     // If no session yet, start a guest (anonymous) session.
     if (!user) {
