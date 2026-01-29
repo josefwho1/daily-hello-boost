@@ -69,11 +69,21 @@ export const LogHelloScreen = ({
   } | null>(null);
   
   const { findDuplicate, getDuplicateDescription } = useDuplicateDetection(existingLogs);
+  const { requestWakeLock, releaseWakeLock } = useWakeLock();
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
   const remiImage = useMemo(() => getRandomLoggingImage(), []);
+
+  // Manage wake lock based on recording and processing state
+  useEffect(() => {
+    if (isRecording || isProcessing) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+  }, [isRecording, isProcessing, requestWakeLock, releaseWakeLock]);
 
   const screenTitle = challengeTitle 
     ? `Complete: ${challengeTitle}` 
