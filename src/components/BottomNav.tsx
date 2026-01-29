@@ -40,7 +40,7 @@ export const BottomNav = () => {
   const tabs = [
     { to: "/", icon: Home, label: "Home" },
     { to: "/hellobook", icon: BookOpen, label: "Hellobook" },
-    { to: "/challenges", icon: Trophy, label: "Quests" },
+    { to: "/challenges", icon: null, label: "Quests", customIcon: questsIcon },
     { to: "/profile", icon: User, label: "Profile" },
   ];
 
