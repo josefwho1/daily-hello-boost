@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
 import { toast } from "sonner";
 import vaultIcon from "@/assets/vault-icon.webp";
+import questsIcon from "@/assets/quests-icon.webp";
 import {
   AlertDialog,
   AlertDialogAction,
