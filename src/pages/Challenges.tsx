@@ -152,9 +152,16 @@ const Challenges = () => {
           <img src={remiQuest} alt="Remi" className="w-16 h-16 object-contain" />
         </div>
 
-        {/* Challenge Packs */}
+        {/* Challenge Packs - Show skeletons while loading */}
         <div className="space-y-4">
-          {packs.map((pack) => {
+          {isLoading ? (
+            <>
+              <ChallengeCardSkeleton />
+              <ChallengeCardSkeleton />
+              <ChallengeCardSkeleton />
+            </>
+          ) : (
+          packs.map((pack) => {
             const isActive = isPackActive(pack.id);
             const isPaused = isPackPaused(pack.id);
             const isAvailable = isPackAvailable(pack.id);
