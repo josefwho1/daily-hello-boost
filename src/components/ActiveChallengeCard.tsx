@@ -140,12 +140,6 @@ export const ActiveChallengeCard = ({
           {currentChallenge.title}
         </h3>
         
-        {/* Lock status - only show when locked */}
-        {!challengeUnlocked && (
-          <div className="flex items-center gap-1 text-muted-foreground text-xs h-5 mt-0.5">
-            <Lock size={12} /> Complete previous challenge to unlock
-          </div>
-        )}
         
         {/* Description or Tips - swap based on showTip state */}
         <p className={cn(
