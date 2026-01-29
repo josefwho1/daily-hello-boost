@@ -77,11 +77,6 @@ export const ActiveChallengeCard = ({
   const completedCount = pack.challenges.filter(isCompleted).length;
   const allChallengesComplete = completedCount === pack.challenges.length;
 
-  const handleCardTap = () => {
-    if (challengeUnlocked && !challengeCompleted) {
-      setIsExpanded(!isExpanded);
-    }
-  };
 
   return (
     <Card
