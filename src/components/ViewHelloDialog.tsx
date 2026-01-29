@@ -260,6 +260,14 @@ const ViewHelloDialog = ({
           </Button>
 
           <Button 
+            variant="outline"
+            onClick={() => onOpenChange(false)} 
+            className="flex-1 h-12 text-lg"
+          >
+            Exit
+          </Button>
+
+          <Button 
             onClick={handleSave} 
             className="flex-1 h-12 text-lg" 
             disabled={isSubmitting}
