@@ -109,7 +109,18 @@ const Hellobook = () => {
       processedIds.add(log.id);
     });
 
-    return Array.from(groups.values());
+    // Sort groups by most recent interaction (primary or linked)
+    return Array.from(groups.values()).sort((a, b) => {
+      const aLatest = Math.max(
+        new Date(a.primaryLog.created_at).getTime(),
+        ...a.linkedLogs.map((l) => new Date(l.created_at).getTime())
+      );
+      const bLatest = Math.max(
+        new Date(b.primaryLog.created_at).getTime(),
+        ...b.linkedLogs.map((l) => new Date(l.created_at).getTime())
+      );
+      return bLatest - aLatest;
+    });
   }, [logs]);
 
   // Calculate stats for the toggle bar
@@ -317,7 +328,7 @@ const Hellobook = () => {
             }`}
           >
             <div className="text-xl font-bold">{stats.unknown}</div>
-            <div className="text-xs">????</div>
+            <div className="text-xs">Unknown</div>
           </button>
           <button
             onClick={() => setActiveFilter('favorites')}

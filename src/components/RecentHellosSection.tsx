@@ -43,6 +43,7 @@ export const RecentHellosSection = ({ logs, onViewAll, onViewLog }: RecentHellos
       <div className="space-y-2">
         {recentLogs.map((log) => {
           const timeAgo = formatDistanceToNow(new Date(log.created_at), { addSuffix: true });
+          const displayName = log.name && log.name.trim() !== "" ? log.name : "Unknown";
           
           return (
             <Card 
@@ -55,7 +56,7 @@ export const RecentHellosSection = ({ logs, onViewAll, onViewLog }: RecentHellos
                   {/* First row: Name + Location */}
                   <div className="flex items-center gap-2 min-w-0">
                     <p className="font-medium text-foreground truncate">
-                      {log.name || 'Hello'}
+                      {displayName}
                     </p>
                     {log.location && (
                       <div className="flex items-center gap-1 text-muted-foreground shrink-0">

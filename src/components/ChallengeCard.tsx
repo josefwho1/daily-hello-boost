@@ -24,14 +24,14 @@ export const ChallengeCard = ({
     <div
       onClick={!isLocked ? onClick : undefined}
       className={cn(
-        "bg-card rounded-2xl p-6 border-2 transition-all",
+        "bg-card rounded-2xl p-6 border-2 transition-all h-[228px]",
         isToday && !isCompleted && "border-primary shadow-lg",
         isCompleted && "border-success bg-success/5",
         !isToday && !isCompleted && !isLocked && "border-border hover:border-primary/50 cursor-pointer",
         isLocked && "border-border opacity-60"
       )}
     >
-      <div className="flex flex-col items-center text-center">
+      <div className="flex flex-col items-center text-center h-full">
         <div className={cn(
           "text-4xl mb-4",
           isLocked && "grayscale opacity-50"
@@ -39,7 +39,7 @@ export const ChallengeCard = ({
           {challenge.icon}
         </div>
         
-        <div className="w-full">
+        <div className="w-full flex-1 flex flex-col">
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="text-xs font-semibold text-muted-foreground">DAY {challenge.day}</span>
             {isCompleted && (
@@ -56,35 +56,41 @@ export const ChallengeCard = ({
           </div>
           
           <h3 className={cn(
-            "font-bold text-lg mb-2",
+            "font-bold text-lg mb-2 line-clamp-1",
             isLocked ? "text-transparent bg-foreground/80 rounded select-none blur-sm" : "text-foreground"
           )}>
             {challenge.title}
           </h3>
           <p className={cn(
-            "text-sm leading-relaxed",
+            "text-sm leading-relaxed line-clamp-2 min-h-[2.5rem]",
             isLocked ? "text-transparent bg-muted-foreground/60 rounded select-none blur-sm" : "text-muted-foreground"
           )}>
             {challenge.description}
           </p>
           
-          {!isLocked && challenge.tips && (
-            <p className="text-sm leading-relaxed mt-2 text-muted-foreground/70 italic">
-              {challenge.tips}
-            </p>
-          )}
+          <div className="min-h-[1.25rem] mt-2">
+            {!isLocked && challenge.tips && (
+              <p className="text-sm leading-relaxed text-muted-foreground/70 italic line-clamp-1">
+                {challenge.tips}
+              </p>
+            )}
+          </div>
           
-          {isToday && !isCompleted && onComplete && (
-            <Button 
-              onClick={(e) => {
-                e.stopPropagation();
-                onComplete();
-              }}
-              className="mt-4 w-full rounded-full font-semibold"
-            >
-              Complete Challenge
-            </Button>
-          )}
+          <div className="mt-auto pt-4">
+            {isToday && !isCompleted && onComplete ? (
+              <Button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onComplete();
+                }}
+                className="w-full rounded-full font-semibold"
+              >
+                Complete Challenge
+              </Button>
+            ) : (
+              <div className="h-10" aria-hidden="true" />
+            )}
+          </div>
         </div>
       </div>
     </div>
