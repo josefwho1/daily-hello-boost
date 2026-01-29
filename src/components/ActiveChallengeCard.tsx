@@ -155,21 +155,19 @@ export const ActiveChallengeCard = ({
         
         {/* Description - directly after title */}
         <p className={cn(
-          "text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]",
+          "text-xs text-muted-foreground line-clamp-2 min-h-[2.5rem]",
           !challengeUnlocked && "blur-sm select-none",
           challengeUnlocked && "mt-0.5"
         )}>
-          {isExpanded && challengeUnlocked && !challengeCompleted && currentChallenge.tips
-            ? currentChallenge.tips
-            : currentChallenge.description}
+          {currentChallenge.description}
         </p>
 
-        {/* Tap hint (reserved height to avoid layout shift) */}
-        <p className="text-[10px] text-muted-foreground/50 mt-2 h-3">
-          {challengeUnlocked && !challengeCompleted && !isExpanded && currentChallenge.tips
-            ? "Tap for suggestions"
-            : ""}
-        </p>
+        {/* Tips/Suggestions - always visible when available, matching Today's Hello style */}
+        {challengeUnlocked && !challengeCompleted && currentChallenge.tips && (
+          <p className="text-xs text-muted-foreground/50 italic mt-1 line-clamp-2">
+            "{currentChallenge.tips}"
+          </p>
+        )}
       </div>
 
       {/* Button area */}
