@@ -269,15 +269,22 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
 
           {/* Tooltip card */}
           <motion.div
-            className={`fixed z-[102] p-4 ${isCentered ? 'inset-0 flex items-center justify-center' : ''}`}
-            style={isCentered ? {} : getTooltipStyle()}
+            className={`fixed z-[102] px-4 ${isCentered ? 'inset-0 flex items-center justify-center px-5' : 'left-0 right-0'}`}
+            style={isCentered ? {} : { 
+              ...getTooltipStyle(), 
+              left: '0', 
+              right: '0',
+              transform: 'none',
+              display: 'flex',
+              justifyContent: 'center'
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
               key={currentStep}
-              className="bg-card border-2 border-primary rounded-2xl p-5 shadow-2xl max-w-sm w-full pointer-events-auto"
+              className="bg-card border-2 border-primary rounded-2xl p-5 shadow-2xl w-full max-w-[calc(100vw-2.5rem)] sm:max-w-sm pointer-events-auto"
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: -20 }}
