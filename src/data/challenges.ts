@@ -23,9 +23,9 @@ export const challenges: Challenge[] = [
     id: 3,
     day: 3,
     title: "Observation",
-    description: "Comment on something you're both experiencing right now, the weather, the atmosphere etc",
+    description: "Comment on something you're both experiencing i.e. weather, atmosphere etc.",
     icon: "💬",
-    tips: "\"What a beautiful day\" \"So busy today\" \"Weathers been so cold lately 🥶\"",
+    tips: "What a beautiful day, So busy today, Weathers been so cold lately 🥶",
     tag: "7day-hello-day3"
   },
   {
