@@ -10,6 +10,7 @@ import { MultiEntryReview, ExtractedEntry } from "@/components/MultiEntryReview"
 import { DuplicatePersonDialog } from "@/components/DuplicatePersonDialog";
 import { useDuplicateDetection, PotentialDuplicate } from "@/hooks/useDuplicateDetection";
 import { HelloLog } from "@/hooks/useHelloLogs";
+import { useWakeLock } from "@/hooks/useWakeLock";
 import remiLogging1 from "@/assets/remi-logging-1.webp";
 import remiLogging2 from "@/assets/remi-logging-2.webp";
 import remiLogging3 from "@/assets/remi-logging-3.webp";
