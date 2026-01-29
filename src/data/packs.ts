@@ -5,9 +5,10 @@ export const packs: Pack[] = [
   {
     id: "7-day-hello",
     name: "One Hello Intro Series",
-    description: "How to turn faces into friends in 7 simple steps. Taking you from a simple hello to getting a strangers name.",
+    description: "Perfect for beginners. Helping you turn faces into friends. Taking you from a simple hello to getting a strangers name in 7 days.",
     icon: "👋",
     challenges: challenges.slice(0, 7),
+    isFree: true,
   },
   {
     id: "pack-1",

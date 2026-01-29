@@ -217,6 +217,11 @@ const Challenges = () => {
                   {isAvailable && (
                     <div className="mt-4 pt-4 border-t border-border space-y-4">
                       <p className="text-sm text-muted-foreground">{pack.description}</p>
+                      {pack.isFree && (
+                        <span className="inline-block text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
+                          Free
+                        </span>
+                      )}
                       
                       {/* Action Button */}
                       {isActive ? (
