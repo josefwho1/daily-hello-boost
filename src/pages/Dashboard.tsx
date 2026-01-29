@@ -49,7 +49,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress: cloudProgress, loading: progressLoading, updateProgress: updateCloudProgress, refetch } = useUserProgress();
-  const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, deleteLog: deleteCloudLog, getLogsTodayCount } = useHelloLogs();
+  const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, deleteLog: deleteCloudLog, getLogsTodayCount, toggleFavorite } = useHelloLogs();
   const { timezoneOffset, loading: timezoneLoading } = useTimezone();
   const { completions, addCompletion, refetch: refetchCompletions } = useChallengeCompletions();
   const { 
@@ -753,6 +753,14 @@ export default function Dashboard() {
             toast.success("Hello deleted");
           } catch {
             toast.error("Failed to delete hello");
+          }
+        }}
+        onToggleFavorite={async (id, isFavorite) => {
+          const result = await toggleFavorite(id, isFavorite);
+          if (result) {
+            toast.success(isFavorite ? "Added to favorites" : "Removed from favorites");
+          } else {
+            toast.error("Failed to update favorite");
           }
         }}
       />
