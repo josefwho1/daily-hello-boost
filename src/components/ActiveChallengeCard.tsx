@@ -16,6 +16,7 @@ interface ActiveChallengeCardProps {
   packStartDate: string | null;
   onLogHello: (challenge: Challenge) => void;
   onViewPack: () => void;
+  onEndChallenge?: () => void;
 }
 
 export const ActiveChallengeCard = ({
@@ -25,6 +26,7 @@ export const ActiveChallengeCard = ({
   packStartDate,
   onLogHello,
   onViewPack,
+  onEndChallenge,
 }: ActiveChallengeCardProps) => {
   const pack = getPackById(packId);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -64,7 +66,6 @@ export const ActiveChallengeCard = ({
   const isCompleted = (c: Challenge) =>
     completedTags.includes(c.tag) || completedDays.includes(c.day);
 
-
   const canGoLeft = currentIndex > 0;
   const canGoRight = currentIndex < pack.challenges.length - 1;
 
@@ -74,6 +75,7 @@ export const ActiveChallengeCard = ({
   const challengeCompleted = isCompleted(currentChallenge);
   const challengeUnlocked = isUnlocked(currentIndex);
   const completedCount = pack.challenges.filter(isCompleted).length;
+  const allChallengesComplete = completedCount === pack.challenges.length;
 
   const handleCardTap = () => {
     if (challengeUnlocked && !challengeCompleted) {
@@ -144,24 +146,18 @@ export const ActiveChallengeCard = ({
           {currentChallenge.title}
         </h3>
         
-        {/* Status badges - fixed height */}
-        <div className="flex items-center gap-2 h-5 mt-0.5">
-          {challengeCompleted && (
-            <span className="flex items-center gap-1 text-success text-xs font-medium">
-              <Check size={12} /> Completed
-            </span>
-          )}
-          {!challengeUnlocked && (
-            <span className="flex items-center gap-1 text-muted-foreground text-xs">
-              <Lock size={12} /> Complete previous challenge to unlock
-            </span>
-          )}
-        </div>
+        {/* Lock status - only show when locked */}
+        {!challengeUnlocked && (
+          <div className="flex items-center gap-1 text-muted-foreground text-xs h-5 mt-0.5">
+            <Lock size={12} /> Complete previous challenge to unlock
+          </div>
+        )}
         
-        {/* Description - fixed 2 lines */}
+        {/* Description - directly after title */}
         <p className={cn(
-          "text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem] mt-1",
-          !challengeUnlocked && "blur-sm select-none"
+          "text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]",
+          !challengeUnlocked && "blur-sm select-none",
+          challengeUnlocked && "mt-0.5"
         )}>
           {isExpanded && challengeUnlocked && !challengeCompleted && currentChallenge.tips
             ? currentChallenge.tips
@@ -176,9 +172,18 @@ export const ActiveChallengeCard = ({
         </p>
       </div>
 
-      {/* Complete button - only for unlocked, incomplete challenges */}
+      {/* Button area */}
       <div className="mt-3">
-        {challengeUnlocked && !challengeCompleted ? (
+        {allChallengesComplete && onEndChallenge ? (
+          <Button
+            onClick={onEndChallenge}
+            variant="outline"
+            className="w-full rounded-full font-semibold"
+            size="sm"
+          >
+            End Challenge
+          </Button>
+        ) : challengeUnlocked && !challengeCompleted ? (
           <Button
             onClick={() => onLogHello(currentChallenge)}
             className="w-full rounded-full font-semibold"
@@ -186,6 +191,10 @@ export const ActiveChallengeCard = ({
           >
             Complete Challenge
           </Button>
+        ) : challengeCompleted ? (
+          <div className="flex items-center justify-center gap-1 text-success text-sm font-medium h-9">
+            <Check size={14} /> Completed
+          </div>
         ) : (
           <div className="h-9" aria-hidden="true" />
         )}
