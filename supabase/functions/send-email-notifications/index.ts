@@ -381,10 +381,6 @@ Deno.serve(async (req) => {
           console.log(`Sent ${templateKey} email to ${email}`)
         }
       }
-          emailsSent++
-          console.log(`Sent ${templateKey} email to ${email}`)
-        }
-      }
     }
 
     console.log(`Email notification job complete. Sent ${emailsSent} emails.`)
