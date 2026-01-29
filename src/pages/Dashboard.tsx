@@ -597,6 +597,13 @@ export default function Dashboard() {
                     setShowLogDialog(true);
                   }}
                   onViewPack={() => navigate('/challenges')}
+                  onEndChallenge={async () => {
+                    await updateProgress({
+                      selected_pack_id: '',
+                      mode: 'daily',
+                    });
+                    toast.success("Challenge ended! You're back to Today's Hello.");
+                  }}
                 />
               ) : (
                 <DailySuggestionCard />

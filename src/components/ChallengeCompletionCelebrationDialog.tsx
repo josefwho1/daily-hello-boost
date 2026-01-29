@@ -307,7 +307,7 @@ export const ChallengeCompletionCelebrationDialog = ({
             ))}
           </div>
 
-          {/* Progress dots */}
+          {/* Progress dots - no trophy emojis */}
           <div className="flex justify-center gap-2 my-4">
             {[...Array(7)].map((_, i) => (
               <div
