@@ -181,13 +181,16 @@ const Challenges = () => {
                             Active
                           </span>
                         )}
-                        {isPaused && (
+                        {isPaused && !isComplete && (
                           <span className="text-xs bg-muted-foreground/20 text-muted-foreground px-2 py-0.5 rounded-full">
                             Paused
                           </span>
                         )}
                         {isComplete && (
-                          <Check className="w-4 h-4 text-success" />
+                          <span className="text-xs bg-success/20 text-success px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <Check className="w-3 h-3" />
+                            Completed
+                          </span>
                         )}
                       </div>
                       
