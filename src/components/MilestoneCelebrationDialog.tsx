@@ -199,7 +199,7 @@ export const MilestoneCelebrationDialog = ({
               className="w-full max-w-xs mt-4"
             >
               <Button onClick={onContinue} className="w-full" size="lg">
-                Keep Going! 🚀
+                Keep Going!
               </Button>
             </motion.div>
           </div>
