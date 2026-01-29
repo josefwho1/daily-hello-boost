@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Home, BookOpen, Trophy, User } from "lucide-react";
+import { Home, BookOpen, User } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useLocation } from "react-router-dom";
+import questsIcon from "@/assets/quests-icon.webp";
 
 const PawPrint = ({ show }: { show: boolean }) => {
   if (!show) return null;
