@@ -20,7 +20,6 @@ import { SaveHelloButton } from "@/components/SaveHelloButton";
 
 import ViewHelloDialog from "@/components/ViewHelloDialog";
 import { HelloLog } from "@/hooks/useHelloLogs";
-import { LogHelloButton } from "@/components/LogHelloButton";
 import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
 import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
 import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingCompleteMilestoneDialog";
