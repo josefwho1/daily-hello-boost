@@ -234,7 +234,7 @@ const Challenges = () => {
                             Pause
                           </Button>
                         </div>
-                      ) : isPaused ? (
+                      ) : isPaused && !isComplete ? (
                         <div className="flex gap-2">
                           <Button 
                             onClick={() => handleResumePack(pack.id)}
