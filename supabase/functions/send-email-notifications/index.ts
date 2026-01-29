@@ -114,22 +114,6 @@ function getWelcomeBody(username: string): string {
   `
 }
 
-function getStreak1DayBody(username: string): string {
-  return `
-    <p style="margin: 0; color: #444; font-size: 15px; line-height: 1.6;">
-      Hey ${username}, I've got your back. Your streak is safe for now!
-    </p>
-  `
-}
-
-function getStreak2DayBody(username: string): string {
-  return `
-    <p style="margin: 0; color: #444; font-size: 15px; line-height: 1.6;">
-      ${username}, your streak is still alive... but barely. One hello and you're back!
-    </p>
-  `
-}
-
 function getReengagementBody(username: string): string {
   return `
     <p style="margin: 0; color: #444; font-size: 15px; line-height: 1.6;">
