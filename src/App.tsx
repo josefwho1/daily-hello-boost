@@ -1,5 +1,5 @@
 // App entry point
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,19 +9,21 @@ import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useGuestMode } from "@/hooks/useGuestMode";
-import Dashboard from "./pages/Dashboard";
-import Hellobook from "./pages/Hellobook";
-import Vault from "./pages/Vault";
-import Profile from "./pages/Profile";
-import Auth from "./pages/Auth";
-import MagicLinkSignIn from "./pages/MagicLinkSignIn";
-import AuthCallback from "./pages/AuthCallback";
-import Onboarding from "./pages/Onboarding";
-import Landing from "./pages/Landing";
-import Community from "./pages/Community";
-import Challenges from "./pages/Challenges";
-import NotFound from "./pages/NotFound";
-import AdminDashboard from "./pages/AdminDashboard";
+
+// Lazy load pages for code splitting
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Hellobook = lazy(() => import("./pages/Hellobook"));
+const Vault = lazy(() => import("./pages/Vault"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Auth = lazy(() => import("./pages/Auth"));
+const MagicLinkSignIn = lazy(() => import("./pages/MagicLinkSignIn"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Landing = lazy(() => import("./pages/Landing"));
+const Community = lazy(() => import("./pages/Community"));
+const Challenges = lazy(() => import("./pages/Challenges"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -153,6 +155,16 @@ const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Suspense fallback for lazy-loaded routes
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+      <p className="text-muted-foreground">Loading...</p>
+    </div>
+  </div>
+);
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -160,66 +172,68 @@ const App = () => {
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/landing" element={<Landing />} />
-          {/* Always allow access to sign-in (even if already signed in) to avoid redirect loops */}
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/signin" element={<MagicLinkSignIn />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route 
-            path="/" 
-            element={
-              <AppRoute>
-                <OnboardingCheck>
-                  <Dashboard />
-                </OnboardingCheck>
-              </AppRoute>
-            } 
-          />
-          <Route 
-            path="/hellobook" 
-            element={
-              <AppRoute>
-                <OnboardingCheck>
-                  <Hellobook />
-                </OnboardingCheck>
-              </AppRoute>
-            } 
-          />
-          <Route 
-            path="/challenges" 
-            element={
-              <AppRoute>
-                <OnboardingCheck>
-                  <Challenges />
-                </OnboardingCheck>
-              </AppRoute>
-            } 
-          />
-          <Route 
-            path="/vault" 
-            element={
-              <AppRoute>
-                <OnboardingCheck>
-                  <Vault />
-                </OnboardingCheck>
-              </AppRoute>
-            } 
-          />
-          <Route 
-            path="/profile" 
-            element={
-              <AppRoute>
-                <OnboardingCheck>
-                  <Profile />
-                </OnboardingCheck>
-              </AppRoute>
-            } 
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/landing" element={<Landing />} />
+            {/* Always allow access to sign-in (even if already signed in) to avoid redirect loops */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/signin" element={<MagicLinkSignIn />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route 
+              path="/" 
+              element={
+                <AppRoute>
+                  <OnboardingCheck>
+                    <Dashboard />
+                  </OnboardingCheck>
+                </AppRoute>
+              } 
             />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route 
+              path="/hellobook" 
+              element={
+                <AppRoute>
+                  <OnboardingCheck>
+                    <Hellobook />
+                  </OnboardingCheck>
+                </AppRoute>
+              } 
+            />
+            <Route 
+              path="/challenges" 
+              element={
+                <AppRoute>
+                  <OnboardingCheck>
+                    <Challenges />
+                  </OnboardingCheck>
+                </AppRoute>
+              } 
+            />
+            <Route 
+              path="/vault" 
+              element={
+                <AppRoute>
+                  <OnboardingCheck>
+                    <Vault />
+                  </OnboardingCheck>
+                </AppRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <AppRoute>
+                  <OnboardingCheck>
+                    <Profile />
+                  </OnboardingCheck>
+                </AppRoute>
+              } 
+              />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
         <BottomNav />
       </BrowserRouter>
     </TooltipProvider>
