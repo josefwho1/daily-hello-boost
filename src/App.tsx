@@ -155,6 +155,16 @@ const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Suspense fallback for lazy-loaded routes
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+      <p className="text-muted-foreground">Loading...</p>
+    </div>
+  </div>
+);
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -162,66 +172,68 @@ const App = () => {
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/landing" element={<Landing />} />
-          {/* Always allow access to sign-in (even if already signed in) to avoid redirect loops */}
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/signin" element={<MagicLinkSignIn />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route 
-            path="/" 
-            element={
-              <AppRoute>
-                <OnboardingCheck>
-                  <Dashboard />
-                </OnboardingCheck>
-              </AppRoute>
-            } 
-          />
-          <Route 
-            path="/hellobook" 
-            element={
-              <AppRoute>
-                <OnboardingCheck>
-                  <Hellobook />
-                </OnboardingCheck>
-              </AppRoute>
-            } 
-          />
-          <Route 
-            path="/challenges" 
-            element={
-              <AppRoute>
-                <OnboardingCheck>
-                  <Challenges />
-                </OnboardingCheck>
-              </AppRoute>
-            } 
-          />
-          <Route 
-            path="/vault" 
-            element={
-              <AppRoute>
-                <OnboardingCheck>
-                  <Vault />
-                </OnboardingCheck>
-              </AppRoute>
-            } 
-          />
-          <Route 
-            path="/profile" 
-            element={
-              <AppRoute>
-                <OnboardingCheck>
-                  <Profile />
-                </OnboardingCheck>
-              </AppRoute>
-            } 
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/landing" element={<Landing />} />
+            {/* Always allow access to sign-in (even if already signed in) to avoid redirect loops */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/signin" element={<MagicLinkSignIn />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route 
+              path="/" 
+              element={
+                <AppRoute>
+                  <OnboardingCheck>
+                    <Dashboard />
+                  </OnboardingCheck>
+                </AppRoute>
+              } 
             />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route 
+              path="/hellobook" 
+              element={
+                <AppRoute>
+                  <OnboardingCheck>
+                    <Hellobook />
+                  </OnboardingCheck>
+                </AppRoute>
+              } 
+            />
+            <Route 
+              path="/challenges" 
+              element={
+                <AppRoute>
+                  <OnboardingCheck>
+                    <Challenges />
+                  </OnboardingCheck>
+                </AppRoute>
+              } 
+            />
+            <Route 
+              path="/vault" 
+              element={
+                <AppRoute>
+                  <OnboardingCheck>
+                    <Vault />
+                  </OnboardingCheck>
+                </AppRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <AppRoute>
+                  <OnboardingCheck>
+                    <Profile />
+                  </OnboardingCheck>
+                </AppRoute>
+              } 
+              />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
         <BottomNav />
       </BrowserRouter>
     </TooltipProvider>
