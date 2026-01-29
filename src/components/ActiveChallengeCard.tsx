@@ -125,12 +125,18 @@ export const ActiveChallengeCard = ({
         </div>
       </div>
 
-      {/* Content area */}
+      {/* Content area - tappable to toggle tip */}
       <div 
         className={cn(
           "mt-2 pr-16 flex-1",
-          !challengeUnlocked && "opacity-60"
+          !challengeUnlocked && "opacity-60",
+          challengeUnlocked && !challengeCompleted && currentChallenge.tips && "cursor-pointer"
         )}
+        onClick={() => {
+          if (challengeUnlocked && !challengeCompleted && currentChallenge.tips) {
+            setShowTip(!showTip);
+          }
+        }}
       >
         {/* Title */}
         <h3 className={cn(
@@ -151,15 +157,12 @@ export const ActiveChallengeCard = ({
           {showTip && currentChallenge.tips ? `"${currentChallenge.tips}"` : currentChallenge.description}
         </p>
 
-        {/* Tip toggle button - only show when tips available and challenge is active */}
+        {/* Tip toggle hint - only show when tips available and challenge is active */}
         {challengeUnlocked && !challengeCompleted && currentChallenge.tips && (
-          <button
-            onClick={() => setShowTip(!showTip)}
-            className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-muted-foreground mt-1 transition-colors"
-          >
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 mt-1">
             <Lightbulb size={10} />
-            {showTip ? "Show challenge" : "Show tip"}
-          </button>
+            {showTip ? "Tap to show challenge" : "Tap to show tip"}
+          </div>
         )}
       </div>
 
