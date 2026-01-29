@@ -65,7 +65,7 @@ const ViewHelloDialog = ({
   
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const editorBarRef = useRef<HTMLDivElement>(null);
+  const editingCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (log) {
@@ -82,7 +82,6 @@ const ViewHelloDialog = ({
     if (!vv) return;
 
     const update = () => {
-      // When keyboard opens, visualViewport.height shrinks
       const keyboardH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
       setKeyboardHeight(keyboardH);
     };
@@ -101,7 +100,6 @@ const ViewHelloDialog = ({
   useEffect(() => {
     if (!editingField) return;
     
-    // Small delay to ensure DOM is ready
     const timer = setTimeout(() => {
       const el = editingField === 'notes' ? textareaRef.current : inputRef.current;
       if (el) {
@@ -193,15 +191,6 @@ const ViewHelloDialog = ({
     }),
   };
 
-  const getFieldLabel = (field: EditingField) => {
-    switch (field) {
-      case 'name': return 'Name';
-      case 'location': return 'Location';
-      case 'notes': return 'Notes';
-      default: return '';
-    }
-  };
-
   const getFieldPlaceholder = (field: EditingField) => {
     switch (field) {
       case 'name': return 'Who did you meet?';
@@ -228,12 +217,126 @@ const ViewHelloDialog = ({
     }
   };
 
+  // Reusable field card component
+  const FieldCard = ({ 
+    field, 
+    label, 
+    icon,
+    value, 
+    placeholder 
+  }: { 
+    field: 'name' | 'location' | 'notes';
+    label: string;
+    icon?: React.ReactNode;
+    value: string;
+    placeholder: string;
+  }) => {
+    const isEditing = editingField === field;
+    
+    if (isEditing) {
+      // Return null here - the editing card is rendered separately when pinned
+      return null;
+    }
+
+    return (
+      <div 
+        className="rounded-xl p-4 transition-colors bg-muted/30 active:bg-muted/50"
+        onClick={() => startEditing(field)}
+      >
+        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+          {icon}
+          {label}
+        </label>
+        <p className={`mt-1 ${field === 'name' ? 'text-lg font-medium' : 'text-base'} ${field === 'notes' ? 'whitespace-pre-wrap' : ''} ${value ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
+          {value || "Tap to add"}
+        </p>
+      </div>
+    );
+  };
+
+  // Pinned editing card component
+  const PinnedEditingCard = () => {
+    if (!editingField) return null;
+
+    const labels: Record<string, string> = {
+      name: 'Name',
+      location: 'Location', 
+      notes: 'Notes'
+    };
+
+    return (
+      <motion.div
+        ref={editingCardRef}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 20, opacity: 0 }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
+        className="fixed left-0 right-0 bg-background border-t border-border shadow-2xl z-50"
+        style={{ bottom: keyboardHeight }}
+      >
+        <div className="px-4 py-3 space-y-3">
+          {/* Header with label and actions */}
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+              {editingField === 'location' && <MapPin className="w-3 h-3" />}
+              {labels[editingField]}
+            </label>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCancelEdit}
+                className="h-8 px-2 text-muted-foreground"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSaveField}
+                disabled={isSubmitting}
+                className="h-8 px-3"
+              >
+                <Check className="w-4 h-4 mr-1" />
+                {isSubmitting ? "..." : "Done"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Input field */}
+          {editingField === 'notes' ? (
+            <Textarea
+              ref={textareaRef}
+              value={getFieldValue(editingField)}
+              onChange={(e) => setFieldValue(editingField, e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') handleCancelEdit();
+              }}
+              placeholder={getFieldPlaceholder(editingField)}
+              className="rounded-xl min-h-[100px] max-h-[150px] text-base resize-none border-primary/30 focus:border-primary"
+              autoComplete="off"
+            />
+          ) : (
+            <Input
+              ref={inputRef}
+              value={getFieldValue(editingField)}
+              onChange={(e) => setFieldValue(editingField, e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={getFieldPlaceholder(editingField)}
+              className="rounded-xl h-12 text-base border-primary/30 focus:border-primary"
+              autoComplete="off"
+            />
+          )}
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="h-[95dvh] rounded-t-2xl flex flex-col">
         {/* Drag handle + favorite button row */}
         <div className="flex items-center justify-between px-4 py-3">
-          <div className="w-10" /> {/* Spacer for symmetry */}
+          <div className="w-10" />
           <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20" />
           {onToggleFavorite && log ? (
             <button
@@ -257,7 +360,7 @@ const ViewHelloDialog = ({
         {/* Content area - scrollable */}
         <div
           className="flex-1 overflow-y-auto px-4 overscroll-contain [-webkit-overflow-scrolling:touch]"
-          style={{ paddingBottom: editingField ? 120 + keyboardHeight : 16 }}
+          style={{ paddingBottom: editingField ? 180 + keyboardHeight : 16 }}
         >
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
@@ -282,131 +385,33 @@ const ViewHelloDialog = ({
                 )}
               </div>
 
-              {/* Name Section - hide when editing this field */}
-              {editingField !== 'name' && (
-                <div 
-                  className="rounded-xl p-4 transition-colors bg-muted/30 active:bg-muted/50"
-                  onClick={() => !editingField && startEditing('name')}
-                >
-                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                    Name
-                  </label>
-                  <p className={`mt-1 text-lg ${name ? 'text-foreground font-medium' : 'text-muted-foreground/60 italic'}`}>
-                    {name || "Tap to add"}
-                  </p>
-                </div>
-              )}
-
-              {/* Location Section - hide when editing this field */}
-              {editingField !== 'location' && (
-                <div 
-                  className="rounded-xl p-4 transition-colors bg-muted/30 active:bg-muted/50"
-                  onClick={() => !editingField && startEditing('location')}
-                >
-                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    Location
-                  </label>
-                  <p className={`mt-1 text-base ${location ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
-                    {location || "Tap to add"}
-                  </p>
-                </div>
-              )}
-
-              {/* Notes Section - hide when editing this field */}
-              {editingField !== 'notes' && (
-                <div 
-                  className="rounded-xl p-4 transition-colors bg-muted/30 active:bg-muted/50"
-                  onClick={() => !editingField && startEditing('notes')}
-                >
-                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                    Notes
-                  </label>
-                  <p className={`mt-1 text-base whitespace-pre-wrap ${notes ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
-                    {notes || "Tap to add"}
-                  </p>
-                </div>
-              )}
+              {/* Field cards */}
+              <FieldCard 
+                field="name" 
+                label="Name" 
+                value={name} 
+                placeholder="Who did you meet?" 
+              />
+              <FieldCard 
+                field="location" 
+                label="Location" 
+                icon={<MapPin className="w-3 h-3" />}
+                value={location} 
+                placeholder="Coffee shop, gym..." 
+              />
+              <FieldCard 
+                field="notes" 
+                label="Notes" 
+                value={notes} 
+                placeholder="Details to remember..." 
+              />
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Pinned Editor Bar - appears when editing */}
+        {/* Pinned editing card */}
         <AnimatePresence>
-          {editingField && (
-            <motion.div
-              ref={editorBarRef}
-              initial={{ y: 100, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 100, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="fixed left-0 right-0 bg-background border-t border-border shadow-lg z-50"
-              style={{ 
-                bottom: keyboardHeight,
-              }}
-            >
-              <div className="px-4 py-3 space-y-3">
-                {/* Field label */}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Editing {getFieldLabel(editingField)}
-                  </span>
-                  <button
-                    onClick={handleCancelEdit}
-                    className="p-1 rounded-lg hover:bg-muted/50 text-muted-foreground"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Input field */}
-                {editingField === 'notes' ? (
-                  <Textarea
-                    ref={textareaRef}
-                    value={getFieldValue(editingField)}
-                    onChange={(e) => setFieldValue(editingField, e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') handleCancelEdit();
-                    }}
-                    placeholder={getFieldPlaceholder(editingField)}
-                    className="rounded-xl min-h-[80px] max-h-[120px] text-base resize-none"
-                    autoComplete="off"
-                    autoFocus
-                  />
-                ) : (
-                  <Input
-                    ref={inputRef}
-                    value={getFieldValue(editingField)}
-                    onChange={(e) => setFieldValue(editingField, e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={getFieldPlaceholder(editingField)}
-                    className="rounded-xl h-11 text-base"
-                    autoComplete="off"
-                    autoFocus
-                  />
-                )}
-
-                {/* Action buttons */}
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    variant="ghost"
-                    onClick={handleCancelEdit}
-                    className="h-10 px-4 rounded-xl"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSaveField}
-                    disabled={isSubmitting}
-                    className="h-10 px-5 rounded-xl"
-                  >
-                    <Check className="w-4 h-4 mr-1.5" />
-                    {isSubmitting ? "Saving..." : "Save"}
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          )}
+          <PinnedEditingCard />
         </AnimatePresence>
 
         {/* Bottom action bar - hide when editing */}
