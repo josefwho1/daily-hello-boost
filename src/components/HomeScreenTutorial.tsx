@@ -61,6 +61,14 @@ const tutorialSteps: TutorialStep[] = [
     highlightNav: '/hellobook',
     position: 'above',
   },
+  {
+    id: 'quests',
+    emoji: "🏆",
+    title: "Quests",
+    body: "Remi has quests to help you meet more people and have some fun. Complete them at your own pace.",
+    highlightNav: '/challenges',
+    position: 'above',
+  },
 ];
 
 export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenTutorialProps) => {
