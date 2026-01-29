@@ -29,7 +29,7 @@ export const ActiveChallengeCard = ({
   onEndChallenge,
 }: ActiveChallengeCardProps) => {
   const pack = getPackById(packId);
-  
+  const [showTip, setShowTip] = useState(false);
 
   if (!pack || pack.challenges.length === 0) {
     return null;
