@@ -243,7 +243,7 @@ const Hellobook = () => {
               <img src={hellobookIcon} alt="Hellobook" className="w-10 h-auto max-h-10 object-contain" />
               <h1 className="text-2xl font-bold text-foreground">Hellobook</h1>
             </div>
-            <img src={remiLogging6} alt="Remi" className="w-16 h-16 object-contain" />
+          <img src={remiLogging6} alt="Remi" className="w-12 h-12 object-contain" />
           </div>
 
           {/* View Toggle */}
@@ -265,7 +265,7 @@ const Hellobook = () => {
             <img src={hellobookIcon} alt="Hellobook" className="w-10 h-auto max-h-10 object-contain" />
             <h1 className="text-2xl font-bold text-foreground">Hellobook</h1>
           </div>
-          <img src={remiLogging6} alt="Remi" className="w-16 h-16 object-contain" />
+          <img src={remiLogging6} alt="Remi" className="w-12 h-12 object-contain" />
         </div>
 
         {/* View Toggle */}
