@@ -91,9 +91,12 @@ export const useGuestMode = (): UseGuestModeReturn => {
   const [loading, setLoading] = useState(true);
   const [sessionPromptShown, setSessionPromptShown] = useState(false);
   const [lastPromptShownAt, setLastPromptShownAt] = useState<string | null>(null);
+  const [profileIsAnonymous, setProfileIsAnonymous] = useState<boolean | null>(null);
 
-  // Check if user is an anonymous user (has Supabase user but is_anonymous = true)
-  const isAnonymous = user?.is_anonymous === true;
+  // Check if user is an anonymous user
+  // We use the profiles table is_anonymous flag as the source of truth since
+  // Supabase's user.is_anonymous stays true even after linking email/password
+  const isAnonymous = profileIsAnonymous ?? user?.is_anonymous === true;
   
   // User is a "guest" if they are anonymous (we use Supabase anonymous auth now)
   const isGuest = isAnonymous;
@@ -103,6 +106,28 @@ export const useGuestMode = (): UseGuestModeReturn => {
     account_linked: false,
     total_hellos_logged: guestProgress?.total_hellos || 0,
   } : null;
+
+  // Check if user is truly anonymous based on profiles table
+  useEffect(() => {
+    const checkProfileAnonymousStatus = async () => {
+      if (!user) {
+        setProfileIsAnonymous(null);
+        return;
+      }
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_anonymous')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (profile !== null) {
+        setProfileIsAnonymous(profile.is_anonymous);
+      }
+    };
+    
+    checkProfileAnonymousStatus();
+  }, [user]);
 
   // Load anonymous user's progress and logs from Supabase
   const loadAnonymousUserData = useCallback(async () => {
