@@ -12,6 +12,7 @@ import { differenceInDays, parseISO, startOfDay } from "date-fns";
 import { toast } from "sonner";
 import vaultIcon from "@/assets/vault-icon.webp";
 import questsIcon from "@/assets/quests-icon.webp";
+import remiQuest from "@/assets/remi-quest.webp";
 import {
   AlertDialog,
   AlertDialogAction,
