@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { flushSync } from "react-dom";
 import {
   Drawer,
   DrawerContent,
@@ -63,22 +64,14 @@ const ViewHelloDialog = ({
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const { formatTimestamp } = useTimezone();
   
-  // Use ref callbacks to focus immediately on mount (preserves user gesture for keyboard)
+  // Focus must happen synchronously with the user gesture on mobile
+  // so we flush the state update and focus immediately.
   const inputRefCallback = useCallback((el: HTMLInputElement | null) => {
-    if (el) {
-      // Use requestAnimationFrame to ensure DOM is ready, but still within gesture context
-      requestAnimationFrame(() => {
-        el.focus({ preventScroll: true });
-      });
-    }
+    if (el) el.focus({ preventScroll: true });
   }, []);
 
   const textareaRefCallback = useCallback((el: HTMLTextAreaElement | null) => {
-    if (el) {
-      requestAnimationFrame(() => {
-        el.focus({ preventScroll: true });
-      });
-    }
+    if (el) el.focus({ preventScroll: true });
   }, []);
 
   useEffect(() => {
@@ -111,7 +104,12 @@ const ViewHelloDialog = ({
   }, []);
 
   const startEditing = useCallback((field: Exclude<EditingField, null>) => {
-    setEditingField(field);
+    // React state updates are async by default; flushSync keeps this within the tap event
+    // so mobile browsers reliably open the keyboard.
+    flushSync(() => setEditingField(field));
+    const selector = field === "notes" ? `textarea[data-edit-input="${field}"]` : `input[data-edit-input="${field}"]`;
+    const el = document.querySelector(selector) as HTMLInputElement | HTMLTextAreaElement | null;
+    el?.focus({ preventScroll: true });
   }, []);
 
   const handleSaveField = async () => {
@@ -288,7 +286,7 @@ const ViewHelloDialog = ({
                     {/* Name field */}
                     <div 
                       className="rounded-xl p-4 transition-colors bg-muted/30 active:bg-muted/50"
-                      onClick={() => startEditing('name')}
+                      onPointerDown={() => startEditing('name')}
                     >
                       <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                         Name
@@ -301,7 +299,7 @@ const ViewHelloDialog = ({
                     {/* Location field */}
                     <div 
                       className="rounded-xl p-4 transition-colors bg-muted/30 active:bg-muted/50"
-                      onClick={() => startEditing('location')}
+                      onPointerDown={() => startEditing('location')}
                     >
                       <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
@@ -315,7 +313,7 @@ const ViewHelloDialog = ({
                     {/* Notes field */}
                     <div 
                       className="rounded-xl p-4 transition-colors bg-muted/30 active:bg-muted/50"
-                      onClick={() => startEditing('notes')}
+                      onPointerDown={() => startEditing('notes')}
                     >
                       <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                         Notes
@@ -449,6 +447,7 @@ const ViewHelloDialog = ({
                   {editingField === 'notes' ? (
                     <Textarea
                       ref={textareaRefCallback}
+                      data-edit-input={editingField}
                       value={getFieldValue(editingField)}
                       onChange={(e) => setFieldValue(editingField, e.target.value)}
                       onKeyDown={(e) => {
@@ -461,6 +460,7 @@ const ViewHelloDialog = ({
                   ) : (
                     <Input
                       ref={inputRefCallback}
+                      data-edit-input={editingField}
                       value={getFieldValue(editingField)}
                       onChange={(e) => setFieldValue(editingField, e.target.value)}
                       onKeyDown={handleKeyDown}
