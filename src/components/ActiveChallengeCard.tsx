@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Lock, Trophy, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Trophy, Check, Lightbulb } from "lucide-react";
 import { Challenge } from "@/types/challenge";
 import { getPackById } from "@/data/packs";
 import { cn } from "@/lib/utils";
