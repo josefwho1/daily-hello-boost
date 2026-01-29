@@ -161,16 +161,6 @@ export const MilestoneCelebrationDialog = ({
               />
             </motion.div>
 
-            {/* Badge */}
-            <motion.div
-              initial={{ scale: 0, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5, type: "spring" }}
-              className={`w-28 h-28 rounded-full bg-gradient-to-br ${badgeColor} flex items-center justify-center shadow-xl`}
-            >
-              <span className="text-5xl">{emoji}</span>
-            </motion.div>
-
             {/* Milestone number */}
             <motion.div
               initial={{ scale: 0 }}
