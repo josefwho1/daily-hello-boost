@@ -108,10 +108,9 @@ export const useHelloLogs = () => {
 
       if (error) throw error;
       
-      // Optimistically update cache
-      queryClient.setQueryData(['hello-logs', user.id, isGuest], (old: HelloLog[] = []) => 
-        [data as HelloLog, ...old]
-      );
+      // Invalidate and refetch to ensure sync across all components
+      await queryClient.invalidateQueries({ queryKey: ['hello-logs'] });
+      
       return data;
     } catch (error) {
       console.error('Error adding hello log:', error);

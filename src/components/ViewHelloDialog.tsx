@@ -282,57 +282,51 @@ const ViewHelloDialog = ({
                 )}
               </div>
 
-              {/* Name Section */}
-              <div 
-                className={`rounded-xl p-4 transition-colors ${
-                  editingField === 'name' 
-                    ? 'bg-primary/10 ring-2 ring-primary/30' 
-                    : 'bg-muted/30 active:bg-muted/50'
-                }`}
-                onClick={() => !editingField && startEditing('name')}
-              >
-                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                  Name
-                </label>
-                <p className={`mt-1 text-lg ${name ? 'text-foreground font-medium' : 'text-muted-foreground/60 italic'}`}>
-                  {name || "Tap to add"}
-                </p>
-              </div>
+              {/* Name Section - hide when editing this field */}
+              {editingField !== 'name' && (
+                <div 
+                  className="rounded-xl p-4 transition-colors bg-muted/30 active:bg-muted/50"
+                  onClick={() => !editingField && startEditing('name')}
+                >
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                    Name
+                  </label>
+                  <p className={`mt-1 text-lg ${name ? 'text-foreground font-medium' : 'text-muted-foreground/60 italic'}`}>
+                    {name || "Tap to add"}
+                  </p>
+                </div>
+              )}
 
-              {/* Location Section */}
-              <div 
-                className={`rounded-xl p-4 transition-colors ${
-                  editingField === 'location' 
-                    ? 'bg-primary/10 ring-2 ring-primary/30' 
-                    : 'bg-muted/30 active:bg-muted/50'
-                }`}
-                onClick={() => !editingField && startEditing('location')}
-              >
-                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  Location
-                </label>
-                <p className={`mt-1 text-base ${location ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
-                  {location || "Tap to add"}
-                </p>
-              </div>
+              {/* Location Section - hide when editing this field */}
+              {editingField !== 'location' && (
+                <div 
+                  className="rounded-xl p-4 transition-colors bg-muted/30 active:bg-muted/50"
+                  onClick={() => !editingField && startEditing('location')}
+                >
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    Location
+                  </label>
+                  <p className={`mt-1 text-base ${location ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
+                    {location || "Tap to add"}
+                  </p>
+                </div>
+              )}
 
-              {/* Notes Section */}
-              <div 
-                className={`rounded-xl p-4 transition-colors ${
-                  editingField === 'notes' 
-                    ? 'bg-primary/10 ring-2 ring-primary/30' 
-                    : 'bg-muted/30 active:bg-muted/50'
-                }`}
-                onClick={() => !editingField && startEditing('notes')}
-              >
-                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                  Notes
-                </label>
-                <p className={`mt-1 text-base whitespace-pre-wrap ${notes ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
-                  {notes || "Tap to add"}
-                </p>
-              </div>
+              {/* Notes Section - hide when editing this field */}
+              {editingField !== 'notes' && (
+                <div 
+                  className="rounded-xl p-4 transition-colors bg-muted/30 active:bg-muted/50"
+                  onClick={() => !editingField && startEditing('notes')}
+                >
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                    Notes
+                  </label>
+                  <p className={`mt-1 text-base whitespace-pre-wrap ${notes ? 'text-foreground' : 'text-muted-foreground/60 italic'}`}>
+                    {notes || "Tap to add"}
+                  </p>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
