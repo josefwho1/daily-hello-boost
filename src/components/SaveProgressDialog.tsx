@@ -51,27 +51,52 @@ export const SaveProgressDialog = ({
       passwordSchema.parse(password);
       setLoading(true);
 
+      // Get current username from profiles before conversion
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      let currentUsername = 'Friend';
+      
+      if (currentUser) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', currentUser.id)
+          .maybeSingle();
+        
+        if (profile?.username && profile.username !== 'Guest') {
+          currentUsername = profile.username;
+        }
+      }
+
       // Link anonymous account to email/password (converts anonymous to full account)
+      // Also set the user_metadata.name to preserve the username
       const { error } = await supabase.auth.updateUser({
         email: email.trim(),
         password,
+        data: { name: currentUsername }
       });
 
       if (error) throw error;
 
-      // Get current user to update profile
+      // Get updated user to update profile
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Update profile to mark as no longer anonymous
+        // Update profile to mark as no longer anonymous and ensure username is set
         await supabase.from('profiles').update({
           is_anonymous: false,
           email: email.trim(),
+          username: currentUsername,
         }).eq('id', user.id);
+
+        // Also ensure user_progress has the correct username
+        await supabase.from('user_progress').update({
+          username: currentUsername,
+        }).eq('user_id', user.id);
       }
 
       toast.success('Account created successfully! Your progress is now saved.');
       handleClose();
-      navigate('/');
+      // Force a hard refresh to ensure all state is reloaded
+      window.location.replace('/');
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);

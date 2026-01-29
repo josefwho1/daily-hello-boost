@@ -91,9 +91,12 @@ export const useGuestMode = (): UseGuestModeReturn => {
   const [loading, setLoading] = useState(true);
   const [sessionPromptShown, setSessionPromptShown] = useState(false);
   const [lastPromptShownAt, setLastPromptShownAt] = useState<string | null>(null);
+  const [profileIsAnonymous, setProfileIsAnonymous] = useState<boolean | null>(null);
 
-  // Check if user is an anonymous user (has Supabase user but is_anonymous = true)
-  const isAnonymous = user?.is_anonymous === true;
+  // Check if user is an anonymous user
+  // We use the profiles table is_anonymous flag as the source of truth since
+  // Supabase's user.is_anonymous stays true even after linking email/password
+  const isAnonymous = profileIsAnonymous ?? user?.is_anonymous === true;
   
   // User is a "guest" if they are anonymous (we use Supabase anonymous auth now)
   const isGuest = isAnonymous;
@@ -103,6 +106,28 @@ export const useGuestMode = (): UseGuestModeReturn => {
     account_linked: false,
     total_hellos_logged: guestProgress?.total_hellos || 0,
   } : null;
+
+  // Check if user is truly anonymous based on profiles table
+  useEffect(() => {
+    const checkProfileAnonymousStatus = async () => {
+      if (!user) {
+        setProfileIsAnonymous(null);
+        return;
+      }
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_anonymous')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (profile !== null) {
+        setProfileIsAnonymous(profile.is_anonymous);
+      }
+    };
+    
+    checkProfileAnonymousStatus();
+  }, [user]);
 
   // Load anonymous user's progress and logs from Supabase
   const loadAnonymousUserData = useCallback(async () => {
@@ -140,6 +165,8 @@ export const useGuestMode = (): UseGuestModeReturn => {
 
   useEffect(() => {
     if (authLoading) return;
+    // Wait for profileIsAnonymous to be determined before deciding what to load
+    if (profileIsAnonymous === null && user) return;
     
     if (!user) {
       setLoading(false);
@@ -151,7 +178,7 @@ export const useGuestMode = (): UseGuestModeReturn => {
     } else {
       setLoading(false);
     }
-  }, [user, authLoading, isAnonymous, loadAnonymousUserData]);
+  }, [user, authLoading, isAnonymous, profileIsAnonymous, loadAnonymousUserData]);
 
   // Initialize anonymous auth for guests
   const initializeAnonymous = useCallback(async (): Promise<{ success: boolean; userId?: string; error?: string }> => {
@@ -295,28 +322,46 @@ export const useGuestMode = (): UseGuestModeReturn => {
     }
 
     try {
-      // Update the anonymous user's email and password
+      // Get current username from profiles before conversion
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      const currentUsername = (profile?.username && profile.username !== 'Guest') 
+        ? profile.username 
+        : (guestProgress?.username || 'Friend');
+
+      // Update the anonymous user's email and password, also set user_metadata.name
       const { error } = await supabase.auth.updateUser({
         email,
         password,
+        data: { name: currentUsername }
       });
 
       if (error) {
         return { success: false, error: error.message };
       }
 
-      // Update profile to mark as no longer anonymous
+      // Update profile to mark as no longer anonymous and preserve username
       await supabase.from('profiles').update({
         is_anonymous: false,
         email,
+        username: currentUsername,
       }).eq('id', user.id);
+
+      // Also ensure user_progress has the correct username
+      await supabase.from('user_progress').update({
+        username: currentUsername,
+      }).eq('user_id', user.id);
 
       return { success: true };
     } catch (error) {
       console.error('Error linking to email:', error);
       return { success: false, error: 'Failed to link account' };
     }
-  }, [user, isAnonymous]);
+  }, [user, isAnonymous, guestProgress?.username]);
 
   // Clear challenge completions for a specific pack (for restart functionality)
   const clearPackCompletions = useCallback(async (packId: string) => {
