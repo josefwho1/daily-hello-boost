@@ -431,6 +431,12 @@ export const LogHelloScreen = ({
               🎙️ Recording... Tap stop when done
             </p>
           )}
+          {isProcessing && (
+            <div className="flex items-center gap-2 text-sm text-primary">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Transcribing your voice...</span>
+            </div>
+          )}
         </div>
 
         {/* Location Field */}
