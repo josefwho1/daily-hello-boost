@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Check, Play, Pause, RotateCcw } from "lucide-react";
+import { Check, Play, Pause, RotateCcw } from "lucide-react";
 import { packs, getPackById } from "@/data/packs";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useGuestMode } from "@/hooks/useGuestMode";
@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
 import { toast } from "sonner";
 import vaultIcon from "@/assets/vault-icon.webp";
+import questsIcon from "@/assets/quests-icon.webp";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -138,7 +139,7 @@ const Challenges = () => {
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <Trophy className="w-8 h-8 text-primary" />
+          <img src={questsIcon} alt="Quests" className="w-10 h-10 object-contain" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">Quests</h1>
             <p className="text-sm text-muted-foreground">Select a quest to begin</p>
