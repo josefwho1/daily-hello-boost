@@ -99,9 +99,7 @@ export const MilestoneCelebrationDialog = ({
 
   if (!open) return null;
 
-  const emoji = getMilestoneEmoji(milestoneValue);
   const message = getMilestoneMessage(milestoneValue, milestoneType);
-  const badgeColor = getBadgeColor(milestoneValue);
 
   return (
     <AnimatePresence>
