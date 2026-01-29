@@ -81,7 +81,45 @@ const Profile = () => {
     chill_email_opt_in: true,
   } : null);
   
-  const username = user?.user_metadata?.name || guestProgress?.username || 'Friend';
+  // Username priority: profiles.username > user_metadata.name > guestProgress.username > 'Friend'
+  // We need to fetch the actual username from profiles for accuracy
+  const [displayUsername, setDisplayUsername] = useState('Friend');
+  
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (user) {
+        // First try to get from profiles table (most accurate source)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (profile?.username && profile.username !== 'Guest') {
+          setDisplayUsername(profile.username);
+          return;
+        }
+        
+        // Fallback to user_metadata
+        if (user.user_metadata?.name) {
+          setDisplayUsername(user.user_metadata.name);
+          return;
+        }
+      }
+      
+      // For guests, check guestProgress
+      if (guestProgress?.username && guestProgress.username !== 'Guest') {
+        setDisplayUsername(guestProgress.username);
+        return;
+      }
+      
+      setDisplayUsername('Friend');
+    };
+    
+    fetchUsername();
+  }, [user, guestProgress?.username]);
+  
+  const username = displayUsername;
 
   // Check if user came from password reset flow
   useEffect(() => {
