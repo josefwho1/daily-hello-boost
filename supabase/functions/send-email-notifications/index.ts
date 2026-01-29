@@ -275,9 +275,7 @@ Deno.serve(async (req) => {
         email_unsubscribed,
         welcome_email_sent,
         reengagement_email_index,
-        last_reengagement_email_at,
-        streak_1day_email_sent_for_date,
-        streak_2day_email_sent_for_date
+        last_reengagement_email_at
       `)
       .eq('email_unsubscribed', false)
 
