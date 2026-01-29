@@ -51,6 +51,7 @@ const ViewHelloDialog = ({
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
+  const [isFavorite, setIsFavorite] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [direction, setDirection] = useState(0);
@@ -61,6 +62,7 @@ const ViewHelloDialog = ({
       setName(log.name || "");
       setLocation(log.location || "");
       setNotes(log.notes || "");
+      setIsFavorite(log.is_favorite || false);
     }
   }, [log]);
 
