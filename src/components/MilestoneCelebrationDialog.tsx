@@ -32,18 +32,6 @@ interface MilestoneCelebrationDialogProps {
   milestoneType: MilestoneType;
 }
 
-const getMilestoneEmoji = (value: number): string => {
-  if (value >= 500) return '👑';
-  if (value >= 400) return '💎';
-  if (value >= 300) return '🏆';
-  if (value >= 200) return '🌟';
-  if (value >= 100) return '🔥';
-  if (value >= 75) return '💪';
-  if (value >= 50) return '🎯';
-  if (value >= 25) return '⚡';
-  return '🎉';
-};
-
 const getMilestoneMessage = (value: number, type: MilestoneType): string => {
   const typeLabel = type === 'hellos' ? 'Hellos' : 'Names';
   
@@ -56,18 +44,6 @@ const getMilestoneMessage = (value: number, type: MilestoneType): string => {
   if (value >= 50) return `Halfway to 100! ${value} ${typeLabel}!`;
   if (value >= 25) return `Great start! ${value} ${typeLabel}!`;
   return `First milestone! ${value} ${typeLabel}!`;
-};
-
-const getBadgeColor = (value: number): string => {
-  if (value >= 500) return 'from-yellow-400 to-amber-600';
-  if (value >= 400) return 'from-purple-400 to-purple-600';
-  if (value >= 300) return 'from-amber-400 to-orange-500';
-  if (value >= 200) return 'from-blue-400 to-blue-600';
-  if (value >= 100) return 'from-red-400 to-orange-500';
-  if (value >= 75) return 'from-green-400 to-emerald-600';
-  if (value >= 50) return 'from-cyan-400 to-blue-500';
-  if (value >= 25) return 'from-pink-400 to-rose-500';
-  return 'from-primary to-primary/80';
 };
 
 export const MilestoneCelebrationDialog = ({
