@@ -71,7 +71,7 @@ const Hellobook = () => {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [activeView, setActiveView] = useState<ViewType>('mybook');
 
-  const showGuestPrompt = isAnonymous && logs.length > 0;
+  const showGuestPrompt = isAnonymous;
   
   // Group logs by person - entries with same linked_to or that are linked to each other
   const groupedPeople = useMemo(() => {

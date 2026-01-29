@@ -290,26 +290,6 @@ const Community = ({ embedded = false }: CommunityProps) => {
           </Card>
         </div>
 
-        {/* Save Progress Prompt for Guests */}
-        {isGuest && (
-          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-            <CardContent className="pt-6 pb-6">
-              <div className="text-center space-y-3">
-                <h3 className="font-semibold text-foreground">Save your progress</h3>
-                <p className="text-sm text-muted-foreground">
-                  Add your email to keep your hellos safe and track your streak across devices.
-                </p>
-                <Button 
-                  onClick={() => setShowSaveDialog(true)}
-                  className="w-full"
-                >
-                  <Mail className="w-4 h-4 mr-2" />
-                  Add email to save progress
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Encouraging Footer */}
         <div className="text-center py-4">
