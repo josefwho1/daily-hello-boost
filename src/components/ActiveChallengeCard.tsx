@@ -69,8 +69,8 @@ export const ActiveChallengeCard = ({
   const canGoLeft = currentIndex > 0;
   const canGoRight = currentIndex < pack.challenges.length - 1;
 
-  const goLeft = () => canGoLeft && setCurrentIndex(currentIndex - 1);
-  const goRight = () => canGoRight && setCurrentIndex(currentIndex + 1);
+  const goLeft = () => { canGoLeft && setCurrentIndex(currentIndex - 1); setShowTip(false); };
+  const goRight = () => { canGoRight && setCurrentIndex(currentIndex + 1); setShowTip(false); };
 
   const challengeCompleted = isCompleted(currentChallenge);
   const challengeUnlocked = isUnlocked(currentIndex);
