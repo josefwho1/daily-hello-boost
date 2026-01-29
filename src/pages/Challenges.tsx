@@ -304,7 +304,8 @@ const Challenges = () => {
                 </CardContent>
               </Card>
             );
-          })}
+          })
+          )}
         </div>
 
         {/* Vault Easter Egg */}
