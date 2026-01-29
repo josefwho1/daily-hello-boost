@@ -420,7 +420,7 @@ const Profile = () => {
               ) : (
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-bold text-foreground">
-                    {user?.user_metadata?.name || guestProgress?.username || 'Friend'}
+                    {displayUsername}
                   </h2>
                   <Button
                     size="icon"

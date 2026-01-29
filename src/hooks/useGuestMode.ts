@@ -295,28 +295,46 @@ export const useGuestMode = (): UseGuestModeReturn => {
     }
 
     try {
-      // Update the anonymous user's email and password
+      // Get current username from profiles before conversion
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      const currentUsername = (profile?.username && profile.username !== 'Guest') 
+        ? profile.username 
+        : (guestProgress?.username || 'Friend');
+
+      // Update the anonymous user's email and password, also set user_metadata.name
       const { error } = await supabase.auth.updateUser({
         email,
         password,
+        data: { name: currentUsername }
       });
 
       if (error) {
         return { success: false, error: error.message };
       }
 
-      // Update profile to mark as no longer anonymous
+      // Update profile to mark as no longer anonymous and preserve username
       await supabase.from('profiles').update({
         is_anonymous: false,
         email,
+        username: currentUsername,
       }).eq('id', user.id);
+
+      // Also ensure user_progress has the correct username
+      await supabase.from('user_progress').update({
+        username: currentUsername,
+      }).eq('user_id', user.id);
 
       return { success: true };
     } catch (error) {
       console.error('Error linking to email:', error);
       return { success: false, error: 'Failed to link account' };
     }
-  }, [user, isAnonymous]);
+  }, [user, isAnonymous, guestProgress?.username]);
 
   // Clear challenge completions for a specific pack (for restart functionality)
   const clearPackCompletions = useCallback(async (packId: string) => {
