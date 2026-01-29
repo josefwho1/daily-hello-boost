@@ -256,11 +256,11 @@ const Challenges = () => {
                       ) : isComplete ? (
                         <div className="flex gap-2">
                           <Button 
-                            onClick={() => handleSelectPack(pack.id)}
+                            onClick={() => handleResumePack(pack.id)}
                             className="flex-1"
                           >
                             <Play className="w-4 h-4 mr-2" />
-                            Start Again
+                            Resume
                           </Button>
                           <Button 
                             variant="outline"
