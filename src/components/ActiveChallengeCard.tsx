@@ -147,20 +147,25 @@ export const ActiveChallengeCard = ({
           </div>
         )}
         
-        {/* Description - directly after title */}
+        {/* Description or Tips - swap based on showTip state */}
         <p className={cn(
           "text-xs text-muted-foreground line-clamp-2 min-h-[2.5rem]",
           !challengeUnlocked && "blur-sm select-none",
-          challengeUnlocked && "mt-0.5"
+          challengeUnlocked && "mt-0.5",
+          showTip && "italic text-muted-foreground/70"
         )}>
-          {currentChallenge.description}
+          {showTip && currentChallenge.tips ? `"${currentChallenge.tips}"` : currentChallenge.description}
         </p>
 
-        {/* Tips/Suggestions - always visible when available, matching Today's Hello style */}
+        {/* Tip toggle button - only show when tips available and challenge is active */}
         {challengeUnlocked && !challengeCompleted && currentChallenge.tips && (
-          <p className="text-xs text-muted-foreground/50 italic mt-1 line-clamp-2">
-            "{currentChallenge.tips}"
-          </p>
+          <button
+            onClick={() => setShowTip(!showTip)}
+            className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-muted-foreground mt-1 transition-colors"
+          >
+            <Lightbulb size={10} />
+            {showTip ? "Show challenge" : "Show tip"}
+          </button>
         )}
       </div>
 
