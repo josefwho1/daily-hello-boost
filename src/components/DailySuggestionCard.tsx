@@ -87,6 +87,7 @@ export const DailySuggestionCard = memo(() => {
             <span className="text-lg">💡</span>
             <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>Today's Hello</span>
           </div>
+          <p className="text-xs text-muted-foreground/70">A daily suggestion to help you connect</p>
         </div>
         
         <Button
