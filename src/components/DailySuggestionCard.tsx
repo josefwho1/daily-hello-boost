@@ -1,7 +1,7 @@
 import { useState, useEffect, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shuffle, ChevronDown, ChevronUp } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import { dailyHellos, getTodaysHello, type DailyHello } from "@/data/dailyHellos";
 
 // Remi Curious images - rotate daily
@@ -28,7 +28,6 @@ const getDailyRemiCurious = () => {
 export const DailySuggestionCard = memo(() => {
   const [shuffledHello, setShuffledHello] = useState<DailyHello | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
   const remiImage = getDailyRemiCurious();
   
   // Load persisted shuffle on mount
@@ -53,8 +52,6 @@ export const DailySuggestionCard = memo(() => {
   const displayHello = shuffledHello || defaultHello;
 
   const handleShuffle = () => {
-    // Collapse when shuffling
-    setIsExpanded(false);
     // Trigger exit animation
     setIsAnimating(true);
     
@@ -81,8 +78,6 @@ export const DailySuggestionCard = memo(() => {
     }, 150);
   };
 
-  const hasSuggestion = !!displayHello.suggestion;
-
   return (
     <Card id="tutorial-todays-hello-card" className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[228px] flex flex-col">
       {/* Header row with shuffle button */}
@@ -107,44 +102,22 @@ export const DailySuggestionCard = memo(() => {
         </Button>
       </div>
       
-      {/* Content - fixed height for consistency */}
+      {/* Content */}
       <div 
-        className={`mt-2 pr-16 flex-1 transition-all duration-150 ${
+        className={`mt-2 pr-16 flex-1 flex flex-col transition-all duration-150 ${
           isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
         }`}
       >
         <h3 className="text-sm font-medium text-foreground line-clamp-1">{displayHello.title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem] mt-1">
+        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
           {displayHello.description}
         </p>
         
-        {/* Suggestion expander button - reserved height */}
-        <div className="h-6 mt-1">
-          {hasSuggestion && (
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
-            >
-              {isExpanded ? (
-                <>
-                  <ChevronUp className="w-3 h-3" />
-                  Hide suggestion
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-3 h-3" />
-                  Try saying...
-                </>
-              )}
-            </button>
-          )}
-        </div>
-
-        {/* Expanded suggestion */}
-        {isExpanded && hasSuggestion && (
-          <div className="mt-1 p-2 bg-muted/50 rounded-lg">
-            <p className="text-sm text-foreground/90 italic">"{displayHello.suggestion}"</p>
-          </div>
+        {/* Suggestion - always visible when available */}
+        {displayHello.suggestion && (
+          <p className="text-xs text-muted-foreground/60 italic mt-2 line-clamp-2">
+            "{displayHello.suggestion}"
+          </p>
         )}
       </div>
       
