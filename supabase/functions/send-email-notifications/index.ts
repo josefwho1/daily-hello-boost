@@ -373,10 +373,14 @@ Deno.serve(async (req) => {
         if (sent) {
           await supabase.from('email_logs').insert({
             user_id: user.user_id,
-            email_type: templateKey.includes('streak') ? 'streak' : 'reengagement',
+            email_type: 'reengagement',
             template_key: templateKey,
             sent_at: new Date().toISOString()
           })
+          emailsSent++
+          console.log(`Sent ${templateKey} email to ${email}`)
+        }
+      }
           emailsSent++
           console.log(`Sent ${templateKey} email to ${email}`)
         }
