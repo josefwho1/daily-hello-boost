@@ -6,7 +6,7 @@ import { Challenge } from "@/types/challenge";
 import { getPackById } from "@/data/packs";
 import { cn } from "@/lib/utils";
 
-// Import Remi Proud image
+// Import Remi Proud image (updated version)
 import remiProud from "@/assets/remi-proud.webp";
 
 interface ActiveChallengeCardProps {
