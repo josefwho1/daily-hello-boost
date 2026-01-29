@@ -62,13 +62,13 @@ export const BottomNav = () => {
                 alt={tab.label}
                 className="w-6 h-6 object-contain transition-transform duration-200"
               />
-            ) : (
+            ) : tab.icon ? (
               <tab.icon 
                 size={24} 
                 className="transition-transform duration-200" 
                 strokeWidth={location.pathname === tab.to ? 2.5 : 2}
               />
-            )}
+            ) : null}
             <span className="text-xs font-medium">{tab.label}</span>
           </NavLink>
         ))}
