@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Home, BookOpen, Trophy, User } from "lucide-react";
+import { Home, BookOpen, User } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useLocation } from "react-router-dom";
+import questsIcon from "@/assets/quests-icon.webp";
 
 const PawPrint = ({ show }: { show: boolean }) => {
   if (!show) return null;
@@ -39,7 +40,7 @@ export const BottomNav = () => {
   const tabs = [
     { to: "/", icon: Home, label: "Home" },
     { to: "/hellobook", icon: BookOpen, label: "Hellobook" },
-    { to: "/challenges", icon: Trophy, label: "Quests" },
+    { to: "/challenges", icon: null, label: "Quests", customIcon: questsIcon },
     { to: "/profile", icon: User, label: "Profile" },
   ];
 
@@ -55,11 +56,19 @@ export const BottomNav = () => {
             activeClassName="text-primary"
           >
             <PawPrint show={lastClicked === tab.to} />
-            <tab.icon 
-              size={24} 
-              className="transition-transform duration-200" 
-              strokeWidth={location.pathname === tab.to ? 2.5 : 2}
-            />
+            {tab.customIcon ? (
+              <img 
+                src={tab.customIcon} 
+                alt={tab.label}
+                className="w-6 h-6 object-contain transition-transform duration-200"
+              />
+            ) : (
+              <tab.icon 
+                size={24} 
+                className="transition-transform duration-200" 
+                strokeWidth={location.pathname === tab.to ? 2.5 : 2}
+              />
+            )}
             <span className="text-xs font-medium">{tab.label}</span>
           </NavLink>
         ))}
