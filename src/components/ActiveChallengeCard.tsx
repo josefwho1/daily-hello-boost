@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Lock, Trophy, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Trophy, Check, Lightbulb } from "lucide-react";
 import { Challenge } from "@/types/challenge";
 import { getPackById } from "@/data/packs";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,7 @@ export const ActiveChallengeCard = ({
   onEndChallenge,
 }: ActiveChallengeCardProps) => {
   const pack = getPackById(packId);
-  
+  const [showTip, setShowTip] = useState(false);
 
   if (!pack || pack.challenges.length === 0) {
     return null;
@@ -69,8 +69,8 @@ export const ActiveChallengeCard = ({
   const canGoLeft = currentIndex > 0;
   const canGoRight = currentIndex < pack.challenges.length - 1;
 
-  const goLeft = () => canGoLeft && setCurrentIndex(currentIndex - 1);
-  const goRight = () => canGoRight && setCurrentIndex(currentIndex + 1);
+  const goLeft = () => { canGoLeft && setCurrentIndex(currentIndex - 1); setShowTip(false); };
+  const goRight = () => { canGoRight && setCurrentIndex(currentIndex + 1); setShowTip(false); };
 
   const challengeCompleted = isCompleted(currentChallenge);
   const challengeUnlocked = isUnlocked(currentIndex);
@@ -81,7 +81,7 @@ export const ActiveChallengeCard = ({
   return (
     <Card
       id="tutorial-todays-hello-card"
-      className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[228px] flex flex-col"
+      className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[180px] flex flex-col"
     >
       {/* Header row */}
       <div className="flex items-start justify-between">
@@ -147,20 +147,25 @@ export const ActiveChallengeCard = ({
           </div>
         )}
         
-        {/* Description - directly after title */}
+        {/* Description or Tips - swap based on showTip state */}
         <p className={cn(
           "text-xs text-muted-foreground line-clamp-2 min-h-[2.5rem]",
           !challengeUnlocked && "blur-sm select-none",
-          challengeUnlocked && "mt-0.5"
+          challengeUnlocked && "mt-0.5",
+          showTip && "italic text-muted-foreground/70"
         )}>
-          {currentChallenge.description}
+          {showTip && currentChallenge.tips ? `"${currentChallenge.tips}"` : currentChallenge.description}
         </p>
 
-        {/* Tips/Suggestions - always visible when available, matching Today's Hello style */}
+        {/* Tip toggle button - only show when tips available and challenge is active */}
         {challengeUnlocked && !challengeCompleted && currentChallenge.tips && (
-          <p className="text-xs text-muted-foreground/50 italic mt-1 line-clamp-2">
-            "{currentChallenge.tips}"
-          </p>
+          <button
+            onClick={() => setShowTip(!showTip)}
+            className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-muted-foreground mt-1 transition-colors"
+          >
+            <Lightbulb size={10} />
+            {showTip ? "Show challenge" : "Show tip"}
+          </button>
         )}
       </div>
 
