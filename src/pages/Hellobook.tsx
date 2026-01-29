@@ -9,7 +9,6 @@ import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { toast } from "sonner";
 import hellobookIcon from "@/assets/hellobook-icon.webp";
-import vaultIcon from "@/assets/vault-icon.webp";
 import ViewHelloDialog from "@/components/ViewHelloDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import HellobookPersonCard from "@/components/HellobookPersonCard";
@@ -387,20 +386,6 @@ const Hellobook = () => {
           </div>
         )}
 
-        {/* Vault Easter Egg */}
-        <div className="mt-4 mb-2 flex justify-center">
-          <button
-            onClick={() => navigate('/vault')}
-            className="opacity-40 hover:opacity-100 transition-opacity duration-300"
-            aria-label="Open Remi's Vault"
-          >
-            <img 
-              src={vaultIcon} 
-              alt="Vault" 
-              className="w-10 h-10 object-contain"
-            />
-          </button>
-        </div>
       </div>
 
       <ViewHelloDialog
