@@ -79,7 +79,7 @@ export const DailySuggestionCard = memo(() => {
   };
 
   return (
-    <Card id="tutorial-todays-hello-card" className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[228px] flex flex-col">
+    <Card id="tutorial-todays-hello-card" className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[160px]">
       {/* Header row with shuffle button */}
       <div className="flex items-start justify-between">
         <div>
@@ -87,16 +87,13 @@ export const DailySuggestionCard = memo(() => {
             <span className="text-lg">💡</span>
             <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>Today's Hello</span>
           </div>
-          <p className="text-xs text-muted-foreground/70">
-            A daily suggestion to help you connect
-          </p>
         </div>
         
         <Button
           variant="ghost"
           size="sm"
           onClick={handleShuffle}
-          className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
         >
           <Shuffle className="w-4 h-4" />
         </Button>
@@ -104,18 +101,18 @@ export const DailySuggestionCard = memo(() => {
       
       {/* Content */}
       <div 
-        className={`mt-2 pr-16 flex-1 flex flex-col transition-all duration-150 ${
+        className={`mt-1 pr-14 transition-all duration-150 ${
           isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
         }`}
       >
         <h3 className="text-sm font-medium text-foreground line-clamp-1">{displayHello.title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
           {displayHello.description}
         </p>
         
         {/* Suggestion - always visible when available */}
         {displayHello.suggestion && (
-          <p className="text-xs text-muted-foreground/60 italic mt-2 line-clamp-2">
+          <p className="text-xs text-muted-foreground/50 italic mt-1 line-clamp-2">
             "{displayHello.suggestion}"
           </p>
         )}
@@ -125,7 +122,7 @@ export const DailySuggestionCard = memo(() => {
       <img 
         src={remiImage} 
         alt="Remi" 
-        className="absolute bottom-2 right-2 w-14 h-auto object-contain opacity-90 pointer-events-none"
+        className="absolute bottom-2 right-2 w-12 h-auto object-contain opacity-90 pointer-events-none"
       />
     </Card>
   );
