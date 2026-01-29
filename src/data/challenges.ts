@@ -4,8 +4,8 @@ export const challenges: Challenge[] = [
   {
     id: 1,
     day: 1,
-    title: "First Hello",
-    description: "Smile + say \"Hello / Hey / Good morning\" to one stranger",
+    title: "Greeting",
+    description: "Smile & say Hello to one stranger",
     icon: "👋",
     tips: "\"Hello\" \"Hey\" \"Good Morning\"",
     tag: "7day-hello-day1"
@@ -22,16 +22,16 @@ export const challenges: Challenge[] = [
   {
     id: 3,
     day: 3,
-    title: "Weather Chat",
-    description: "Share an observation about the weather, traffic, anything to one stranger",
+    title: "Observation",
+    description: "Comment on something you're both experiencing right now, the weather, the atmosphere etc",
     icon: "💬",
-    tips: "\"Nice/terrible/strange weather today\" \"So cold this morning 🥶\"",
+    tips: "\"What a beautiful day\" \"So busy today\" \"Weathers been so cold lately 🥶\"",
     tag: "7day-hello-day3"
   },
   {
     id: 4,
     day: 4,
-    title: "Nice Shoes",
+    title: "Compliment",
     description: "Give a stranger a genuine compliment",
     icon: "👟",
     tips: "\"Love your jacket\" \"Nice shoes\" \"Cool shirt!\"",
@@ -43,7 +43,7 @@ export const challenges: Challenge[] = [
     title: "How Are You?",
     description: "Ask one stranger how their day is going",
     icon: "🤝",
-    tips: "\"Hey, how is your day going?\"",
+    tips: "\"Hey, how is your day going?\" \"How are you?\"",
     tag: "7day-hello-day5"
   },
   {
@@ -61,7 +61,7 @@ export const challenges: Challenge[] = [
     title: "Taking Names",
     description: "Get the name of someone new (& remember it) PS: log it in here straight away so you don't forget 🦝",
     icon: "🙏",
-    tips: "\"Hi, I'm Remi, nice to meet you - what's your name?\"",
+    tips: "\"Hi, I'm Remi, nice to meet you - whats your name?\"",
     tag: "7day-hello-day7"
   }
 ];
