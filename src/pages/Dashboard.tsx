@@ -627,8 +627,7 @@ export default function Dashboard() {
               logs={logs}
               onViewAll={() => navigate('/hellobook')}
               onViewLog={(log) => {
-                const namedLogs = logs.filter(l => l.name && l.name.trim() !== '');
-                const index = namedLogs.findIndex(l => l.id === log.id);
+                const index = logs.findIndex(l => l.id === log.id);
                 setEditingLog(log);
                 setEditingLogIndex(index >= 0 ? index : 0);
                 setIsEditDialogOpen(true);
@@ -725,12 +724,11 @@ export default function Dashboard() {
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         log={editingLog}
-        logs={logs.filter(l => l.name && l.name.trim() !== '')}
+        logs={logs}
         currentIndex={editingLogIndex}
         onNavigate={(newIndex) => {
-          const namedLogs = logs.filter(l => l.name && l.name.trim() !== '');
-          if (newIndex >= 0 && newIndex < namedLogs.length) {
-            setEditingLog(namedLogs[newIndex]);
+          if (newIndex >= 0 && newIndex < logs.length) {
+            setEditingLog(logs[newIndex]);
             setEditingLogIndex(newIndex);
           }
         }}

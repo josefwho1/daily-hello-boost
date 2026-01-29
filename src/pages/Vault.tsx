@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ChevronRight, Sparkles, Globe, Lightbulb, MessageCircle, Image } from "lucide-react";
-import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { wallpapers, type Wallpaper } from "@/data/wallpapers";
 import { WallpaperPreviewDialog } from "@/components/WallpaperPreviewDialog";
 import remiMascot from "@/assets/remi-waving.webp";
@@ -170,7 +169,7 @@ const Vault = () => {
                   <MessageCircle className="w-5 h-5 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">First Hellos</h3>
+                  <h3 className="font-semibold text-foreground">The 4 Types of Hello</h3>
                   <p className="text-xs text-muted-foreground">Master the basics</p>
                 </div>
               </div>
@@ -293,52 +292,6 @@ const Vault = () => {
             )}
           </Card>
 
-          {/* The Original 7-Day Challenge - FOURTH (Always unlocked) */}
-          <Card 
-            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
-            onClick={() => toggleSection('7day')}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">The Original 7-Day Challenge</h3>
-                  <p className="text-xs text-muted-foreground">7 ways to break the ice</p>
-                </div>
-              </div>
-              <ChevronRight 
-                className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
-                  expandedSection === '7day' ? 'rotate-90' : ''
-                }`} 
-              />
-            </div>
-            
-            {expandedSection === '7day' && (
-              <div className="mt-4 space-y-2 animate-fade-in">
-                {onboardingChallenges.map((challenge, index) => (
-                  <div 
-                    key={challenge.id}
-                    className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl"
-                  >
-                    <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                      {index + 1}
-                    </span>
-                    <div className="space-y-1">
-                      <p className="font-medium text-foreground text-sm">
-                        {challenge.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{challenge.description}</p>
-                      <p className="text-xs italic text-suggestion">💡 {challenge.suggestion}</p>
-                      <p className="text-xs text-muted-foreground/80">📝 {challenge.tips}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
           {/* Wallpapers Section (Always unlocked, easter-egg style) */}
           <Card 
             className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
@@ -387,22 +340,6 @@ const Vault = () => {
                 </p>
               </div>
             )}
-          </Card>
-
-          {/* More Packs Coming Soon */}
-          <Card className="p-4 rounded-2xl opacity-60">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-muted-foreground" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">More Packs</h3>
-                  <p className="text-xs text-muted-foreground">Dating, Networking & more</p>
-                </div>
-              </div>
-              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">Coming Soon</span>
-            </div>
           </Card>
         </div>
       </div>

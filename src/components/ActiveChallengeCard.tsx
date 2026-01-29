@@ -80,7 +80,10 @@ export const ActiveChallengeCard = ({
   };
 
   return (
-    <Card id="tutorial-todays-hello-card" className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden min-h-[180px]">
+    <Card
+      id="tutorial-todays-hello-card"
+      className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[228px] flex flex-col"
+    >
       {/* Header row */}
       <div className="flex items-start justify-between">
         <div>
@@ -126,7 +129,7 @@ export const ActiveChallengeCard = ({
       {/* Content area - tap to expand */}
       <div 
         className={cn(
-          "mt-2 pr-16 cursor-pointer transition-all duration-200",
+          "mt-2 pr-16 cursor-pointer transition-all duration-200 flex-1",
           !challengeUnlocked && "opacity-60"
         )}
         onClick={handleCardTap}
@@ -158,37 +161,33 @@ export const ActiveChallengeCard = ({
           "text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem] mt-1",
           !challengeUnlocked && "blur-sm select-none"
         )}>
-          {currentChallenge.description}
+          {isExpanded && challengeUnlocked && !challengeCompleted && currentChallenge.tips
+            ? currentChallenge.tips
+            : currentChallenge.description}
         </p>
 
-        {/* Expanded content: tips */}
-        {isExpanded && challengeUnlocked && !challengeCompleted && currentChallenge.tips && (
-          <div className="mt-3 pt-3 border-t border-border/50">
-            <p className="text-xs font-medium text-muted-foreground mb-1.5">Try saying</p>
-            <p className="text-sm text-foreground/90 italic">
-              {currentChallenge.tips}
-            </p>
-          </div>
-        )}
-
-        {/* Tap hint for unlocked incomplete challenges */}
-        {challengeUnlocked && !challengeCompleted && !isExpanded && currentChallenge.tips && (
-          <p className="text-[10px] text-muted-foreground/50 mt-2">
-            Tap for suggestions
-          </p>
-        )}
+        {/* Tap hint (reserved height to avoid layout shift) */}
+        <p className="text-[10px] text-muted-foreground/50 mt-2 h-3">
+          {challengeUnlocked && !challengeCompleted && !isExpanded && currentChallenge.tips
+            ? "Tap for suggestions"
+            : ""}
+        </p>
       </div>
 
       {/* Complete button - only for unlocked, incomplete challenges */}
-      {challengeUnlocked && !challengeCompleted && (
-        <Button
-          onClick={() => onLogHello(currentChallenge)}
-          className="mt-4 w-full rounded-full font-semibold"
-          size="sm"
-        >
-          Complete Challenge
-        </Button>
-      )}
+      <div className="mt-3">
+        {challengeUnlocked && !challengeCompleted ? (
+          <Button
+            onClick={() => onLogHello(currentChallenge)}
+            className="w-full rounded-full font-semibold"
+            size="sm"
+          >
+            Complete Challenge
+          </Button>
+        ) : (
+          <div className="h-9" aria-hidden="true" />
+        )}
+      </div>
 
       {/* Remi Proud - positioned bottom right */}
       <img 
