@@ -337,66 +337,33 @@ Deno.serve(async (req) => {
       const lastActivity = lastCompletedDate || lastHelloAt
       const daysSinceActivity = lastActivity ? daysBetween(now, lastActivity) : 999
 
-      // Priority 1: Streak-at-risk emails (override all other logic)
-      const hasActiveStreak = (user.current_streak || 0) > 0 || (user.daily_streak || 0) > 0
+      // Re-engagement emails (2+ days inactive, every 2 days)
+      const reengagementIndex = user.reengagement_email_index || 0
       
-      if (hasActiveStreak) {
-        // 1 day of inactivity
-        if (daysSinceActivity === 1 && user.streak_1day_email_sent_for_date !== todayStr) {
-          shouldSend = true
-          subject = "I've saved your streak (for now) 🔥"
-          bodyContent = getStreak1DayBody(username)
-          templateKey = 'streak_1day'
-          
-          // Update the tracking
-          await supabase.from('user_progress').update({
-            streak_1day_email_sent_for_date: todayStr
-          }).eq('user_id', user.user_id)
-        }
-        // 2 days of inactivity
-        else if (daysSinceActivity === 2 && user.streak_2day_email_sent_for_date !== todayStr) {
-          shouldSend = true
-          subject = "Your streak is hanging on 🦝"
-          bodyContent = getStreak2DayBody(username)
-          templateKey = 'streak_2day'
-          
-          await supabase.from('user_progress').update({
-            streak_2day_email_sent_for_date: todayStr
-          }).eq('user_id', user.user_id)
-        }
-        // After 2 days, stop streak-related emails
+      // Check if we've sent all emails
+      if (reengagementIndex >= REENGAGEMENT_SUBJECTS.length) {
+        continue // Stop sending
       }
       
-      // Priority 2: Re-engagement emails (if no streak or >2 days inactive)
-      if (!shouldSend && (!hasActiveStreak || daysSinceActivity > 2)) {
-        const reengagementIndex = user.reengagement_email_index || 0
+      // Check timing: 2+ days since last activity AND 2+ days since last re-engagement email
+      const lastReengagement = user.last_reengagement_email_at ? new Date(user.last_reengagement_email_at) : null
+      const daysSinceLastReengagement = lastReengagement ? daysBetween(now, lastReengagement) : 999
+      
+      const shouldSendReengagement = 
+        daysSinceActivity >= 2 && // 2+ days after last activity
+        (reengagementIndex === 0 || daysSinceLastReengagement >= 2) // 2+ days between emails
+      
+      if (shouldSendReengagement) {
+        shouldSend = true
+        subject = REENGAGEMENT_SUBJECTS[reengagementIndex].replace(/\{\{username\}\}/g, username)
+        bodyContent = getReengagementBody(username)
+        templateKey = `reengagement_${reengagementIndex + 1}`
         
-        // Check if we've sent all 26 emails
-        if (reengagementIndex >= REENGAGEMENT_SUBJECTS.length) {
-          continue // Stop sending
-        }
-        
-        // Check 48 hours since last activity before starting
-        // And 2 days between re-engagement emails
-        const lastReengagement = user.last_reengagement_email_at ? new Date(user.last_reengagement_email_at) : null
-        const daysSinceLastReengagement = lastReengagement ? daysBetween(now, lastReengagement) : 999
-        
-        const shouldSendReengagement = 
-          daysSinceActivity >= 2 && // 48 hours after last activity
-          (reengagementIndex === 0 || daysSinceLastReengagement >= 2) // 2 days between emails
-        
-        if (shouldSendReengagement) {
-          shouldSend = true
-          subject = REENGAGEMENT_SUBJECTS[reengagementIndex].replace('{{username}}', username)
-          bodyContent = getReengagementBody(username)
-          templateKey = `reengagement_${reengagementIndex + 1}`
-          
-          // Update tracking
-          await supabase.from('user_progress').update({
-            reengagement_email_index: reengagementIndex + 1,
-            last_reengagement_email_at: now.toISOString()
-          }).eq('user_id', user.user_id)
-        }
+        // Update tracking
+        await supabase.from('user_progress').update({
+          reengagement_email_index: reengagementIndex + 1,
+          last_reengagement_email_at: now.toISOString()
+        }).eq('user_id', user.user_id)
       }
 
       if (shouldSend) {
