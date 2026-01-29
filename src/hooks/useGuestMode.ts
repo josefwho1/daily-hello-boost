@@ -165,6 +165,8 @@ export const useGuestMode = (): UseGuestModeReturn => {
 
   useEffect(() => {
     if (authLoading) return;
+    // Wait for profileIsAnonymous to be determined before deciding what to load
+    if (profileIsAnonymous === null && user) return;
     
     if (!user) {
       setLoading(false);
@@ -176,7 +178,7 @@ export const useGuestMode = (): UseGuestModeReturn => {
     } else {
       setLoading(false);
     }
-  }, [user, authLoading, isAnonymous, loadAnonymousUserData]);
+  }, [user, authLoading, isAnonymous, profileIsAnonymous, loadAnonymousUserData]);
 
   // Initialize anonymous auth for guests
   const initializeAnonymous = useCallback(async (): Promise<{ success: boolean; userId?: string; error?: string }> => {
