@@ -10,6 +10,7 @@ import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
 import { cn } from "@/lib/utils";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
 import { toast } from "sonner";
+import vaultIcon from "@/assets/vault-icon.webp";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -287,11 +288,19 @@ const Challenges = () => {
           })}
         </div>
 
-        {/* Info Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Complete challenges to build social confidence ✨
-          </p>
+        {/* Vault Easter Egg */}
+        <div className="mt-8 mb-2 flex justify-center">
+          <button
+            onClick={() => navigate('/vault')}
+            className="opacity-40 hover:opacity-100 transition-opacity duration-300"
+            aria-label="Open Remi's Vault"
+          >
+            <img 
+              src={vaultIcon} 
+              alt="Vault" 
+              className="w-10 h-10 object-contain"
+            />
+          </button>
         </div>
       </div>
 
