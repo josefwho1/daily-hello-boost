@@ -49,7 +49,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress: cloudProgress, loading: progressLoading, updateProgress: updateCloudProgress, refetch } = useUserProgress();
-  const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, deleteLog: deleteCloudLog, getLogsTodayCount } = useHelloLogs();
+  const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, deleteLog: deleteCloudLog, getLogsTodayCount, toggleFavorite } = useHelloLogs();
   const { timezoneOffset, loading: timezoneLoading } = useTimezone();
   const { completions, addCompletion, refetch: refetchCompletions } = useChallengeCompletions();
   const { 
