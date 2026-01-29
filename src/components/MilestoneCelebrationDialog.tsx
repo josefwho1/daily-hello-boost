@@ -32,18 +32,6 @@ interface MilestoneCelebrationDialogProps {
   milestoneType: MilestoneType;
 }
 
-const getMilestoneEmoji = (value: number): string => {
-  if (value >= 500) return '👑';
-  if (value >= 400) return '💎';
-  if (value >= 300) return '🏆';
-  if (value >= 200) return '🌟';
-  if (value >= 100) return '🔥';
-  if (value >= 75) return '💪';
-  if (value >= 50) return '🎯';
-  if (value >= 25) return '⚡';
-  return '🎉';
-};
-
 const getMilestoneMessage = (value: number, type: MilestoneType): string => {
   const typeLabel = type === 'hellos' ? 'Hellos' : 'Names';
   
@@ -56,18 +44,6 @@ const getMilestoneMessage = (value: number, type: MilestoneType): string => {
   if (value >= 50) return `Halfway to 100! ${value} ${typeLabel}!`;
   if (value >= 25) return `Great start! ${value} ${typeLabel}!`;
   return `First milestone! ${value} ${typeLabel}!`;
-};
-
-const getBadgeColor = (value: number): string => {
-  if (value >= 500) return 'from-yellow-400 to-amber-600';
-  if (value >= 400) return 'from-purple-400 to-purple-600';
-  if (value >= 300) return 'from-amber-400 to-orange-500';
-  if (value >= 200) return 'from-blue-400 to-blue-600';
-  if (value >= 100) return 'from-red-400 to-orange-500';
-  if (value >= 75) return 'from-green-400 to-emerald-600';
-  if (value >= 50) return 'from-cyan-400 to-blue-500';
-  if (value >= 25) return 'from-pink-400 to-rose-500';
-  return 'from-primary to-primary/80';
 };
 
 export const MilestoneCelebrationDialog = ({
@@ -123,9 +99,7 @@ export const MilestoneCelebrationDialog = ({
 
   if (!open) return null;
 
-  const emoji = getMilestoneEmoji(milestoneValue);
   const message = getMilestoneMessage(milestoneValue, milestoneType);
-  const badgeColor = getBadgeColor(milestoneValue);
 
   return (
     <AnimatePresence>
@@ -187,16 +161,6 @@ export const MilestoneCelebrationDialog = ({
               />
             </motion.div>
 
-            {/* Badge */}
-            <motion.div
-              initial={{ scale: 0, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5, type: "spring" }}
-              className={`w-28 h-28 rounded-full bg-gradient-to-br ${badgeColor} flex items-center justify-center shadow-xl`}
-            >
-              <span className="text-5xl">{emoji}</span>
-            </motion.div>
-
             {/* Milestone number */}
             <motion.div
               initial={{ scale: 0 }}
@@ -235,7 +199,7 @@ export const MilestoneCelebrationDialog = ({
               className="w-full max-w-xs mt-4"
             >
               <Button onClick={onContinue} className="w-full" size="lg">
-                Keep Going! 🚀
+                Keep Going!
               </Button>
             </motion.div>
           </div>
