@@ -4,9 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Play, Pause, RotateCcw } from "lucide-react";
 import { packs, getPackById } from "@/data/packs";
-import { useUserProgress } from "@/hooks/useUserProgress";
+import { useUserProgressQuery } from "@/hooks/useUserProgressQuery";
 import { useGuestMode } from "@/hooks/useGuestMode";
-import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
+import { useChallengeCompletionsQuery } from "@/hooks/useChallengeCompletionsQuery";
+import { ChallengeCardSkeleton } from "@/components/ChallengeCardSkeleton";
 import { cn } from "@/lib/utils";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
 import { toast } from "sonner";
@@ -26,14 +27,15 @@ import {
 
 const Challenges = () => {
   const navigate = useNavigate();
-  const { progress: cloudProgress, updateProgress: updateCloudProgress } = useUserProgress();
+  const { progress: cloudProgress, updateProgress: updateCloudProgress, loading: cloudLoading } = useUserProgressQuery();
   const [restartingPackId, setRestartingPackId] = useState<string | null>(null);
   const [confirmRestartPackId, setConfirmRestartPackId] = useState<string | null>(null);
-  const { guestProgress, updateProgress: updateGuestProgress, isAnonymous } = useGuestMode();
-  const { completions, clearCompletionsByTags, refetch: refetchCompletions } = useChallengeCompletions();
+  const { guestProgress, updateProgress: updateGuestProgress, isAnonymous, loading: guestLoading } = useGuestMode();
+  const { completions, clearCompletionsByTags, refetch: refetchCompletions, loading: completionsLoading } = useChallengeCompletionsQuery();
   
   const progress = isAnonymous ? guestProgress : cloudProgress;
   const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
+  const isLoading = (isAnonymous ? guestLoading : cloudLoading) || completionsLoading;
   
   const selectedPackId = progress?.selected_pack_id;
   const packStartDate = progress?.pack_start_date;
@@ -150,9 +152,16 @@ const Challenges = () => {
           <img src={remiQuest} alt="Remi" className="w-16 h-16 object-contain" />
         </div>
 
-        {/* Challenge Packs */}
+        {/* Challenge Packs - Show skeletons while loading */}
         <div className="space-y-4">
-          {packs.map((pack) => {
+          {isLoading ? (
+            <>
+              <ChallengeCardSkeleton />
+              <ChallengeCardSkeleton />
+              <ChallengeCardSkeleton />
+            </>
+          ) : (
+          packs.map((pack) => {
             const isActive = isPackActive(pack.id);
             const isPaused = isPackPaused(pack.id);
             const isAvailable = isPackAvailable(pack.id);
@@ -295,7 +304,8 @@ const Challenges = () => {
                 </CardContent>
               </Card>
             );
-          })}
+          })
+          )}
         </div>
 
         {/* Vault Easter Egg */}
