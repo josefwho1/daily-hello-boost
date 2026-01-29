@@ -51,6 +51,7 @@ const ViewHelloDialog = ({
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
+  const [isFavorite, setIsFavorite] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [direction, setDirection] = useState(0);
@@ -61,6 +62,7 @@ const ViewHelloDialog = ({
       setName(log.name || "");
       setLocation(log.location || "");
       setNotes(log.notes || "");
+      setIsFavorite(log.is_favorite || false);
     }
   }, [log]);
 
@@ -135,12 +137,16 @@ const ViewHelloDialog = ({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onToggleFavorite(log.id, !log.is_favorite)}
-              aria-label={log.is_favorite ? "Remove from favorites" : "Add to favorites"}
+              onClick={() => {
+                const newValue = !isFavorite;
+                setIsFavorite(newValue);
+                onToggleFavorite(log.id, newValue);
+              }}
+              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
             >
               <Bookmark 
                 className={`w-5 h-5 transition-colors ${
-                  log.is_favorite 
+                  isFavorite 
                     ? 'fill-primary text-primary' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`} 
