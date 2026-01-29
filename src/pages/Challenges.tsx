@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Check, Play, Pause, RotateCcw } from "lucide-react";
+import { Check, Play, Pause, RotateCcw } from "lucide-react";
 import { packs, getPackById } from "@/data/packs";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useGuestMode } from "@/hooks/useGuestMode";
