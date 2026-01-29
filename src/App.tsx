@@ -1,5 +1,5 @@
 // App entry point
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,19 +9,21 @@ import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useGuestMode } from "@/hooks/useGuestMode";
-import Dashboard from "./pages/Dashboard";
-import Hellobook from "./pages/Hellobook";
-import Vault from "./pages/Vault";
-import Profile from "./pages/Profile";
-import Auth from "./pages/Auth";
-import MagicLinkSignIn from "./pages/MagicLinkSignIn";
-import AuthCallback from "./pages/AuthCallback";
-import Onboarding from "./pages/Onboarding";
-import Landing from "./pages/Landing";
-import Community from "./pages/Community";
-import Challenges from "./pages/Challenges";
-import NotFound from "./pages/NotFound";
-import AdminDashboard from "./pages/AdminDashboard";
+
+// Lazy load pages for code splitting
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Hellobook = lazy(() => import("./pages/Hellobook"));
+const Vault = lazy(() => import("./pages/Vault"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Auth = lazy(() => import("./pages/Auth"));
+const MagicLinkSignIn = lazy(() => import("./pages/MagicLinkSignIn"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Landing = lazy(() => import("./pages/Landing"));
+const Community = lazy(() => import("./pages/Community"));
+const Challenges = lazy(() => import("./pages/Challenges"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
