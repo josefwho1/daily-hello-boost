@@ -63,8 +63,23 @@ const ViewHelloDialog = ({
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const { formatTimestamp } = useTimezone();
   
-  const inputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Use ref callbacks to focus immediately on mount (preserves user gesture for keyboard)
+  const inputRefCallback = useCallback((el: HTMLInputElement | null) => {
+    if (el) {
+      // Use requestAnimationFrame to ensure DOM is ready, but still within gesture context
+      requestAnimationFrame(() => {
+        el.focus({ preventScroll: true });
+      });
+    }
+  }, []);
+
+  const textareaRefCallback = useCallback((el: HTMLTextAreaElement | null) => {
+    if (el) {
+      requestAnimationFrame(() => {
+        el.focus({ preventScroll: true });
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (log) {
@@ -94,20 +109,6 @@ const ViewHelloDialog = ({
       vv.removeEventListener("scroll", update);
     };
   }, []);
-
-  // Focus input when editing field changes
-  useEffect(() => {
-    if (!editingField) return;
-    
-    const timer = setTimeout(() => {
-      const el = editingField === 'notes' ? textareaRef.current : inputRef.current;
-      if (el) {
-        el.focus({ preventScroll: true });
-      }
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [editingField]);
 
   const startEditing = useCallback((field: Exclude<EditingField, null>) => {
     setEditingField(field);
@@ -447,7 +448,7 @@ const ViewHelloDialog = ({
                   {/* Input field */}
                   {editingField === 'notes' ? (
                     <Textarea
-                      ref={textareaRef}
+                      ref={textareaRefCallback}
                       value={getFieldValue(editingField)}
                       onChange={(e) => setFieldValue(editingField, e.target.value)}
                       onKeyDown={(e) => {
@@ -459,7 +460,7 @@ const ViewHelloDialog = ({
                     />
                   ) : (
                     <Input
-                      ref={inputRef}
+                      ref={inputRefCallback}
                       value={getFieldValue(editingField)}
                       onChange={(e) => setFieldValue(editingField, e.target.value)}
                       onKeyDown={handleKeyDown}
