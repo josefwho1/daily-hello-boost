@@ -56,11 +56,19 @@ export const BottomNav = () => {
             activeClassName="text-primary"
           >
             <PawPrint show={lastClicked === tab.to} />
-            <tab.icon 
-              size={24} 
-              className="transition-transform duration-200" 
-              strokeWidth={location.pathname === tab.to ? 2.5 : 2}
-            />
+            {tab.customIcon ? (
+              <img 
+                src={tab.customIcon} 
+                alt={tab.label}
+                className="w-6 h-6 object-contain transition-transform duration-200"
+              />
+            ) : (
+              <tab.icon 
+                size={24} 
+                className="transition-transform duration-200" 
+                strokeWidth={location.pathname === tab.to ? 2.5 : 2}
+              />
+            )}
             <span className="text-xs font-medium">{tab.label}</span>
           </NavLink>
         ))}
