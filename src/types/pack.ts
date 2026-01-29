@@ -6,4 +6,5 @@ export interface Pack {
   description: string;
   challenges: Challenge[];
   icon: string;
+  isFree?: boolean;
 }
