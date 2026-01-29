@@ -125,13 +125,12 @@ export const ActiveChallengeCard = ({
         </div>
       </div>
 
-      {/* Content area - tap to expand */}
+      {/* Content area */}
       <div 
         className={cn(
-          "mt-2 pr-16 cursor-pointer transition-all duration-200 flex-1",
+          "mt-2 pr-16 flex-1",
           !challengeUnlocked && "opacity-60"
         )}
-        onClick={handleCardTap}
       >
         {/* Title */}
         <h3 className={cn(
