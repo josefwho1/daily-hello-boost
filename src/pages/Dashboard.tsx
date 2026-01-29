@@ -755,6 +755,14 @@ export default function Dashboard() {
             toast.error("Failed to delete hello");
           }
         }}
+        onToggleFavorite={async (id, isFavorite) => {
+          const result = await toggleFavorite(id, isFavorite);
+          if (result) {
+            toast.success(isFavorite ? "Added to favorites" : "Removed from favorites");
+          } else {
+            toast.error("Failed to update favorite");
+          }
+        }}
       />
     </div>
   );
