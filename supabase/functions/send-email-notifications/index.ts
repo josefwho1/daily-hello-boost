@@ -12,16 +12,24 @@ const CRON_SECRET = Deno.env.get('CRON_SECRET')
 
 // Re-engagement email subject lines (chronological sequence)
 const REENGAGEMENT_SUBJECTS = [
-  "One hello could change your life, plus it's free 🤷‍♂️",
-  "100% of users feel a positive improvement in their week",
-  "93% of users felt more confidence after just 7 days",
+  "One hello could change brighten your day, plus it's free 🤷‍♂️",
+  "Met anyone cool lately? Store them in here so you don't forget",
+  "Any Hellos you want to tell me about? 🦝",
   "Hope you're having a great day, I wonder what could make it even better 👀",
+  "Life's busy, I get it. No worries, I'll be waiting 🦝",
+  "Hello {{username}}, just checking in. Are you still alive? 😀",
+  "I once said hello and made a friend, just saying 🦝",
   "Raccoon to human - do we have a pulse 🥺",
-  "Saying Hello can be tough, but not for you, right? 👀",
+  "Helllooooo {{username}}",
   "{{username}}, I miss you. Quick hello for old times sake?",
+  "It's been a minute, just checking in 🦝",
   "I feel like your spam filter is doing me dirty",
+  "Hello, its me (not Adele) 🦝",
   "BooOOoOo its ghostttt Remiii, come say hello?",
-  "ItttsssSSssssS TIME, for the UF… Uh I mean One Hello 👀",
+  "My friend got married after saying hello, pretty cool",
+  "What rhymes with with Ello and feels good 🦝",
+  "OMG what's that over there?! It's me 🦝 (Reminder Raccoon)",
+  "They nearly named me Persistent Raccoon, but Reminder won",
   "Help me out, Zero Hello's doesn't have the same ring to it",
   "Hi it's Romi, Remi's brother, just saying Hello",
   "Confession, Romi was me 😭 Forgive me",
@@ -102,22 +110,6 @@ function getWelcomeBody(username: string): string {
     <h1 style="margin: 0 0 16px 0; color: #1a1a1a; font-size: 24px; font-weight: 600;">Welcome to One Hello! 🦝</h1>
     <p style="margin: 0; color: #444; font-size: 15px; line-height: 1.6;">
       Hey ${username}! So glad you're here. Ready to say your first hello?
-    </p>
-  `
-}
-
-function getStreak1DayBody(username: string): string {
-  return `
-    <p style="margin: 0; color: #444; font-size: 15px; line-height: 1.6;">
-      Hey ${username}, I've got your back. Your streak is safe for now!
-    </p>
-  `
-}
-
-function getStreak2DayBody(username: string): string {
-  return `
-    <p style="margin: 0; color: #444; font-size: 15px; line-height: 1.6;">
-      ${username}, your streak is still alive... but barely. One hello and you're back!
     </p>
   `
 }
@@ -283,9 +275,7 @@ Deno.serve(async (req) => {
         email_unsubscribed,
         welcome_email_sent,
         reengagement_email_index,
-        last_reengagement_email_at,
-        streak_1day_email_sent_for_date,
-        streak_2day_email_sent_for_date
+        last_reengagement_email_at
       `)
       .eq('email_unsubscribed', false)
 
@@ -347,66 +337,33 @@ Deno.serve(async (req) => {
       const lastActivity = lastCompletedDate || lastHelloAt
       const daysSinceActivity = lastActivity ? daysBetween(now, lastActivity) : 999
 
-      // Priority 1: Streak-at-risk emails (override all other logic)
-      const hasActiveStreak = (user.current_streak || 0) > 0 || (user.daily_streak || 0) > 0
+      // Re-engagement emails (2+ days inactive, every 2 days)
+      const reengagementIndex = user.reengagement_email_index || 0
       
-      if (hasActiveStreak) {
-        // 1 day of inactivity
-        if (daysSinceActivity === 1 && user.streak_1day_email_sent_for_date !== todayStr) {
-          shouldSend = true
-          subject = "I've saved your streak (for now) 🔥"
-          bodyContent = getStreak1DayBody(username)
-          templateKey = 'streak_1day'
-          
-          // Update the tracking
-          await supabase.from('user_progress').update({
-            streak_1day_email_sent_for_date: todayStr
-          }).eq('user_id', user.user_id)
-        }
-        // 2 days of inactivity
-        else if (daysSinceActivity === 2 && user.streak_2day_email_sent_for_date !== todayStr) {
-          shouldSend = true
-          subject = "Your streak is hanging on 🦝"
-          bodyContent = getStreak2DayBody(username)
-          templateKey = 'streak_2day'
-          
-          await supabase.from('user_progress').update({
-            streak_2day_email_sent_for_date: todayStr
-          }).eq('user_id', user.user_id)
-        }
-        // After 2 days, stop streak-related emails
+      // Check if we've sent all emails
+      if (reengagementIndex >= REENGAGEMENT_SUBJECTS.length) {
+        continue // Stop sending
       }
       
-      // Priority 2: Re-engagement emails (if no streak or >2 days inactive)
-      if (!shouldSend && (!hasActiveStreak || daysSinceActivity > 2)) {
-        const reengagementIndex = user.reengagement_email_index || 0
+      // Check timing: 2+ days since last activity AND 2+ days since last re-engagement email
+      const lastReengagement = user.last_reengagement_email_at ? new Date(user.last_reengagement_email_at) : null
+      const daysSinceLastReengagement = lastReengagement ? daysBetween(now, lastReengagement) : 999
+      
+      const shouldSendReengagement = 
+        daysSinceActivity >= 2 && // 2+ days after last activity
+        (reengagementIndex === 0 || daysSinceLastReengagement >= 2) // 2+ days between emails
+      
+      if (shouldSendReengagement) {
+        shouldSend = true
+        subject = REENGAGEMENT_SUBJECTS[reengagementIndex].replace(/\{\{username\}\}/g, username)
+        bodyContent = getReengagementBody(username)
+        templateKey = `reengagement_${reengagementIndex + 1}`
         
-        // Check if we've sent all 26 emails
-        if (reengagementIndex >= REENGAGEMENT_SUBJECTS.length) {
-          continue // Stop sending
-        }
-        
-        // Check 48 hours since last activity before starting
-        // And 2 days between re-engagement emails
-        const lastReengagement = user.last_reengagement_email_at ? new Date(user.last_reengagement_email_at) : null
-        const daysSinceLastReengagement = lastReengagement ? daysBetween(now, lastReengagement) : 999
-        
-        const shouldSendReengagement = 
-          daysSinceActivity >= 2 && // 48 hours after last activity
-          (reengagementIndex === 0 || daysSinceLastReengagement >= 2) // 2 days between emails
-        
-        if (shouldSendReengagement) {
-          shouldSend = true
-          subject = REENGAGEMENT_SUBJECTS[reengagementIndex].replace('{{username}}', username)
-          bodyContent = getReengagementBody(username)
-          templateKey = `reengagement_${reengagementIndex + 1}`
-          
-          // Update tracking
-          await supabase.from('user_progress').update({
-            reengagement_email_index: reengagementIndex + 1,
-            last_reengagement_email_at: now.toISOString()
-          }).eq('user_id', user.user_id)
-        }
+        // Update tracking
+        await supabase.from('user_progress').update({
+          reengagement_email_index: reengagementIndex + 1,
+          last_reengagement_email_at: now.toISOString()
+        }).eq('user_id', user.user_id)
       }
 
       if (shouldSend) {
@@ -416,7 +373,7 @@ Deno.serve(async (req) => {
         if (sent) {
           await supabase.from('email_logs').insert({
             user_id: user.user_id,
-            email_type: templateKey.includes('streak') ? 'streak' : 'reengagement',
+            email_type: 'reengagement',
             template_key: templateKey,
             sent_at: new Date().toISOString()
           })
