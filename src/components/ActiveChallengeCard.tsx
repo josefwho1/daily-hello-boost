@@ -5,7 +5,6 @@ import { ChevronLeft, ChevronRight, Lock, Trophy, Check } from "lucide-react";
 import { Challenge } from "@/types/challenge";
 import { getPackById } from "@/data/packs";
 import { cn } from "@/lib/utils";
-import { differenceInDays, parseISO, startOfDay, addDays, format } from "date-fns";
 
 // Import Remi Proud image
 import remiProud from "@/assets/remi-proud.webp";
@@ -34,34 +33,37 @@ export const ActiveChallengeCard = ({
     return null;
   }
 
-  // Calculate which day the user is on based on pack start date
-  const today = startOfDay(new Date());
-  const startDate = packStartDate ? startOfDay(parseISO(packStartDate)) : today;
-  const daysSinceStart = differenceInDays(today, startDate);
-
-  // Maximum unlocked day (0-indexed: day 0 = first day)
-  const maxUnlockedIndex = Math.min(daysSinceStart, pack.challenges.length - 1);
+  // Completion-based unlocking: a challenge is unlocked if all previous challenges are completed
+  const isUnlocked = (idx: number) => {
+    if (idx === 0) return true; // First challenge always unlocked
+    // Check if all challenges before this one are completed
+    for (let i = 0; i < idx; i++) {
+      const prevChallenge = pack.challenges[i];
+      if (!completedTags.includes(prevChallenge.tag) && !completedDays.includes(prevChallenge.day)) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   // Find the current challenge (first incomplete one that's unlocked)
   const getCurrentChallengeIndex = () => {
-    for (let i = 0; i <= maxUnlockedIndex; i++) {
+    for (let i = 0; i < pack.challenges.length; i++) {
       const challenge = pack.challenges[i];
-      if (!completedDays.includes(challenge.day)) {
+      const isComplete = completedTags.includes(challenge.tag) || completedDays.includes(challenge.day);
+      if (!isComplete && isUnlocked(i)) {
         return i;
       }
     }
-    return maxUnlockedIndex;
+    // All completed - show last one
+    return pack.challenges.length - 1;
   };
 
   const [currentIndex, setCurrentIndex] = useState(getCurrentChallengeIndex());
   const currentChallenge = pack.challenges[currentIndex];
-
-  const isUnlocked = (idx: number) => idx <= maxUnlockedIndex;
   const isCompleted = (c: Challenge) =>
     completedTags.includes(c.tag) || completedDays.includes(c.day);
 
-  const getUnlockDay = (idx: number) =>
-    format(addDays(startDate, idx), "EEEE");
 
   const canGoLeft = currentIndex > 0;
   const canGoRight = currentIndex < pack.challenges.length - 1;
@@ -95,7 +97,7 @@ export const ActiveChallengeCard = ({
             <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>{pack.name}</span>
           </button>
           <p className="text-xs text-muted-foreground/70">
-            Day {currentChallenge.day} of {pack.challenges.length} • {completedCount} completed
+            Challenge {currentChallenge.day} of {pack.challenges.length} • {completedCount} completed
           </p>
         </div>
         
@@ -151,7 +153,7 @@ export const ActiveChallengeCard = ({
           )}
           {!challengeUnlocked && (
             <span className="flex items-center gap-1 text-muted-foreground text-xs">
-              <Lock size={12} /> Unlocks {getUnlockDay(currentIndex)}
+              <Lock size={12} /> Complete previous challenge to unlock
             </span>
           )}
         </div>
