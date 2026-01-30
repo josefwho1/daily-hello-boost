@@ -630,7 +630,7 @@ export default function Dashboard() {
 
         {/* Friendly Header Greeting */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-bold text-foreground tracking-wide" style={{ fontFamily: 'Fredoka, sans-serif' }}>
             <span className="text-primary">Hello</span> {username} 👋
           </h1>
         </div>
