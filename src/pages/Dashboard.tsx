@@ -314,6 +314,13 @@ export default function Dashboard() {
     }
   }, [progress, progressLoading, weeklyResetDone, timezoneLoading, tzOffset]);
 
+  // Daily Mode streak reset check on mount
+  useEffect(() => {
+    if (!dailyModeLoading && dailyModeState.isActive) {
+      checkAndResetStreak();
+    }
+  }, [dailyModeLoading, dailyModeState.isActive, checkAndResetStreak]);
+
   const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string }) => {
     const isFirstHelloEver = logs.length === 0;
     const isOnboardingChallenge = onboardingChallenges.some(c => c.title === selectedChallenge);
