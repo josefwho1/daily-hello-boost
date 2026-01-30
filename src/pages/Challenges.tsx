@@ -142,6 +142,21 @@ const Challenges = () => {
     return pack && pack.challenges.length > 0;
   };
 
+  // Show Daily Mode detail screen if active
+  if (showDailyModeDetail) {
+    return (
+      <DailyModeDetailScreen
+        isActive={dailyModeState.isActive}
+        currentStreak={dailyModeState.currentStreak}
+        bestStreak={dailyModeState.bestStreak}
+        startDate={dailyModeState.startDate}
+        onActivate={activateDailyMode}
+        onDeactivate={deactivateDailyMode}
+        onBack={() => setShowDailyModeDetail(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-6">
@@ -155,6 +170,15 @@ const Challenges = () => {
             </div>
           </div>
           <img src={remiQuest} alt="Remi" className="w-16 h-16 object-contain" />
+        </div>
+
+        {/* Daily Mode Tile */}
+        <div className="mb-4">
+          <DailyModeTile
+            isActive={dailyModeState.isActive}
+            bestStreak={dailyModeState.bestStreak}
+            onClick={() => setShowDailyModeDetail(true)}
+          />
         </div>
 
         {/* Challenge Packs - Show skeletons while loading */}
