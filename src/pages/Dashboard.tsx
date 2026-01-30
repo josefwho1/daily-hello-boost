@@ -6,11 +6,14 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
+import { useDailyMode } from "@/hooks/useDailyMode";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
 import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ActiveChallengeCard } from "@/components/ActiveChallengeCard";
+import { DailyModeHomeCard } from "@/components/DailyModeHomeCard";
+import { DailyModeReminderBanner } from "@/components/DailyModeReminderBanner";
 import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
 import { getPackById } from "@/data/packs";
 import { Challenge } from "@/types/challenge";
@@ -52,6 +55,16 @@ export default function Dashboard() {
   const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, deleteLog: deleteCloudLog, getLogsTodayCount, toggleFavorite } = useHelloLogs();
   const { timezoneOffset, loading: timezoneLoading } = useTimezone();
   const { completions, addCompletion, refetch: refetchCompletions } = useChallengeCompletions();
+  const { 
+    state: dailyModeState,
+    recordHelloForDailyMode,
+    checkAndResetStreak,
+    shouldShowMorningReminder,
+    shouldShowAfternoonReminder,
+    dismissMorningReminder,
+    dismissAfternoonReminder,
+    loading: dailyModeLoading,
+  } = useDailyMode();
   const { 
     guestProgress, 
     guestLogs, 
@@ -301,6 +314,13 @@ export default function Dashboard() {
     }
   }, [progress, progressLoading, weeklyResetDone, timezoneLoading, tzOffset]);
 
+  // Daily Mode streak reset check on mount
+  useEffect(() => {
+    if (!dailyModeLoading && dailyModeState.isActive) {
+      checkAndResetStreak();
+    }
+  }, [dailyModeLoading, dailyModeState.isActive, checkAndResetStreak]);
+
   const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string }) => {
     const isFirstHelloEver = logs.length === 0;
     const isOnboardingChallenge = onboardingChallenges.some(c => c.title === selectedChallenge);
@@ -416,6 +436,11 @@ export default function Dashboard() {
         setTimeout(() => {
           setShowSavePrompt(true);
         }, 1000);
+      }
+
+      // Record for Daily Mode if active
+      if (dailyModeState.isActive) {
+        await recordHelloForDailyMode();
       }
     }
     
@@ -564,6 +589,14 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-8">
 
+        {/* Daily Mode Reminder Banners */}
+        {shouldShowMorningReminder && (
+          <DailyModeReminderBanner type="morning" onDismiss={dismissMorningReminder} />
+        )}
+        {shouldShowAfternoonReminder && (
+          <DailyModeReminderBanner type="afternoon" onDismiss={dismissAfternoonReminder} />
+        )}
+
         {/* Friendly Header Greeting */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-semibold tracking-wide" style={{ fontFamily: 'Fredoka, sans-serif' }}>
@@ -576,6 +609,17 @@ export default function Dashboard() {
           logs={logs} 
           lifetimeHellos={logs.length} 
         />
+
+        {/* Daily Mode Home Card - between stats and Today's Hello */}
+        {dailyModeState.isActive && (
+          <div className="mb-6">
+            <DailyModeHomeCard
+              todaysHelloCount={dailyModeState.todaysHelloCount}
+              currentStreak={dailyModeState.currentStreak}
+              hasLoggedToday={dailyModeState.hasLoggedToday}
+            />
+          </div>
+        )}
 
         {/* Main Dashboard - Connection-focused layout */}
         <div className="space-y-6">

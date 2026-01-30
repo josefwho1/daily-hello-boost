@@ -7,7 +7,10 @@ import { packs, getPackById } from "@/data/packs";
 import { useUserProgressQuery } from "@/hooks/useUserProgressQuery";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useChallengeCompletionsQuery } from "@/hooks/useChallengeCompletionsQuery";
+import { useDailyMode } from "@/hooks/useDailyMode";
 import { ChallengeCardSkeleton } from "@/components/ChallengeCardSkeleton";
+import { DailyModeTile } from "@/components/DailyModeTile";
+import { DailyModeDetailScreen } from "@/components/DailyModeDetailScreen";
 import { cn } from "@/lib/utils";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
 import { toast } from "sonner";
@@ -30,8 +33,10 @@ const Challenges = () => {
   const { progress: cloudProgress, updateProgress: updateCloudProgress, loading: cloudLoading } = useUserProgressQuery();
   const [restartingPackId, setRestartingPackId] = useState<string | null>(null);
   const [confirmRestartPackId, setConfirmRestartPackId] = useState<string | null>(null);
+  const [showDailyModeDetail, setShowDailyModeDetail] = useState(false);
   const { guestProgress, updateProgress: updateGuestProgress, isAnonymous, loading: guestLoading } = useGuestMode();
   const { completions, clearCompletionsByTags, refetch: refetchCompletions, loading: completionsLoading } = useChallengeCompletionsQuery();
+  const { state: dailyModeState, activateDailyMode, deactivateDailyMode, loading: dailyModeLoading } = useDailyMode();
   
   const progress = isAnonymous ? guestProgress : cloudProgress;
   const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
@@ -137,6 +142,21 @@ const Challenges = () => {
     return pack && pack.challenges.length > 0;
   };
 
+  // Show Daily Mode detail screen if active
+  if (showDailyModeDetail) {
+    return (
+      <DailyModeDetailScreen
+        isActive={dailyModeState.isActive}
+        currentStreak={dailyModeState.currentStreak}
+        bestStreak={dailyModeState.bestStreak}
+        startDate={dailyModeState.startDate}
+        onActivate={activateDailyMode}
+        onDeactivate={deactivateDailyMode}
+        onBack={() => setShowDailyModeDetail(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-6">
@@ -150,6 +170,15 @@ const Challenges = () => {
             </div>
           </div>
           <img src={remiQuest} alt="Remi" className="w-16 h-16 object-contain" />
+        </div>
+
+        {/* Daily Mode Tile */}
+        <div className="mb-4">
+          <DailyModeTile
+            isActive={dailyModeState.isActive}
+            bestStreak={dailyModeState.bestStreak}
+            onClick={() => setShowDailyModeDetail(true)}
+          />
         </div>
 
         {/* Challenge Packs - Show skeletons while loading */}
