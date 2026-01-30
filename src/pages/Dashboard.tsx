@@ -589,6 +589,14 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-4 py-8">
 
+        {/* Daily Mode Reminder Banners */}
+        {shouldShowMorningReminder && (
+          <DailyModeReminderBanner type="morning" onDismiss={dismissMorningReminder} />
+        )}
+        {shouldShowAfternoonReminder && (
+          <DailyModeReminderBanner type="afternoon" onDismiss={dismissAfternoonReminder} />
+        )}
+
         {/* Friendly Header Greeting */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-semibold tracking-wide" style={{ fontFamily: 'Fredoka, sans-serif' }}>
@@ -601,6 +609,17 @@ export default function Dashboard() {
           logs={logs} 
           lifetimeHellos={logs.length} 
         />
+
+        {/* Daily Mode Home Card - between stats and Today's Hello */}
+        {dailyModeState.isActive && (
+          <div className="mb-6">
+            <DailyModeHomeCard
+              todaysHelloCount={dailyModeState.todaysHelloCount}
+              currentStreak={dailyModeState.currentStreak}
+              hasLoggedToday={dailyModeState.hasLoggedToday}
+            />
+          </div>
+        )}
 
         {/* Main Dashboard - Connection-focused layout */}
         <div className="space-y-6">
