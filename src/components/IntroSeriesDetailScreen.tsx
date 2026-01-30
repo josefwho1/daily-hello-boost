@@ -48,7 +48,10 @@ export const IntroSeriesDetailScreen = ({
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-xl font-bold text-foreground">One Hello Intro Series</h1>
+          <div className="flex items-center gap-2">
+            <span className="text-xl">👋</span>
+            <h1 className="text-xl font-bold text-foreground">One Hello Intro Series</h1>
+          </div>
         </div>
 
         {/* Description Card - Moved to top */}
