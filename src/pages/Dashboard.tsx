@@ -446,29 +446,31 @@ export default function Dashboard() {
 
       // Record for Daily Mode if active and trigger streak celebration
       if (dailyModeState.isActive) {
-        // Capture the current streak before recording
+        // Check if user has already recorded a hello for daily mode TODAY
+        // Use lastHelloDate which tracks the last date a hello was recorded for daily mode
+        const todayKey = getDayKeyInOffset(new Date(), tzOffset);
+        const hasAlreadyRecordedForDailyModeToday = dailyModeState.lastHelloDate === todayKey;
         const streakBeforeLog = dailyModeState.currentStreak;
-        const hadLoggedToday = dailyModeState.hasLoggedToday;
         
         console.log('[Daily Mode] Before recording:', {
           isActive: dailyModeState.isActive,
           streakBeforeLog,
-          hadLoggedToday,
-          todaysHelloCount: dailyModeState.todaysHelloCount,
+          lastHelloDate: dailyModeState.lastHelloDate,
+          todayKey,
+          hasAlreadyRecordedForDailyModeToday,
         });
         
         await recordHelloForDailyMode();
         
-        // If this is the first hello of the day and streak will increase
-        // (streak goes from 0→1 on first day, or increments on consecutive days)
-        if (!hadLoggedToday) {
+        // Trigger celebration only if this is the first daily mode hello of the day
+        if (!hasAlreadyRecordedForDailyModeToday) {
           // The new streak value will be streakBeforeLog + 1 (or 1 if starting fresh)
           const newStreakValue = streakBeforeLog === 0 ? 1 : streakBeforeLog + 1;
           console.log('[Daily Mode] Triggering celebration for streak:', newStreakValue);
           setCelebratedStreakValue(newStreakValue);
           setTimeout(() => setShowStreakCelebration(true), 500);
         } else {
-          console.log('[Daily Mode] Not celebrating - already logged today');
+          console.log('[Daily Mode] Not celebrating - already recorded for daily mode today');
         }
       }
     }
