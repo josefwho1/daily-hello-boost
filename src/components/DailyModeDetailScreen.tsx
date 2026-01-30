@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Calendar, Flame, Trophy } from "lucide-react";
+import { ArrowLeft, Flame, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
@@ -13,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import remiSuper1 from "@/assets/remi-super-1.webp";
 
 interface DailyModeDetailScreenProps {
   isActive: boolean;
@@ -67,7 +68,7 @@ export const DailyModeDetailScreen = ({
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <Calendar className="w-6 h-6 text-primary" />
+            <img src={remiSuper1} alt="Remi" className="w-8 h-8 object-contain" />
             <h1 className="text-2xl font-bold text-foreground">Daily Mode</h1>
           </div>
         </div>

@@ -3,7 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Play, Pause, RotateCcw, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import remiProud from "@/assets/remi-proud.webp";
 
 type PackStatus = "not-started" | "active" | "paused" | "completed";
 
@@ -52,16 +51,27 @@ export const IntroSeriesDetailScreen = ({
           <h1 className="text-xl font-bold text-foreground">One Hello Intro Series</h1>
         </div>
 
-        {/* Remi Image */}
-        <div className="flex justify-center mb-6">
-          <img 
-            src={remiProud} 
-            alt="Remi proud" 
-            className="w-32 h-32 object-contain"
-          />
-        </div>
+        {/* Description Card - Moved to top */}
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <h2 className="font-bold text-foreground mb-3">
+              The Original One Hello 7-Day Challenge
+            </h2>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>
+                New to meeting strangers? Start here. This free 7-step series takes you from a simple smile and greeting all the way to exchanging names with someone new.
+              </p>
+              <p>
+                No time limits. No pressure. Complete these at your own pace - all in one day or spread across a week. Each step builds on the last, gradually increasing your comfort with starting conversations.
+              </p>
+              <p>
+                By the end, you'll have the confidence to turn any stranger into a potential friend.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Status & Progress Card */}
+        {/* Status & Progress Card - Moved below description */}
         <Card className="mb-6">
           <CardContent className="p-4 space-y-4">
             <div className="flex items-center justify-between">
@@ -109,26 +119,6 @@ export const IntroSeriesDetailScreen = ({
               <span className="text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
                 Free
               </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Description Card */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <h2 className="font-bold text-foreground mb-3">
-              The Original One Hello 7-Day Challenge
-            </h2>
-            <div className="space-y-3 text-sm text-muted-foreground">
-              <p>
-                New to meeting strangers? Start here. This free 7-step series takes you from a simple smile and greeting all the way to exchanging names with someone new.
-              </p>
-              <p>
-                No time limits. No pressure. Complete these at your own pace - all in one day or spread across a week. Each step builds on the last, gradually increasing your comfort with starting conversations.
-              </p>
-              <p>
-                By the end, you'll have the confidence to turn any stranger into a potential friend.
-              </p>
             </div>
           </CardContent>
         </Card>
