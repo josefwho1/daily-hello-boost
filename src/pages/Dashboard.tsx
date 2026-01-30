@@ -56,6 +56,16 @@ export default function Dashboard() {
   const { timezoneOffset, loading: timezoneLoading } = useTimezone();
   const { completions, addCompletion, refetch: refetchCompletions } = useChallengeCompletions();
   const { 
+    state: dailyModeState,
+    recordHelloForDailyMode,
+    checkAndResetStreak,
+    shouldShowMorningReminder,
+    shouldShowAfternoonReminder,
+    dismissMorningReminder,
+    dismissAfternoonReminder,
+    loading: dailyModeLoading,
+  } = useDailyMode();
+  const { 
     guestProgress, 
     guestLogs, 
     loading: guestLoading, 
