@@ -105,14 +105,14 @@ export const DailySuggestionCard = memo(() => {
           isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
         }`}
       >
-        <h3 className="text-sm font-medium text-foreground line-clamp-1">{displayHello.title}</h3>
-        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+        <h3 className="text-sm font-medium text-foreground line-clamp-2">{displayHello.title}</h3>
+        <p className="text-xs text-muted-foreground line-clamp-3 mt-0.5">
           {displayHello.description}
         </p>
         
         {/* Suggestion - always visible */}
         {displayHello.suggestion && (
-          <p className="text-xs text-muted-foreground/70 italic line-clamp-2 mt-2">
+          <p className="text-xs text-muted-foreground/70 italic line-clamp-3 mt-2">
             {displayHello.suggestion}
           </p>
         )}
