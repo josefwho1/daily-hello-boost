@@ -110,14 +110,11 @@ export const DailySuggestionCard = memo(() => {
           {displayHello.description}
         </p>
         
-        {/* Suggestion - always visible with label */}
+        {/* Suggestion - always visible */}
         {displayHello.suggestion && (
-          <div className="mt-2">
-            <p className="text-xs font-medium text-muted-foreground mb-0.5">Suggestion:</p>
-            <p className="text-xs text-muted-foreground/70 italic line-clamp-2">
-              {displayHello.suggestion}
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground/70 italic line-clamp-2 mt-2">
+            {displayHello.suggestion}
+          </p>
         )}
       </div>
       
