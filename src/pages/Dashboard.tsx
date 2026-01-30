@@ -32,6 +32,7 @@ import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { SingleChallengeCompleteDialog } from "@/components/SingleChallengeCompleteDialog";
 import { PackCompleteCelebrationDialog } from "@/components/PackCompleteCelebrationDialog";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
+import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
@@ -149,6 +150,11 @@ export default function Dashboard() {
   // Milestone celebration states
   const [showMilestoneCelebration, setShowMilestoneCelebration] = useState(false);
   const [milestoneValue, setMilestoneValue] = useState(0);
+  
+  // Streak celebration states
+  const [showStreakCelebration, setShowStreakCelebration] = useState(false);
+  const [celebratedStreakValue, setCelebratedStreakValue] = useState(0);
+  const previousStreakRef = useRef<number | null>(null);
   const [milestoneType, setMilestoneType] = useState<MilestoneType>('hellos');
   
   // Edit hello dialog states
@@ -438,9 +444,22 @@ export default function Dashboard() {
         }, 1000);
       }
 
-      // Record for Daily Mode if active
+      // Record for Daily Mode if active and trigger streak celebration
       if (dailyModeState.isActive) {
+        // Capture the current streak before recording
+        const streakBeforeLog = dailyModeState.currentStreak;
+        const hadLoggedToday = dailyModeState.hasLoggedToday;
+        
         await recordHelloForDailyMode();
+        
+        // If this is the first hello of the day and streak will increase
+        // (streak goes from 0→1 on first day, or increments on consecutive days)
+        if (!hadLoggedToday) {
+          // The new streak value will be streakBeforeLog + 1 (or 1 if starting fresh)
+          const newStreakValue = streakBeforeLog === 0 ? 1 : streakBeforeLog + 1;
+          setCelebratedStreakValue(newStreakValue);
+          setTimeout(() => setShowStreakCelebration(true), 500);
+        }
       }
     }
     
@@ -752,6 +771,13 @@ export default function Dashboard() {
         onContinue={() => setShowMilestoneCelebration(false)}
         milestoneValue={milestoneValue}
         milestoneType={milestoneType}
+      />
+
+      {/* Daily Mode Streak Celebration */}
+      <StreakCelebrationDialog
+        open={showStreakCelebration}
+        onContinue={() => setShowStreakCelebration(false)}
+        streakCount={celebratedStreakValue}
       />
 
       {/* Save Progress Dialog for Guests */}
