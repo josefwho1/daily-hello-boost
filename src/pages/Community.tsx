@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Users, Heart, Trophy, Hand, Mail, User } from "lucide-react";
+import { Heart, Trophy, Hand, User, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface LeaderEntry {
   displayName: string;
@@ -26,16 +24,20 @@ interface CommunityStats {
       allTime: LeaderEntry[];
       thisMonth: LeaderEntry[];
       thisWeek: LeaderEntry[];
+      today: LeaderEntry[];
     };
     names: {
       allTime: LeaderEntry[];
       thisMonth: LeaderEntry[];
       thisWeek: LeaderEntry[];
+      today: LeaderEntry[];
     };
+    dailyStreak: LeaderEntry[];
   };
 }
 
 type TimeFilter = 'allTime' | 'thisMonth' | 'thisWeek' | 'today';
+type LeaderboardType = 'hellos' | 'names';
 
 interface CommunityProps {
   embedded?: boolean;
@@ -47,8 +49,8 @@ const Community = ({ embedded = false }: CommunityProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [hellosFilter, setHellosFilter] = useState<TimeFilter>('allTime');
-  const [namesFilter, setNamesFilter] = useState<TimeFilter>('allTime');
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('allTime');
+  const [leaderboardType, setLeaderboardType] = useState<LeaderboardType>('hellos');
 
   // Check if user is anonymous (guest)
   const isGuest = user?.is_anonymous === true;
@@ -105,12 +107,9 @@ const Community = ({ embedded = false }: CommunityProps) => {
     return (num ?? 0).toLocaleString();
   };
 
-  const getHellosLeaders = (): LeaderEntry[] => {
-    return stats.leaderboards?.hellos?.[hellosFilter] || [];
-  };
-
-  const getNamesLeaders = (): LeaderEntry[] => {
-    return stats.leaderboards?.names?.[namesFilter] || [];
+  const getLeaders = (): LeaderEntry[] => {
+    const category = stats.leaderboards?.[leaderboardType];
+    return category?.[timeFilter] || [];
   };
 
   const renderLeaderboard = (
@@ -157,11 +156,16 @@ const Community = ({ embedded = false }: CommunityProps) => {
     );
   };
 
-  const filterLabels: Record<TimeFilter, string> = {
+  const timeFilterLabels: Record<TimeFilter, string> = {
     allTime: 'All',
     thisMonth: 'Month',
     thisWeek: 'Week',
     today: 'Today',
+  };
+
+  const leaderboardTypeLabels: Record<LeaderboardType, string> = {
+    hellos: 'Hellos',
+    names: 'Names',
   };
 
   return (
@@ -171,7 +175,7 @@ const Community = ({ embedded = false }: CommunityProps) => {
         {!embedded && (
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
-              <Users className="w-6 h-6 text-primary" />
+              <Trophy className="w-6 h-6 text-primary" />
               Community
             </h1>
             <p className="text-muted-foreground text-sm">Hello's from around the world</p>
@@ -226,70 +230,87 @@ const Community = ({ embedded = false }: CommunityProps) => {
           </div>
         </div>
 
-        {/* Section 2: Community Leaders */}
+        {/* Section 2: Consolidated Leaderboard */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground flex items-center justify-center gap-2">
             <Trophy className="w-5 h-5 text-primary" />
             Community Leaders
           </h2>
 
-          {/* Hellos Logged Leaderboard */}
+          {/* Combined Hellos/Names Leaderboard */}
           <Card>
             <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Hand className="w-4 h-4 text-primary" />
-                Hellos Logged
-              </CardTitle>
-              <Tabs value={hellosFilter} onValueChange={(v) => setHellosFilter(v as TimeFilter)} className="w-fit ml-auto">
-                <TabsList className="h-6 p-0.5 bg-muted/50">
-                  {(Object.keys(filterLabels) as TimeFilter[]).map((key) => (
-                    <TabsTrigger key={key} value={key} className="text-[10px] px-2 py-0.5 h-5">
-                      {filterLabels[key]}
-                    </TabsTrigger>
+              <div className="flex items-center justify-between gap-2">
+                {/* Leaderboard Type Toggle */}
+                <div className="flex bg-muted/50 rounded-lg p-0.5">
+                  {(Object.keys(leaderboardTypeLabels) as LeaderboardType[]).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => setLeaderboardType(key)}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                        leaderboardType === key
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {key === 'hellos' ? <Hand className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
+                      {leaderboardTypeLabels[key]}
+                    </button>
                   ))}
-                </TabsList>
-              </Tabs>
+                </div>
+                
+                {/* Time Filter Toggle */}
+                <div className="flex bg-muted/50 rounded-lg p-0.5">
+                  {(Object.keys(timeFilterLabels) as TimeFilter[]).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => setTimeFilter(key)}
+                      className={`px-2 py-1 rounded-md text-[10px] font-medium transition-all ${
+                        timeFilter === key
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {timeFilterLabels[key]}
+                    </button>
+                  ))}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
               {renderLeaderboard(
-                getHellosLeaders(),
-                <Hand className="w-4 h-4" />,
-                "No hellos logged yet. Be the first!"
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Names Logged Leaderboard */}
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <User className="w-4 h-4 text-primary" />
-                Names Logged
-              </CardTitle>
-              <Tabs value={namesFilter} onValueChange={(v) => setNamesFilter(v as TimeFilter)} className="w-fit ml-auto">
-                <TabsList className="h-6 p-0.5 bg-muted/50">
-                  {(Object.keys(filterLabels) as TimeFilter[]).map((key) => (
-                    <TabsTrigger key={key} value={key} className="text-[10px] px-2 py-0.5 h-5">
-                      {filterLabels[key]}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {renderLeaderboard(
-                getNamesLeaders(),
-                <User className="w-4 h-4" />,
-                "No names logged yet. Be the first!"
+                getLeaders(),
+                leaderboardType === 'hellos' ? <Hand className="w-4 h-4" /> : <User className="w-4 h-4" />,
+                leaderboardType === 'hellos' 
+                  ? "No hellos logged yet. Be the first!"
+                  : "No names logged yet. Be the first!"
               )}
             </CardContent>
           </Card>
         </div>
 
+        {/* Section 3: Daily Mode Streak Leaderboard */}
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold text-foreground flex items-center justify-center gap-2">
+            <Flame className="w-5 h-5 text-orange-500" />
+            Daily Mode Best Streaks
+          </h2>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                🔥 Top 10 All-Time Streaks
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {renderLeaderboard(
+                stats.leaderboards?.dailyStreak || [],
+                <Flame className="w-4 h-4 text-orange-500" />,
+                "No daily streaks yet. Start your streak today!"
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Encouraging Footer */}
         <div className="text-center py-4">
