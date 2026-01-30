@@ -450,6 +450,13 @@ export default function Dashboard() {
         const streakBeforeLog = dailyModeState.currentStreak;
         const hadLoggedToday = dailyModeState.hasLoggedToday;
         
+        console.log('[Daily Mode] Before recording:', {
+          isActive: dailyModeState.isActive,
+          streakBeforeLog,
+          hadLoggedToday,
+          todaysHelloCount: dailyModeState.todaysHelloCount,
+        });
+        
         await recordHelloForDailyMode();
         
         // If this is the first hello of the day and streak will increase
@@ -457,8 +464,11 @@ export default function Dashboard() {
         if (!hadLoggedToday) {
           // The new streak value will be streakBeforeLog + 1 (or 1 if starting fresh)
           const newStreakValue = streakBeforeLog === 0 ? 1 : streakBeforeLog + 1;
+          console.log('[Daily Mode] Triggering celebration for streak:', newStreakValue);
           setCelebratedStreakValue(newStreakValue);
           setTimeout(() => setShowStreakCelebration(true), 500);
+        } else {
+          console.log('[Daily Mode] Not celebrating - already logged today');
         }
       }
     }
