@@ -161,6 +161,42 @@ Deno.serve(async (req) => {
       getTopLeaders(namesToday),
     ]);
 
+    // Get daily mode best streak leaderboard
+    const { data: dailyStreakData } = await supabase
+      .from('user_progress')
+      .select('user_id, daily_mode_best_streak')
+      .not('daily_mode_best_streak', 'is', null)
+      .gt('daily_mode_best_streak', 0)
+      .order('daily_mode_best_streak', { ascending: false })
+      .limit(50);
+
+    const dailyStreakLeaders = await Promise.all(
+      (dailyStreakData || [])
+        .filter((row) => {
+          const profile = profileMap.get(row.user_id);
+          return !profile?.hide_from_leaderboard;
+        })
+        .slice(0, 10)
+        .map(async (row) => {
+          const profile = profileMap.get(row.user_id);
+          
+          const { data: progress } = await supabase
+            .from('user_progress')
+            .select('username')
+            .eq('user_id', row.user_id)
+            .maybeSingle();
+          
+          const displayName = progress?.username || profile?.username || 'Anonymous';
+          const isGuest = profile?.is_anonymous === true;
+          
+          return {
+            displayName: isGuest ? `${displayName} (guest)` : displayName,
+            count: row.daily_mode_best_streak || 0,
+            isGuest,
+          };
+        })
+    );
+
     return new Response(
       JSON.stringify({
         collectiveImpact: {
@@ -183,6 +219,7 @@ Deno.serve(async (req) => {
             thisWeek: namesWeekLeaders,
             today: namesTodayLeaders,
           },
+          dailyStreak: dailyStreakLeaders,
         },
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
