@@ -268,6 +268,13 @@ export type Database = {
           current_phase: string | null
           current_streak: number
           daily_email_opt_in: boolean | null
+          daily_mode_active: boolean | null
+          daily_mode_afternoon_reminder_shown_date: string | null
+          daily_mode_best_streak: number | null
+          daily_mode_current_streak: number | null
+          daily_mode_last_hello_date: string | null
+          daily_mode_morning_reminder_shown_date: string | null
+          daily_mode_start_date: string | null
           daily_path_selected_at: string | null
           daily_streak: number | null
           email_unsubscribed: boolean | null
@@ -319,6 +326,13 @@ export type Database = {
           current_phase?: string | null
           current_streak?: number
           daily_email_opt_in?: boolean | null
+          daily_mode_active?: boolean | null
+          daily_mode_afternoon_reminder_shown_date?: string | null
+          daily_mode_best_streak?: number | null
+          daily_mode_current_streak?: number | null
+          daily_mode_last_hello_date?: string | null
+          daily_mode_morning_reminder_shown_date?: string | null
+          daily_mode_start_date?: string | null
           daily_path_selected_at?: string | null
           daily_streak?: number | null
           email_unsubscribed?: boolean | null
@@ -370,6 +384,13 @@ export type Database = {
           current_phase?: string | null
           current_streak?: number
           daily_email_opt_in?: boolean | null
+          daily_mode_active?: boolean | null
+          daily_mode_afternoon_reminder_shown_date?: string | null
+          daily_mode_best_streak?: number | null
+          daily_mode_current_streak?: number | null
+          daily_mode_last_hello_date?: string | null
+          daily_mode_morning_reminder_shown_date?: string | null
+          daily_mode_start_date?: string | null
           daily_path_selected_at?: string | null
           daily_streak?: number | null
           email_unsubscribed?: boolean | null
