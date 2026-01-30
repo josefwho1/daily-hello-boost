@@ -773,6 +773,13 @@ export default function Dashboard() {
         milestoneType={milestoneType}
       />
 
+      {/* Daily Mode Streak Celebration */}
+      <StreakCelebrationDialog
+        open={showStreakCelebration}
+        onContinue={() => setShowStreakCelebration(false)}
+        streakCount={celebratedStreakValue}
+      />
+
       {/* Save Progress Dialog for Guests */}
       <SaveProgressDialog
         open={showSavePrompt}
