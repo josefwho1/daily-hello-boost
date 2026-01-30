@@ -150,6 +150,11 @@ export default function Dashboard() {
   // Milestone celebration states
   const [showMilestoneCelebration, setShowMilestoneCelebration] = useState(false);
   const [milestoneValue, setMilestoneValue] = useState(0);
+  
+  // Streak celebration states
+  const [showStreakCelebration, setShowStreakCelebration] = useState(false);
+  const [celebratedStreakValue, setCelebratedStreakValue] = useState(0);
+  const previousStreakRef = useRef<number | null>(null);
   const [milestoneType, setMilestoneType] = useState<MilestoneType>('hellos');
   
   // Edit hello dialog states
