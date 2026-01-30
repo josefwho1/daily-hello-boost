@@ -437,6 +437,11 @@ export default function Dashboard() {
           setShowSavePrompt(true);
         }, 1000);
       }
+
+      // Record for Daily Mode if active
+      if (dailyModeState.isActive) {
+        await recordHelloForDailyMode();
+      }
     }
     
     setSelectedChallenge(null);
