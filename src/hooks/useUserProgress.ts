@@ -42,6 +42,14 @@ export interface UserProgress {
   last_hello_at?: string;
   daily_path_selected_at?: string;
   chill_path_selected_at?: string;
+  // Daily Mode fields
+  daily_mode_active?: boolean;
+  daily_mode_current_streak?: number;
+  daily_mode_best_streak?: number;
+  daily_mode_start_date?: string | null;
+  daily_mode_last_hello_date?: string | null;
+  daily_mode_morning_reminder_shown_date?: string | null;
+  daily_mode_afternoon_reminder_shown_date?: string | null;
 }
 
 export const useUserProgress = () => {
