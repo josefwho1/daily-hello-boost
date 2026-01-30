@@ -32,6 +32,7 @@ import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { SingleChallengeCompleteDialog } from "@/components/SingleChallengeCompleteDialog";
 import { PackCompleteCelebrationDialog } from "@/components/PackCompleteCelebrationDialog";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
+import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
 import { onboardingChallenges } from "@/data/onboardingChallenges";
 import { getTodaysHello } from "@/data/dailyHellos";
 import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
