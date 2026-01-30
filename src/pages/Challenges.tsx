@@ -33,8 +33,10 @@ const Challenges = () => {
   const { progress: cloudProgress, updateProgress: updateCloudProgress, loading: cloudLoading } = useUserProgressQuery();
   const [restartingPackId, setRestartingPackId] = useState<string | null>(null);
   const [confirmRestartPackId, setConfirmRestartPackId] = useState<string | null>(null);
+  const [showDailyModeDetail, setShowDailyModeDetail] = useState(false);
   const { guestProgress, updateProgress: updateGuestProgress, isAnonymous, loading: guestLoading } = useGuestMode();
   const { completions, clearCompletionsByTags, refetch: refetchCompletions, loading: completionsLoading } = useChallengeCompletionsQuery();
+  const { state: dailyModeState, activateDailyMode, deactivateDailyMode, loading: dailyModeLoading } = useDailyMode();
   
   const progress = isAnonymous ? guestProgress : cloudProgress;
   const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
