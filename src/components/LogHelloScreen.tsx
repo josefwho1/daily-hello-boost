@@ -48,7 +48,8 @@ export const LogHelloScreen = ({
   onLog, 
   challengeTitle,
   autoStartRecording = false,
-  existingLogs = []
+  existingLogs = [],
+  requireAtLeastOneField = false
 }: LogHelloScreenProps) => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");

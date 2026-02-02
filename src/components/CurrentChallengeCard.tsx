@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Target, ChevronRight, Check, RotateCcw } from "lucide-react";
-import { ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
+import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb } from "lucide-react";
+import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
 import remiProud from "@/assets/remi-proud.webp";
 import {
@@ -22,7 +22,7 @@ interface CurrentChallengeCardProps {
   nextChallenge: ThirtyDayChallenge | null;
   totalCount: number;
   isComplete: boolean;
-  onMarkComplete: (day: number) => void;
+  onComplete: (day: number, challengeName: string) => void;
   onViewAll: () => void;
   onRestart: () => void;
 }
@@ -32,30 +32,47 @@ export const CurrentChallengeCard = ({
   nextChallenge,
   totalCount,
   isComplete,
-  onMarkComplete,
+  onComplete,
   onViewAll,
   onRestart,
 }: CurrentChallengeCardProps) => {
-  const [showConfirmComplete, setShowConfirmComplete] = useState(false);
   const [showConfirmRestart, setShowConfirmRestart] = useState(false);
-  const [pendingDay, setPendingDay] = useState<number | null>(null);
+  const [showTip, setShowTip] = useState(false);
+  
+  // Find current challenge index and allow navigation
+  const getCurrentIndex = () => {
+    if (!nextChallenge) return thirtyDayChallenge.length - 1;
+    return thirtyDayChallenge.findIndex(c => c.day === nextChallenge.day);
+  };
+  
+  const [currentIndex, setCurrentIndex] = useState(getCurrentIndex);
+  const currentChallenge = thirtyDayChallenge[currentIndex];
+  const isChallengeComplete = completedDays.includes(currentChallenge?.day || 0);
 
   const completedCount = completedDays.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
-  const handleMarkCompleteClick = () => {
-    if (nextChallenge) {
-      setPendingDay(nextChallenge.day);
-      setShowConfirmComplete(true);
+  const canGoLeft = currentIndex > 0;
+  const canGoRight = currentIndex < thirtyDayChallenge.length - 1;
+
+  const goLeft = () => {
+    if (canGoLeft) {
+      setCurrentIndex(currentIndex - 1);
+      setShowTip(false);
     }
   };
 
-  const handleConfirmComplete = () => {
-    if (pendingDay !== null) {
-      onMarkComplete(pendingDay);
-      setPendingDay(null);
+  const goRight = () => {
+    if (canGoRight) {
+      setCurrentIndex(currentIndex + 1);
+      setShowTip(false);
     }
-    setShowConfirmComplete(false);
+  };
+
+  const handleCompleteClick = () => {
+    if (currentChallenge) {
+      onComplete(currentChallenge.day, currentChallenge.name);
+    }
   };
 
   const handleRestartClick = () => {
@@ -65,36 +82,65 @@ export const CurrentChallengeCard = ({
   const handleConfirmRestart = () => {
     onRestart();
     setShowConfirmRestart(false);
+    setCurrentIndex(0);
   };
 
   return (
     <>
-      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden">
+      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[210px] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Target className="w-5 h-5 text-primary" />
             <span className="font-bold text-foreground text-base">30-Day Hello Challenge</span>
           </div>
+          
+          {/* Navigation arrows */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={goLeft}
+              disabled={!canGoLeft}
+              aria-label="Previous challenge"
+              className={cn(
+                "h-7 w-7 flex items-center justify-center rounded-lg transition-colors",
+                canGoLeft ? "text-muted-foreground hover:text-foreground hover:bg-muted" : "text-muted-foreground/30 pointer-events-none"
+              )}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              onClick={goRight}
+              disabled={!canGoRight}
+              aria-label="Next challenge"
+              className={cn(
+                "h-7 w-7 flex items-center justify-center rounded-lg transition-colors",
+                canGoRight ? "text-muted-foreground hover:text-foreground hover:bg-muted" : "text-muted-foreground/30 pointer-events-none"
+              )}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Progress bar */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between text-sm mb-1.5">
-            <span className="text-muted-foreground">Progress: {completedCount}/{totalCount}</span>
+        <div className="mt-2">
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="text-muted-foreground">
+              Day {currentChallenge?.day} of {totalCount} • {completedCount} completed
+            </span>
           </div>
           <Progress value={progressPercent} className="h-2" />
         </div>
 
         {/* Content */}
-        {isComplete ? (
-          <div className="space-y-3">
+        {isComplete && currentIndex === thirtyDayChallenge.length - 1 ? (
+          <div className="flex-1 flex flex-col justify-center space-y-3 pr-14">
             <div className="flex items-center gap-2 text-success">
               <Check className="w-5 h-5" />
               <span className="font-semibold">🎉 Challenge Complete!</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              You've completed all 30 challenges. You're officially a Conversation Starter!
+              You're officially a Conversation Starter!
             </p>
             <div className="flex gap-2">
               <Button 
@@ -117,29 +163,66 @@ export const CurrentChallengeCard = ({
               </Button>
             </div>
           </div>
-        ) : nextChallenge ? (
-          <div className="space-y-3 pr-14">
-            <div>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                <span>→</span>
-                <span>Next: Day {nextChallenge.day} - {nextChallenge.name}</span>
+        ) : currentChallenge ? (
+          <div 
+            className={cn(
+              "flex-1 flex flex-col pr-14 mt-2",
+              currentChallenge.suggestion && !isChallengeComplete && "cursor-pointer"
+            )}
+            onClick={() => {
+              if (currentChallenge.suggestion && !isChallengeComplete) {
+                setShowTip(!showTip);
+              }
+            }}
+          >
+            {/* Challenge name - prominent */}
+            <h3 className="text-base font-bold text-foreground line-clamp-1">
+              {currentChallenge.name}
+            </h3>
+            
+            {/* Description or Tip - swap on tap */}
+            <p className={cn(
+              "text-sm text-muted-foreground line-clamp-2 mt-1",
+              showTip && "italic text-muted-foreground/70"
+            )}>
+              {showTip && currentChallenge.suggestion 
+                ? `"${currentChallenge.suggestion}"` 
+                : currentChallenge.description}
+            </p>
+
+            {/* Tip toggle hint */}
+            {currentChallenge.suggestion && !isChallengeComplete && (
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 mt-1">
+                <Lightbulb size={10} />
+                {showTip ? "Tap to show challenge" : "Tap to show tip"}
               </div>
-              <p className="text-sm text-foreground">
-                {nextChallenge.description}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                size="sm" 
-                onClick={handleMarkCompleteClick}
-                className="flex-1 rounded-full"
-              >
-                Mark Complete
-              </Button>
+            )}
+
+            {/* Buttons */}
+            <div className="flex gap-2 mt-auto pt-2">
+              {isChallengeComplete ? (
+                <div className="flex items-center justify-center gap-1 text-success text-sm font-medium h-9 flex-1">
+                  <Check size={14} /> Completed
+                </div>
+              ) : (
+                <Button 
+                  size="sm" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCompleteClick();
+                  }}
+                  className="flex-1 rounded-full"
+                >
+                  Complete
+                </Button>
+              )}
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={onViewAll}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewAll();
+                }}
                 className="flex-1 rounded-full"
               >
                 View All
@@ -156,27 +239,6 @@ export const CurrentChallengeCard = ({
           className="absolute bottom-2 right-2 w-12 h-auto object-contain opacity-90 pointer-events-none"
         />
       </Card>
-
-      {/* Confirm Complete Dialog */}
-      <AlertDialog open={showConfirmComplete} onOpenChange={setShowConfirmComplete}>
-        <AlertDialogContent className="rounded-2xl max-w-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Complete this challenge?</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <span className="font-medium text-foreground block">
-                Day {nextChallenge?.day}: {nextChallenge?.name}
-              </span>
-              <span className="block">{nextChallenge?.description}</span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmComplete} className="rounded-xl">
-              Yes, I Did It!
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Confirm Restart Dialog */}
       <AlertDialog open={showConfirmRestart} onOpenChange={setShowConfirmRestart}>
