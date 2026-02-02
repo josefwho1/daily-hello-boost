@@ -115,6 +115,11 @@ export default function Onboarding() {
           current_phase: 'active',
           username: displayName,
           has_seen_welcome_messages: false, // Reset to show walkthrough
+          daily_mode_active: true, // Daily Mode ON by default
+          daily_mode_current_streak: 0,
+          daily_mode_start_date: new Date().toISOString(),
+          challenge_completed_days: [], // Start fresh 30-day challenge
+          challenge_started_at: new Date().toISOString(),
         })
         .eq('user_id', userId);
       if (progressUpdateError) throw progressUpdateError;
@@ -132,8 +137,13 @@ export default function Onboarding() {
           mode: 'daily',
           username: displayName,
           target_hellos_per_week: 7,
-          selected_pack_id: 'starter-pack',
+          selected_pack_id: '',
           has_seen_welcome_messages: false, // Show walkthrough
+          daily_mode_active: true, // Daily Mode ON by default
+          daily_mode_current_streak: 0,
+          daily_mode_start_date: new Date().toISOString(),
+          challenge_completed_days: [], // Start fresh 30-day challenge
+          challenge_started_at: new Date().toISOString(),
         });
       if (progressInsertError) throw progressInsertError;
     }

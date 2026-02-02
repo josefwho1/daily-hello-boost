@@ -259,6 +259,10 @@ export type Database = {
       }
       user_progress: {
         Row: {
+          challenge_completed_at: string | null
+          challenge_completed_days: number[] | null
+          challenge_started_at: string | null
+          challenge_times_completed: number | null
           chill_email_opt_in: boolean | null
           chill_path_selected_at: string | null
           comfort_rating: number | null
@@ -317,6 +321,10 @@ export type Database = {
           why_here: string | null
         }
         Insert: {
+          challenge_completed_at?: string | null
+          challenge_completed_days?: number[] | null
+          challenge_started_at?: string | null
+          challenge_times_completed?: number | null
           chill_email_opt_in?: boolean | null
           chill_path_selected_at?: string | null
           comfort_rating?: number | null
@@ -375,6 +383,10 @@ export type Database = {
           why_here?: string | null
         }
         Update: {
+          challenge_completed_at?: string | null
+          challenge_completed_days?: number[] | null
+          challenge_started_at?: string | null
+          challenge_times_completed?: number | null
           chill_email_opt_in?: boolean | null
           chill_path_selected_at?: string | null
           comfort_rating?: number | null
