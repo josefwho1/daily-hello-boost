@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { Target, Flame, RotateCcw, ChevronRight, Clock, Pause, Play } from "lucide-react";
+import { Target, Flame, RotateCcw, ChevronRight, Pause, Play } from "lucide-react";
 import { toast } from "sonner";
 import questsIcon from "@/assets/quests-icon.webp";
 import remiQuest from "@/assets/remi-quest.webp";
@@ -155,9 +155,9 @@ const Challenges = () => {
     return (
       <ChallengeListView
         completedDays={challengeState.completedDays}
-        onComplete={(day, name) => {
-          setPendingChallengeCompletion({ day, name });
-          setShowLogScreen(true);
+        onComplete={async (day, name) => {
+          await markDayComplete(day);
+          toast.success(`${name} complete! ✅`);
         }}
         onBack={() => setShowChallengeList(false)}
       />
@@ -179,63 +179,37 @@ const Challenges = () => {
           <img src={remiQuest} alt="Remi" className="w-16 h-16 object-contain" />
         </div>
 
-        {/* Daily Mode Toggle Section */}
+        {/* Daily Mode Toggle Section - Compressed */}
         <Card className="mb-6">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Flame className="w-5 h-5 text-orange-500" />
-                <span className="font-bold text-foreground">Daily Mode</span>
+                <div>
+                  <span className="font-bold text-foreground">Daily Mode</span>
+                  <p className="text-xs text-muted-foreground">
+                    {dailyModeState.isActive 
+                      ? `${dailyModeState.currentStreak} day streak 🔥` 
+                      : "Track your streak"}
+                  </p>
+                </div>
               </div>
-              <Switch
-                checked={dailyModeState.isActive}
-                onCheckedChange={handleDailyModeToggle}
-              />
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDailyModeDetail(true)}
+                  className="text-xs text-muted-foreground px-2"
+                >
+                  Details
+                  <ChevronRight className="w-3 h-3 ml-0.5" />
+                </Button>
+                <Switch
+                  checked={dailyModeState.isActive}
+                  onCheckedChange={handleDailyModeToggle}
+                />
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-3">
-              Get daily reminders and track your streak
-            </p>
-            
-            {dailyModeState.isActive ? (
-              <div className="bg-muted/50 rounded-lg p-3 space-y-1.5 text-sm">
-                <div className="flex items-center gap-2 text-foreground">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span>Morning reminder (9am)</span>
-                </div>
-                <div className="flex items-center gap-2 text-foreground">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span>Afternoon reminder (4pm if no hello)</span>
-                </div>
-                <div className="flex items-center gap-2 text-foreground">
-                  <Flame className="w-4 h-4 text-orange-500" />
-                  <span>Streak counter on Home</span>
-                </div>
-                
-                {dailyModeState.currentStreak > 0 && (
-                  <div className="pt-2 border-t border-border mt-2">
-                    <span className="font-medium">Current streak: {dailyModeState.currentStreak} days 🔥</span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground">
-                <p>When OFF:</p>
-                <ul className="list-disc list-inside mt-1 space-y-0.5">
-                  <li>3 check-ins per week (Mon/Wed/Fri)</li>
-                  <li>No streak tracking</li>
-                </ul>
-              </div>
-            )}
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowDailyModeDetail(true)}
-              className="w-full mt-3 text-muted-foreground"
-            >
-              View Details
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
           </CardContent>
         </Card>
 
@@ -252,8 +226,8 @@ const Challenges = () => {
                 🎯
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-foreground">The One Hello Challenge</h3>
-                <p className="text-xs text-muted-foreground">One Hello a day, for 30 days.</p>
+                <h3 className="font-bold text-foreground">The 30 Hellos</h3>
+                <p className="text-xs text-muted-foreground">30 simple ways to start a conversation.</p>
                 <p className="text-xs text-success font-medium">FREE • Perfect for Everyone</p>
                 {isQuestPaused && (
                   <p className="text-xs text-warning font-medium mt-1">⏸️ Paused</p>

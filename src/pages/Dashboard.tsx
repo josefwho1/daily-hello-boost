@@ -13,7 +13,7 @@ import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
-import { DailyModeHomeCard } from "@/components/DailyModeHomeCard";
+
 import { DailyModeReminderBanner } from "@/components/DailyModeReminderBanner";
 import { RecentHellosSection } from "@/components/RecentHellosSection";
 import { HomeStatsBar } from "@/components/HomeStatsBar";
@@ -422,17 +422,6 @@ export default function Dashboard() {
           lifetimeHellos={logs.length} 
         />
 
-        {/* Daily Mode Home Card - between stats and challenge card */}
-        {dailyModeState.isActive && (
-          <div className="mb-6">
-            <DailyModeHomeCard
-              todaysHelloCount={dailyModeState.todaysHelloCount}
-              currentStreak={dailyModeState.currentStreak}
-              hasLoggedToday={dailyModeState.hasLoggedToday}
-              onClick={() => navigate('/challenges')}
-            />
-          </div>
-        )}
 
         {/* Main Dashboard - Connection-focused layout */}
         <div className="space-y-6">
