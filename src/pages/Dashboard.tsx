@@ -438,7 +438,6 @@ export default function Dashboard() {
             await markDayComplete(pendingChallengeCompletion.day);
             showChallengeCompletedToast(pendingChallengeCompletion.day, pendingChallengeCompletion.name);
             checkAndShowCelebrations(previousCount, previousCount + 1);
-            }
             setPendingChallengeCompletion(null);
           }
         }}
