@@ -542,8 +542,19 @@ export default function Dashboard() {
       {/* 30-Day Challenge Complete Celebration */}
       <ThirtyChallengeCompleteDialog
         open={showThirtyChallengeComplete}
-        onContinue={() => setShowThirtyChallengeComplete(false)}
+        onContinue={async () => {
+          setShowThirtyChallengeComplete(false);
+          // Switch to Today's Hello after completing 30 Hellos
+          await updateProgress({ selected_pack_id: 'daily' });
+        }}
         timesCompleted={challengeState.timesCompleted}
+      />
+
+      {/* Tier Unlock Celebration (10 or 20) */}
+      <TierUnlockCelebrationDialog
+        open={showTierUnlock}
+        onContinue={() => setShowTierUnlock(false)}
+        tier={tierUnlockValue}
       />
 
       {/* Milestone Celebrations */}
