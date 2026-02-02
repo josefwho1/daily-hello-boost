@@ -93,7 +93,7 @@ export const CurrentChallengeCard = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <Target className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="font-bold text-foreground text-base">The One Hello Challenge</span>
+              <span className="font-bold text-foreground text-base">The 30 Hellos</span>
             </div>
           </div>
           
