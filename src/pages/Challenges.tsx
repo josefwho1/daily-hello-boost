@@ -43,6 +43,7 @@ const Challenges = () => {
   const {
     state: challengeState,
     markDayComplete,
+    unmarkDayComplete,
     restartChallenge,
     loading: challengeLoading,
   } = useChallengeProgress();
