@@ -366,7 +366,7 @@ const Challenges = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Turn off Daily Mode?</AlertDialogTitle>
             <AlertDialogDescription>
-              Your current streak will be preserved, but you won't get daily reminders anymore. You can turn it back on anytime.
+              Your current streak will end and be saved if it's your best. Daily reminders will stop. You can turn Daily Mode back on anytime to start a new streak.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
