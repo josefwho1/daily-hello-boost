@@ -93,45 +93,9 @@ export const CurrentChallengeCard = ({
 
   const handleCompleteClick = () => {
     if (currentChallenge && !isChallengeComplete) {
-      const day = currentChallenge.day;
-      onComplete(day, currentChallenge.name);
-      
-      // Show toast with undo option
-      const toastId = toast(
-        <div className="flex flex-col items-center text-center w-full cursor-pointer">
-          <div className="flex items-center gap-2 text-success font-medium">
-            <Check size={16} />
-            <span>Challenge complete!</span>
-          </div>
-          <span className="text-xs text-muted-foreground mt-1">Tap to undo</span>
-        </div>,
-        {
-          duration: UNDO_TIMEOUT_MS,
-          className: "cursor-pointer",
-          onDismiss: () => {
-            undoDataRef.current = null;
-          },
-        }
-      );
-      
-      undoDataRef.current = { day, toastId };
+      onComplete(currentChallenge.day, currentChallenge.name);
     }
   };
-
-  // Handle toast click for undo
-  useEffect(() => {
-    const handleToastClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest('[data-sonner-toast]') && undoDataRef.current) {
-        onUncomplete(undoDataRef.current.day);
-        toast.dismiss(undoDataRef.current.toastId);
-        undoDataRef.current = null;
-      }
-    };
-    
-    document.addEventListener('click', handleToastClick);
-    return () => document.removeEventListener('click', handleToastClick);
-  }, [onUncomplete]);
 
   const handleRestartClick = () => {
     setShowConfirmRestart(true);
