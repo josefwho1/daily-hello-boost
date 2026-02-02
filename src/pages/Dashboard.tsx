@@ -490,25 +490,10 @@ export default function Dashboard() {
                 totalCount={challengeState.totalCount}
                 isComplete={challengeState.isComplete}
                 onComplete={async (day, challengeName) => {
+                  const previousCount = challengeState.completedDays.length;
                   await markDayComplete(day);
-                  toast(
-                    <div className="flex flex-col w-full">
-                      <span className="font-medium">"{challengeName}" Completed!</span>
-                      <button 
-                        onClick={() => {
-                          unmarkDayComplete(day);
-                          toast.dismiss();
-                        }}
-                        className="text-xs text-muted-foreground hover:text-foreground mt-1 text-left"
-                      >
-                        Undo
-                      </button>
-                    </div>,
-                    { duration: 5000 }
-                  );
-                  if (challengeState.completedDays.length === 29) {
-                    setTimeout(() => setShowThirtyChallengeComplete(true), 500);
-                  }
+                  showChallengeCompletedToast(day, challengeName);
+                  checkAndShowCelebrations(previousCount, previousCount + 1);
                 }}
                 onUncomplete={async (day) => {
                   await unmarkDayComplete(day);
