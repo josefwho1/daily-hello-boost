@@ -1,6 +1,5 @@
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useEffect, useMemo } from "react";
 
@@ -65,31 +64,30 @@ export const ThirtyChallengeCompleteDialog = ({
   }, [open]);
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent 
-        className="max-w-sm rounded-2xl p-6 text-center border-2 border-primary/30"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
-        <DialogTitle className="sr-only">30-Day Challenge Complete</DialogTitle>
-        
+    <AnimatePresence>
+      {open && (
         <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ 
-            type: "spring", 
-            stiffness: 200, 
-            damping: 15,
-            delay: 0.1 
-          }}
-          className="space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-6"
         >
-          {/* Remi congrats */}
-          <div className="flex justify-center">
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 200, 
+              damping: 15,
+              delay: 0.1 
+            }}
+            className="flex flex-col items-center text-center max-w-sm space-y-5"
+          >
+            {/* Remi congrats */}
             <motion.img 
               src={remiImage}
               alt="Remi congratulating"
-              className="w-36 h-36 object-contain"
+              className="w-44 h-44 object-contain"
               initial={{ y: -20, scale: 0.8 }}
               animate={{ y: 0, scale: 1 }}
               transition={{ 
@@ -99,66 +97,66 @@ export const ThirtyChallengeCompleteDialog = ({
                 delay: 0.2
               }}
             />
-          </div>
 
-          {/* Title */}
-          <motion.h2
-            className="text-2xl font-bold text-foreground"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            🎉 You did it!
-          </motion.h2>
+            {/* Title */}
+            <motion.h2
+              className="text-3xl font-bold text-foreground"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              🎉 You did it!
+            </motion.h2>
 
-          {/* Message */}
-          <motion.div
-            className="text-muted-foreground space-y-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <p className="font-medium text-foreground">
-              You've completed The 30 Hellos.
-            </p>
-            <p>
-              This doesn't end here.<br />
-              One hello a day still counts.
-            </p>
-            <p className="text-sm">
-              You'll now see a Today's Hello for suggestions.<br />
-              If you want new ideas later, you can explore Quests anytime.
-            </p>
-          </motion.div>
-
-          {timesCompleted > 1 && (
-            <motion.p
-              className="text-xs text-muted-foreground"
+            {/* Message */}
+            <motion.div
+              className="text-muted-foreground space-y-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.4 }}
             >
-              Times completed: {timesCompleted}
-            </motion.p>
-          )}
+              <p className="text-lg font-medium text-foreground">
+                You've completed The 30 Hellos.
+              </p>
+              <p>
+                This doesn't end here.<br />
+                One hello a day still counts.
+              </p>
+              <p className="text-sm">
+                You'll now see a Today's Hello for suggestions.<br />
+                If you want new ideas later, you can explore Quests anytime.
+              </p>
+            </motion.div>
 
-          {/* Continue button */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="pt-2"
-          >
-            <Button 
-              onClick={onContinue}
-              className="w-full rounded-full font-semibold"
-              size="lg"
+            {timesCompleted > 1 && (
+              <motion.p
+                className="text-xs text-muted-foreground"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                Times completed: {timesCompleted}
+              </motion.p>
+            )}
+
+            {/* Continue button */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="pt-4 w-full"
             >
-              Keep Going
-            </Button>
+              <Button 
+                onClick={onContinue}
+                className="w-full rounded-full font-semibold"
+                size="lg"
+              >
+                Keep Going
+              </Button>
+            </motion.div>
           </motion.div>
         </motion.div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </AnimatePresence>
   );
 };

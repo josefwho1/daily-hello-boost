@@ -1,6 +1,5 @@
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useEffect, useMemo } from "react";
 
@@ -82,31 +81,30 @@ export const TierUnlockCelebrationDialog = ({
     : "You've completed 20 challenges! The final 10 are now unlocked.";
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent 
-        className="max-w-sm rounded-2xl p-6 text-center border-2 border-primary/30"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
-        <DialogTitle className="sr-only">Tier Unlocked</DialogTitle>
-        
+    <AnimatePresence>
+      {open && (
         <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ 
-            type: "spring", 
-            stiffness: 200, 
-            damping: 15,
-            delay: 0.1 
-          }}
-          className="space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-6"
         >
-          {/* Remi celebrating */}
-          <div className="flex justify-center">
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 200, 
+              damping: 15,
+              delay: 0.1 
+            }}
+            className="flex flex-col items-center text-center max-w-sm space-y-6"
+          >
+            {/* Remi celebrating */}
             <motion.img 
               src={remiImage}
               alt="Remi celebrating"
-              className="w-32 h-32 object-contain"
+              className="w-40 h-40 object-contain"
               initial={{ y: -20 }}
               animate={{ y: 0 }}
               transition={{ 
@@ -116,45 +114,45 @@ export const TierUnlockCelebrationDialog = ({
                 delay: 0.2
               }}
             />
-          </div>
 
-          {/* Title */}
-          <motion.h2
-            className="text-2xl font-bold text-foreground"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            {tierTitle}
-          </motion.h2>
-
-          {/* Message */}
-          <motion.p
-            className="text-muted-foreground"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            {tierMessage}
-          </motion.p>
-
-          {/* Continue button */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="pt-2"
-          >
-            <Button 
-              onClick={onContinue}
-              className="w-full rounded-full font-semibold"
-              size="lg"
+            {/* Title */}
+            <motion.h2
+              className="text-3xl font-bold text-foreground"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
             >
-              Keep Going
-            </Button>
+              {tierTitle}
+            </motion.h2>
+
+            {/* Message */}
+            <motion.p
+              className="text-lg text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              {tierMessage}
+            </motion.p>
+
+            {/* Continue button */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="pt-4 w-full"
+            >
+              <Button 
+                onClick={onContinue}
+                className="w-full rounded-full font-semibold"
+                size="lg"
+              >
+                Keep Going
+              </Button>
+            </motion.div>
           </motion.div>
         </motion.div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </AnimatePresence>
   );
 };
