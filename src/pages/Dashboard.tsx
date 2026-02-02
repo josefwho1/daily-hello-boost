@@ -12,6 +12,7 @@ import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
 import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
+import { TierUnlockCelebrationDialog } from "@/components/TierUnlockCelebrationDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 
 import { DailyModeReminderBanner } from "@/components/DailyModeReminderBanner";
@@ -25,6 +26,7 @@ import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
 import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
 import { toast } from "sonner";
+import { Check } from "lucide-react";
 import { startOfWeek, isBefore, parseISO } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { normalizeTimezoneOffset, getDayKeyInOffset } from "@/lib/timezone";
@@ -120,6 +122,8 @@ export default function Dashboard() {
   const [showHomeTutorial, setShowHomeTutorial] = useState(false);
   const [showChallengeList, setShowChallengeList] = useState(false);
   const [showThirtyChallengeComplete, setShowThirtyChallengeComplete] = useState(false);
+  const [showTierUnlock, setShowTierUnlock] = useState(false);
+  const [tierUnlockValue, setTierUnlockValue] = useState<10 | 20>(10);
   const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{day: number; name: string} | null>(null);
   
   // Milestone celebration states
@@ -349,31 +353,61 @@ export default function Dashboard() {
 
   if (!progress) return null;
 
+  // Helper to show challenge completion toast with green tick
+  const showChallengeCompletedToast = (day: number, challengeName: string) => {
+    let toastId: string | number;
+    const handleUndo = async () => {
+      await unmarkDayComplete(day);
+      toast.dismiss(toastId);
+    };
+
+    toastId = toast(
+      <button onClick={() => void handleUndo()} className="w-full text-left p-0 bg-transparent border-none">
+        <div className="flex items-center gap-2">
+          <Check className="w-4 h-4 text-success flex-shrink-0" />
+          <span className="text-sm font-medium">"{challengeName}" Completed!</span>
+        </div>
+        <span className="mt-0.5 block text-[11px] text-muted-foreground opacity-70">(tap to undo)</span>
+      </button>,
+      { duration: 5000 }
+    );
+  };
+
+  // Helper to handle tier unlock celebrations
+  const checkAndShowCelebrations = (previousCount: number, newCount: number) => {
+    // Check for 30 completion first
+    if (newCount === 30 && previousCount < 30) {
+      setTimeout(() => {
+        setShowThirtyChallengeComplete(true);
+      }, 500);
+      return;
+    }
+    
+    // Check for tier 2 unlock (10 completed)
+    if (previousCount < 10 && newCount >= 10) {
+      setTierUnlockValue(10);
+      setTimeout(() => setShowTierUnlock(true), 500);
+      return;
+    }
+    
+    // Check for tier 3 unlock (20 completed)
+    if (previousCount < 20 && newCount >= 20) {
+      setTierUnlockValue(20);
+      setTimeout(() => setShowTierUnlock(true), 500);
+      return;
+    }
+  };
+
   // Full-screen Challenge List View
   if (showChallengeList) {
     return (
       <ChallengeListView
         completedDays={challengeState.completedDays}
         onComplete={async (day, challengeName) => {
+          const previousCount = challengeState.completedDays.length;
           await markDayComplete(day);
-          toast(
-            <div className="flex flex-col w-full">
-              <span className="font-medium">"{challengeName}" Completed!</span>
-              <button 
-                onClick={() => {
-                  unmarkDayComplete(day);
-                  toast.dismiss();
-                }}
-                className="text-xs text-muted-foreground hover:text-foreground mt-1 text-left"
-              >
-                Undo
-              </button>
-            </div>,
-            { duration: 5000 }
-          );
-          if (challengeState.completedDays.length === 29) {
-            setTimeout(() => setShowThirtyChallengeComplete(true), 500);
-          }
+          showChallengeCompletedToast(day, challengeName);
+          checkAndShowCelebrations(previousCount, previousCount + 1);
         }}
         onUncomplete={async (day) => {
           await unmarkDayComplete(day);
@@ -400,11 +434,10 @@ export default function Dashboard() {
           
           // If completing a challenge, mark it done
           if (pendingChallengeCompletion) {
+            const previousCount = challengeState.completedDays.length;
             await markDayComplete(pendingChallengeCompletion.day);
-            toast.success(`Day ${pendingChallengeCompletion.day} complete! ✅`);
-            if (challengeState.completedDays.length === 29) {
-              setTimeout(() => setShowThirtyChallengeComplete(true), 500);
-            }
+            showChallengeCompletedToast(pendingChallengeCompletion.day, pendingChallengeCompletion.name);
+            checkAndShowCelebrations(previousCount, previousCount + 1);
             setPendingChallengeCompletion(null);
           }
         }}
@@ -456,25 +489,10 @@ export default function Dashboard() {
                 totalCount={challengeState.totalCount}
                 isComplete={challengeState.isComplete}
                 onComplete={async (day, challengeName) => {
+                  const previousCount = challengeState.completedDays.length;
                   await markDayComplete(day);
-                  toast(
-                    <div className="flex flex-col w-full">
-                      <span className="font-medium">"{challengeName}" Completed!</span>
-                      <button 
-                        onClick={() => {
-                          unmarkDayComplete(day);
-                          toast.dismiss();
-                        }}
-                        className="text-xs text-muted-foreground hover:text-foreground mt-1 text-left"
-                      >
-                        Undo
-                      </button>
-                    </div>,
-                    { duration: 5000 }
-                  );
-                  if (challengeState.completedDays.length === 29) {
-                    setTimeout(() => setShowThirtyChallengeComplete(true), 500);
-                  }
+                  showChallengeCompletedToast(day, challengeName);
+                  checkAndShowCelebrations(previousCount, previousCount + 1);
                 }}
                 onUncomplete={async (day) => {
                   await unmarkDayComplete(day);
@@ -524,8 +542,19 @@ export default function Dashboard() {
       {/* 30-Day Challenge Complete Celebration */}
       <ThirtyChallengeCompleteDialog
         open={showThirtyChallengeComplete}
-        onContinue={() => setShowThirtyChallengeComplete(false)}
+        onContinue={async () => {
+          setShowThirtyChallengeComplete(false);
+          // Switch to Today's Hello after completing 30 Hellos
+          await updateProgress({ selected_pack_id: 'daily' });
+        }}
         timesCompleted={challengeState.timesCompleted}
+      />
+
+      {/* Tier Unlock Celebration (10 or 20) */}
+      <TierUnlockCelebrationDialog
+        open={showTierUnlock}
+        onContinue={() => setShowTierUnlock(false)}
+        tier={tierUnlockValue}
       />
 
       {/* Milestone Celebrations */}

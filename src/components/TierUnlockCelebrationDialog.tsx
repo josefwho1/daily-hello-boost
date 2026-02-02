@@ -4,46 +4,55 @@ import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useEffect, useMemo } from "react";
 
-// Import Remi Congrats image
-import remiCongrats1 from "@/assets/remi-congrats-1.webp";
+// Import celebration images
+import remiCelebrating1 from "@/assets/remi-celebrating-1.webp";
+import remiCelebrating2 from "@/assets/remi-celebrating-2.webp";
+import remiCelebrating3 from "@/assets/remi-celebrating-3.webp";
+import remiCelebrating4 from "@/assets/remi-celebrating-4.webp";
+import remiCelebrating5 from "@/assets/remi-celebrating-5.webp";
+import remiCelebrating6 from "@/assets/remi-celebrating-6.webp";
+import remiCelebrating7 from "@/assets/remi-celebrating-7.webp";
+import remiCelebrating8 from "@/assets/remi-celebrating-8.webp";
+import remiCelebrating9 from "@/assets/remi-celebrating-9.webp";
+import remiCelebrating10 from "@/assets/remi-celebrating-10.webp";
 
-interface ThirtyChallengeCompleteDialogProps {
+const celebrationImages = [
+  remiCelebrating1, remiCelebrating2, remiCelebrating3, remiCelebrating4, remiCelebrating5,
+  remiCelebrating6, remiCelebrating7, remiCelebrating8, remiCelebrating9, remiCelebrating10
+];
+
+interface TierUnlockCelebrationDialogProps {
   open: boolean;
   onContinue: () => void;
-  timesCompleted?: number;
+  tier: 10 | 20;
 }
 
-export const ThirtyChallengeCompleteDialog = ({
+export const TierUnlockCelebrationDialog = ({
   open,
   onContinue,
-  timesCompleted = 1,
-}: ThirtyChallengeCompleteDialogProps) => {
-  const remiImage = useMemo(() => remiCongrats1, []);
+  tier,
+}: TierUnlockCelebrationDialogProps) => {
+  const remiImage = useMemo(() => 
+    celebrationImages[Math.floor(Math.random() * celebrationImages.length)],
+    []
+  );
 
   // Trigger confetti on open
   useEffect(() => {
     if (open) {
-      const duration = 4000;
+      const duration = 2500;
       const end = Date.now() + duration;
-
-      // Big celebration burst
-      confetti({
-        particleCount: 100,
-        spread: 100,
-        origin: { y: 0.6 },
-        colors: ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff'],
-      });
 
       const frame = () => {
         confetti({
-          particleCount: 4,
+          particleCount: 3,
           angle: 60,
           spread: 55,
           origin: { x: 0, y: 0.6 },
           colors: ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff'],
         });
         confetti({
-          particleCount: 4,
+          particleCount: 3,
           angle: 120,
           spread: 55,
           origin: { x: 1, y: 0.6 },
@@ -57,12 +66,20 @@ export const ThirtyChallengeCompleteDialog = ({
 
       frame();
 
-      // Haptic feedback - big celebration pattern
+      // Haptic feedback
       if (navigator.vibrate) {
-        navigator.vibrate([100, 50, 100, 50, 200, 100, 300]);
+        navigator.vibrate([100, 50, 100]);
       }
     }
   }, [open]);
+
+  const tierTitle = tier === 10 
+    ? "Tier 2 Unlocked! 🔓" 
+    : "Tier 3 Unlocked! 🔓";
+
+  const tierMessage = tier === 10
+    ? "You've completed 10 challenges! The next 10 are now available."
+    : "You've completed 20 challenges! The final 10 are now unlocked.";
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
@@ -71,7 +88,7 @@ export const ThirtyChallengeCompleteDialog = ({
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <DialogTitle className="sr-only">30-Day Challenge Complete</DialogTitle>
+        <DialogTitle className="sr-only">Tier Unlocked</DialogTitle>
         
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
@@ -84,14 +101,14 @@ export const ThirtyChallengeCompleteDialog = ({
           }}
           className="space-y-4"
         >
-          {/* Remi congrats */}
+          {/* Remi celebrating */}
           <div className="flex justify-center">
             <motion.img 
               src={remiImage}
-              alt="Remi congratulating"
-              className="w-36 h-36 object-contain"
-              initial={{ y: -20, scale: 0.8 }}
-              animate={{ y: 0, scale: 1 }}
+              alt="Remi celebrating"
+              className="w-32 h-32 object-contain"
+              initial={{ y: -20 }}
+              animate={{ y: 0 }}
               transition={{ 
                 type: "spring",
                 stiffness: 300,
@@ -108,45 +125,24 @@ export const ThirtyChallengeCompleteDialog = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            🎉 You did it!
+            {tierTitle}
           </motion.h2>
 
           {/* Message */}
-          <motion.div
-            className="text-muted-foreground space-y-3"
+          <motion.p
+            className="text-muted-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <p className="font-medium text-foreground">
-              You've completed The 30 Hellos.
-            </p>
-            <p>
-              This doesn't end here.<br />
-              One hello a day still counts.
-            </p>
-            <p className="text-sm">
-              You'll now see a Today's Hello for suggestions.<br />
-              If you want new ideas later, you can explore Quests anytime.
-            </p>
-          </motion.div>
-
-          {timesCompleted > 1 && (
-            <motion.p
-              className="text-xs text-muted-foreground"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              Times completed: {timesCompleted}
-            </motion.p>
-          )}
+            {tierMessage}
+          </motion.p>
 
           {/* Continue button */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.5 }}
             className="pt-2"
           >
             <Button 

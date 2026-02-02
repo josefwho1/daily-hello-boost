@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { Target, Flame, RotateCcw, ChevronRight, Pause, Play } from "lucide-react";
+import { Target, Flame, RotateCcw, ChevronRight, Pause, Play, Check } from "lucide-react";
 import { toast } from "sonner";
 import questsIcon from "@/assets/quests-icon.webp";
 import remiQuest from "@/assets/remi-quest.webp";
@@ -96,6 +96,26 @@ const Challenges = () => {
     toast.success("Quest resumed! Keep going! 🎯");
   };
 
+  // Helper to show challenge completion toast with green tick
+  const showChallengeCompletedToast = (day: number, challengeName: string) => {
+    let toastId: string | number;
+    const handleUndo = async () => {
+      await unmarkDayComplete(day);
+      toast.dismiss(toastId);
+    };
+
+    toastId = toast(
+      <button onClick={() => void handleUndo()} className="w-full text-left p-0 bg-transparent border-none">
+        <div className="flex items-center gap-2">
+          <Check className="w-4 h-4 text-success flex-shrink-0" />
+          <span className="text-sm font-medium">"{challengeName}" Completed!</span>
+        </div>
+        <span className="mt-0.5 block text-[11px] text-muted-foreground opacity-70">(tap to undo)</span>
+      </button>,
+      { duration: 5000 }
+    );
+  };
+
   const handleLogHello = async (data: { 
     name?: string; 
     location?: string; 
@@ -108,7 +128,7 @@ const Challenges = () => {
     // Mark challenge complete
     if (pendingChallengeCompletion) {
       await markDayComplete(pendingChallengeCompletion.day);
-      toast.success(`Day ${pendingChallengeCompletion.day} complete! ✅`);
+      showChallengeCompletedToast(pendingChallengeCompletion.day, pendingChallengeCompletion.name);
       setPendingChallengeCompletion(null);
     }
     
@@ -158,11 +178,10 @@ const Challenges = () => {
         completedDays={challengeState.completedDays}
         onComplete={async (day, name) => {
           await markDayComplete(day);
-          toast.success(`${name} complete! ✅`);
+          showChallengeCompletedToast(day, name);
         }}
         onUncomplete={async (day) => {
           await unmarkDayComplete(day);
-          toast.info("Unmarked as complete");
         }}
         onBack={() => setShowChallengeList(false)}
       />
