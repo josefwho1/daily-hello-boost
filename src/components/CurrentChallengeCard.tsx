@@ -87,7 +87,7 @@ export const CurrentChallengeCard = ({
 
   return (
     <>
-      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[220px] flex flex-col">
+      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[200px] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
@@ -95,7 +95,6 @@ export const CurrentChallengeCard = ({
               <Target className="w-5 h-5 text-primary flex-shrink-0" />
               <span className="font-bold text-foreground text-base">The One Hello Challenge</span>
             </div>
-            <p className="text-xs text-muted-foreground ml-7">One Hello a day, for 30 days.</p>
           </div>
           
           {/* Navigation arrows */}
@@ -183,10 +182,10 @@ export const CurrentChallengeCard = ({
               {currentChallenge.name}
             </h3>
             
-            {/* Description or Tip - swap on tap - fixed 2-line height */}
-            <div className="h-10 mt-1">
+            {/* Description or Tip - swap on tap - fixed height for ~3 lines of small text */}
+            <div className="h-12 mt-1 overflow-hidden">
               <p className={cn(
-                "text-sm text-muted-foreground line-clamp-2",
+                "text-xs text-muted-foreground line-clamp-3",
                 showTip && "italic text-muted-foreground/70"
               )}>
                 {showTip && currentChallenge.suggestion 
