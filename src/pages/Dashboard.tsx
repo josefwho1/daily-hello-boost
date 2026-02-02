@@ -353,31 +353,61 @@ export default function Dashboard() {
 
   if (!progress) return null;
 
+  // Helper to show challenge completion toast with green tick
+  const showChallengeCompletedToast = (day: number, challengeName: string) => {
+    let toastId: string | number;
+    const handleUndo = async () => {
+      await unmarkDayComplete(day);
+      toast.dismiss(toastId);
+    };
+
+    toastId = toast(
+      <button onClick={() => void handleUndo()} className="w-full text-left p-0 bg-transparent border-none">
+        <div className="flex items-center gap-2">
+          <Check className="w-4 h-4 text-success flex-shrink-0" />
+          <span className="text-sm font-medium">"{challengeName}" Completed!</span>
+        </div>
+        <span className="mt-0.5 block text-[11px] text-muted-foreground opacity-70">(tap to undo)</span>
+      </button>,
+      { duration: 5000 }
+    );
+  };
+
+  // Helper to handle tier unlock celebrations
+  const checkAndShowCelebrations = (previousCount: number, newCount: number) => {
+    // Check for 30 completion first
+    if (newCount === 30 && previousCount < 30) {
+      setTimeout(() => {
+        setShowThirtyChallengeComplete(true);
+      }, 500);
+      return;
+    }
+    
+    // Check for tier 2 unlock (10 completed)
+    if (previousCount < 10 && newCount >= 10) {
+      setTierUnlockValue(10);
+      setTimeout(() => setShowTierUnlock(true), 500);
+      return;
+    }
+    
+    // Check for tier 3 unlock (20 completed)
+    if (previousCount < 20 && newCount >= 20) {
+      setTierUnlockValue(20);
+      setTimeout(() => setShowTierUnlock(true), 500);
+      return;
+    }
+  };
+
   // Full-screen Challenge List View
   if (showChallengeList) {
     return (
       <ChallengeListView
         completedDays={challengeState.completedDays}
         onComplete={async (day, challengeName) => {
+          const previousCount = challengeState.completedDays.length;
           await markDayComplete(day);
-          toast(
-            <div className="flex flex-col w-full">
-              <span className="font-medium">"{challengeName}" Completed!</span>
-              <button 
-                onClick={() => {
-                  unmarkDayComplete(day);
-                  toast.dismiss();
-                }}
-                className="text-xs text-muted-foreground hover:text-foreground mt-1 text-left"
-              >
-                Undo
-              </button>
-            </div>,
-            { duration: 5000 }
-          );
-          if (challengeState.completedDays.length === 29) {
-            setTimeout(() => setShowThirtyChallengeComplete(true), 500);
-          }
+          showChallengeCompletedToast(day, challengeName);
+          checkAndShowCelebrations(previousCount, previousCount + 1);
         }}
         onUncomplete={async (day) => {
           await unmarkDayComplete(day);
