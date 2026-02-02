@@ -12,6 +12,7 @@ import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
 import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
+import { TierUnlockCelebrationDialog } from "@/components/TierUnlockCelebrationDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 
 import { DailyModeReminderBanner } from "@/components/DailyModeReminderBanner";
@@ -25,6 +26,7 @@ import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
 import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
 import { toast } from "sonner";
+import { Check } from "lucide-react";
 import { startOfWeek, isBefore, parseISO } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { normalizeTimezoneOffset, getDayKeyInOffset } from "@/lib/timezone";
