@@ -93,7 +93,7 @@ export const CurrentChallengeCard = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <Target className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="font-bold text-foreground text-base">The One Hello Challenge</span>
+              <span className="font-bold text-foreground text-base">The 30 Hellos</span>
             </div>
           </div>
           
@@ -128,7 +128,7 @@ export const CurrentChallengeCard = ({
         <div className="mt-2">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="text-muted-foreground">
-              Day {currentChallenge?.day} of {totalCount} • {completedCount} completed
+              {currentChallenge?.day} of {totalCount} • {completedCount} completed
             </span>
           </div>
           <Progress value={progressPercent} className="h-2" />
@@ -209,16 +209,15 @@ export const CurrentChallengeCard = ({
                   <Check size={14} /> Completed
                 </div>
               ) : (
-                <Button 
-                  size="sm" 
+                <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCompleteClick();
                   }}
-                  className="flex-1 rounded-full"
+                  className="flex-1 h-9 rounded-full text-sm font-medium border border-border/50 text-muted-foreground hover:bg-success/10 hover:text-success hover:border-success/50 transition-colors"
                 >
-                  Complete
-                </Button>
+                  Mark as complete
+                </button>
               )}
               <Button 
                 variant="ghost" 
