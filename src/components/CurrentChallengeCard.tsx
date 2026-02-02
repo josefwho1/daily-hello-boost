@@ -182,10 +182,10 @@ export const CurrentChallengeCard = ({
               {currentChallenge.name}
             </h3>
             
-            {/* Description or Tip - swap on tap - fixed 2-line height */}
-            <div className="h-10 mt-1">
+            {/* Description or Tip - swap on tap - fixed height for ~3 lines of small text */}
+            <div className="h-12 mt-1 overflow-hidden">
               <p className={cn(
-                "text-sm text-muted-foreground line-clamp-2",
+                "text-xs text-muted-foreground line-clamp-3",
                 showTip && "italic text-muted-foreground/70"
               )}>
                 {showTip && currentChallenge.suggestion 
