@@ -160,6 +160,10 @@ const Challenges = () => {
           await markDayComplete(day);
           toast.success(`${name} complete! ✅`);
         }}
+        onUncomplete={async (day) => {
+          await unmarkDayComplete(day);
+          toast.info("Unmarked as complete");
+        }}
         onBack={() => setShowChallengeList(false)}
       />
     );
