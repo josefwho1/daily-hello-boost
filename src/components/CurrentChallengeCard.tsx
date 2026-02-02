@@ -23,6 +23,7 @@ interface CurrentChallengeCardProps {
   totalCount: number;
   isComplete: boolean;
   onComplete: (day: number, challengeName: string) => void;
+  onUncomplete: (day: number) => void;
   onViewAll: () => void;
   onRestart: () => void;
 }
@@ -33,6 +34,7 @@ export const CurrentChallengeCard = ({
   totalCount,
   isComplete,
   onComplete,
+  onUncomplete,
   onViewAll,
   onRestart,
 }: CurrentChallengeCardProps) => {
@@ -71,7 +73,11 @@ export const CurrentChallengeCard = ({
 
   const handleCompleteClick = () => {
     if (currentChallenge) {
-      onComplete(currentChallenge.day, currentChallenge.name);
+      if (isChallengeComplete) {
+        onUncomplete(currentChallenge.day);
+      } else {
+        onComplete(currentChallenge.day, currentChallenge.name);
+      }
     }
   };
 
@@ -202,23 +208,23 @@ export const CurrentChallengeCard = ({
               </div>
             )}
 
-            {/* Buttons */}
+            {/* Buttons - fixed layout to prevent movement */}
             <div className="flex gap-2 mt-auto pt-2">
-              {isChallengeComplete ? (
-                <div className="flex items-center justify-center gap-1 text-success text-sm font-medium h-9 flex-1">
-                  <Check size={14} /> Completed
-                </div>
-              ) : (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCompleteClick();
-                  }}
-                  className="flex-1 h-9 rounded-full text-sm font-medium border border-border/50 text-muted-foreground hover:bg-success/10 hover:text-success hover:border-success/50 transition-colors"
-                >
-                  Mark as complete
-                </button>
-              )}
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCompleteClick();
+                }}
+                className={cn(
+                  "flex-1 h-9 rounded-full text-sm font-medium border transition-colors flex items-center justify-center gap-1",
+                  isChallengeComplete 
+                    ? "bg-success/10 text-success border-success/50 hover:bg-success/20" 
+                    : "border-border/50 text-muted-foreground hover:bg-success/10 hover:text-success hover:border-success/50"
+                )}
+              >
+                {isChallengeComplete && <Check size={14} />}
+                {isChallengeComplete ? "Completed" : "Mark as complete"}
+              </button>
               <Button 
                 variant="ghost" 
                 size="sm" 

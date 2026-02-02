@@ -55,6 +55,7 @@ export default function Dashboard() {
   const {
     state: challengeState,
     markDayComplete,
+    unmarkDayComplete,
     restartChallenge,
     loading: challengeLoading,
   } = useChallengeProgress();
@@ -360,6 +361,10 @@ export default function Dashboard() {
             setTimeout(() => setShowThirtyChallengeComplete(true), 500);
           }
         }}
+        onUncomplete={async (day) => {
+          await unmarkDayComplete(day);
+          toast.info("Unmarked as complete");
+        }}
         onBack={() => setShowChallengeList(false)}
       />
     );
@@ -443,6 +448,10 @@ export default function Dashboard() {
                   if (challengeState.completedDays.length === 29) {
                     setTimeout(() => setShowThirtyChallengeComplete(true), 500);
                   }
+                }}
+                onUncomplete={async (day) => {
+                  await unmarkDayComplete(day);
+                  toast.info("Unmarked as complete");
                 }}
                 onViewAll={() => setShowChallengeList(true)}
                 onRestart={async () => {

@@ -43,6 +43,7 @@ const Challenges = () => {
   const {
     state: challengeState,
     markDayComplete,
+    unmarkDayComplete,
     restartChallenge,
     loading: challengeLoading,
   } = useChallengeProgress();
@@ -158,6 +159,10 @@ const Challenges = () => {
         onComplete={async (day, name) => {
           await markDayComplete(day);
           toast.success(`${name} complete! ✅`);
+        }}
+        onUncomplete={async (day) => {
+          await unmarkDayComplete(day);
+          toast.info("Unmarked as complete");
         }}
         onBack={() => setShowChallengeList(false)}
       />
