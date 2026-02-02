@@ -19,7 +19,7 @@ export const useChallengeProgress = () => {
 
   // Parse completed days from progress - handle both array and null cases
   const completedDays = useMemo(() => {
-    const days = (progress as any)?.challenge_completed_days;
+    const days = progress?.challenge_completed_days;
     if (Array.isArray(days)) {
       return days.filter((d: unknown): d is number => typeof d === 'number');
     }
