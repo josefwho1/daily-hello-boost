@@ -108,7 +108,7 @@ const Challenges = () => {
     // Mark challenge complete
     if (pendingChallengeCompletion) {
       await markDayComplete(pendingChallengeCompletion.day);
-      toast.success(`Day ${pendingChallengeCompletion.day} complete! ✅`);
+      showChallengeCompletedToast(pendingChallengeCompletion.day, pendingChallengeCompletion.name);
       setPendingChallengeCompletion(null);
     }
     
