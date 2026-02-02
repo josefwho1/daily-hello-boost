@@ -212,7 +212,7 @@ export const CurrentChallengeCard = ({
             </h3>
             
             {/* Fixed height content area - always same height regardless of content */}
-            <div className="h-[52px] mt-1 overflow-hidden">
+            <div className="h-[68px] mt-1 overflow-hidden">
               {isLocked ? (
                 <div className="flex items-center gap-2 text-muted-foreground/50">
                   <Lock size={14} />
