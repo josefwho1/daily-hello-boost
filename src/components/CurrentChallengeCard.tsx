@@ -221,15 +221,15 @@ export const CurrentChallengeCard = ({
               </div>
             )}
 
-            {/* Buttons - fixed layout to prevent movement */}
-            <div className="flex gap-2 mt-auto pt-2">
+            {/* Buttons - fixed layout with justify-between to prevent movement */}
+            <div className="flex items-center justify-between mt-auto pt-2">
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
                   handleCompleteClick();
                 }}
                 className={cn(
-                  "flex-1 h-9 rounded-full text-sm font-medium border transition-colors flex items-center justify-center gap-1",
+                  "h-9 px-4 rounded-full text-sm font-medium border transition-colors flex items-center justify-center gap-1 min-w-[140px]",
                   isChallengeComplete 
                     ? "bg-success/10 text-success border-success/50 hover:bg-success/20" 
                     : "border-border/50 text-muted-foreground hover:bg-success/10 hover:text-success hover:border-success/50"
@@ -245,7 +245,7 @@ export const CurrentChallengeCard = ({
                   e.stopPropagation();
                   onViewAll();
                 }}
-                className="flex-1 rounded-full"
+                className="rounded-full"
               >
                 View All
                 <ChevronRight className="w-4 h-4 ml-1" />
