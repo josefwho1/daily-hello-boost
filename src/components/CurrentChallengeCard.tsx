@@ -128,7 +128,7 @@ export const CurrentChallengeCard = ({
         <div className="mt-2">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="text-muted-foreground">
-              Day {currentChallenge?.day} of {totalCount} • {completedCount} completed
+              {currentChallenge?.day} of {totalCount} • {completedCount} completed
             </span>
           </div>
           <Progress value={progressPercent} className="h-2" />
