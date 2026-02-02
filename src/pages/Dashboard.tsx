@@ -12,7 +12,6 @@ import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
 import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
-import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
 import { DailyModeHomeCard } from "@/components/DailyModeHomeCard";
 import { DailyModeReminderBanner } from "@/components/DailyModeReminderBanner";
 import { RecentHellosSection } from "@/components/RecentHellosSection";
@@ -25,7 +24,7 @@ import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
 import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
 import { toast } from "sonner";
-import { startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
+import { startOfWeek, isBefore, parseISO } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { normalizeTimezoneOffset, getDayKeyInOffset } from "@/lib/timezone";
 
@@ -40,7 +39,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress: cloudProgress, loading: progressLoading, updateProgress: updateCloudProgress, refetch } = useUserProgress();
-  const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, deleteLog: deleteCloudLog, getLogsTodayCount, toggleFavorite } = useHelloLogs();
+  const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, deleteLog: deleteCloudLog, toggleFavorite } = useHelloLogs();
   const { timezoneOffset, loading: timezoneLoading } = useTimezone();
   const { 
     state: dailyModeState,
@@ -67,7 +66,6 @@ export default function Dashboard() {
     shouldShowSavePrompt,
     dismissSavePrompt,
     guestState,
-    isGuest,
     isAnonymous
   } = useGuestMode();
   
@@ -112,23 +110,9 @@ export default function Dashboard() {
 
   const tzOffset = normalizeTimezoneOffset(timezoneOffset);
   const [showLogDialog, setShowLogDialog] = useState(false);
-  const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
-  const [selectedHelloType, setSelectedHelloType] = useState<string>('regular_hello');
-  const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
-  const [selectedChallengeTag, setSelectedChallengeTag] = useState<string>('');
   const [username, setUsername] = useState("");
   
   // Dialog states
-  const [showComeBackTomorrow, setShowComeBackTomorrow] = useState(false);
-  const [showModeSelection, setShowModeSelection] = useState(false);
-  const [showDailyModeConfirm, setShowDailyModeConfirm] = useState(false);
-  const [showChillModeConfirm, setShowChillModeConfirm] = useState(false);
-  const [showDayReveal, setShowDayReveal] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [showMilestone, setShowMilestone] = useState(false);
-  const [showWeeklyChallengeComplete, setShowWeeklyChallengeComplete] = useState(false);
-  const [weeklyChallengeOrbAwarded, setWeeklyChallengeOrbAwarded] = useState(false);
-  const [pendingMode, setPendingMode] = useState<'daily' | 'chill' | null>(null);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [autoStartRecording, setAutoStartRecording] = useState(false);
   const [showHomeTutorial, setShowHomeTutorial] = useState(false);
@@ -138,12 +122,11 @@ export default function Dashboard() {
   // Milestone celebration states
   const [showMilestoneCelebration, setShowMilestoneCelebration] = useState(false);
   const [milestoneValue, setMilestoneValue] = useState(0);
+  const [milestoneType, setMilestoneType] = useState<MilestoneType>('hellos');
   
   // Streak celebration states
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [celebratedStreakValue, setCelebratedStreakValue] = useState(0);
-  const previousStreakRef = useRef<number | null>(null);
-  const [milestoneType, setMilestoneType] = useState<MilestoneType>('hellos');
   
   // Edit hello dialog states
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
@@ -245,39 +228,6 @@ export default function Dashboard() {
     toast.success("🎉 You're all set!");
   };
 
-  // Determine which day of onboarding the user is on
-  const getOnboardingDay = () => {
-    if (!progress?.onboarding_week_start) return 1;
-    const start = new Date(progress.onboarding_week_start);
-    start.setHours(0, 0, 0, 0);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const dayDiff = differenceInDays(now, start) + 1;
-    return Math.min(Math.max(dayDiff, 1), 7);
-  };
-
-  const currentOnboardingDay = getOnboardingDay();
-
-  // Get completed days from logs (for legacy 7-day-starter mode)
-  const getCompletedDaysCount = () => {
-    if (!progress?.is_onboarding_week || progress?.has_completed_onboarding) return 0;
-    
-    const onboardingStart = new Date(progress.onboarding_week_start || new Date());
-    const uniqueDays = new Set<string>();
-    
-    logs.forEach(log => {
-      const logDate = new Date(log.created_at);
-      if (logDate >= onboardingStart) {
-        uniqueDays.add(logDate.toDateString());
-      }
-    });
-    
-    return Math.min(uniqueDays.size, 7);
-  };
-
-  const completedDaysCount = getCompletedDaysCount();
-  const allOnboardingComplete = completedDaysCount >= 7;
-
   // Weekly reset logic
   const [weeklyResetDone, setWeeklyResetDone] = useState(false);
   
@@ -316,71 +266,16 @@ export default function Dashboard() {
   }, [dailyModeLoading, dailyModeState.isActive, checkAndResetStreak]);
 
   const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string }) => {
-    const isFirstHelloEver = logs.length === 0;
-    const isOnboardingChallenge = onboardingChallenges.some(c => c.title === selectedChallenge);
-    const isPackChallenge = selectedHelloType === 'pack_challenge';
-
     const today = getDayKeyInOffset(new Date(), tzOffset);
 
     const result = await addLog({
       ...data
     });
 
-    // Record pack challenge completion if applicable
-    if (
-      result &&
-      isPackChallenge &&
-      selectedDayNumber != null &&
-      typeof selectedChallengeTag === 'string' &&
-      selectedChallengeTag.length > 0
-    ) {
-      try {
-        const completionRating = data.rating ?? 'neutral';
-        await addCompletion({
-          challenge_day: selectedDayNumber,
-          challenge_tag: selectedChallengeTag,
-          interaction_name: data.name || null,
-          notes: data.notes || null,
-          rating: completionRating,
-          difficulty_rating: data.difficulty_rating || null,
-        });
-        await refetchCompletions();
-        
-        const selectedPackId = progress?.selected_pack_id || '';
-        const pack = getPackById(selectedPackId);
-        if (pack) {
-          const completedAfter = completions.filter(c => 
-            c.challenge_tag?.startsWith(`${selectedPackId}-`) || pack.challenges.some(ch => ch.tag === c.challenge_tag)
-          ).length + 1;
-          
-          const totalChallenges = pack.challenges.length;
-          const currentChallenge = pack.challenges.find(c => c.day === selectedDayNumber);
-          
-          if (completedAfter >= totalChallenges) {
-            setTimeout(() => setShowPackComplete(true), 500);
-          } else {
-            setCompletedChallengeTitle(currentChallenge?.title || '');
-            setTimeout(() => setShowSingleChallengeComplete(true), 300);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to record challenge completion:', error);
-      }
-    }
-
     if (result) {
       const previousHellosThisWeek = progress?.hellos_this_week || 0;
       const newHellosThisWeek = previousHellosThisWeek + 1;
       const newTotalHellos = (progress?.total_hellos || logs.length) + 1;
-
-      const isWeeklyChallenge = selectedHelloType === "remis_challenge";
-      const lastChallengeDate = progress?.last_weekly_challenge_date;
-
-      const thisWeekStartStr = progress?.week_start_date
-        ? progress.week_start_date
-        : getWeekStartKeyInOffset(new Date(), tzOffset);
-
-      const alreadyEarnedThisWeek = !!(lastChallengeDate && lastChallengeDate >= thisWeekStartStr);
 
       const updates: Record<string, unknown> = {
         hellos_this_week: newHellosThisWeek,
@@ -388,23 +283,9 @@ export default function Dashboard() {
         total_hellos: newTotalHellos,
       };
 
-      if (isWeeklyChallenge) {
-        updates.last_weekly_challenge_date = today;
-      }
-
       await updateProgress(updates);
 
       toast.success("Hello logged!");
-
-      // Show celebration for onboarding challenges (only in 7-day-starter mode)
-      if (isOnboardingChallenge && progress?.is_onboarding_week && progress?.mode === '7-day-starter') {
-        if (!isFirstHelloEver) {
-          setShowCelebration(true);
-        }
-      } else if (isWeeklyChallenge) {
-        setWeeklyChallengeOrbAwarded(false);
-        setShowWeeklyChallengeComplete(true);
-      }
       
       // Check for hello/name milestones
       const previousTotalHellos = progress?.total_hellos || logs.length;
@@ -434,142 +315,21 @@ export default function Dashboard() {
 
       // Record for Daily Mode if active and trigger streak celebration
       if (dailyModeState.isActive) {
-        // Check if user has already recorded a hello for daily mode TODAY
-        // Use lastHelloDate which tracks the last date a hello was recorded for daily mode
         const todayKey = getDayKeyInOffset(new Date(), tzOffset);
         const hasAlreadyRecordedForDailyModeToday = dailyModeState.lastHelloDate === todayKey;
         const streakBeforeLog = dailyModeState.currentStreak;
-        
-        console.log('[Daily Mode] Before recording:', {
-          isActive: dailyModeState.isActive,
-          streakBeforeLog,
-          lastHelloDate: dailyModeState.lastHelloDate,
-          todayKey,
-          hasAlreadyRecordedForDailyModeToday,
-        });
         
         await recordHelloForDailyMode();
         
         // Trigger celebration only if this is the first daily mode hello of the day
         if (!hasAlreadyRecordedForDailyModeToday) {
-          // The new streak value will be streakBeforeLog + 1 (or 1 if starting fresh)
           const newStreakValue = streakBeforeLog === 0 ? 1 : streakBeforeLog + 1;
-          console.log('[Daily Mode] Triggering celebration for streak:', newStreakValue);
           setCelebratedStreakValue(newStreakValue);
           setTimeout(() => setShowStreakCelebration(true), 500);
-        } else {
-          console.log('[Daily Mode] Not celebrating - already recorded for daily mode today');
         }
       }
     }
-    
-    setSelectedChallenge(null);
   };
-
-  const handleCelebrationContinue = () => {
-    setShowCelebration(false);
-    
-    if (completedDaysCount >= 7) {
-      setShowMilestone(true);
-    }
-  };
-
-  const handleMilestoneContinue = () => {
-    setShowMilestone(false);
-    setShowModeSelection(true);
-  };
-
-  // Check if all 7 onboarding challenges are complete
-  useEffect(() => {
-    if (progress?.mode !== '7-day-starter') return;
-    if (allOnboardingComplete && progress?.is_onboarding_week && !progress?.has_completed_onboarding) {
-      setShowMilestone(true);
-    }
-  }, [allOnboardingComplete, progress?.is_onboarding_week, progress?.has_completed_onboarding, progress?.mode]);
-
-  const handleModeSelect = async (mode: 'daily' | 'chill') => {
-    setPendingMode(mode);
-    setShowModeSelection(false);
-    
-    if (mode === 'daily') {
-      setTutorialMode('daily');
-      
-      const target = 7;
-      
-      await updateProgress({ 
-        mode: 'daily',
-        target_hellos_per_week: target,
-        has_completed_onboarding: true,
-        is_onboarding_week: false,
-        hellos_this_week: 0,
-        week_start_date: getWeekStartKeyInOffset(new Date(), tzOffset),
-        current_phase: 'daily_path',
-        onboarding_completed_at: new Date().toISOString(),
-        daily_path_selected_at: new Date().toISOString(),
-        chill_path_selected_at: null,
-      });
-      
-      setPendingMode(null);
-      
-      setTimeout(() => {
-        if (progress?.has_seen_welcome_messages !== true) setShowHomeTutorial(true);
-      }, 300);
-    } else {
-      const target = 3;
-      
-      await updateProgress({ 
-        mode: 'chill',
-        target_hellos_per_week: target,
-        has_completed_onboarding: true,
-        is_onboarding_week: false,
-        hellos_this_week: 0,
-        week_start_date: getWeekStartKeyInOffset(new Date(), tzOffset),
-        current_phase: 'chill_path',
-        onboarding_completed_at: new Date().toISOString(),
-        daily_path_selected_at: null,
-        chill_path_selected_at: new Date().toISOString(),
-      });
-      
-      setTutorialMode('chill');
-      setPendingMode(null);
-      
-      setTimeout(() => {
-        if (progress?.has_seen_welcome_messages !== true) setShowHomeTutorial(true);
-      }, 300);
-    }
-  };
-
-  const handleModeConfirmContinue = async () => {
-    if (!pendingMode) return;
-    
-    const target = pendingMode === 'daily' ? 7 : 3;
-    const isDaily = pendingMode === 'daily';
-    
-    await updateProgress({ 
-      mode: pendingMode,
-      target_hellos_per_week: target,
-      has_completed_onboarding: true,
-      is_onboarding_week: false,
-      hellos_this_week: 0,
-      week_start_date: getWeekStartKeyInOffset(new Date(), tzOffset),
-      current_phase: isDaily ? 'daily_path' : 'chill_path',
-      onboarding_completed_at: new Date().toISOString(),
-      daily_path_selected_at: isDaily ? new Date().toISOString() : null,
-      chill_path_selected_at: !isDaily ? new Date().toISOString() : null,
-    });
-    
-    setShowDailyModeConfirm(false);
-    setShowChillModeConfirm(false);
-    
-    setTutorialMode(pendingMode);
-    setPendingMode(null);
-    
-    setTimeout(() => {
-      if (progress?.has_seen_welcome_messages !== true) setShowHomeTutorial(true);
-    }, 300);
-  };
-
-  const todaysOnboardingChallenge = onboardingChallenges[currentOnboardingDay - 1];
 
   const isLoading = isAnonymous ? (guestLoading || timezoneLoading) : (progressLoading || logsLoading || timezoneLoading || challengeLoading);
   
@@ -610,12 +370,10 @@ export default function Dashboard() {
       <LogHelloScreen
         onBack={() => {
           setShowLogDialog(false);
-          setSelectedChallenge(null);
-          setSelectedHelloType('regular_hello');
           setAutoStartRecording(false);
         }}
         onLog={handleLogHello}
-        challengeTitle={selectedChallenge}
+        challengeTitle={null}
         autoStartRecording={autoStartRecording}
         existingLogs={logs}
       />
@@ -662,99 +420,61 @@ export default function Dashboard() {
         {/* Main Dashboard - Connection-focused layout */}
         <div className="space-y-6">
           
-            {/* 30-Day Challenge Card */}
-            <div className="space-y-3" id="tutorial-todays-hello-card">
-              <CurrentChallengeCard
-                completedDays={challengeState.completedDays}
-                nextChallenge={challengeState.nextChallenge}
-                totalCount={challengeState.totalCount}
-                isComplete={challengeState.isComplete}
-                onMarkComplete={async (day) => {
-                  await markDayComplete(day);
-                  toast.success(`Day ${day} complete! ✅`);
-                  // Check if this completed the whole challenge
-                  if (challengeState.completedDays.length === 29) {
-                    setTimeout(() => setShowThirtyChallengeComplete(true), 500);
-                  }
-                }}
-                onViewAll={() => setShowChallengeList(true)}
-                onRestart={async () => {
-                  await restartChallenge();
-                  toast.success("Challenge restarted! Day 1 ready.");
-                }}
-              />
-            </div>
-
-            {/* Log a Hello Button */}
-            <div className="py-2">
-              <SaveHelloButton
-                onClick={() => {
-                  setSelectedChallenge(null);
-                  setSelectedHelloType('regular_hello');
-                  setAutoStartRecording(false);
-                  setShowLogDialog(true);
-                }}
-                onDictateClick={() => {
-                  setSelectedChallenge(null);
-                  setSelectedHelloType('regular_hello');
-                  setAutoStartRecording(true);
-                  setShowLogDialog(true);
-                }}
-              />
-            </div>
-
-            {/* Recent Hellos Section */}
-            <RecentHellosSection
-              logs={logs}
-              onViewAll={() => navigate('/hellobook')}
-              onViewLog={(log) => {
-                const index = logs.findIndex(l => l.id === log.id);
-                setEditingLog(log);
-                setEditingLogIndex(index >= 0 ? index : 0);
-                setIsEditDialogOpen(true);
+          {/* 30-Day Challenge Card */}
+          <div className="space-y-3" id="tutorial-todays-hello-card">
+            <CurrentChallengeCard
+              completedDays={challengeState.completedDays}
+              nextChallenge={challengeState.nextChallenge}
+              totalCount={challengeState.totalCount}
+              isComplete={challengeState.isComplete}
+              onMarkComplete={async (day) => {
+                await markDayComplete(day);
+                toast.success(`Day ${day} complete! ✅`);
+                // Check if this completed the whole challenge
+                if (challengeState.completedDays.length === 29) {
+                  setTimeout(() => setShowThirtyChallengeComplete(true), 500);
+                }
+              }}
+              onViewAll={() => setShowChallengeList(true)}
+              onRestart={async () => {
+                await restartChallenge();
+                toast.success("Challenge restarted! Day 1 ready.");
               }}
             />
-            
-            {/* Spacer for bottom nav */}
-            <div className="h-8" />
+          </div>
+
+          {/* Log a Hello Button */}
+          <div className="py-2">
+            <SaveHelloButton
+              onClick={() => {
+                setAutoStartRecording(false);
+                setShowLogDialog(true);
+              }}
+              onDictateClick={() => {
+                setAutoStartRecording(true);
+                setShowLogDialog(true);
+              }}
+            />
+          </div>
+
+          {/* Recent Hellos Section */}
+          <RecentHellosSection
+            logs={logs}
+            onViewAll={() => navigate('/hellobook')}
+            onViewLog={(log) => {
+              const index = logs.findIndex(l => l.id === log.id);
+              setEditingLog(log);
+              setEditingLogIndex(index >= 0 ? index : 0);
+              setIsEditDialogOpen(true);
+            }}
+          />
+          
+          {/* Spacer for bottom nav */}
+          <div className="h-8" />
         </div>
       </div>
 
-
       {/* Dialogs */}
-
-      {todaysOnboardingChallenge && (
-        <DayChallengeRevealDialog
-          open={showDayReveal}
-          onOpenChange={setShowDayReveal}
-          dayNumber={currentOnboardingDay}
-          challengeTitle={todaysOnboardingChallenge.title}
-          challengeDescription={todaysOnboardingChallenge.description}
-          challengeSuggestion={todaysOnboardingChallenge.suggestion}
-          onAccept={() => setShowDayReveal(false)}
-        />
-      )}
-
-      <ChallengeCompletionCelebrationDialog
-        open={showCelebration}
-        onContinue={handleCelebrationContinue}
-        dayNumber={selectedDayNumber}
-        currentStreak={0}
-        username={username}
-        isFirstHelloEver={logs.length === 1}
-        isPerfectWeek={false}
-        totalChallengesCompleted={getCompletedDaysCount() + 1}
-      />
-
-      <OnboardingCompleteMilestoneDialog
-        open={showMilestone}
-        onContinue={handleMilestoneContinue}
-      />
-
-      <ComeBackTomorrowDialog
-        open={showComeBackTomorrow}
-        onContinue={() => setShowComeBackTomorrow(false)}
-      />
 
       {/* 30-Day Challenge Complete Celebration */}
       <ThirtyChallengeCompleteDialog
