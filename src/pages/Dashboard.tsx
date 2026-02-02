@@ -437,24 +437,28 @@ export default function Dashboard() {
         {/* Main Dashboard - Connection-focused layout */}
         <div className="space-y-6">
           
-          {/* 30-Day Challenge Card */}
+          {/* Show Today's Hello when quest is paused, otherwise 30-Day Challenge Card */}
           <div className="space-y-3" id="tutorial-todays-hello-card">
-            <CurrentChallengeCard
-              completedDays={challengeState.completedDays}
-              nextChallenge={challengeState.nextChallenge}
-              totalCount={challengeState.totalCount}
-              isComplete={challengeState.isComplete}
-              onComplete={(day, challengeName) => {
-                setPendingChallengeCompletion({ day, name: challengeName });
-                setAutoStartRecording(false);
-                setShowLogDialog(true);
-              }}
-              onViewAll={() => setShowChallengeList(true)}
-              onRestart={async () => {
-                await restartChallenge();
-                toast.success("Challenge restarted! Day 1 ready.");
-              }}
-            />
+            {progress?.selected_pack_id === 'daily' ? (
+              <DailySuggestionCard />
+            ) : (
+              <CurrentChallengeCard
+                completedDays={challengeState.completedDays}
+                nextChallenge={challengeState.nextChallenge}
+                totalCount={challengeState.totalCount}
+                isComplete={challengeState.isComplete}
+                onComplete={(day, challengeName) => {
+                  setPendingChallengeCompletion({ day, name: challengeName });
+                  setAutoStartRecording(false);
+                  setShowLogDialog(true);
+                }}
+                onViewAll={() => setShowChallengeList(true)}
+                onRestart={async () => {
+                  await restartChallenge();
+                  toast.success("Challenge restarted! Day 1 ready.");
+                }}
+              />
+            )}
           </div>
 
           {/* Log a Hello Button */}
