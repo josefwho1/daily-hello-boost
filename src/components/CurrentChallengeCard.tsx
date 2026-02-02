@@ -51,24 +51,30 @@ export const CurrentChallengeCard = ({
     return completedCount < 20;
   };
   
-  // Find the max unlocked index
-  const maxUnlockedIndex = completedCount >= 20 ? 29 : (completedCount >= 10 ? 19 : 9);
+  // Get unlock message for locked challenges
+  const getUnlockMessage = (day: number) => {
+    if (day <= 10) return null;
+    if (day <= 20) return `Complete ${10 - completedCount} more to unlock`;
+    return `Complete ${20 - completedCount} more to unlock`;
+  };
   
   const getCurrentIndex = () => {
-    if (!nextChallenge) return Math.min(thirtyDayChallenge.length - 1, maxUnlockedIndex);
+    if (!nextChallenge) return Math.min(thirtyDayChallenge.length - 1, 29);
     const idx = thirtyDayChallenge.findIndex(c => c.day === nextChallenge.day);
-    return Math.min(idx, maxUnlockedIndex);
+    return idx;
   };
   
   const [currentIndex, setCurrentIndex] = useState(getCurrentIndex);
   const currentChallenge = thirtyDayChallenge[currentIndex];
   const isChallengeComplete = completedDays.includes(currentChallenge?.day || 0);
   const isLocked = isDayLocked(currentChallenge?.day || 0);
+  const unlockMessage = getUnlockMessage(currentChallenge?.day || 0);
 
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
+  // Allow navigation through all 30 challenges
   const canGoLeft = currentIndex > 0;
-  const canGoRight = currentIndex < maxUnlockedIndex;
+  const canGoRight = currentIndex < thirtyDayChallenge.length - 1;
 
   const goLeft = () => {
     if (canGoLeft) {
