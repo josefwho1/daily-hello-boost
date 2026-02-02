@@ -422,17 +422,6 @@ export default function Dashboard() {
           lifetimeHellos={logs.length} 
         />
 
-        {/* Daily Mode Home Card - between stats and challenge card */}
-        {dailyModeState.isActive && (
-          <div className="mb-6">
-            <DailyModeHomeCard
-              todaysHelloCount={dailyModeState.todaysHelloCount}
-              currentStreak={dailyModeState.currentStreak}
-              hasLoggedToday={dailyModeState.hasLoggedToday}
-              onClick={() => navigate('/challenges')}
-            />
-          </div>
-        )}
 
         {/* Main Dashboard - Connection-focused layout */}
         <div className="space-y-6">

@@ -226,8 +226,8 @@ const Challenges = () => {
                 🎯
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-foreground">The One Hello Challenge</h3>
-                <p className="text-xs text-muted-foreground">One Hello a day, for 30 days.</p>
+                <h3 className="font-bold text-foreground">The 30 Hellos</h3>
+                <p className="text-xs text-muted-foreground">30 simple ways to start a conversation.</p>
                 <p className="text-xs text-success font-medium">FREE • Perfect for Everyone</p>
                 {isQuestPaused && (
                   <p className="text-xs text-warning font-medium mt-1">⏸️ Paused</p>
