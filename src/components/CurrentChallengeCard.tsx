@@ -23,6 +23,7 @@ interface CurrentChallengeCardProps {
   totalCount: number;
   isComplete: boolean;
   onComplete: (day: number, challengeName: string) => void;
+  onUncomplete: (day: number) => void;
   onViewAll: () => void;
   onRestart: () => void;
 }
