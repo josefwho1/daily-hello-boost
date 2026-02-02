@@ -19,7 +19,7 @@ export const useChallengeProgress = () => {
 
   // Parse completed days from progress - handle both array and null cases
   const completedDays = useMemo(() => {
-    const days = (progress as any)?.challenge_completed_days;
+    const days = progress?.challenge_completed_days;
     if (Array.isArray(days)) {
       return days.filter((d: unknown): d is number => typeof d === 'number');
     }
@@ -40,9 +40,9 @@ export const useChallengeProgress = () => {
       progressPercent,
       isComplete,
       nextChallenge,
-      startedAt: (progress as any)?.challenge_started_at || null,
-      completedAt: (progress as any)?.challenge_completed_at || null,
-      timesCompleted: (progress as any)?.challenge_times_completed || 0,
+      startedAt: progress?.challenge_started_at || null,
+      completedAt: progress?.challenge_completed_at || null,
+      timesCompleted: progress?.challenge_times_completed || 0,
     };
   }, [completedDays, progress]);
 
@@ -67,7 +67,7 @@ export const useChallengeProgress = () => {
     // If all 30 complete, set completed date and increment times completed
     if (isNowComplete) {
       updates.challenge_completed_at = new Date().toISOString();
-      updates.challenge_times_completed = ((progress as any)?.challenge_times_completed || 0) + 1;
+      updates.challenge_times_completed = (progress?.challenge_times_completed || 0) + 1;
     }
 
     await updateProgress(updates);
