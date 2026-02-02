@@ -221,7 +221,7 @@ export const CurrentChallengeCard = ({
               ) : (
                 <>
                   <p className={cn(
-                    "text-xs text-muted-foreground line-clamp-2",
+                    "text-xs text-muted-foreground line-clamp-3",
                     showTip && "italic text-muted-foreground/70"
                   )}>
                     {showTip && currentChallenge.suggestion 
