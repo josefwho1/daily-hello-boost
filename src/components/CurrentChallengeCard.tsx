@@ -287,25 +287,8 @@ export const CurrentChallengeCard = ({
                   <Lock size={14} />
                   Locked
                 </button>
-              ) : recentlyCompletedDay === currentChallenge.day ? (
-                // Temporary undo banner
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleUndo();
-                  }}
-                  className="h-9 px-4 rounded-full text-sm font-medium bg-success/10 text-success border border-success/50 flex items-center justify-center gap-2 min-w-[140px] animate-in fade-in duration-200"
-                >
-                  <Check size={14} />
-                  <span>Completed</span>
-                  <span className="text-success/70">•</span>
-                  <span className="flex items-center gap-1 text-success/80 hover:text-success">
-                    <Undo2 size={12} />
-                    Undo
-                  </span>
-                </button>
               ) : isChallengeComplete ? (
-                // Already completed (no undo available)
+                // Already completed
                 <div className="h-9 px-4 rounded-full text-sm font-medium bg-success/10 text-success border border-success/50 flex items-center justify-center gap-1 min-w-[140px]">
                   <Check size={14} />
                   Completed
