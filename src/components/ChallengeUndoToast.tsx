@@ -29,7 +29,7 @@ export function ChallengeUndoToast({ id, challengeName, onUndo }: Props) {
   return (
     <button
       type="button"
-      className="w-full cursor-pointer select-none rounded-xl border border-border bg-background px-4 py-3 text-left shadow-lg"
+      className="w-full cursor-pointer select-none rounded-lg border border-border bg-background p-4 text-left shadow-lg"
       style={{ touchAction: "manipulation" }}
       onPointerUp={(e) => {
         // Prevent Sonner swipe-to-dismiss logic from eating the tap on mobile.
@@ -45,9 +45,7 @@ export function ChallengeUndoToast({ id, challengeName, onUndo }: Props) {
       aria-label={`Undo completion for ${challengeName}`}
     >
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-success/15 text-success">
-          <Check className="h-4 w-4" />
-        </div>
+        <Check className="h-5 w-5 text-success mt-0.5 shrink-0" />
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium text-foreground">"{challengeName}" Completed!</p>
           <p className="mt-0.5 text-sm text-muted-foreground">Tap to undo</p>
