@@ -73,7 +73,11 @@ export const CurrentChallengeCard = ({
 
   const handleCompleteClick = () => {
     if (currentChallenge) {
-      onComplete(currentChallenge.day, currentChallenge.name);
+      if (isChallengeComplete) {
+        onUncomplete(currentChallenge.day);
+      } else {
+        onComplete(currentChallenge.day, currentChallenge.name);
+      }
     }
   };
 
