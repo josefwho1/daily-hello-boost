@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock, Undo2 } from "lucide-react";
+import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock } from "lucide-react";
 import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import remiProud from "@/assets/remi-proud.webp";
 import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
 import {
@@ -43,22 +44,7 @@ export const CurrentChallengeCard = ({
 }: CurrentChallengeCardProps) => {
   const [showConfirmRestart, setShowConfirmRestart] = useState(false);
   const [showTip, setShowTip] = useState(false);
-  const [recentlyCompletedDay, setRecentlyCompletedDay] = useState<number | null>(null);
-  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Clear undo banner after timeout
-  useEffect(() => {
-    if (recentlyCompletedDay !== null) {
-      undoTimeoutRef.current = setTimeout(() => {
-        setRecentlyCompletedDay(null);
-      }, UNDO_TIMEOUT_MS);
-    }
-    return () => {
-      if (undoTimeoutRef.current) {
-        clearTimeout(undoTimeoutRef.current);
-      }
-    };
-  }, [recentlyCompletedDay]);
+  const undoDataRef = useRef<{ day: number; toastId: string | number } | null>(null);
   
   // Find current challenge index and allow navigation
   const completedCount = completedDays.length;
@@ -111,27 +97,45 @@ export const CurrentChallengeCard = ({
 
   const handleCompleteClick = () => {
     if (currentChallenge && !isChallengeComplete) {
-      onComplete(currentChallenge.day, currentChallenge.name);
-      setRecentlyCompletedDay(currentChallenge.day);
+      const day = currentChallenge.day;
+      onComplete(day, currentChallenge.name);
+      
+      // Show toast with undo option
+      const toastId = toast(
+        <div className="flex flex-col items-center text-center w-full cursor-pointer">
+          <div className="flex items-center gap-2 text-success font-medium">
+            <Check size={16} />
+            <span>Challenge complete!</span>
+          </div>
+          <span className="text-xs text-muted-foreground mt-1">Tap to undo</span>
+        </div>,
+        {
+          duration: UNDO_TIMEOUT_MS,
+          className: "cursor-pointer",
+          onDismiss: () => {
+            undoDataRef.current = null;
+          },
+        }
+      );
+      
+      undoDataRef.current = { day, toastId };
     }
   };
 
-  const handleUndo = () => {
-    if (recentlyCompletedDay !== null) {
-      onUncomplete(recentlyCompletedDay);
-      setRecentlyCompletedDay(null);
-      if (undoTimeoutRef.current) {
-        clearTimeout(undoTimeoutRef.current);
-      }
-    }
-  };
-
-  // Clear undo banner when navigating away from the recently completed day
+  // Handle toast click for undo
   useEffect(() => {
-    if (recentlyCompletedDay !== null && currentChallenge?.day !== recentlyCompletedDay) {
-      setRecentlyCompletedDay(null);
-    }
-  }, [currentChallenge?.day, recentlyCompletedDay]);
+    const handleToastClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-sonner-toast]') && undoDataRef.current) {
+        onUncomplete(undoDataRef.current.day);
+        toast.dismiss(undoDataRef.current.toastId);
+        undoDataRef.current = null;
+      }
+    };
+    
+    document.addEventListener('click', handleToastClick);
+    return () => document.removeEventListener('click', handleToastClick);
+  }, [onUncomplete]);
 
   const handleRestartClick = () => {
     setShowConfirmRestart(true);
@@ -283,25 +287,8 @@ export const CurrentChallengeCard = ({
                   <Lock size={14} />
                   Locked
                 </button>
-              ) : recentlyCompletedDay === currentChallenge.day ? (
-                // Temporary undo banner
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleUndo();
-                  }}
-                  className="h-9 px-4 rounded-full text-sm font-medium bg-success/10 text-success border border-success/50 flex items-center justify-center gap-2 min-w-[140px] animate-in fade-in duration-200"
-                >
-                  <Check size={14} />
-                  <span>Completed</span>
-                  <span className="text-success/70">•</span>
-                  <span className="flex items-center gap-1 text-success/80 hover:text-success">
-                    <Undo2 size={12} />
-                    Undo
-                  </span>
-                </button>
               ) : isChallengeComplete ? (
-                // Already completed (no undo available)
+                // Already completed
                 <div className="h-9 px-4 rounded-full text-sm font-medium bg-success/10 text-success border border-success/50 flex items-center justify-center gap-1 min-w-[140px]">
                   <Check size={14} />
                   Completed
