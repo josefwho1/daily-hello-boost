@@ -26,7 +26,7 @@ import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
 import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
+import { ChallengeUndoToast } from "@/components/ChallengeUndoToast";
 import { startOfWeek, isBefore, parseISO } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { normalizeTimezoneOffset, getDayKeyInOffset } from "@/lib/timezone";
@@ -353,24 +353,18 @@ export default function Dashboard() {
 
   if (!progress) return null;
 
-  // Helper to show challenge completion toast with green tick
+  // Helper to show challenge completion toast with tappable banner
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
-    const toastId = toast.success(`"${challengeName}" Completed!`, {
-      description: "Tap to undo",
-      duration: 5000,
-      action: {
-        label: "Undo",
-        onClick: async () => {
-          try {
-            await unmarkDayComplete(day);
-            toast.dismiss(toastId);
-          } catch (error) {
-            console.error("Failed to undo:", error);
-            toast.error("Could not undo. Please try again.");
-          }
-        },
-      },
-    });
+    toast.custom(
+      (id) => (
+        <ChallengeUndoToast
+          id={id}
+          challengeName={challengeName}
+          onUndo={() => unmarkDayComplete(day)}
+        />
+      ),
+      { duration: 5000 }
+    );
   };
 
   // Helper to handle tier unlock celebrations
