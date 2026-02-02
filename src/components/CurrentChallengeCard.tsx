@@ -110,14 +110,28 @@ export const CurrentChallengeCard = ({
   };
 
   const handleCompleteClick = () => {
-    if (currentChallenge) {
-      if (isChallengeComplete) {
-        onUncomplete(currentChallenge.day);
-      } else {
-        onComplete(currentChallenge.day, currentChallenge.name);
+    if (currentChallenge && !isChallengeComplete) {
+      onComplete(currentChallenge.day, currentChallenge.name);
+      setRecentlyCompletedDay(currentChallenge.day);
+    }
+  };
+
+  const handleUndo = () => {
+    if (recentlyCompletedDay !== null) {
+      onUncomplete(recentlyCompletedDay);
+      setRecentlyCompletedDay(null);
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current);
       }
     }
   };
+
+  // Clear undo banner when navigating away from the recently completed day
+  useEffect(() => {
+    if (recentlyCompletedDay !== null && currentChallenge?.day !== recentlyCompletedDay) {
+      setRecentlyCompletedDay(null);
+    }
+  }, [currentChallenge?.day, recentlyCompletedDay]);
 
   const handleRestartClick = () => {
     setShowConfirmRestart(true);
