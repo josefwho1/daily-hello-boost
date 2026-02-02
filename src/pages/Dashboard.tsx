@@ -434,10 +434,10 @@ export default function Dashboard() {
           
           // If completing a challenge, mark it done
           if (pendingChallengeCompletion) {
+            const previousCount = challengeState.completedDays.length;
             await markDayComplete(pendingChallengeCompletion.day);
-            toast.success(`Day ${pendingChallengeCompletion.day} complete! ✅`);
-            if (challengeState.completedDays.length === 29) {
-              setTimeout(() => setShowThirtyChallengeComplete(true), 500);
+            showChallengeCompletedToast(pendingChallengeCompletion.day, pendingChallengeCompletion.name);
+            checkAndShowCelebrations(previousCount, previousCount + 1);
             }
             setPendingChallengeCompletion(null);
           }
