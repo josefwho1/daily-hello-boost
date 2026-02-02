@@ -50,6 +50,11 @@ export interface UserProgress {
   daily_mode_last_hello_date?: string | null;
   daily_mode_morning_reminder_shown_date?: string | null;
   daily_mode_afternoon_reminder_shown_date?: string | null;
+  // 30-Day Challenge fields
+  challenge_completed_days?: number[];
+  challenge_started_at?: string | null;
+  challenge_completed_at?: string | null;
+  challenge_times_completed?: number;
 }
 
 export const useUserProgress = () => {

@@ -67,7 +67,7 @@ export const useChallengeProgress = () => {
     // If all 30 complete, set completed date and increment times completed
     if (isNowComplete) {
       updates.challenge_completed_at = new Date().toISOString();
-      updates.challenge_times_completed = ((progress as any)?.challenge_times_completed || 0) + 1;
+      updates.challenge_times_completed = (progress?.challenge_times_completed || 0) + 1;
     }
 
     await updateProgress(updates);
