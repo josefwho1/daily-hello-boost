@@ -209,16 +209,15 @@ export const CurrentChallengeCard = ({
                   <Check size={14} /> Completed
                 </div>
               ) : (
-                <Button 
-                  size="sm" 
+                <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCompleteClick();
                   }}
-                  className="flex-1 rounded-full"
+                  className="flex-1 h-9 rounded-full text-sm font-medium border border-border/50 text-muted-foreground hover:bg-success/10 hover:text-success hover:border-success/50 transition-colors"
                 >
-                  Complete
-                </Button>
+                  Mark as complete
+                </button>
               )}
               <Button 
                 variant="ghost" 
