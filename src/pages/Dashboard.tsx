@@ -266,7 +266,7 @@ export default function Dashboard() {
     }
   }, [dailyModeLoading, dailyModeState.isActive, checkAndResetStreak]);
 
-  const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string }) => {
+  const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string; hello_type?: string }) => {
     const today = getDayKeyInOffset(new Date(), tzOffset);
 
     const result = await addLog({
