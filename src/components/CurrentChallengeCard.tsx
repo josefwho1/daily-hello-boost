@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock } from "lucide-react";
+import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock, Undo2 } from "lucide-react";
 import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
 import remiProud from "@/assets/remi-proud.webp";
@@ -29,6 +29,8 @@ interface CurrentChallengeCardProps {
   onRestart: () => void;
 }
 
+const UNDO_TIMEOUT_MS = 5000;
+
 export const CurrentChallengeCard = ({
   completedDays,
   nextChallenge,
@@ -41,6 +43,22 @@ export const CurrentChallengeCard = ({
 }: CurrentChallengeCardProps) => {
   const [showConfirmRestart, setShowConfirmRestart] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  const [recentlyCompletedDay, setRecentlyCompletedDay] = useState<number | null>(null);
+  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clear undo banner after timeout
+  useEffect(() => {
+    if (recentlyCompletedDay !== null) {
+      undoTimeoutRef.current = setTimeout(() => {
+        setRecentlyCompletedDay(null);
+      }, UNDO_TIMEOUT_MS);
+    }
+    return () => {
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current);
+      }
+    };
+  }, [recentlyCompletedDay]);
   
   // Find current challenge index and allow navigation
   const completedCount = completedDays.length;
@@ -92,14 +110,28 @@ export const CurrentChallengeCard = ({
   };
 
   const handleCompleteClick = () => {
-    if (currentChallenge) {
-      if (isChallengeComplete) {
-        onUncomplete(currentChallenge.day);
-      } else {
-        onComplete(currentChallenge.day, currentChallenge.name);
+    if (currentChallenge && !isChallengeComplete) {
+      onComplete(currentChallenge.day, currentChallenge.name);
+      setRecentlyCompletedDay(currentChallenge.day);
+    }
+  };
+
+  const handleUndo = () => {
+    if (recentlyCompletedDay !== null) {
+      onUncomplete(recentlyCompletedDay);
+      setRecentlyCompletedDay(null);
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current);
       }
     }
   };
+
+  // Clear undo banner when navigating away from the recently completed day
+  useEffect(() => {
+    if (recentlyCompletedDay !== null && currentChallenge?.day !== recentlyCompletedDay) {
+      setRecentlyCompletedDay(null);
+    }
+  }, [currentChallenge?.day, recentlyCompletedDay]);
 
   const handleRestartClick = () => {
     setShowConfirmRestart(true);
@@ -195,10 +227,10 @@ export const CurrentChallengeCard = ({
           <div 
             className={cn(
               "flex-1 flex flex-col pr-14 mt-2",
-              !isLocked && currentChallenge.suggestion && !isChallengeComplete && "cursor-pointer"
+              !isLocked && currentChallenge.suggestion && "cursor-pointer"
             )}
             onClick={() => {
-              if (!isLocked && currentChallenge.suggestion && !isChallengeComplete) {
+              if (!isLocked && currentChallenge.suggestion) {
                 setShowTip(!showTip);
               }
             }}
@@ -230,7 +262,7 @@ export const CurrentChallengeCard = ({
                   </p>
                   {/* Tip toggle hint - always reserve space */}
                   <div className="h-4 flex items-center">
-                    {currentChallenge.suggestion && !isChallengeComplete && (
+                    {currentChallenge.suggestion && (
                       <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
                         <Lightbulb size={10} />
                         {showTip ? "Tap to show challenge" : "Tap to show tip"}
@@ -251,21 +283,39 @@ export const CurrentChallengeCard = ({
                   <Lock size={14} />
                   Locked
                 </button>
+              ) : recentlyCompletedDay === currentChallenge.day ? (
+                // Temporary undo banner
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUndo();
+                  }}
+                  className="h-9 px-4 rounded-full text-sm font-medium bg-success/10 text-success border border-success/50 flex items-center justify-center gap-2 min-w-[140px] animate-in fade-in duration-200"
+                >
+                  <Check size={14} />
+                  <span>Completed</span>
+                  <span className="text-success/70">•</span>
+                  <span className="flex items-center gap-1 text-success/80 hover:text-success">
+                    <Undo2 size={12} />
+                    Undo
+                  </span>
+                </button>
+              ) : isChallengeComplete ? (
+                // Already completed (no undo available)
+                <div className="h-9 px-4 rounded-full text-sm font-medium bg-success/10 text-success border border-success/50 flex items-center justify-center gap-1 min-w-[140px]">
+                  <Check size={14} />
+                  Completed
+                </div>
               ) : (
+                // Not completed - show mark as complete button
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCompleteClick();
                   }}
-                  className={cn(
-                    "h-9 px-4 rounded-full text-sm font-medium border transition-colors flex items-center justify-center gap-1 min-w-[140px]",
-                    isChallengeComplete 
-                      ? "bg-success/10 text-success border-success/50 hover:bg-success/20" 
-                      : "border-border/50 text-muted-foreground hover:bg-success/10 hover:text-success hover:border-success/50"
-                  )}
+                  className="h-9 px-4 rounded-full text-sm font-medium border border-border/50 text-muted-foreground hover:bg-success/10 hover:text-success hover:border-success/50 transition-colors flex items-center justify-center gap-1 min-w-[140px]"
                 >
-                  {isChallengeComplete && <Check size={14} />}
-                  {isChallengeComplete ? "Completed" : "Mark as complete"}
+                  Mark as complete
                 </button>
               )}
               <Button 
