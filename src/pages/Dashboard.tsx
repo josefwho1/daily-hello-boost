@@ -118,6 +118,7 @@ export default function Dashboard() {
   const [showHomeTutorial, setShowHomeTutorial] = useState(false);
   const [showChallengeList, setShowChallengeList] = useState(false);
   const [showThirtyChallengeComplete, setShowThirtyChallengeComplete] = useState(false);
+  const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{day: number; name: string} | null>(null);
   
   // Milestone celebration states
   const [showMilestoneCelebration, setShowMilestoneCelebration] = useState(false);
