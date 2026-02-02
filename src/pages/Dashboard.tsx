@@ -9,6 +9,7 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { useDailyMode } from "@/hooks/useDailyMode";
 import { useChallengeProgress } from "@/hooks/useChallengeProgress";
 import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
+import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
