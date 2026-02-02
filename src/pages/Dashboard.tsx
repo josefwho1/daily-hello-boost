@@ -55,6 +55,7 @@ export default function Dashboard() {
   const {
     state: challengeState,
     markDayComplete,
+    unmarkDayComplete,
     restartChallenge,
     loading: challengeLoading,
   } = useChallengeProgress();
