@@ -11,28 +11,22 @@ import { useChallengeProgress } from "@/hooks/useChallengeProgress";
 import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
 import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
-import { useChallengeProgress } from "@/hooks/useChallengeProgress";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
 import { DailyModeHomeCard } from "@/components/DailyModeHomeCard";
 import { DailyModeReminderBanner } from "@/components/DailyModeReminderBanner";
-import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
-import { ChallengeListView } from "@/components/ChallengeListView";
 import { RecentHellosSection } from "@/components/RecentHellosSection";
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
-
 import ViewHelloDialog from "@/components/ViewHelloDialog";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
 import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
-import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
 import { toast } from "sonner";
 import { startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
-
 import { normalizeTimezoneOffset, getDayKeyInOffset } from "@/lib/timezone";
 
 const getWeekStartKeyInOffset = (date: Date, offset: string) => {
