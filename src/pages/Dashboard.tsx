@@ -353,11 +353,12 @@ export default function Dashboard() {
     return (
       <ChallengeListView
         completedDays={challengeState.completedDays}
-        onComplete={(day, challengeName) => {
-          setPendingChallengeCompletion({ day, name: challengeName });
-          setShowChallengeList(false);
-          setAutoStartRecording(false);
-          setShowLogDialog(true);
+        onComplete={async (day, challengeName) => {
+          await markDayComplete(day);
+          toast.success(`${challengeName} complete! ✅`);
+          if (challengeState.completedDays.length === 29) {
+            setTimeout(() => setShowThirtyChallengeComplete(true), 500);
+          }
         }}
         onBack={() => setShowChallengeList(false)}
       />
