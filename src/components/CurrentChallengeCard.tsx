@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock } from "lucide-react";
 import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import remiProud from "@/assets/remi-proud.webp";
 import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
 import {
@@ -30,8 +29,6 @@ interface CurrentChallengeCardProps {
   onRestart: () => void;
 }
 
-const UNDO_TIMEOUT_MS = 5000;
-
 export const CurrentChallengeCard = ({
   completedDays,
   nextChallenge,
@@ -44,7 +41,6 @@ export const CurrentChallengeCard = ({
 }: CurrentChallengeCardProps) => {
   const [showConfirmRestart, setShowConfirmRestart] = useState(false);
   const [showTip, setShowTip] = useState(false);
-  const undoDataRef = useRef<{ day: number; toastId: string | number } | null>(null);
   
   // Find current challenge index and allow navigation
   const completedCount = completedDays.length;
@@ -97,45 +93,9 @@ export const CurrentChallengeCard = ({
 
   const handleCompleteClick = () => {
     if (currentChallenge && !isChallengeComplete) {
-      const day = currentChallenge.day;
-      onComplete(day, currentChallenge.name);
-      
-      // Show toast with undo option
-      const toastId = toast(
-        <div className="flex flex-col items-center text-center w-full cursor-pointer">
-          <div className="flex items-center gap-2 text-success font-medium">
-            <Check size={16} />
-            <span>Challenge complete!</span>
-          </div>
-          <span className="text-xs text-muted-foreground mt-1">Tap to undo</span>
-        </div>,
-        {
-          duration: UNDO_TIMEOUT_MS,
-          className: "cursor-pointer",
-          onDismiss: () => {
-            undoDataRef.current = null;
-          },
-        }
-      );
-      
-      undoDataRef.current = { day, toastId };
+      onComplete(currentChallenge.day, currentChallenge.name);
     }
   };
-
-  // Handle toast click for undo
-  useEffect(() => {
-    const handleToastClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest('[data-sonner-toast]') && undoDataRef.current) {
-        onUncomplete(undoDataRef.current.day);
-        toast.dismiss(undoDataRef.current.toastId);
-        undoDataRef.current = null;
-      }
-    };
-    
-    document.addEventListener('click', handleToastClick);
-    return () => document.removeEventListener('click', handleToastClick);
-  }, [onUncomplete]);
 
   const handleRestartClick = () => {
     setShowConfirmRestart(true);

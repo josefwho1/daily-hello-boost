@@ -356,14 +356,27 @@ export default function Dashboard() {
         completedDays={challengeState.completedDays}
         onComplete={async (day, challengeName) => {
           await markDayComplete(day);
-          toast.success(`${challengeName} complete! ✅`);
+          toast(
+            <div className="flex flex-col w-full">
+              <span className="font-medium">"{challengeName}" Completed!</span>
+              <button 
+                onClick={() => {
+                  unmarkDayComplete(day);
+                  toast.dismiss();
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground mt-1 text-left"
+              >
+                Undo
+              </button>
+            </div>,
+            { duration: 5000 }
+          );
           if (challengeState.completedDays.length === 29) {
             setTimeout(() => setShowThirtyChallengeComplete(true), 500);
           }
         }}
         onUncomplete={async (day) => {
           await unmarkDayComplete(day);
-          toast.info("Unmarked as complete");
         }}
         onBack={() => setShowChallengeList(false)}
       />
@@ -444,14 +457,27 @@ export default function Dashboard() {
                 isComplete={challengeState.isComplete}
                 onComplete={async (day, challengeName) => {
                   await markDayComplete(day);
-                  toast.success(`${challengeName} complete! ✅`);
+                  toast(
+                    <div className="flex flex-col w-full">
+                      <span className="font-medium">"{challengeName}" Completed!</span>
+                      <button 
+                        onClick={() => {
+                          unmarkDayComplete(day);
+                          toast.dismiss();
+                        }}
+                        className="text-xs text-muted-foreground hover:text-foreground mt-1 text-left"
+                      >
+                        Undo
+                      </button>
+                    </div>,
+                    { duration: 5000 }
+                  );
                   if (challengeState.completedDays.length === 29) {
                     setTimeout(() => setShowThirtyChallengeComplete(true), 500);
                   }
                 }}
                 onUncomplete={async (day) => {
                   await unmarkDayComplete(day);
-                  toast.info("Unmarked as complete");
                 }}
                 onViewAll={() => setShowChallengeList(true)}
                 onRestart={async () => {
