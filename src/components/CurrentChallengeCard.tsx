@@ -284,9 +284,9 @@ export const CurrentChallengeCard = ({
           </div>
         ) : null}
 
-        {/* Remi image */}
+        {/* Remi image - changes based on completion state */}
         <img 
-          src={remiProud} 
+          src={isChallengeComplete ? remiProud : remiHoldingOrb} 
           alt="Remi" 
           className="absolute bottom-2 right-2 w-12 h-auto object-contain opacity-90 pointer-events-none"
         />
