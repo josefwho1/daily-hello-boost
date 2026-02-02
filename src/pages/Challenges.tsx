@@ -13,8 +13,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { Target, Flame, RotateCcw, ChevronRight, Pause, Play, Check } from "lucide-react";
+import { Target, Flame, RotateCcw, ChevronRight, Pause, Play } from "lucide-react";
 import { toast } from "sonner";
+import { ChallengeUndoToast } from "@/components/ChallengeUndoToast";
 import questsIcon from "@/assets/quests-icon.webp";
 import remiQuest from "@/assets/remi-quest.webp";
 import {
@@ -100,45 +101,13 @@ const Challenges = () => {
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
     toast.custom(
       (id) => (
-        <div
-          role="button"
-          tabIndex={0}
-          className="w-full cursor-pointer select-none rounded-xl border border-border bg-background px-4 py-3 shadow-lg"
-          onClick={async () => {
-            try {
-              await unmarkDayComplete(day);
-              toast.dismiss(id);
-            } catch (error) {
-              console.error("Failed to undo:", error);
-              toast.error("Could not undo. Please try again.");
-            }
-          }}
-          onKeyDown={async (e) => {
-            if (e.key !== "Enter" && e.key !== " ") return;
-            e.preventDefault();
-            try {
-              await unmarkDayComplete(day);
-              toast.dismiss(id);
-            } catch (error) {
-              console.error("Failed to undo:", error);
-              toast.error("Could not undo. Please try again.");
-            }
-          }}
-        >
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-success/15 text-success">
-              <Check className="h-4 w-4" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-medium text-foreground truncate">"{challengeName}" Completed!</p>
-              <p className="mt-0.5 text-sm text-muted-foreground">Tap to undo</p>
-            </div>
-          </div>
-        </div>
+        <ChallengeUndoToast
+          id={id}
+          challengeName={challengeName}
+          onUndo={() => unmarkDayComplete(day)}
+        />
       ),
-      {
-        duration: 5000,
-      }
+      { duration: 5000 }
     );
   };
 
