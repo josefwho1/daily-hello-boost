@@ -76,27 +76,31 @@ export const DailyModeDetailScreen = ({
         {/* Tagline */}
         <div className="mb-6">
           <p className="text-lg font-semibold text-foreground mb-2">
-            The ultimate challenge: log at least one hello every single day.
+            One Hello a day.
           </p>
         </div>
 
         {/* Description Card */}
         <Card className="mb-6">
           <CardContent className="p-4 space-y-4">
+            <p className="text-sm text-foreground">
+              The original challenge. Log at least one hello every day.
+            </p>
+            
             <p className="text-sm text-muted-foreground">
-              No streak savers. No grace days. No pauses. Miss one day and your streak resets to zero. Only the committed survive.
+              No streak savers. No grace days. No pauses. Miss one day and your streak resets to zero.
             </p>
             
             <div className="space-y-2">
               <p className="text-sm font-medium text-foreground">Two daily reminders:</p>
-              <ul className="text-sm text-muted-foreground space-y-1 pl-4">
-                <li>• Morning nudge (9am)</li>
-                <li>• Afternoon reminder (4pm) if no hello logged yet</li>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• Morning nudge (8am)</li>
+                <li>• Afternoon reminder (2pm) if no hello logged yet</li>
               </ul>
             </div>
             
-            <p className="text-sm text-muted-foreground italic">
-              Your best streak is saved forever—even if your current streak breaks.
+            <p className="text-sm text-foreground font-medium">
+              Your best streak is saved forever. How far can you get?
             </p>
           </CardContent>
         </Card>
