@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useUserProgressQuery } from './useUserProgressQuery';
 import { thirtyDayChallenge, getNextIncompleteChallenge, isAllChallengesComplete } from '@/data/thirtyDayChallenge';
 
@@ -17,6 +17,10 @@ export interface ChallengeProgressState {
 export const useChallengeProgress = () => {
   const { progress, updateProgress, loading } = useUserProgressQuery();
 
+  // Avoid stale closures for toast-based undo: always operate on the latest completion state.
+  const completedDaysRef = useRef<number[]>([]);
+  const progressRef = useRef<typeof progress | null>(null);
+
   // Parse completed days from progress - handle both array and null cases
   const completedDays = useMemo(() => {
     const days = progress?.challenge_completed_days;
@@ -24,6 +28,14 @@ export const useChallengeProgress = () => {
       return days.filter((d: unknown): d is number => typeof d === 'number');
     }
     return [];
+  }, [progress]);
+
+  useEffect(() => {
+    completedDaysRef.current = completedDays;
+  }, [completedDays]);
+
+  useEffect(() => {
+    progressRef.current = progress ?? null;
   }, [progress]);
 
   const state: ChallengeProgressState = useMemo(() => {
@@ -48,11 +60,14 @@ export const useChallengeProgress = () => {
 
   // Mark a day as complete
   const markDayComplete = useCallback(async (day: number) => {
-    if (completedDays.includes(day)) {
+    const currentCompletedDays = completedDaysRef.current;
+    const currentProgress = progressRef.current;
+
+    if (currentCompletedDays.includes(day)) {
       return; // Already completed
     }
 
-    const newCompletedDays = [...completedDays, day].sort((a, b) => a - b);
+    const newCompletedDays = [...currentCompletedDays, day].sort((a, b) => a - b);
     const isNowComplete = isAllChallengesComplete(newCompletedDays);
 
     const updates: Record<string, unknown> = {
@@ -60,38 +75,41 @@ export const useChallengeProgress = () => {
     };
 
     // If this is the first challenge, set started date
-    if (completedDays.length === 0) {
+    if (currentCompletedDays.length === 0) {
       updates.challenge_started_at = new Date().toISOString();
     }
 
     // If all 30 complete, set completed date and increment times completed
     if (isNowComplete) {
       updates.challenge_completed_at = new Date().toISOString();
-      updates.challenge_times_completed = (progress?.challenge_times_completed || 0) + 1;
+      updates.challenge_times_completed = ((currentProgress as any)?.challenge_times_completed || 0) + 1;
     }
 
     await updateProgress(updates);
-  }, [completedDays, progress, updateProgress]);
+  }, [updateProgress]);
 
   // Unmark a day (undo completion)
   const unmarkDayComplete = useCallback(async (day: number) => {
-    if (!completedDays.includes(day)) {
+    const currentCompletedDays = completedDaysRef.current;
+    const currentProgress = progressRef.current;
+
+    if (!currentCompletedDays.includes(day)) {
       return; // Not completed
     }
 
-    const newCompletedDays = completedDays.filter(d => d !== day);
+    const newCompletedDays = currentCompletedDays.filter(d => d !== day);
 
     const updates: Record<string, unknown> = {
       challenge_completed_days: newCompletedDays,
     };
 
     // If we're unmarking and challenge was complete, clear completion date
-    if (progress?.challenge_completed_at) {
+    if (currentProgress?.challenge_completed_at) {
       updates.challenge_completed_at = null;
     }
 
     await updateProgress(updates);
-  }, [completedDays, progress, updateProgress]);
+  }, [updateProgress]);
 
   // Restart the challenge
   const restartChallenge = useCallback(async () => {
