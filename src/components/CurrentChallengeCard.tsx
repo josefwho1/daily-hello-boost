@@ -6,6 +6,7 @@ import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock } 
 import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
 import remiProud from "@/assets/remi-proud.webp";
+import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
 import {
   AlertDialog,
   AlertDialogAction,
