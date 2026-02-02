@@ -40,9 +40,9 @@ export const useChallengeProgress = () => {
       progressPercent,
       isComplete,
       nextChallenge,
-      startedAt: (progress as any)?.challenge_started_at || null,
-      completedAt: (progress as any)?.challenge_completed_at || null,
-      timesCompleted: (progress as any)?.challenge_times_completed || 0,
+      startedAt: progress?.challenge_started_at || null,
+      completedAt: progress?.challenge_completed_at || null,
+      timesCompleted: progress?.challenge_times_completed || 0,
     };
   }, [completedDays, progress]);
 
