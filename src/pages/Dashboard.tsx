@@ -9,6 +9,7 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { useDailyMode } from "@/hooks/useDailyMode";
 import { useChallengeProgress } from "@/hooks/useChallengeProgress";
 import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
+import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
@@ -118,6 +119,7 @@ export default function Dashboard() {
   const [showHomeTutorial, setShowHomeTutorial] = useState(false);
   const [showChallengeList, setShowChallengeList] = useState(false);
   const [showThirtyChallengeComplete, setShowThirtyChallengeComplete] = useState(false);
+  const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{day: number; name: string} | null>(null);
   
   // Milestone celebration states
   const [showMilestoneCelebration, setShowMilestoneCelebration] = useState(false);
@@ -265,7 +267,7 @@ export default function Dashboard() {
     }
   }, [dailyModeLoading, dailyModeState.isActive, checkAndResetStreak]);
 
-  const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string }) => {
+  const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string; hello_type?: string }) => {
     const today = getDayKeyInOffset(new Date(), tzOffset);
 
     const result = await addLog({
@@ -351,13 +353,11 @@ export default function Dashboard() {
     return (
       <ChallengeListView
         completedDays={challengeState.completedDays}
-        onMarkComplete={async (day) => {
-          await markDayComplete(day);
-          toast.success(`Day ${day} complete! ✅`);
-          // Check if this completed the whole challenge
-          if (challengeState.completedDays.length === 29) {
-            setTimeout(() => setShowThirtyChallengeComplete(true), 500);
-          }
+        onComplete={(day, challengeName) => {
+          setPendingChallengeCompletion({ day, name: challengeName });
+          setShowChallengeList(false);
+          setAutoStartRecording(false);
+          setShowLogDialog(true);
         }}
         onBack={() => setShowChallengeList(false)}
       />
@@ -371,11 +371,28 @@ export default function Dashboard() {
         onBack={() => {
           setShowLogDialog(false);
           setAutoStartRecording(false);
+          setPendingChallengeCompletion(null);
         }}
-        onLog={handleLogHello}
-        challengeTitle={null}
+        onLog={async (data) => {
+          await handleLogHello({
+            ...data,
+            hello_type: pendingChallengeCompletion ? `Challenge: ${pendingChallengeCompletion.name}` : data.hello_type,
+          });
+          
+          // If completing a challenge, mark it done
+          if (pendingChallengeCompletion) {
+            await markDayComplete(pendingChallengeCompletion.day);
+            toast.success(`Day ${pendingChallengeCompletion.day} complete! ✅`);
+            if (challengeState.completedDays.length === 29) {
+              setTimeout(() => setShowThirtyChallengeComplete(true), 500);
+            }
+            setPendingChallengeCompletion(null);
+          }
+        }}
+        challengeTitle={pendingChallengeCompletion?.name || null}
         autoStartRecording={autoStartRecording}
         existingLogs={logs}
+        requireAtLeastOneField={!!pendingChallengeCompletion}
       />
     );
   }
@@ -420,27 +437,28 @@ export default function Dashboard() {
         {/* Main Dashboard - Connection-focused layout */}
         <div className="space-y-6">
           
-          {/* 30-Day Challenge Card */}
+          {/* Show Today's Hello when quest is paused, otherwise 30-Day Challenge Card */}
           <div className="space-y-3" id="tutorial-todays-hello-card">
-            <CurrentChallengeCard
-              completedDays={challengeState.completedDays}
-              nextChallenge={challengeState.nextChallenge}
-              totalCount={challengeState.totalCount}
-              isComplete={challengeState.isComplete}
-              onMarkComplete={async (day) => {
-                await markDayComplete(day);
-                toast.success(`Day ${day} complete! ✅`);
-                // Check if this completed the whole challenge
-                if (challengeState.completedDays.length === 29) {
-                  setTimeout(() => setShowThirtyChallengeComplete(true), 500);
-                }
-              }}
-              onViewAll={() => setShowChallengeList(true)}
-              onRestart={async () => {
-                await restartChallenge();
-                toast.success("Challenge restarted! Day 1 ready.");
-              }}
-            />
+            {progress?.selected_pack_id === 'daily' ? (
+              <DailySuggestionCard />
+            ) : (
+              <CurrentChallengeCard
+                completedDays={challengeState.completedDays}
+                nextChallenge={challengeState.nextChallenge}
+                totalCount={challengeState.totalCount}
+                isComplete={challengeState.isComplete}
+                onComplete={(day, challengeName) => {
+                  setPendingChallengeCompletion({ day, name: challengeName });
+                  setAutoStartRecording(false);
+                  setShowLogDialog(true);
+                }}
+                onViewAll={() => setShowChallengeList(true)}
+                onRestart={async () => {
+                  await restartChallenge();
+                  toast.success("Challenge restarted! Day 1 ready.");
+                }}
+              />
+            )}
           </div>
 
           {/* Log a Hello Button */}

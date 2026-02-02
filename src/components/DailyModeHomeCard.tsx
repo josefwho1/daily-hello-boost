@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Calendar, Check } from "lucide-react";
+import { Calendar, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DailyModeHomeCardProps {
@@ -26,7 +26,7 @@ export const DailyModeHomeCard = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calendar className="w-5 h-5 text-primary" />
-          <span className="font-bold text-foreground text-base">Daily Mode Active</span>
+          <span className="font-bold text-foreground text-base">Daily Mode</span>
         </div>
         
         <div className="flex items-center gap-5">
@@ -35,10 +35,13 @@ export const DailyModeHomeCard = ({
             {hasLoggedToday ? (
               <span className="flex items-center gap-1 text-base font-bold text-success">
                 <Check className="w-4 h-4" />
-                {todaysHelloCount} hello{todaysHelloCount !== 1 ? 's' : ''}
+                {todaysHelloCount}
               </span>
             ) : (
-              <span className="text-base font-bold text-destructive">0 hellos</span>
+              <span className="flex items-center gap-1 text-base font-bold text-destructive">
+                <X className="w-4 h-4" />
+                0
+              </span>
             )}
           </div>
           

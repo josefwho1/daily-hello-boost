@@ -4,13 +4,16 @@ import { useUserProgressQuery } from "@/hooks/useUserProgressQuery";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useDailyMode } from "@/hooks/useDailyMode";
 import { useChallengeProgress } from "@/hooks/useChallengeProgress";
+import { useHelloLogs } from "@/hooks/useHelloLogs";
+import { useTimezone } from "@/hooks/useTimezone";
 import { DailyModeDetailScreen } from "@/components/DailyModeDetailScreen";
 import { ChallengeListView } from "@/components/ChallengeListView";
+import { LogHelloScreen } from "@/components/LogHelloScreen";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { Target, Flame, RotateCcw, ChevronRight, Clock } from "lucide-react";
+import { Target, Flame, RotateCcw, ChevronRight, Clock, Pause, Play } from "lucide-react";
 import { toast } from "sonner";
 import questsIcon from "@/assets/quests-icon.webp";
 import remiQuest from "@/assets/remi-quest.webp";
@@ -29,6 +32,8 @@ const Challenges = () => {
   const navigate = useNavigate();
   const { progress: cloudProgress, updateProgress: updateCloudProgress, loading: cloudLoading } = useUserProgressQuery();
   const { guestProgress, updateProgress: updateGuestProgress, isAnonymous, loading: guestLoading } = useGuestMode();
+  const { logs, addLog } = useHelloLogs();
+  const { timezoneOffset } = useTimezone();
   const { 
     state: dailyModeState, 
     activateDailyMode, 
@@ -45,24 +50,68 @@ const Challenges = () => {
   const [showDailyModeDetail, setShowDailyModeDetail] = useState(false);
   const [showChallengeList, setShowChallengeList] = useState(false);
   const [showConfirmRestart, setShowConfirmRestart] = useState(false);
+  const [showConfirmDailyModeOff, setShowConfirmDailyModeOff] = useState(false);
+  const [showConfirmPause, setShowConfirmPause] = useState(false);
+  const [showLogScreen, setShowLogScreen] = useState(false);
+  const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{day: number; name: string} | null>(null);
 
   const progress = isAnonymous ? guestProgress : cloudProgress;
+  const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
   const isLoading = (isAnonymous ? guestLoading : cloudLoading) || challengeLoading || dailyModeLoading;
+
+  // Check if quest is paused (selected_pack_id === 'daily' means showing Today's Hello)
+  const isQuestPaused = progress?.selected_pack_id === 'daily';
 
   const handleDailyModeToggle = async (enabled: boolean) => {
     if (enabled) {
       await activateDailyMode();
       toast.success("Daily Mode activated! 🔥");
     } else {
-      await deactivateDailyMode();
-      toast.success("Daily Mode deactivated");
+      // Show warning when turning OFF
+      setShowConfirmDailyModeOff(true);
     }
+  };
+
+  const handleConfirmDailyModeOff = async () => {
+    await deactivateDailyMode();
+    setShowConfirmDailyModeOff(false);
+    toast.success("Daily Mode deactivated");
   };
 
   const handleRestartChallenge = async () => {
     await restartChallenge();
     setShowConfirmRestart(false);
     toast.success("Challenge restarted! Day 1 ready.");
+  };
+
+  const handlePauseQuest = async () => {
+    await updateProgress({ selected_pack_id: 'daily' });
+    setShowConfirmPause(false);
+    toast.success("Quest paused. Enjoy Today's Hello!");
+  };
+
+  const handleResumeQuest = async () => {
+    await updateProgress({ selected_pack_id: '30-day-hello' });
+    toast.success("Quest resumed! Keep going! 🎯");
+  };
+
+  const handleLogHello = async (data: { 
+    name?: string; 
+    location?: string; 
+    notes?: string; 
+    no_name_flag?: boolean;
+    hello_type?: string;
+  }) => {
+    await addLog(data);
+    
+    // Mark challenge complete
+    if (pendingChallengeCompletion) {
+      await markDayComplete(pendingChallengeCompletion.day);
+      toast.success(`Day ${pendingChallengeCompletion.day} complete! ✅`);
+      setPendingChallengeCompletion(null);
+    }
+    
+    setShowLogScreen(false);
   };
 
   // Show Daily Mode detail screen
@@ -80,14 +129,35 @@ const Challenges = () => {
     );
   }
 
+  // Show Log Hello screen for challenge completion
+  if (showLogScreen && pendingChallengeCompletion) {
+    return (
+      <LogHelloScreen
+        onBack={() => {
+          setShowLogScreen(false);
+          setPendingChallengeCompletion(null);
+        }}
+        onLog={async (data) => {
+          await handleLogHello({
+            ...data,
+            hello_type: `Challenge: ${pendingChallengeCompletion.name}`,
+          });
+        }}
+        challengeTitle={pendingChallengeCompletion.name}
+        existingLogs={logs}
+        requireAtLeastOneField={true}
+      />
+    );
+  }
+
   // Show Challenge List view
   if (showChallengeList) {
     return (
       <ChallengeListView
         completedDays={challengeState.completedDays}
-        onMarkComplete={async (day) => {
-          await markDayComplete(day);
-          toast.success(`Day ${day} complete! ✅`);
+        onComplete={(day, name) => {
+          setPendingChallengeCompletion({ day, name });
+          setShowLogScreen(true);
         }}
         onBack={() => setShowChallengeList(false)}
       />
@@ -184,6 +254,9 @@ const Challenges = () => {
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-foreground">30-Day Hello Challenge</h3>
                 <p className="text-xs text-success font-medium">FREE • Perfect for Everyone</p>
+                {isQuestPaused && (
+                  <p className="text-xs text-warning font-medium mt-1">⏸️ Paused</p>
+                )}
               </div>
             </div>
             
@@ -214,11 +287,36 @@ const Challenges = () => {
               >
                 View Challenges
               </Button>
+              
+              {/* Pause/Resume button */}
+              {isQuestPaused ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResumeQuest}
+                  className="rounded-full"
+                  title="Resume Quest"
+                >
+                  <Play className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowConfirmPause(true)}
+                  className="rounded-full"
+                  title="Pause Quest"
+                >
+                  <Pause className="w-4 h-4" />
+                </Button>
+              )}
+              
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowConfirmRestart(true)}
                 className="rounded-full"
+                title="Restart Challenge"
               >
                 <RotateCcw className="w-4 h-4" />
               </Button>
@@ -257,6 +355,42 @@ const Challenges = () => {
             <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleRestartChallenge} className="rounded-xl">
               Restart
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm Daily Mode Off Dialog */}
+      <AlertDialog open={showConfirmDailyModeOff} onOpenChange={setShowConfirmDailyModeOff}>
+        <AlertDialogContent className="rounded-2xl max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Turn off Daily Mode?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your current streak will be preserved, but you won't get daily reminders anymore. You can turn it back on anytime.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Keep On</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDailyModeOff} className="rounded-xl">
+              Turn Off
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm Pause Quest Dialog */}
+      <AlertDialog open={showConfirmPause} onOpenChange={setShowConfirmPause}>
+        <AlertDialogContent className="rounded-2xl max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Pause your quest?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your progress will be saved. The Home screen will show "Today's Hello" prompts instead. You can resume anytime.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handlePauseQuest} className="rounded-xl">
+              Pause Quest
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

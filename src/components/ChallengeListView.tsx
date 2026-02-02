@@ -1,39 +1,23 @@
 import { useState } from "react";
-import { ChevronLeft, Check, Circle, Lightbulb } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Circle, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Card } from "@/components/ui/card";
 import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 interface ChallengeListViewProps {
   completedDays: number[];
-  onMarkComplete: (day: number) => void;
+  onComplete: (day: number, challengeName: string) => void;
   onBack: () => void;
 }
 
 export const ChallengeListView = ({
   completedDays,
-  onMarkComplete,
+  onComplete,
   onBack,
 }: ChallengeListViewProps) => {
-  const [confirmDay, setConfirmDay] = useState<number | null>(null);
-  const [detailChallenge, setDetailChallenge] = useState<ThirtyDayChallenge | null>(null);
+  const [expandedTips, setExpandedTips] = useState<Set<number>>(new Set());
 
   const completedCount = completedDays.length;
   const totalCount = thirtyDayChallenge.length;
@@ -41,18 +25,15 @@ export const ChallengeListView = ({
 
   const isDayComplete = (day: number) => completedDays.includes(day);
 
-  const handleMarkComplete = (day: number) => {
-    setConfirmDay(day);
-  };
-
-  const handleConfirm = () => {
-    if (confirmDay !== null) {
-      onMarkComplete(confirmDay);
-      setConfirmDay(null);
+  const toggleTip = (day: number) => {
+    const newExpanded = new Set(expandedTips);
+    if (newExpanded.has(day)) {
+      newExpanded.delete(day);
+    } else {
+      newExpanded.add(day);
     }
+    setExpandedTips(newExpanded);
   };
-
-  const confirmChallenge = thirtyDayChallenge.find(c => c.day === confirmDay);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -81,12 +62,13 @@ export const ChallengeListView = ({
         <div className="space-y-3">
           {thirtyDayChallenge.map((challenge) => {
             const isComplete = isDayComplete(challenge.day);
+            const showTip = expandedTips.has(challenge.day);
             
             return (
-              <div
+              <Card
                 key={challenge.day}
                 className={cn(
-                  "border rounded-xl p-4 transition-colors",
+                  "p-4 transition-colors",
                   isComplete 
                     ? "bg-muted/30 border-border/50" 
                     : "bg-card border-border hover:bg-muted/20"
@@ -106,115 +88,65 @@ export const ChallengeListView = ({
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
+                    {/* Challenge name - prominent */}
                     <div 
                       className={cn(
-                        "font-medium",
+                        "font-bold text-base",
                         isComplete ? "text-muted-foreground" : "text-foreground"
                       )}
                     >
                       Day {challenge.day}: {challenge.name}
                     </div>
 
-                    {/* Show description for incomplete challenges */}
+                    {/* Show description/tip for incomplete challenges */}
                     {!isComplete && (
-                      <>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {challenge.description}
+                      <div 
+                        className={cn(
+                          "cursor-pointer",
+                          challenge.suggestion && "cursor-pointer"
+                        )}
+                        onClick={() => challenge.suggestion && toggleTip(challenge.day)}
+                      >
+                        <p className={cn(
+                          "text-sm text-muted-foreground mt-1",
+                          showTip && "italic text-muted-foreground/70"
+                        )}>
+                          {showTip && challenge.suggestion 
+                            ? `"${challenge.suggestion}"` 
+                            : challenge.description}
                         </p>
-                        <div className="flex items-center gap-2 mt-3">
-                          <Button
-                            size="sm"
-                            onClick={() => handleMarkComplete(challenge.day)}
-                            className="rounded-full"
-                          >
-                            Mark Complete
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setDetailChallenge(challenge)}
-                            className="rounded-full text-muted-foreground"
-                          >
-                            <Lightbulb className="w-4 h-4 mr-1" />
-                            Tip
-                          </Button>
-                        </div>
-                      </>
+                        
+                        {challenge.suggestion && (
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 mt-1">
+                            <Lightbulb size={10} />
+                            {showTip ? "Tap to show challenge" : "Tap to show tip"}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Complete button for incomplete challenges */}
+                    {!isComplete && (
+                      <div className="mt-3">
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onComplete(challenge.day, challenge.name);
+                          }}
+                          className="rounded-full"
+                        >
+                          Complete
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
       </div>
-
-      {/* Confirm Complete Dialog */}
-      <AlertDialog open={confirmDay !== null} onOpenChange={(open) => !open && setConfirmDay(null)}>
-        <AlertDialogContent className="rounded-2xl max-w-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Complete this challenge?</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <span className="font-medium text-foreground block">
-                Day {confirmChallenge?.day}: {confirmChallenge?.name}
-              </span>
-              <span className="block">{confirmChallenge?.description}</span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirm} className="rounded-xl">
-              Yes, I Did It!
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Challenge Detail Dialog */}
-      <Dialog open={detailChallenge !== null} onOpenChange={(open) => !open && setDetailChallenge(null)}>
-        <DialogContent className="rounded-2xl max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-sm text-muted-foreground">
-              Day {detailChallenge?.day} of 30
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-foreground">{detailChallenge?.name}</h2>
-            <p className="text-foreground">{detailChallenge?.description}</p>
-            
-            <div className="bg-muted/50 rounded-lg p-3">
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-1">
-                <Lightbulb className="w-4 h-4" />
-                <span>Suggestion:</span>
-              </div>
-              <p className="text-sm text-foreground italic">
-                {detailChallenge?.suggestion}
-              </p>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button
-                onClick={() => {
-                  if (detailChallenge) {
-                    handleMarkComplete(detailChallenge.day);
-                    setDetailChallenge(null);
-                  }
-                }}
-                className="flex-1 rounded-full"
-              >
-                Mark Complete
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setDetailChallenge(null)}
-                className="rounded-full"
-              >
-                Close
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
