@@ -183,15 +183,17 @@ export const CurrentChallengeCard = ({
               {currentChallenge.name}
             </h3>
             
-            {/* Description or Tip - swap on tap */}
-            <p className={cn(
-              "text-sm text-muted-foreground line-clamp-2 mt-1",
-              showTip && "italic text-muted-foreground/70"
-            )}>
-              {showTip && currentChallenge.suggestion 
-                ? `"${currentChallenge.suggestion}"` 
-                : currentChallenge.description}
-            </p>
+            {/* Description or Tip - swap on tap - fixed 2-line height */}
+            <div className="h-10 mt-1">
+              <p className={cn(
+                "text-sm text-muted-foreground line-clamp-2",
+                showTip && "italic text-muted-foreground/70"
+              )}>
+                {showTip && currentChallenge.suggestion 
+                  ? `"${currentChallenge.suggestion}"` 
+                  : currentChallenge.description}
+              </p>
+            </div>
 
             {/* Tip toggle hint */}
             {currentChallenge.suggestion && !isChallengeComplete && (

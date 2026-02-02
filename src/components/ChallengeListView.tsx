@@ -47,7 +47,10 @@ export const ChallengeListView = ({
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-xl font-bold text-foreground">30-Day Hello Challenge</h1>
+          <div>
+            <h1 className="text-xl font-bold text-foreground">The One Hello Challenge</h1>
+            <p className="text-xs text-muted-foreground">One Hello a day, for 30 days.</p>
+          </div>
         </div>
 
         {/* Progress bar */}
