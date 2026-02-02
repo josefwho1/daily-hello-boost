@@ -6,6 +6,7 @@ import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock } 
 import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
 import remiProud from "@/assets/remi-proud.webp";
+import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -112,7 +113,7 @@ export const CurrentChallengeCard = ({
 
   return (
     <>
-      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[240px] flex flex-col">
+      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[260px] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
@@ -211,7 +212,7 @@ export const CurrentChallengeCard = ({
             </h3>
             
             {/* Fixed height content area - always same height regardless of content */}
-            <div className="h-[52px] mt-1 overflow-hidden">
+            <div className="h-[68px] mt-1 overflow-hidden">
               {isLocked ? (
                 <div className="flex items-center gap-2 text-muted-foreground/50">
                   <Lock size={14} />
@@ -220,7 +221,7 @@ export const CurrentChallengeCard = ({
               ) : (
                 <>
                   <p className={cn(
-                    "text-xs text-muted-foreground line-clamp-2",
+                    "text-xs text-muted-foreground line-clamp-3",
                     showTip && "italic text-muted-foreground/70"
                   )}>
                     {showTip && currentChallenge.suggestion 
@@ -283,9 +284,9 @@ export const CurrentChallengeCard = ({
           </div>
         ) : null}
 
-        {/* Remi image */}
+        {/* Remi image - changes based on completion state */}
         <img 
-          src={remiProud} 
+          src={isChallengeComplete ? remiProud : remiHoldingOrb} 
           alt="Remi" 
           className="absolute bottom-2 right-2 w-12 h-auto object-contain opacity-90 pointer-events-none"
         />
