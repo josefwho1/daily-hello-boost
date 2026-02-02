@@ -42,20 +42,33 @@ export const CurrentChallengeCard = ({
   const [showTip, setShowTip] = useState(false);
   
   // Find current challenge index and allow navigation
+  const completedCount = completedDays.length;
+  
+  // Progressive unlock logic - same as ChallengeListView
+  const isDayLocked = (day: number) => {
+    if (day <= 10) return false;
+    if (day <= 20) return completedCount < 10;
+    return completedCount < 20;
+  };
+  
+  // Find the max unlocked index
+  const maxUnlockedIndex = completedCount >= 20 ? 29 : (completedCount >= 10 ? 19 : 9);
+  
   const getCurrentIndex = () => {
-    if (!nextChallenge) return thirtyDayChallenge.length - 1;
-    return thirtyDayChallenge.findIndex(c => c.day === nextChallenge.day);
+    if (!nextChallenge) return Math.min(thirtyDayChallenge.length - 1, maxUnlockedIndex);
+    const idx = thirtyDayChallenge.findIndex(c => c.day === nextChallenge.day);
+    return Math.min(idx, maxUnlockedIndex);
   };
   
   const [currentIndex, setCurrentIndex] = useState(getCurrentIndex);
   const currentChallenge = thirtyDayChallenge[currentIndex];
   const isChallengeComplete = completedDays.includes(currentChallenge?.day || 0);
+  const isLocked = isDayLocked(currentChallenge?.day || 0);
 
-  const completedCount = completedDays.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   const canGoLeft = currentIndex > 0;
-  const canGoRight = currentIndex < thirtyDayChallenge.length - 1;
+  const canGoRight = currentIndex < maxUnlockedIndex;
 
   const goLeft = () => {
     if (canGoLeft) {
