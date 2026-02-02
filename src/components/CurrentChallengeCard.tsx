@@ -34,6 +34,7 @@ export const CurrentChallengeCard = ({
   totalCount,
   isComplete,
   onComplete,
+  onUncomplete,
   onViewAll,
   onRestart,
 }: CurrentChallengeCardProps) => {
