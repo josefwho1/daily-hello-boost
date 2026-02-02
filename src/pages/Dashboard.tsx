@@ -372,11 +372,28 @@ export default function Dashboard() {
         onBack={() => {
           setShowLogDialog(false);
           setAutoStartRecording(false);
+          setPendingChallengeCompletion(null);
         }}
-        onLog={handleLogHello}
-        challengeTitle={null}
+        onLog={async (data) => {
+          await handleLogHello({
+            ...data,
+            hello_type: pendingChallengeCompletion ? `Challenge: ${pendingChallengeCompletion.name}` : data.hello_type,
+          });
+          
+          // If completing a challenge, mark it done
+          if (pendingChallengeCompletion) {
+            await markDayComplete(pendingChallengeCompletion.day);
+            toast.success(`Day ${pendingChallengeCompletion.day} complete! ✅`);
+            if (challengeState.completedDays.length === 29) {
+              setTimeout(() => setShowThirtyChallengeComplete(true), 500);
+            }
+            setPendingChallengeCompletion(null);
+          }
+        }}
+        challengeTitle={pendingChallengeCompletion?.name || null}
         autoStartRecording={autoStartRecording}
         existingLogs={logs}
+        requireAtLeastOneField={!!pendingChallengeCompletion}
       />
     );
   }
