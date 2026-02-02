@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock } from "lucide-react";
+import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock, Undo2 } from "lucide-react";
 import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
 import remiProud from "@/assets/remi-proud.webp";
@@ -29,6 +29,8 @@ interface CurrentChallengeCardProps {
   onRestart: () => void;
 }
 
+const UNDO_TIMEOUT_MS = 5000;
+
 export const CurrentChallengeCard = ({
   completedDays,
   nextChallenge,
@@ -41,6 +43,22 @@ export const CurrentChallengeCard = ({
 }: CurrentChallengeCardProps) => {
   const [showConfirmRestart, setShowConfirmRestart] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  const [recentlyCompletedDay, setRecentlyCompletedDay] = useState<number | null>(null);
+  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clear undo banner after timeout
+  useEffect(() => {
+    if (recentlyCompletedDay !== null) {
+      undoTimeoutRef.current = setTimeout(() => {
+        setRecentlyCompletedDay(null);
+      }, UNDO_TIMEOUT_MS);
+    }
+    return () => {
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current);
+      }
+    };
+  }, [recentlyCompletedDay]);
   
   // Find current challenge index and allow navigation
   const completedCount = completedDays.length;
