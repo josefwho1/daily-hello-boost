@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb } from "lucide-react";
+import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock } from "lucide-react";
 import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
 import remiProud from "@/assets/remi-proud.webp";
@@ -51,24 +51,30 @@ export const CurrentChallengeCard = ({
     return completedCount < 20;
   };
   
-  // Find the max unlocked index
-  const maxUnlockedIndex = completedCount >= 20 ? 29 : (completedCount >= 10 ? 19 : 9);
+  // Get unlock message for locked challenges
+  const getUnlockMessage = (day: number) => {
+    if (day <= 10) return null;
+    if (day <= 20) return `Complete ${10 - completedCount} more to unlock`;
+    return `Complete ${20 - completedCount} more to unlock`;
+  };
   
   const getCurrentIndex = () => {
-    if (!nextChallenge) return Math.min(thirtyDayChallenge.length - 1, maxUnlockedIndex);
+    if (!nextChallenge) return Math.min(thirtyDayChallenge.length - 1, 29);
     const idx = thirtyDayChallenge.findIndex(c => c.day === nextChallenge.day);
-    return Math.min(idx, maxUnlockedIndex);
+    return idx;
   };
   
   const [currentIndex, setCurrentIndex] = useState(getCurrentIndex);
   const currentChallenge = thirtyDayChallenge[currentIndex];
   const isChallengeComplete = completedDays.includes(currentChallenge?.day || 0);
   const isLocked = isDayLocked(currentChallenge?.day || 0);
+  const unlockMessage = getUnlockMessage(currentChallenge?.day || 0);
 
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
+  // Allow navigation through all 30 challenges
   const canGoLeft = currentIndex > 0;
-  const canGoRight = currentIndex < maxUnlockedIndex;
+  const canGoRight = currentIndex < thirtyDayChallenge.length - 1;
 
   const goLeft = () => {
     if (canGoLeft) {
@@ -188,56 +194,79 @@ export const CurrentChallengeCard = ({
           <div 
             className={cn(
               "flex-1 flex flex-col pr-14 mt-2",
-              currentChallenge.suggestion && !isChallengeComplete && "cursor-pointer"
+              !isLocked && currentChallenge.suggestion && !isChallengeComplete && "cursor-pointer"
             )}
             onClick={() => {
-              if (currentChallenge.suggestion && !isChallengeComplete) {
+              if (!isLocked && currentChallenge.suggestion && !isChallengeComplete) {
                 setShowTip(!showTip);
               }
             }}
           >
-            {/* Challenge name - prominent */}
-            <h3 className="text-base font-bold text-foreground line-clamp-1">
+            {/* Challenge name */}
+            <h3 className={cn(
+              "text-base font-bold line-clamp-1",
+              isLocked ? "text-muted-foreground/50" : "text-foreground"
+            )}>
               {currentChallenge.name}
             </h3>
             
-            {/* Description or Tip - swap on tap - fixed height for ~3 lines of small text */}
-            <div className="h-12 mt-1 overflow-hidden">
-              <p className={cn(
-                "text-xs text-muted-foreground line-clamp-3",
-                showTip && "italic text-muted-foreground/70"
-              )}>
-                {showTip && currentChallenge.suggestion 
-                  ? `"${currentChallenge.suggestion}"` 
-                  : currentChallenge.description}
-              </p>
+            {/* Fixed height content area - always same height regardless of content */}
+            <div className="h-[52px] mt-1 overflow-hidden">
+              {isLocked ? (
+                <div className="flex items-center gap-2 text-muted-foreground/50">
+                  <Lock size={14} />
+                  <span className="text-xs">{unlockMessage}</span>
+                </div>
+              ) : (
+                <>
+                  <p className={cn(
+                    "text-xs text-muted-foreground line-clamp-2",
+                    showTip && "italic text-muted-foreground/70"
+                  )}>
+                    {showTip && currentChallenge.suggestion 
+                      ? `"${currentChallenge.suggestion}"` 
+                      : currentChallenge.description}
+                  </p>
+                  {/* Tip toggle hint - always reserve space */}
+                  <div className="h-4 flex items-center">
+                    {currentChallenge.suggestion && !isChallengeComplete && (
+                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+                        <Lightbulb size={10} />
+                        {showTip ? "Tap to show challenge" : "Tap to show tip"}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
-
-            {/* Tip toggle hint */}
-            {currentChallenge.suggestion && !isChallengeComplete && (
-              <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 mt-1">
-                <Lightbulb size={10} />
-                {showTip ? "Tap to show challenge" : "Tap to show tip"}
-              </div>
-            )}
 
             {/* Buttons - fixed layout with justify-between to prevent movement */}
             <div className="flex items-center justify-between mt-auto pt-2">
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCompleteClick();
-                }}
-                className={cn(
-                  "h-9 px-4 rounded-full text-sm font-medium border transition-colors flex items-center justify-center gap-1 min-w-[140px]",
-                  isChallengeComplete 
-                    ? "bg-success/10 text-success border-success/50 hover:bg-success/20" 
-                    : "border-border/50 text-muted-foreground hover:bg-success/10 hover:text-success hover:border-success/50"
-                )}
-              >
-                {isChallengeComplete && <Check size={14} />}
-                {isChallengeComplete ? "Completed" : "Mark as complete"}
-              </button>
+              {isLocked ? (
+                <button 
+                  disabled
+                  className="h-9 px-4 rounded-full text-sm font-medium border border-border/30 text-muted-foreground/40 flex items-center justify-center gap-1 min-w-[140px] cursor-not-allowed"
+                >
+                  <Lock size={14} />
+                  Locked
+                </button>
+              ) : (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCompleteClick();
+                  }}
+                  className={cn(
+                    "h-9 px-4 rounded-full text-sm font-medium border transition-colors flex items-center justify-center gap-1 min-w-[140px]",
+                    isChallengeComplete 
+                      ? "bg-success/10 text-success border-success/50 hover:bg-success/20" 
+                      : "border-border/50 text-muted-foreground hover:bg-success/10 hover:text-success hover:border-success/50"
+                  )}
+                >
+                  {isChallengeComplete && <Check size={14} />}
+                  {isChallengeComplete ? "Completed" : "Mark as complete"}
+                </button>
+              )}
               <Button 
                 variant="ghost" 
                 size="sm" 
