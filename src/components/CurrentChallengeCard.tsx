@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb } from "lucide-react";
+import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock } from "lucide-react";
 import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
 import remiProud from "@/assets/remi-proud.webp";
