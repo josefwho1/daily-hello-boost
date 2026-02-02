@@ -96,24 +96,50 @@ const Challenges = () => {
     toast.success("Quest resumed! Keep going! 🎯");
   };
 
-  // Helper to show challenge completion toast with green tick
+  // Helper to show challenge completion toast (banner is clickable to undo)
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
-    const toastId = toast.success(`"${challengeName}" Completed!`, {
-      description: "Tap to undo",
-      duration: 5000,
-      action: {
-        label: "Undo",
-        onClick: async () => {
-          try {
-            await unmarkDayComplete(day);
-            toast.dismiss(toastId);
-          } catch (error) {
-            console.error("Failed to undo:", error);
-            toast.error("Could not undo. Please try again.");
-          }
-        },
-      },
-    });
+    toast.custom(
+      (id) => (
+        <div
+          role="button"
+          tabIndex={0}
+          className="w-full cursor-pointer select-none rounded-xl border border-border bg-background px-4 py-3 shadow-lg"
+          onClick={async () => {
+            try {
+              await unmarkDayComplete(day);
+              toast.dismiss(id);
+            } catch (error) {
+              console.error("Failed to undo:", error);
+              toast.error("Could not undo. Please try again.");
+            }
+          }}
+          onKeyDown={async (e) => {
+            if (e.key !== "Enter" && e.key !== " ") return;
+            e.preventDefault();
+            try {
+              await unmarkDayComplete(day);
+              toast.dismiss(id);
+            } catch (error) {
+              console.error("Failed to undo:", error);
+              toast.error("Could not undo. Please try again.");
+            }
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-success/15 text-success">
+              <Check className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-foreground truncate">"{challengeName}" Completed!</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">Tap to undo</p>
+            </div>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+      }
+    );
   };
 
   const handleLogHello = async (data: { 
