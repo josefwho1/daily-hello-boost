@@ -96,6 +96,26 @@ const Challenges = () => {
     toast.success("Quest resumed! Keep going! 🎯");
   };
 
+  // Helper to show challenge completion toast with green tick
+  const showChallengeCompletedToast = (day: number, challengeName: string) => {
+    let toastId: string | number;
+    const handleUndo = async () => {
+      await unmarkDayComplete(day);
+      toast.dismiss(toastId);
+    };
+
+    toastId = toast(
+      <button onClick={() => void handleUndo()} className="w-full text-left p-0 bg-transparent border-none">
+        <div className="flex items-center gap-2">
+          <Check className="w-4 h-4 text-success flex-shrink-0" />
+          <span className="text-sm font-medium">"{challengeName}" Completed!</span>
+        </div>
+        <span className="mt-0.5 block text-[11px] text-muted-foreground opacity-70">(tap to undo)</span>
+      </button>,
+      { duration: 5000 }
+    );
+  };
+
   const handleLogHello = async (data: { 
     name?: string; 
     location?: string; 
@@ -150,26 +170,6 @@ const Challenges = () => {
       />
     );
   }
-
-  // Helper to show challenge completion toast with green tick
-  const showChallengeCompletedToast = (day: number, challengeName: string) => {
-    let toastId: string | number;
-    const handleUndo = async () => {
-      await unmarkDayComplete(day);
-      toast.dismiss(toastId);
-    };
-
-    toastId = toast(
-      <button onClick={() => void handleUndo()} className="w-full text-left p-0 bg-transparent border-none">
-        <div className="flex items-center gap-2">
-          <Check className="w-4 h-4 text-success flex-shrink-0" />
-          <span className="text-sm font-medium">"{challengeName}" Completed!</span>
-        </div>
-        <span className="mt-0.5 block text-[11px] text-muted-foreground opacity-70">(tap to undo)</span>
-      </button>,
-      { duration: 5000 }
-    );
-  };
 
   // Show Challenge List view
   if (showChallengeList) {
