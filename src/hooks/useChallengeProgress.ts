@@ -73,6 +73,26 @@ export const useChallengeProgress = () => {
     await updateProgress(updates);
   }, [completedDays, progress, updateProgress]);
 
+  // Unmark a day (undo completion)
+  const unmarkDayComplete = useCallback(async (day: number) => {
+    if (!completedDays.includes(day)) {
+      return; // Not completed
+    }
+
+    const newCompletedDays = completedDays.filter(d => d !== day);
+
+    const updates: Record<string, unknown> = {
+      challenge_completed_days: newCompletedDays,
+    };
+
+    // If we're unmarking and challenge was complete, clear completion date
+    if (progress?.challenge_completed_at) {
+      updates.challenge_completed_at = null;
+    }
+
+    await updateProgress(updates);
+  }, [completedDays, progress, updateProgress]);
+
   // Restart the challenge
   const restartChallenge = useCallback(async () => {
     await updateProgress({
@@ -91,6 +111,7 @@ export const useChallengeProgress = () => {
     state,
     loading,
     markDayComplete,
+    unmarkDayComplete,
     restartChallenge,
     isDayComplete,
   };

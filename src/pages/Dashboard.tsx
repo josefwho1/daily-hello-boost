@@ -361,6 +361,10 @@ export default function Dashboard() {
             setTimeout(() => setShowThirtyChallengeComplete(true), 500);
           }
         }}
+        onUncomplete={async (day) => {
+          await unmarkDayComplete(day);
+          toast.info("Unmarked as complete");
+        }}
         onBack={() => setShowChallengeList(false)}
       />
     );
