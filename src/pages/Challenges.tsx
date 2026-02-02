@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { Target, Flame, RotateCcw, ChevronRight, Clock, Pause, Play } from "lucide-react";
+import { Target, Flame, RotateCcw, ChevronRight, Pause, Play } from "lucide-react";
 import { toast } from "sonner";
 import questsIcon from "@/assets/quests-icon.webp";
 import remiQuest from "@/assets/remi-quest.webp";

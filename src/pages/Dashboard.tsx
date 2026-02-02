@@ -13,7 +13,7 @@ import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
-import { DailyModeHomeCard } from "@/components/DailyModeHomeCard";
+
 import { DailyModeReminderBanner } from "@/components/DailyModeReminderBanner";
 import { RecentHellosSection } from "@/components/RecentHellosSection";
 import { HomeStatsBar } from "@/components/HomeStatsBar";
