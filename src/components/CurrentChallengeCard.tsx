@@ -87,12 +87,15 @@ export const CurrentChallengeCard = ({
 
   return (
     <>
-      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[210px] flex flex-col">
+      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[220px] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-primary" />
-            <span className="font-bold text-foreground text-base">30-Day Hello Challenge</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-primary flex-shrink-0" />
+              <span className="font-bold text-foreground text-base">The One Hello Challenge</span>
+            </div>
+            <p className="text-xs text-muted-foreground ml-7">One Hello a day, for 30 days.</p>
           </div>
           
           {/* Navigation arrows */}
@@ -180,15 +183,17 @@ export const CurrentChallengeCard = ({
               {currentChallenge.name}
             </h3>
             
-            {/* Description or Tip - swap on tap */}
-            <p className={cn(
-              "text-sm text-muted-foreground line-clamp-2 mt-1",
-              showTip && "italic text-muted-foreground/70"
-            )}>
-              {showTip && currentChallenge.suggestion 
-                ? `"${currentChallenge.suggestion}"` 
-                : currentChallenge.description}
-            </p>
+            {/* Description or Tip - swap on tap - fixed 2-line height */}
+            <div className="h-10 mt-1">
+              <p className={cn(
+                "text-sm text-muted-foreground line-clamp-2",
+                showTip && "italic text-muted-foreground/70"
+              )}>
+                {showTip && currentChallenge.suggestion 
+                  ? `"${currentChallenge.suggestion}"` 
+                  : currentChallenge.description}
+              </p>
+            </div>
 
             {/* Tip toggle hint */}
             {currentChallenge.suggestion && !isChallengeComplete && (
