@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Target, ChevronRight, ChevronLeft, Check, RotateCcw, Lightbulb, Lock } from "lucide-react";
 import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import remiProud from "@/assets/remi-proud.webp";
 import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
 import {
@@ -30,8 +29,6 @@ interface CurrentChallengeCardProps {
   onRestart: () => void;
 }
 
-const UNDO_TIMEOUT_MS = 5000;
-
 export const CurrentChallengeCard = ({
   completedDays,
   nextChallenge,
@@ -44,7 +41,6 @@ export const CurrentChallengeCard = ({
 }: CurrentChallengeCardProps) => {
   const [showConfirmRestart, setShowConfirmRestart] = useState(false);
   const [showTip, setShowTip] = useState(false);
-  const undoDataRef = useRef<{ day: number; toastId: string | number } | null>(null);
   
   // Find current challenge index and allow navigation
   const completedCount = completedDays.length;
