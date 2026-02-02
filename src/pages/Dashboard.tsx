@@ -445,13 +445,10 @@ export default function Dashboard() {
               nextChallenge={challengeState.nextChallenge}
               totalCount={challengeState.totalCount}
               isComplete={challengeState.isComplete}
-              onMarkComplete={async (day) => {
-                await markDayComplete(day);
-                toast.success(`Day ${day} complete! ✅`);
-                // Check if this completed the whole challenge
-                if (challengeState.completedDays.length === 29) {
-                  setTimeout(() => setShowThirtyChallengeComplete(true), 500);
-                }
+              onComplete={(day, challengeName) => {
+                setPendingChallengeCompletion({ day, name: challengeName });
+                setAutoStartRecording(false);
+                setShowLogDialog(true);
               }}
               onViewAll={() => setShowChallengeList(true)}
               onRestart={async () => {
