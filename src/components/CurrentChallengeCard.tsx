@@ -87,7 +87,7 @@ export const CurrentChallengeCard = ({
 
   return (
     <>
-      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[200px] flex flex-col">
+      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[240px] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
