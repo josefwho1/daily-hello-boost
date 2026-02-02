@@ -7,40 +7,33 @@ import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useDailyMode } from "@/hooks/useDailyMode";
+import { useChallengeProgress } from "@/hooks/useChallengeProgress";
+import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
+import { ChallengeListView } from "@/components/ChallengeListView";
+import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
+import { useChallengeProgress } from "@/hooks/useChallengeProgress";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
-import { OnboardingChallengeCard } from "@/components/OnboardingChallengeCard";
 import { ComeBackTomorrowDialog } from "@/components/ComeBackTomorrowDialog";
-import { DailySuggestionCard } from "@/components/DailySuggestionCard";
-import { ActiveChallengeCard } from "@/components/ActiveChallengeCard";
 import { DailyModeHomeCard } from "@/components/DailyModeHomeCard";
 import { DailyModeReminderBanner } from "@/components/DailyModeReminderBanner";
-import { useChallengeCompletions } from "@/hooks/useChallengeCompletions";
-import { getPackById } from "@/data/packs";
-import { Challenge } from "@/types/challenge";
+import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
+import { ChallengeListView } from "@/components/ChallengeListView";
 import { RecentHellosSection } from "@/components/RecentHellosSection";
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
 
 import ViewHelloDialog from "@/components/ViewHelloDialog";
 import { HelloLog } from "@/hooks/useHelloLogs";
-import { DayChallengeRevealDialog } from "@/components/DayChallengeRevealDialog";
-import { ChallengeCompletionCelebrationDialog } from "@/components/ChallengeCompletionCelebrationDialog";
-import { OnboardingCompleteMilestoneDialog } from "@/components/OnboardingCompleteMilestoneDialog";
-import { WeeklyChallengeCompleteDialog } from "@/components/WeeklyChallengeCompleteDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
-import { SingleChallengeCompleteDialog } from "@/components/SingleChallengeCompleteDialog";
-import { PackCompleteCelebrationDialog } from "@/components/PackCompleteCelebrationDialog";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
 import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
-import { onboardingChallenges } from "@/data/onboardingChallenges";
-import { getTodaysHello } from "@/data/dailyHellos";
-import { getThisWeeksChallenge } from "@/data/weeklyChallenges";
+import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
 import { toast } from "sonner";
-import { format, startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
+import { startOfWeek, isBefore, parseISO, differenceInDays } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 
-import { normalizeTimezoneOffset, getDayKeyInOffset, getDayKeyDifference, getYesterdayKeyInOffset } from "@/lib/timezone";
+import { normalizeTimezoneOffset, getDayKeyInOffset } from "@/lib/timezone";
 
 const getWeekStartKeyInOffset = (date: Date, offset: string) => {
   const normalizedOffset = normalizeTimezoneOffset(offset);
@@ -55,7 +48,6 @@ export default function Dashboard() {
   const { progress: cloudProgress, loading: progressLoading, updateProgress: updateCloudProgress, refetch } = useUserProgress();
   const { logs: cloudLogs, loading: logsLoading, addLog: addCloudLog, updateLog: updateCloudLog, deleteLog: deleteCloudLog, getLogsTodayCount, toggleFavorite } = useHelloLogs();
   const { timezoneOffset, loading: timezoneLoading } = useTimezone();
-  const { completions, addCompletion, refetch: refetchCompletions } = useChallengeCompletions();
   const { 
     state: dailyModeState,
     recordHelloForDailyMode,
@@ -66,6 +58,12 @@ export default function Dashboard() {
     dismissAfternoonReminder,
     loading: dailyModeLoading,
   } = useDailyMode();
+  const {
+    state: challengeState,
+    markDayComplete,
+    restartChallenge,
+    loading: challengeLoading,
+  } = useChallengeProgress();
   const { 
     guestProgress, 
     guestLogs, 
@@ -140,12 +138,8 @@ export default function Dashboard() {
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [autoStartRecording, setAutoStartRecording] = useState(false);
   const [showHomeTutorial, setShowHomeTutorial] = useState(false);
-  const [tutorialMode, setTutorialMode] = useState<'daily' | 'chill'>('daily');
-  
-  // Pack challenge celebration states
-  const [showSingleChallengeComplete, setShowSingleChallengeComplete] = useState(false);
-  const [showPackComplete, setShowPackComplete] = useState(false);
-  const [completedChallengeTitle, setCompletedChallengeTitle] = useState('');
+  const [showChallengeList, setShowChallengeList] = useState(false);
+  const [showThirtyChallengeComplete, setShowThirtyChallengeComplete] = useState(false);
   
   // Milestone celebration states
   const [showMilestoneCelebration, setShowMilestoneCelebration] = useState(false);
@@ -583,7 +577,7 @@ export default function Dashboard() {
 
   const todaysOnboardingChallenge = onboardingChallenges[currentOnboardingDay - 1];
 
-  const isLoading = isAnonymous ? (guestLoading || timezoneLoading) : (progressLoading || logsLoading || timezoneLoading);
+  const isLoading = isAnonymous ? (guestLoading || timezoneLoading) : (progressLoading || logsLoading || timezoneLoading || challengeLoading);
   
   if (isLoading) {
     return (
@@ -597,6 +591,24 @@ export default function Dashboard() {
   }
 
   if (!progress) return null;
+
+  // Full-screen Challenge List View
+  if (showChallengeList) {
+    return (
+      <ChallengeListView
+        completedDays={challengeState.completedDays}
+        onMarkComplete={async (day) => {
+          await markDayComplete(day);
+          toast.success(`Day ${day} complete! ✅`);
+          // Check if this completed the whole challenge
+          if (challengeState.completedDays.length === 29) {
+            setTimeout(() => setShowThirtyChallengeComplete(true), 500);
+          }
+        }}
+        onBack={() => setShowChallengeList(false)}
+      />
+    );
+  }
 
   // Full-screen Log Hello
   if (showLogDialog) {
@@ -641,13 +653,14 @@ export default function Dashboard() {
           lifetimeHellos={logs.length} 
         />
 
-        {/* Daily Mode Home Card - between stats and Today's Hello */}
+        {/* Daily Mode Home Card - between stats and challenge card */}
         {dailyModeState.isActive && (
           <div className="mb-6">
             <DailyModeHomeCard
               todaysHelloCount={dailyModeState.todaysHelloCount}
               currentStreak={dailyModeState.currentStreak}
               hasLoggedToday={dailyModeState.hasLoggedToday}
+              onClick={() => navigate('/challenges')}
             />
           </div>
         )}
@@ -655,34 +668,27 @@ export default function Dashboard() {
         {/* Main Dashboard - Connection-focused layout */}
         <div className="space-y-6">
           
-            {/* Today's Hello/Challenge */}
-            <div className="space-y-3">
-              {/* Active Challenge Card or Daily Suggestion */}
-              {progress?.selected_pack_id && getPackById(progress.selected_pack_id)?.challenges.length ? (
-                <ActiveChallengeCard
-                  packId={progress.selected_pack_id}
-                  completedDays={completions.map(c => c.challenge_day)}
-                  completedTags={completions.map(c => c.challenge_tag).filter((t): t is string => t !== null)}
-                  packStartDate={progress.pack_start_date || null}
-                  onLogHello={(challenge: Challenge) => {
-                    setSelectedChallenge(challenge.title);
-                    setSelectedDayNumber(challenge.day);
-                    setSelectedChallengeTag(challenge.tag);
-                    setSelectedHelloType('pack_challenge');
-                    setShowLogDialog(true);
-                  }}
-                  onViewPack={() => navigate('/challenges')}
-                  onEndChallenge={async () => {
-                    await updateProgress({
-                      selected_pack_id: '',
-                      mode: 'daily',
-                    });
-                    toast.success("Challenge ended! You're back to Today's Hello.");
-                  }}
-                />
-              ) : (
-                <DailySuggestionCard />
-              )}
+            {/* 30-Day Challenge Card */}
+            <div className="space-y-3" id="tutorial-todays-hello-card">
+              <CurrentChallengeCard
+                completedDays={challengeState.completedDays}
+                nextChallenge={challengeState.nextChallenge}
+                totalCount={challengeState.totalCount}
+                isComplete={challengeState.isComplete}
+                onMarkComplete={async (day) => {
+                  await markDayComplete(day);
+                  toast.success(`Day ${day} complete! ✅`);
+                  // Check if this completed the whole challenge
+                  if (challengeState.completedDays.length === 29) {
+                    setTimeout(() => setShowThirtyChallengeComplete(true), 500);
+                  }
+                }}
+                onViewAll={() => setShowChallengeList(true)}
+                onRestart={async () => {
+                  await restartChallenge();
+                  toast.success("Challenge restarted! Day 1 ready.");
+                }}
+              />
             </div>
 
             {/* Log a Hello Button */}
@@ -756,25 +762,11 @@ export default function Dashboard() {
         onContinue={() => setShowComeBackTomorrow(false)}
       />
 
-      <WeeklyChallengeCompleteDialog
-        open={showWeeklyChallengeComplete}
-        onContinue={() => setShowWeeklyChallengeComplete(false)}
-        orbsAwarded={weeklyChallengeOrbAwarded}
-      />
-
-      {/* Pack Challenge Celebrations */}
-      <SingleChallengeCompleteDialog
-        open={showSingleChallengeComplete}
-        onContinue={() => setShowSingleChallengeComplete(false)}
-        dayNumber={selectedDayNumber}
-        totalDays={getPackById(progress?.selected_pack_id || '')?.challenges.length || 7}
-        challengeTitle={completedChallengeTitle}
-      />
-
-      <PackCompleteCelebrationDialog
-        open={showPackComplete}
-        onContinue={() => setShowPackComplete(false)}
-        packName={getPackById(progress?.selected_pack_id || '')?.name || 'Challenge Pack'}
+      {/* 30-Day Challenge Complete Celebration */}
+      <ThirtyChallengeCompleteDialog
+        open={showThirtyChallengeComplete}
+        onContinue={() => setShowThirtyChallengeComplete(false)}
+        timesCompleted={challengeState.timesCompleted}
       />
 
       {/* Milestone Celebrations */}

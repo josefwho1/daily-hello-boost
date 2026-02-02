@@ -8,10 +8,7 @@ interface TutorialStep {
   emoji: string;
   title: string;
   body: string;
-  targetId?: string; // Element to spotlight
-  position?: 'above' | 'below' | 'center'; // Where to position tooltip relative to target
-  navigateTo?: string; // Route to navigate to for this step
-  highlightNav?: string; // Nav item to highlight (for Hellobook step)
+  position?: 'center';
 }
 
 interface HomeScreenTutorialProps {
@@ -23,59 +20,31 @@ interface HomeScreenTutorialProps {
 
 const tutorialSteps: TutorialStep[] = [
   {
-    id: 'welcome',
-    emoji: "👋",
-    title: "Welcome to the Home page",
-    body: "This is your daily dashboard where you'll track your connections and progress.",
+    id: 'home',
+    emoji: "🏠",
+    title: "Welcome to One Hello 🦝",
+    body: "This is your home. Here you'll find:\n\n• Your stats (hellos logged this week/month/all time)\n• Today's challenge (from the 30-Day Hello series)\n• Quick access to log a hello",
     position: 'center',
-  },
-  {
-    id: 'log-hello',
-    emoji: "👇",
-    title: "Log a Hello",
-    body: "Log a Hello anytime you meet someone and want to remember them.",
-    targetId: 'tutorial-log-hello-btn',
-    position: 'above',
-  },
-  {
-    id: 'dictate',
-    emoji: "🗣️",
-    title: "Voice to text",
-    body: "Use our AI dictate function to easily add multiple connections in one go.",
-    targetId: 'tutorial-dictate-btn',
-    position: 'above',
-  },
-  {
-    id: 'todays-hello',
-    emoji: "💡",
-    title: "Today's Hello",
-    body: "Today's Hello gives you daily prompts and suggestions on how to connect with more people.",
-    targetId: 'tutorial-todays-hello-card',
-    position: 'below',
   },
   {
     id: 'hellobook',
     emoji: "📖",
-    title: "The Hellobook",
-    body: "The Hellobook is where we store all your connections. You can search and filter to find people so you never forget.",
-    highlightNav: '/hellobook',
-    position: 'above',
+    title: "Your Hello Book",
+    body: "Every person you meet is saved here. Search by name or location—so you never forget who you've met.",
+    position: 'center',
   },
   {
     id: 'quests',
-    emoji: "🏆",
-    title: "Quests",
-    body: "Remi has quests to help you meet more people and have some fun. Complete them at your own pace.",
-    highlightNav: '/challenges',
-    position: 'above',
+    emoji: "🎯",
+    title: "Your Quests",
+    body: "Complete the 30-Day Hello Challenge to build your confidence. Turn Daily Mode on for reminders and streak tracking, or keep it off for a relaxed pace.",
+    position: 'center',
   },
 ];
 
 export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenTutorialProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
-  const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const hasStartedRef = useRef(false);
   const markedSeenRef = useRef(false);
 
@@ -90,62 +59,10 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
   const currentStepData = tutorialSteps[currentStep];
   const isLastStep = currentStep === tutorialSteps.length - 1;
 
-  // Find and measure target element
-  const updateTargetRect = useCallback(() => {
-    if (!currentStepData.targetId && !currentStepData.highlightNav) {
-      setTargetRect(null);
-      return;
-    }
-
-    let element: HTMLElement | null = null;
-    
-    if (currentStepData.highlightNav) {
-      // Find the nav link for Hellobook
-      element = document.querySelector(`nav a[href="${currentStepData.highlightNav}"]`);
-    } else if (currentStepData.targetId) {
-      element = document.getElementById(currentStepData.targetId);
-    }
-
-    if (element) {
-      const rect = element.getBoundingClientRect();
-      setTargetRect(rect);
-    } else {
-      setTargetRect(null);
-    }
-  }, [currentStepData]);
-
-  // Navigate if step requires it
-  useEffect(() => {
-    if (!open) return;
-    
-    if (currentStepData.navigateTo && location.pathname !== currentStepData.navigateTo) {
-      navigate(currentStepData.navigateTo);
-    }
-  }, [open, currentStep, currentStepData, location.pathname, navigate]);
-
-  // Update target rect when step changes or window resizes
-  useEffect(() => {
-    if (!open) return;
-    
-    // Small delay to let navigation/rendering complete
-    const timer = setTimeout(updateTargetRect, 100);
-    
-    window.addEventListener('resize', updateTargetRect);
-    window.addEventListener('scroll', updateTargetRect);
-    
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', updateTargetRect);
-      window.removeEventListener('scroll', updateTargetRect);
-    };
-  }, [open, currentStep, updateTargetRect, location.pathname]);
-
   const handleNext = () => {
     if (isLastStep) {
       // Navigate back to home before completing
-      if (location.pathname !== '/') {
-        navigate('/');
-      }
+      navigate('/');
       setCurrentStep(0);
       hasStartedRef.current = false;
       onComplete();
@@ -166,108 +83,27 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
 
   if (!open) return null;
 
-  // Calculate tooltip position
-  const getTooltipStyle = (): React.CSSProperties => {
-    if (!targetRect || currentStepData.position === 'center') {
-      return {};
-    }
-
-    const padding = 16;
-    const tooltipHeight = 200; // Approximate
-    
-    if (currentStepData.position === 'above') {
-      return {
-        position: 'fixed',
-        bottom: `${window.innerHeight - targetRect.top + padding}px`,
-        left: '50%',
-        transform: 'translateX(-50%)',
-      };
-    }
-    
-    if (currentStepData.position === 'below') {
-      return {
-        position: 'fixed',
-        top: `${targetRect.bottom + padding}px`,
-        left: '50%',
-        transform: 'translateX(-50%)',
-      };
-    }
-
-    return {};
+  // Format body text with line breaks
+  const formatBody = (text: string) => {
+    return text.split('\n').map((line, i) => (
+      <span key={i}>
+        {line}
+        {i < text.split('\n').length - 1 && <br />}
+      </span>
+    ));
   };
-
-  // Create spotlight cutout path
-  const getSpotlightPath = () => {
-    if (!targetRect) return '';
-    
-    const padding = 8;
-    const radius = 12;
-    const x = targetRect.left - padding;
-    const y = targetRect.top - padding;
-    const w = targetRect.width + padding * 2;
-    const h = targetRect.height + padding * 2;
-    
-    // Full screen path minus rounded rectangle cutout
-    return `
-      M 0 0
-      L ${window.innerWidth} 0
-      L ${window.innerWidth} ${window.innerHeight}
-      L 0 ${window.innerHeight}
-      Z
-      M ${x + radius} ${y}
-      L ${x + w - radius} ${y}
-      Q ${x + w} ${y} ${x + w} ${y + radius}
-      L ${x + w} ${y + h - radius}
-      Q ${x + w} ${y + h} ${x + w - radius} ${y + h}
-      L ${x + radius} ${y + h}
-      Q ${x} ${y + h} ${x} ${y + h - radius}
-      L ${x} ${y + radius}
-      Q ${x} ${y} ${x + radius} ${y}
-      Z
-    `;
-  };
-
-  const isCentered = !targetRect || currentStepData.position === 'center';
 
   return (
     <AnimatePresence>
       {open && (
         <>
-          {/* Dark overlay with optional spotlight cutout */}
-          {targetRect ? (
-            <motion.svg
-              className="fixed inset-0 z-[100] pointer-events-none"
-              style={{ width: '100vw', height: '100vh' }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <path
-                d={getSpotlightPath()}
-                fill="rgba(0, 0, 0, 0.75)"
-                fillRule="evenodd"
-              />
-              {/* Highlight ring around target */}
-              <rect
-                x={targetRect.left - 4}
-                y={targetRect.top - 4}
-                width={targetRect.width + 8}
-                height={targetRect.height + 8}
-                rx="10"
-                fill="none"
-                stroke="hsl(var(--primary))"
-                strokeWidth="3"
-                className="animate-pulse"
-              />
-            </motion.svg>
-          ) : (
-            <motion.div
-              className="fixed inset-0 bg-black/75 z-[100]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            />
-          )}
+          {/* Dark overlay */}
+          <motion.div
+            className="fixed inset-0 bg-black/75 z-[100]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
           
           {/* Click layer to advance */}
           <div 
@@ -275,17 +111,9 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
             onClick={handleNext}
           />
 
-          {/* Tooltip card */}
+          {/* Tooltip card - always centered */}
           <motion.div
-            className={`fixed z-[102] px-4 ${isCentered ? 'inset-0 flex items-center justify-center px-5' : 'left-0 right-0'}`}
-            style={isCentered ? {} : { 
-              ...getTooltipStyle(), 
-              left: '0', 
-              right: '0',
-              transform: 'none',
-              display: 'flex',
-              justifyContent: 'center'
-            }}
+            className="fixed z-[102] px-5 inset-0 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -323,8 +151,8 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
               </h3>
 
               {/* Body */}
-              <p className="text-muted-foreground text-center mb-5 leading-relaxed">
-                {currentStepData.body}
+              <p className="text-muted-foreground text-center mb-5 leading-relaxed text-sm">
+                {formatBody(currentStepData.body)}
               </p>
 
               {/* Progress dots */}
@@ -345,7 +173,7 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
                   onClick={handleNext}
                   className="w-full bg-primary text-primary-foreground font-medium py-3 px-6 rounded-xl hover:bg-primary/90 transition-colors"
                 >
-                  {isLastStep ? "Let's go! ✨" : "Next"}
+                  {isLastStep ? "Get Started" : "Next"}
                 </button>
                 {!isLastStep && (
                   <button
