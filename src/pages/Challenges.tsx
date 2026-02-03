@@ -294,9 +294,9 @@ const Challenges = () => {
         </Card>
 
         {/* Remi's Vault Easter Egg */}
-        <div className="flex flex-col items-center pb-8">
+        <div className="flex flex-col items-center pb-2">
           <button onClick={() => navigate('/vault')} className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 focus:outline-none">
-            <img src={vaultIcon} alt="Remi's Vault" className="w-20 h-20 object-contain" />
+            <img src={vaultIcon} alt="Remi's Vault" className="w-12 h-12 object-contain" />
           </button>
           
           {/* Remi peeking next to vault */}
