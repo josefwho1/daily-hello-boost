@@ -322,6 +322,8 @@ export type Database = {
           last_weekly_challenge_date: string | null
           last_xp_reset_date: string | null
           longest_streak: number | null
+          milestones_seen: string[] | null
+          milestones_shared: string[] | null
           mode: string | null
           names_today_count: number | null
           notes_today_count: number | null
@@ -384,6 +386,8 @@ export type Database = {
           last_weekly_challenge_date?: string | null
           last_xp_reset_date?: string | null
           longest_streak?: number | null
+          milestones_seen?: string[] | null
+          milestones_shared?: string[] | null
           mode?: string | null
           names_today_count?: number | null
           notes_today_count?: number | null
@@ -446,6 +450,8 @@ export type Database = {
           last_weekly_challenge_date?: string | null
           last_xp_reset_date?: string | null
           longest_streak?: number | null
+          milestones_seen?: string[] | null
+          milestones_shared?: string[] | null
           mode?: string | null
           names_today_count?: number | null
           notes_today_count?: number | null
