@@ -52,15 +52,31 @@ export const LogHelloScreen = ({
   existingLogs = [],
   requireAtLeastOneField = false
 }: LogHelloScreenProps) => {
-  const [name, setName] = useState("");
-  const [location, setLocation] = useState("");
-  const [notes, setNotes] = useState("");
+  // Draft storage key (scoped so each component instance doesn't collide)
+  const DRAFT_KEY = "hello_log_draft";
+
+  // Initialize from localStorage if draft exists
+  const loadDraft = () => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        return JSON.parse(raw) as { name?: string; location?: string; notes?: string; multiEntries?: ExtractedEntry[] };
+      }
+    } catch {}
+    return null;
+  };
+
+  const savedDraft = loadDraft();
+
+  const [name, setName] = useState(savedDraft?.name ?? "");
+  const [location, setLocation] = useState(savedDraft?.location ?? "");
+  const [notes, setNotes] = useState(savedDraft?.notes ?? "");
   
   const [isLogging, setIsLogging] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasAutoStarted, setHasAutoStarted] = useState(false);
-  const [multiEntries, setMultiEntries] = useState<ExtractedEntry[] | null>(null);
+  const [multiEntries, setMultiEntries] = useState<ExtractedEntry[] | null>(savedDraft?.multiEntries ?? null);
   
   // Duplicate detection state
   const [duplicateMatch, setDuplicateMatch] = useState<PotentialDuplicate | null>(null);
@@ -89,6 +105,21 @@ export const LogHelloScreen = ({
       releaseWakeLock();
     }
   }, [isRecording, isProcessing, requestWakeLock, releaseWakeLock]);
+
+  // Autosave draft to localStorage whenever fields/multiEntries change
+  useEffect(() => {
+    const draft = { name, location, notes, multiEntries };
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch {}
+  }, [name, location, notes, multiEntries]);
+
+  // Helper to clear draft after successful log
+  const clearDraft = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {}
+  };
 
   const screenTitle = challengeTitle 
     ? `Complete: ${challengeTitle}` 
@@ -343,6 +374,8 @@ export const LogHelloScreen = ({
     setIsLogging(true);
     try {
       await onLog(data);
+      // Clear draft on success
+      clearDraft();
       setName("");
       setLocation("");
       setNotes("");
@@ -390,6 +423,8 @@ export const LogHelloScreen = ({
         });
       }
       toast.success(`${entries.length} ${entries.length === 1 ? "hello" : "hellos"} logged!`);
+      // Clear draft after successful multi-entry log
+      clearDraft();
       setMultiEntries(null);
       setName("");
       setLocation("");
