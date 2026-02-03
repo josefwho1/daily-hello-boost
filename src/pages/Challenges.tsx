@@ -274,9 +274,6 @@ const Challenges = () => {
             {challengeState.isComplete && (
               <div className="bg-success/10 rounded-lg p-3 mb-4 text-center">
                 <p className="text-success font-medium">🎉 Challenge Complete!</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  You're officially a Conversation Starter!
-                </p>
               </div>
             )}
             
@@ -290,27 +287,29 @@ const Challenges = () => {
                 View Challenges
               </Button>
               
-              {/* Pause/Resume button */}
-              {isQuestPaused ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleResumeQuest}
-                  className="rounded-full"
-                  title="Resume Quest"
-                >
-                  <Play className="w-4 h-4" />
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowConfirmPause(true)}
-                  className="rounded-full"
-                  title="Pause Quest"
-                >
-                  <Pause className="w-4 h-4" />
-                </Button>
+              {/* Pause/Resume button - hide when challenge is complete */}
+              {!challengeState.isComplete && (
+                isQuestPaused ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResumeQuest}
+                    className="rounded-full"
+                    title="Resume Quest"
+                  >
+                    <Play className="w-4 h-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowConfirmPause(true)}
+                    className="rounded-full"
+                    title="Pause Quest"
+                  >
+                    <Pause className="w-4 h-4" />
+                  </Button>
+                )
               )}
               
               <Button
