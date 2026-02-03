@@ -79,7 +79,7 @@ export const DailySuggestionCard = memo(() => {
   };
 
   return (
-    <Card id="tutorial-todays-hello-card" className="p-4 pb-5 rounded-xl bg-card border-border/50 relative overflow-hidden h-[190px]">
+    <Card id="tutorial-todays-hello-card" className="p-4 pb-5 rounded-xl bg-card border-border/50 relative overflow-hidden h-[200px]">
       {/* Header row with shuffle button */}
       <div className="flex items-start justify-between">
         <div>
