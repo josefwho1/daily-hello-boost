@@ -36,20 +36,20 @@ const ViewToggle = ({
   <div className="flex gap-2 mb-4">
     <button
       onClick={() => setActiveView('mybook')}
-      className={`flex-1 py-2.5 px-4 rounded-xl text-center transition-all flex items-center justify-center gap-2 ${
+      className={`flex-1 py-2.5 px-4 rounded-xl text-center transition-colors duration-150 flex items-center justify-center gap-2 transform-gpu ${
         activeView === 'mybook'
           ? 'bg-primary text-primary-foreground shadow-md'
-          : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+          : 'bg-muted/50 text-muted-foreground active:bg-muted'
       }`}
     >
       <span className="text-sm font-medium">My Book</span>
     </button>
     <button
       onClick={() => setActiveView('global')}
-      className={`flex-1 py-2.5 px-4 rounded-xl text-center transition-all flex items-center justify-center gap-2 ${
+      className={`flex-1 py-2.5 px-4 rounded-xl text-center transition-colors duration-150 flex items-center justify-center gap-2 transform-gpu ${
         activeView === 'global'
           ? 'bg-primary text-primary-foreground shadow-md'
-          : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+          : 'bg-muted/50 text-muted-foreground active:bg-muted'
       }`}
     >
       <Globe className="w-4 h-4" />
@@ -302,10 +302,10 @@ const Hellobook = () => {
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setActiveFilter('all')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
+            className={`flex-1 py-3 px-2 rounded-xl text-center transition-colors duration-150 transform-gpu ${
               activeFilter === 'all'
                 ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                : 'bg-muted/50 text-muted-foreground active:bg-muted'
             }`}
           >
             <div className="text-xl font-bold">{stats.all}</div>
@@ -313,10 +313,10 @@ const Hellobook = () => {
           </button>
           <button
             onClick={() => setActiveFilter('names')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
+            className={`flex-1 py-3 px-2 rounded-xl text-center transition-colors duration-150 transform-gpu ${
               activeFilter === 'names'
                 ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                : 'bg-muted/50 text-muted-foreground active:bg-muted'
             }`}
           >
             <div className="text-xl font-bold">{stats.names}</div>
@@ -324,10 +324,10 @@ const Hellobook = () => {
           </button>
           <button
             onClick={() => setActiveFilter('unknown')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
+            className={`flex-1 py-3 px-2 rounded-xl text-center transition-colors duration-150 transform-gpu ${
               activeFilter === 'unknown'
                 ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                : 'bg-muted/50 text-muted-foreground active:bg-muted'
             }`}
           >
             <div className="text-xl font-bold">{stats.unknown}</div>
@@ -335,10 +335,10 @@ const Hellobook = () => {
           </button>
           <button
             onClick={() => setActiveFilter('favorites')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center transition-all ${
+            className={`flex-1 py-3 px-2 rounded-xl text-center transition-colors duration-150 transform-gpu ${
               activeFilter === 'favorites'
                 ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                : 'bg-muted/50 text-muted-foreground active:bg-muted'
             }`}
           >
             <div className="text-xl font-bold flex items-center justify-center gap-1">
