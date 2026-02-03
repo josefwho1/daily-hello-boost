@@ -540,8 +540,6 @@ export default function Dashboard() {
             }}
           />
           
-          {/* Spacer for bottom nav */}
-          <div className="h-8" />
         </div>
       </div>
 
