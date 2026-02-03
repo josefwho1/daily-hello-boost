@@ -73,7 +73,8 @@ export const MultiEntryReview = ({
       </div>
 
       {/* Content - scrollable */}
-      <div className="flex-1 p-4 space-y-4 overflow-y-auto pb-36">
+      {/* Bottom padding must account for: fixed submit bar (~6rem) + bottom nav (3.5rem) + safe area */}
+      <div className="flex-1 p-4 space-y-4 overflow-y-auto pb-[calc(6rem+3.5rem+env(safe-area-inset-bottom))]">
         <p className="text-sm text-muted-foreground">
           We detected multiple people in your recording. Review and edit each entry below.
         </p>

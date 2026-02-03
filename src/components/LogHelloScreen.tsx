@@ -77,6 +77,7 @@ export const LogHelloScreen = ({
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const lastChunkTypeRef = useRef<string | null>(null);
 
   const remiImage = useMemo(() => getRandomLoggingImage(), []);
 
@@ -106,6 +107,17 @@ export const LogHelloScreen = ({
     return candidates.find((t) => MediaRecorder.isTypeSupported(t));
   };
 
+  const guessExtensionFromMimeType = (mimeType: string) => {
+    const t = (mimeType || "").toLowerCase();
+    if (t.includes("webm")) return "webm";
+    if (t.includes("ogg") || t.includes("oga")) return "ogg";
+    if (t.includes("wav")) return "wav";
+    if (t.includes("mpeg") || t.includes("mp3") || t.includes("mpga")) return "mp3";
+    if (t.includes("m4a")) return "m4a";
+    if (t.includes("mp4")) return "mp4";
+    return "webm";
+  };
+
   const startRecording = useCallback(async (): Promise<boolean> => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -117,19 +129,29 @@ export const LogHelloScreen = ({
 
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
+      lastChunkTypeRef.current = null;
 
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
           chunksRef.current.push(e.data);
+          // Some browsers leave mediaRecorder.mimeType empty but populate chunk.type.
+          if (e.data.type) lastChunkTypeRef.current = e.data.type;
         }
       };
 
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach((track) => track.stop());
 
-        const finalMimeType = mediaRecorder.mimeType || mimeType || "audio/webm";
-        const extension = finalMimeType.includes("mp4") ? "mp4" : "webm";
-        const audioBlob = new Blob(chunksRef.current, { type: finalMimeType });
+        // Prefer the actual recorded type to avoid extension/type mismatches that can break transcription.
+        const recordedType =
+          mediaRecorder.mimeType || lastChunkTypeRef.current || mimeType || "audio/webm";
+        const extension = guessExtensionFromMimeType(recordedType);
+        const audioBlob = new Blob(chunksRef.current, { type: recordedType });
+
+        if (audioBlob.size < 1024) {
+          toast.error("Recording was too short—please try again.");
+          return;
+        }
 
         await processAudio(audioBlob, `recording.${extension}`);
       };
@@ -191,7 +213,8 @@ export const LogHelloScreen = ({
       );
 
       if (!transcribeResponse.ok) {
-        throw new Error('Transcription failed');
+        const errorText = await transcribeResponse.text().catch(() => "");
+        throw new Error(errorText || "Transcription failed");
       }
 
       const transcription = await transcribeResponse.json();
@@ -262,7 +285,9 @@ export const LogHelloScreen = ({
       toast.success("Voice notes added!");
     } catch (error) {
       console.error("Error processing audio:", error);
-      toast.error("Failed to process voice recording");
+      const message = error instanceof Error ? error.message : "Failed to process voice recording";
+      // Keep the toast short; full details stay in console.
+      toast.error(message.includes("Invalid file format") ? "Voice format not supported on this device" : "Failed to process voice recording");
     } finally {
       setIsProcessing(false);
     }
