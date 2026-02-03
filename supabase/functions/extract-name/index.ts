@@ -36,7 +36,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `Extract people from transcribed speech. For each person: name (if given), location, notes. Skip unnamed people unless notable. Return entries array.`
+            content: `Extract people from transcribed speech. For each person: name, location, notes. IMPORTANT: If a field is NOT mentioned, leave it as an empty string "". Never use placeholder text like "unknown", "not specified", "N/A", or similar. Only include actual information that was spoken. Skip unnamed people unless they have notable details.`
           },
           {
             role: "user",
