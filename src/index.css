@@ -112,8 +112,114 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  /* Mobile Optimization: Disable double-tap zoom */
+  *,
+  *::before,
+  *::after {
+    touch-action: manipulation;
+  }
+
+  html {
+    /* Prevent overscroll/pull-to-refresh on iOS */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
   body {
     @apply bg-background text-foreground;
+    /* Safe area insets for notch/home indicator */
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    /* Prevent pull-to-refresh */
+    overscroll-behavior-y: contain;
+    /* Prevent text size adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Prevent iOS zoom on input focus - minimum 16px font size */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* Disable text selection on UI elements (not content) */
+  button,
+  .card,
+  .challenge-item,
+  nav {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Keep selection enabled for actual text content */
+  p,
+  span,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .content {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+@layer components {
+  /* Minimum 44x44px tap targets for accessibility */
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Mobile-optimized scrolling for lists */
+  .scrollable-list {
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0);
+    will-change: scroll-position;
+  }
+
+  /* GPU-accelerated elements */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Active state for touch feedback */
+  .touch-feedback:active {
+    transform: scale(0.96);
+    opacity: 0.8;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+}
+
+/* Remove sticky hover on touch devices */
+@media (hover: none) {
+  button:hover,
+  a:hover {
+    /* Reset hover styles - they don't work well on touch */
+  }
+
+  /* Better tap highlight */
+  button,
+  a,
+  [role="button"] {
+    -webkit-tap-highlight-color: rgba(255, 111, 59, 0.15);
+  }
+}
+
+/* Ensure tap targets are large enough on touch devices */
+@media (pointer: coarse) {
+  button,
+  a,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
   }
 }
 
@@ -133,10 +239,29 @@ All colors MUST be HSL.
   }
 }
 
+@keyframes paw-print {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.8) translateY(-10px);
+  }
+}
+
 .animate-bounce-soft {
   animation: bounce-soft 2s ease-in-out infinite;
 }
 
 .animate-confetti {
   animation: confetti 2s ease-out forwards;
+}
+
+.animate-paw-print {
+  animation: paw-print 0.6s ease-out forwards;
 }
