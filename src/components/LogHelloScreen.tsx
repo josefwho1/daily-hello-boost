@@ -472,7 +472,7 @@ export const LogHelloScreen = ({
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <div className="p-4 flex items-center gap-3 border-b border-border flex-shrink-0 safe-area-top">
-        <Button variant="ghost" size="icon" onClick={onBack}>
+        <Button variant="ghost" size="icon" onClick={() => { clearDraft(); onBack(); }}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <img src={remiImage} alt="Remi" className="w-10 h-10 object-contain" />
