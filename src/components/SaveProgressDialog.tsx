@@ -12,7 +12,7 @@ import { Mail, Sparkles, ArrowLeft, Check, Lock } from 'lucide-react';
 import remiWaving from '@/assets/remi-waving.webp';
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email" });
-const passwordSchema = z.string().min(6, { message: "Password must be at least 6 characters" });
+const passwordSchema = z.string().min(8, { message: "Password must be at least 8 characters" });
 
 interface SaveProgressDialogProps {
   open: boolean;
@@ -241,7 +241,7 @@ export const SaveProgressDialog = ({
                 <Input
                   id="signup-password"
                   type="password"
-                  placeholder="At least 6 characters"
+                  placeholder="At least 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSignUpWithPassword()}
@@ -279,7 +279,7 @@ export const SaveProgressDialog = ({
                 className="w-full"
               >
                 <Mail className="w-4 h-4 mr-2" />
-                Use magic link instead
+                Use email code instead
               </Button>
             </div>
           </>
