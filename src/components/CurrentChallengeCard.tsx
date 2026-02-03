@@ -199,7 +199,7 @@ export const CurrentChallengeCard = ({
             </div>
 
             {/* Buttons - fixed layout with justify-between to prevent movement */}
-            <div className="flex items-center justify-between mt-auto pt-2">
+            <div className="mt-auto pt-2 py-0 items-center justify-between flex flex-row">
               {isLocked ? <button disabled className="h-9 px-4 rounded-full text-sm font-medium border border-border/30 text-muted-foreground/40 flex items-center justify-center gap-1 min-w-[140px] cursor-not-allowed">
                   <Lock size={14} />
                   Locked
@@ -219,7 +219,7 @@ export const CurrentChallengeCard = ({
               <Button variant="ghost" size="sm" onClick={e => {
             e.stopPropagation();
             onViewAll();
-          }} className="rounded-full">
+          }} className="rounded-full border-0">
                 View All
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
