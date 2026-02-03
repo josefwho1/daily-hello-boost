@@ -35,7 +35,8 @@ serve(async (req) => {
 
     // Use OpenAI Whisper for transcription
     const apiFormData = new FormData();
-    apiFormData.append("file", audioFile);
+    // Ensure the upstream service receives a filename with the correct extension.
+    apiFormData.append("file", audioFile, audioFile.name);
     apiFormData.append("model", "whisper-1");
 
     console.log("Sending request to OpenAI Whisper API...");
