@@ -139,8 +139,8 @@ export const MultiEntryReview = ({
         </Button>
       </div>
 
-      {/* Fixed bottom button - positioned above nav bar */}
-      <div className="fixed bottom-20 left-0 right-0 p-4 bg-background border-t border-border">
+      {/* Fixed bottom button - positioned above nav bar with safe area */}
+      <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 p-4 bg-background border-t border-border">
         <Button
           onClick={handleSubmit}
           className="w-full h-12 text-lg font-semibold shadow-md"
