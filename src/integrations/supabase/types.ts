@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      auth_codes: {
+        Row: {
+          attempts: number
+          code: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+        }
+        Insert: {
+          attempts?: number
+          code: string
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+        }
+        Update: {
+          attempts?: number
+          code?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       challenge_completions: {
         Row: {
           challenge_day: number
@@ -506,7 +533,7 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_auth_codes: { Args: never; Returns: undefined }
     }
     Enums: {
       interaction_rating: "positive" | "neutral" | "negative"
