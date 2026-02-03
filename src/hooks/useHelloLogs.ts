@@ -23,31 +23,13 @@ export interface HelloLog {
 
 export const useHelloLogs = () => {
   const { user } = useAuth();
-  const { isGuest, guestLogs, updateLog: updateGuestLog } = useGuestMode();
+  const { isGuest, updateLog: updateGuestLog } = useGuestMode();
   const queryClient = useQueryClient();
 
   // Use React Query for caching - prevents refetch on tab switch
   const { data: logs = [], isLoading: loading, refetch } = useQuery({
-    queryKey: ['hello-logs', user?.id, isGuest],
+    queryKey: ['hello-logs', user?.id],
     queryFn: async () => {
-      // If guest, use guest logs from IndexedDB
-      if (isGuest && !user) {
-        const formattedGuestLogs: HelloLog[] = guestLogs.map(log => ({
-          id: log.id,
-          user_id: 'guest',
-          name: log.name || null,
-          location: (log as any).location || null,
-          notes: log.notes || null,
-          rating: (log.rating as 'positive' | 'neutral' | 'negative' | null) || null,
-          difficulty_rating: log.difficulty_rating || null,
-          no_name_flag: (log as any).no_name_flag || false,
-          created_at: log.created_at,
-          timezone_offset: log.timezone_offset || '+00:00',
-          linked_to: (log as any).linked_to || null
-        }));
-        return formattedGuestLogs;
-      }
-
       if (!user) {
         return [];
       }
@@ -65,8 +47,8 @@ export const useHelloLogs = () => {
     staleTime: 5 * 60 * 1000,
     // Keep cached data for 10 minutes even when component unmounts
     gcTime: 10 * 60 * 1000,
-    // Enable when we have a user or guest logs
-    enabled: !!(user || (isGuest && guestLogs)),
+    // Enable when we have a user (both regular and anonymous users have user sessions)
+    enabled: !!user,
   });
 
   const addLog = async (log: {
