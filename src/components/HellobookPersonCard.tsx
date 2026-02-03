@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp, MapPin, Bookmark } from "lucide-react";
@@ -49,7 +49,7 @@ const ExpandableText = ({ text }: { text: string }) => {
   );
 };
 
-const HellobookPersonCard = ({ 
+const HellobookPersonCardComponent = ({ 
   primaryLog, 
   linkedLogs, 
   formatTimestamp, 
@@ -223,5 +223,8 @@ const HellobookPersonCard = ({
     </Card>
   );
 };
+
+// Memoize to prevent re-renders when parent list updates other items
+const HellobookPersonCard = memo(HellobookPersonCardComponent);
 
 export default HellobookPersonCard;

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { startOfWeek, startOfMonth, isAfter } from "date-fns";
 import { useDailyMode } from "@/hooks/useDailyMode";
@@ -14,7 +14,7 @@ interface HomeStatsBarProps {
   lifetimeHellos: number;
 }
 
-export const HomeStatsBar = ({ logs, lifetimeHellos }: HomeStatsBarProps) => {
+const HomeStatsBarComponent = ({ logs, lifetimeHellos }: HomeStatsBarProps) => {
   const { state: dailyModeState } = useDailyMode();
 
   const stats = useMemo(() => {
@@ -104,3 +104,6 @@ export const HomeStatsBar = ({ logs, lifetimeHellos }: HomeStatsBarProps) => {
     </div>
   );
 };
+
+// Memoize to prevent unnecessary re-renders
+export const HomeStatsBar = memo(HomeStatsBarComponent);

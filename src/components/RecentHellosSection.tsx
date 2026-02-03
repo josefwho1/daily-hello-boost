@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { User, MapPin } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
@@ -9,9 +10,9 @@ interface RecentHellosSectionProps {
   onViewLog?: (log: HelloLog) => void;
 }
 
-export const RecentHellosSection = ({ logs, onViewAll, onViewLog }: RecentHellosSectionProps) => {
-  // Take last 3 entries (show all hellos, not just named ones)
-  const recentLogs = logs.slice(0, 3);
+const RecentHellosSectionComponent = ({ logs, onViewAll, onViewLog }: RecentHellosSectionProps) => {
+  // Memoize recent logs slice to prevent recalculation
+  const recentLogs = useMemo(() => logs.slice(0, 3), [logs]);
 
   if (recentLogs.length === 0) {
     return (
@@ -86,3 +87,6 @@ export const RecentHellosSection = ({ logs, onViewAll, onViewLog }: RecentHellos
     </div>
   );
 };
+
+// Memoize to prevent re-renders when logs haven't changed
+export const RecentHellosSection = memo(RecentHellosSectionComponent);

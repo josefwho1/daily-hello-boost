@@ -227,7 +227,7 @@ export const CurrentChallengeCard = ({
           </div> : null}
 
         {/* Remi image - changes based on completion state */}
-        <img src={isChallengeComplete ? remiProud : remiHoldingOrb} alt="Remi" className="absolute bottom-2 right-2 w-12 h-auto object-contain opacity-90 pointer-events-none" />
+        <img src={isChallengeComplete ? remiProud : remiHoldingOrb} alt="Remi" className="absolute bottom-2 right-2 w-12 h-auto object-contain opacity-90 pointer-events-none" loading="lazy" />
       </Card>
 
       {/* Confirm Restart Dialog */}
