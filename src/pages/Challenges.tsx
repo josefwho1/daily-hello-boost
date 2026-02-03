@@ -99,7 +99,7 @@ const Challenges = () => {
 
   // Helper to show challenge completion toast (banner is clickable to undo)
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
-    toast.custom(
+    const toastId = toast.custom(
       (id) => (
         <ChallengeUndoToast
           id={id}
@@ -109,6 +109,11 @@ const Challenges = () => {
       ),
       { duration: 3000 }
     );
+
+    // Hard safety-net: ensure it always auto-dismisses after ~3s.
+    window.setTimeout(() => {
+      toast.dismiss(toastId);
+    }, 3100);
   };
 
   const handleLogHello = async (data: { 

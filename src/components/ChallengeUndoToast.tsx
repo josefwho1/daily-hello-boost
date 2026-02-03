@@ -31,8 +31,16 @@ export function ChallengeUndoToast({ id, challengeName, onUndo }: Props) {
       type="button"
       className="w-full cursor-pointer select-none rounded-lg border border-border bg-background p-4 text-left shadow-lg"
       style={{ touchAction: "manipulation" }}
-      onPointerUp={(e) => {
-        // Prevent Sonner swipe-to-dismiss logic from eating the tap on mobile.
+      onPointerDownCapture={(e) => {
+        // Sonner listens for pointer gestures to enable swipe-to-dismiss.
+        // If Sonner receives the pointer start but not the end (because we stop propagation),
+        // it can effectively pause the auto-dismiss timer.
+        // Capture + stop propagation prevents Sonner from treating this toast as an active gesture.
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onPointerUpCapture={(e) => {
+        // Tap anywhere on the banner to undo.
         e.preventDefault();
         e.stopPropagation();
         void runUndo();
