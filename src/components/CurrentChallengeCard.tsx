@@ -80,6 +80,11 @@ export const CurrentChallengeCard = ({
     setCurrentIndex(clamped);
     setShowTip(false);
 
+    // When returning from View All → Select, ensure the Home screen is positioned
+    // so the challenge card is visible/centered for the user.
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
+
     // Clear the navigation state so it doesn't keep re-applying.
     navigate(location.pathname, { replace: true, state: {} });
   }, [location.state, location.pathname, navigate]);

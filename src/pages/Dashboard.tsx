@@ -355,7 +355,7 @@ export default function Dashboard() {
 
   // Helper to show challenge completion toast with tappable banner
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
-    toast.custom(
+    const toastId = toast.custom(
       (id) => (
         <ChallengeUndoToast
           id={id}
@@ -365,6 +365,12 @@ export default function Dashboard() {
       ),
       { duration: 3000 }
     );
+
+    // Hard safety-net: ensure the toast disappears after ~3s even if Sonner's internal
+    // timer gets paused by an interaction/gesture.
+    window.setTimeout(() => {
+      toast.dismiss(toastId);
+    }, 3100);
   };
 
   // Helper to handle tier unlock celebrations
