@@ -36,6 +36,7 @@ interface LogHelloScreenProps {
     no_name_flag?: boolean;
     linked_to?: string;
     hello_type?: string;
+    silent?: boolean;
   }) => Promise<void>;
   challengeTitle?: string | null;
   autoStartRecording?: boolean;
@@ -353,16 +354,17 @@ export const LogHelloScreen = ({
   const handleMultiEntrySubmit = async (entries: ExtractedEntry[]) => {
     setIsLogging(true);
     try {
-      // Log each entry one by one
+      // Log each entry one by one with silent flag to suppress individual toasts
       for (const entry of entries) {
         await onLog({
           name: entry.name || undefined,
           location: entry.location || undefined,
           notes: entry.notes || undefined,
           no_name_flag: !entry.name.trim(),
+          silent: true,
         });
       }
-      toast.success(`Logged ${entries.length} ${entries.length === 1 ? "hello" : "hellos"}!`);
+      toast.success(`${entries.length} ${entries.length === 1 ? "hello" : "hellos"} logged!`);
       setMultiEntries(null);
       setName("");
       setLocation("");
