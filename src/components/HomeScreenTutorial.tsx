@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import remiWaving from "@/assets/remi-waving.webp";
@@ -9,6 +10,7 @@ interface TutorialStep {
   title: string;
   body: string;
   position?: 'center';
+  highlight?: 'home-nav' | 'log-hello-btn' | 'hellobook-nav' | 'quests-nav';
 }
 
 interface HomeScreenTutorialProps {
@@ -22,9 +24,18 @@ const tutorialSteps: TutorialStep[] = [
   {
     id: 'home',
     emoji: "🏠",
-    title: "Welcome to One Hello 🦝",
-    body: "This is your home. Here you'll find:\n\n• Your stats (hellos logged this week/month/all time)\n• Today's challenge (from the 30-Day Hello series)\n• Quick access to log a hello",
+    title: "Home",
+    body: "Here you'll find:\n\n• Your stats\n• Today's Hello or Challenge\n• Log a Hello",
     position: 'center',
+    highlight: 'home-nav',
+  },
+  {
+    id: 'log-hello',
+    emoji: "✏️",
+    title: "Log a Hello",
+    body: "Any time you meet someone new, store them in here so you don't forget.\n\n💡 Use our AI dictate function to quickly log multiple hellos at once.",
+    position: 'center',
+    highlight: 'log-hello-btn',
   },
   {
     id: 'hellobook',
@@ -32,15 +43,90 @@ const tutorialSteps: TutorialStep[] = [
     title: "Your Hello Book",
     body: "Every person you meet is saved here. Search by name or location—so you never forget who you've met.",
     position: 'center',
+    highlight: 'hellobook-nav',
   },
   {
     id: 'quests',
     emoji: "🎯",
     title: "Your Quests",
-    body: "Complete the 30-Day Hello Challenge to build your confidence. Turn Daily Mode on for reminders and streak tracking, or keep it off for a relaxed pace.",
+    body: "Select packs & challenges to complete.\n\nToggle Daily Mode for reminders and streak tracking.",
     position: 'center',
+    highlight: 'quests-nav',
   },
 ];
+
+// Helper to get highlight selector based on step
+const getHighlightSelector = (highlight?: TutorialStep['highlight']): string | null => {
+  switch (highlight) {
+    case 'home-nav':
+      return '[href="/"]';
+    case 'log-hello-btn':
+      return '#tutorial-log-hello-btn, #tutorial-dictate-btn';
+    case 'hellobook-nav':
+      return '[href="/hellobook"]';
+    case 'quests-nav':
+      return '[href="/challenges"]';
+    default:
+      return null;
+  }
+};
+
+// Highlight overlay component
+const HighlightOverlay = ({ highlight }: { highlight?: TutorialStep['highlight'] }) => {
+  const [rects, setRects] = useState<DOMRect[]>([]);
+
+  useEffect(() => {
+    const selector = getHighlightSelector(highlight);
+    if (!selector) {
+      setRects([]);
+      return;
+    }
+
+    const elements = document.querySelectorAll(selector);
+    const newRects: DOMRect[] = [];
+    elements.forEach(el => {
+      newRects.push(el.getBoundingClientRect());
+    });
+    setRects(newRects);
+
+    // Update on resize
+    const handleResize = () => {
+      const updatedRects: DOMRect[] = [];
+      elements.forEach(el => {
+        updatedRects.push(el.getBoundingClientRect());
+      });
+      setRects(updatedRects);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [highlight]);
+
+  if (rects.length === 0) return null;
+
+  return createPortal(
+    <>
+      {rects.map((rect, index) => (
+        <motion.div
+          key={`highlight-${index}`}
+          className="fixed pointer-events-none z-[103] rounded-xl"
+          style={{
+            top: rect.top - 4,
+            left: rect.left - 4,
+            width: rect.width + 8,
+            height: rect.height + 8,
+            boxShadow: '0 0 0 4px hsl(var(--primary)), 0 0 20px 4px hsl(var(--primary) / 0.5)',
+          }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+        />
+      ))}
+    </>,
+    document.body
+  );
+};
 
 export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenTutorialProps) => {
   const navigate = useNavigate();
@@ -97,6 +183,9 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
     <AnimatePresence>
       {open && (
         <>
+          {/* Highlight overlay for current step */}
+          <HighlightOverlay highlight={currentStepData.highlight} />
+          
           {/* Dark overlay */}
           <motion.div
             className="fixed inset-0 bg-black/75 z-[100]"
