@@ -126,22 +126,22 @@ export const CurrentChallengeCard = ({
               disabled={!canGoLeft}
               aria-label="Previous challenge"
               className={cn(
-                "h-7 w-7 flex items-center justify-center rounded-lg transition-colors",
+                "h-10 w-12 flex items-center justify-center rounded-lg transition-colors",
                 canGoLeft ? "text-muted-foreground hover:text-foreground hover:bg-muted" : "text-muted-foreground/30 pointer-events-none"
               )}
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={22} />
             </button>
             <button
               onClick={goRight}
               disabled={!canGoRight}
               aria-label="Next challenge"
               className={cn(
-                "h-7 w-7 flex items-center justify-center rounded-lg transition-colors",
+                "h-10 w-12 flex items-center justify-center rounded-lg transition-colors",
                 canGoRight ? "text-muted-foreground hover:text-foreground hover:bg-muted" : "text-muted-foreground/30 pointer-events-none"
               )}
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={22} />
             </button>
           </div>
         </div>
