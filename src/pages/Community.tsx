@@ -74,7 +74,7 @@ const Community = ({ embedded = false }: CommunityProps) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background pb-24 pt-6 px-4">
+      <div className="min-h-screen bg-background page-container pt-6 px-4">
         <div className="max-w-md mx-auto space-y-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground">Community</h1>
@@ -94,7 +94,7 @@ const Community = ({ embedded = false }: CommunityProps) => {
 
   if (error || !stats) {
     return (
-      <div className="min-h-screen bg-background pb-24 pt-6 px-4">
+      <div className="min-h-screen bg-background page-container pt-6 px-4">
         <div className="max-w-md mx-auto text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Community</h1>
           <p className="text-muted-foreground">Unable to load community stats. Please try again later.</p>
@@ -169,7 +169,7 @@ const Community = ({ embedded = false }: CommunityProps) => {
   };
 
   return (
-    <div className={embedded ? "space-y-6" : "min-h-screen bg-background pb-24 pt-6 px-4"}>
+    <div className={embedded ? "space-y-6" : "min-h-screen bg-background page-container pt-6 px-4"}>
       <div className={embedded ? "space-y-6" : "max-w-md mx-auto space-y-6"}>
         {/* Header - only show when not embedded */}
         {!embedded && (

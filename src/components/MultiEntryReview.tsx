@@ -73,8 +73,8 @@ export const MultiEntryReview = ({
       </div>
 
       {/* Content - scrollable */}
-      {/* Bottom padding must account for: fixed submit bar (~6rem) + bottom nav (3.5rem) + safe area */}
-      <div className="flex-1 p-4 space-y-4 overflow-y-auto pb-[calc(6rem+3.5rem+env(safe-area-inset-bottom))]">
+      {/* Bottom padding: fixed button (~5rem including padding) + nav bar (3.5rem) + safe area */}
+      <div className="flex-1 p-4 space-y-4 overflow-y-auto" style={{ paddingBottom: 'calc(5rem + 3.5rem + env(safe-area-inset-bottom, 0px) + 1rem)' }}>
         <p className="text-sm text-muted-foreground">
           We detected multiple people in your recording. Review and edit each entry below.
         </p>
@@ -141,7 +141,7 @@ export const MultiEntryReview = ({
       </div>
 
       {/* Fixed bottom button - positioned above nav bar with safe area */}
-      <div className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 p-4 bg-background border-t border-border">
+      <div className="fixed left-0 right-0 p-4 bg-background border-t border-border fixed-above-nav">
         <Button
           onClick={handleSubmit}
           className="w-full h-12 text-lg font-semibold shadow-md"

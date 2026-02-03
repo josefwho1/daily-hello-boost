@@ -433,7 +433,7 @@ export default function Dashboard() {
       }
     }} challengeTitle={pendingChallengeCompletion?.name || null} autoStartRecording={autoStartRecording} existingLogs={logs} requireAtLeastOneField={!!pendingChallengeCompletion} />;
   }
-  return <div className="min-h-screen bg-background pb-24">
+  return <div className="min-h-screen bg-background page-container">
       <div className="max-w-md mx-auto px-4 py-8">
 
         {/* Daily Mode Reminder Banners */}
