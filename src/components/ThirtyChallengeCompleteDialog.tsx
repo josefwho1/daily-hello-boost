@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useEffect, useMemo } from "react";
+import { Share2 } from "lucide-react";
 
 // Import Remi Congrats image
 import remiCongrats1 from "@/assets/remi-congrats-1.webp";
@@ -9,12 +10,14 @@ import remiCongrats1 from "@/assets/remi-congrats-1.webp";
 interface ThirtyChallengeCompleteDialogProps {
   open: boolean;
   onContinue: () => void;
+  onShare?: () => void;
   timesCompleted?: number;
 }
 
 export const ThirtyChallengeCompleteDialog = ({
   open,
   onContinue,
+  onShare,
   timesCompleted = 1,
 }: ThirtyChallengeCompleteDialogProps) => {
   const remiImage = useMemo(() => remiCongrats1, []);
@@ -139,15 +142,26 @@ export const ThirtyChallengeCompleteDialog = ({
               </motion.p>
             )}
 
-            {/* Continue button */}
+            {/* Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="pt-4 w-full"
+              className="pt-4 w-full space-y-3"
             >
+              {onShare && timesCompleted === 1 && (
+                <Button 
+                  onClick={onShare}
+                  className="w-full rounded-full font-semibold"
+                  size="lg"
+                >
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share Achievement
+                </Button>
+              )}
               <Button 
                 onClick={onContinue}
+                variant={onShare && timesCompleted === 1 ? "ghost" : "default"}
                 className="w-full rounded-full font-semibold"
                 size="lg"
               >

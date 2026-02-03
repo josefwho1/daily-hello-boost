@@ -25,6 +25,8 @@ import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
 import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
+import { ShareOptionsSheet } from "@/components/ShareOptionsSheet";
+import { MilestoneType as ShareMilestoneType } from "@/lib/shareCardGenerator";
 import { toast } from "sonner";
 import { ChallengeUndoToast } from "@/components/ChallengeUndoToast";
 import { startOfWeek, isBefore, parseISO } from "date-fns";
@@ -131,6 +133,10 @@ export default function Dashboard() {
   const [milestoneValue, setMilestoneValue] = useState(0);
   const [milestoneType, setMilestoneType] = useState<MilestoneType>('hellos');
   
+  // Share achievement states
+  const [showShareSheet, setShowShareSheet] = useState(false);
+  const [shareMilestone, setShareMilestone] = useState<ShareMilestoneType | null>(null);
+  
   // Streak celebration states
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [celebratedStreakValue, setCelebratedStreakValue] = useState(0);
@@ -139,6 +145,32 @@ export default function Dashboard() {
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
   const [editingLogIndex, setEditingLogIndex] = useState(0);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  // Convert milestone value to share milestone type
+  const getShareMilestoneType = (value: number): ShareMilestoneType | null => {
+    const map: Record<number, ShareMilestoneType> = {
+      10: 'hellos_10',
+      25: 'hellos_25',
+      50: 'hellos_50',
+      100: 'hellos_100',
+    };
+    return map[value] || null;
+  };
+  
+  const handleMilestoneShare = () => {
+    const shareType = getShareMilestoneType(milestoneValue);
+    if (shareType) {
+      setShareMilestone(shareType);
+      setShowMilestoneCelebration(false);
+      setShowShareSheet(true);
+    }
+  };
+  
+  const handleChallengeCompleteShare = () => {
+    setShareMilestone('challenge_complete');
+    setShowThirtyChallengeComplete(false);
+    setShowShareSheet(true);
+  };
 
   useEffect(() => {
     const fetchUsername = async () => {
@@ -552,6 +584,7 @@ export default function Dashboard() {
           // Switch to Today's Hello after completing 30 Hellos
           await updateProgress({ selected_pack_id: 'daily' });
         }}
+        onShare={handleChallengeCompleteShare}
         timesCompleted={challengeState.timesCompleted}
       />
 
@@ -566,6 +599,7 @@ export default function Dashboard() {
       <MilestoneCelebrationDialog
         open={showMilestoneCelebration}
         onContinue={() => setShowMilestoneCelebration(false)}
+        onShare={handleMilestoneShare}
         milestoneValue={milestoneValue}
         milestoneType={milestoneType}
       />
@@ -575,6 +609,14 @@ export default function Dashboard() {
         open={showStreakCelebration}
         onContinue={() => setShowStreakCelebration(false)}
         streakCount={celebratedStreakValue}
+      />
+
+      {/* Share Achievement Sheet */}
+      <ShareOptionsSheet
+        open={showShareSheet}
+        onOpenChange={setShowShareSheet}
+        milestone={shareMilestone}
+        username={username}
       />
 
       {/* Save Progress Dialog for Guests */}

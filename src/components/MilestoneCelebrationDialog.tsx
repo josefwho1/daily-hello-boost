@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { Share2 } from "lucide-react";
 
 // Remi Celebrating images
 import remiCelebrating1 from "@/assets/remi-celebrating-1.webp";
@@ -25,9 +26,13 @@ const getRandomImage = (images: string[]) => {
 
 export type MilestoneType = 'hellos' | 'names';
 
+// Shareable milestones (show share button for these)
+const SHAREABLE_MILESTONES = [10, 25, 50, 100];
+
 interface MilestoneCelebrationDialogProps {
   open: boolean;
   onContinue: () => void;
+  onShare?: () => void;
   milestoneValue: number;
   milestoneType: MilestoneType;
 }
@@ -46,14 +51,37 @@ const getMilestoneMessage = (value: number, type: MilestoneType): string => {
   return `First milestone! ${value} ${typeLabel}!`;
 };
 
+const getShareableTitle = (value: number): string => {
+  if (value >= 100) return 'Triple Digits! 💯';
+  if (value >= 50) return 'Halfway There!';
+  if (value >= 25) return 'Quarter-Century!';
+  return 'Milestone Unlocked!';
+};
+
+const getShareableSubtitle = (value: number, type: MilestoneType): string => {
+  const label = type === 'hellos' ? 'hellos' : 'names';
+  return `You've logged ${value} ${label}!`;
+};
+
+const getShareableQuote = (value: number): string => {
+  if (value >= 100) return "You're a true connector 🦝";
+  if (value >= 50) return "You're on fire! Keep going 🦝";
+  if (value >= 25) return "Building connections,\none hello at a time 🦝";
+  return "Reconnecting the world,\none hello at a time 🦝";
+};
+
 export const MilestoneCelebrationDialog = ({
   open,
   onContinue,
+  onShare,
   milestoneValue,
   milestoneType,
 }: MilestoneCelebrationDialogProps) => {
   const [showConfetti, setShowConfetti] = useState(false);
   const remiImage = useMemo(() => getRandomImage(remiCelebratingImages), []);
+
+  // Check if this milestone is shareable
+  const isShareable = milestoneType === 'hellos' && SHAREABLE_MILESTONES.includes(milestoneValue);
 
   const playCelebrationSound = useCallback(() => {
     try {
@@ -99,7 +127,9 @@ export const MilestoneCelebrationDialog = ({
 
   if (!open) return null;
 
-  const message = getMilestoneMessage(milestoneValue, milestoneType);
+  const title = isShareable ? getShareableTitle(milestoneValue) : `${milestoneType === 'hellos' ? 'Hellos' : 'Names'} Milestone!`;
+  const subtitle = isShareable ? getShareableSubtitle(milestoneValue, milestoneType) : getMilestoneMessage(milestoneValue, milestoneType);
+  const quote = isShareable ? getShareableQuote(milestoneValue) : null;
 
   return (
     <AnimatePresence>
@@ -140,7 +170,19 @@ export const MilestoneCelebrationDialog = ({
           )}
 
           {/* Main content */}
-          <div className="flex flex-col items-center gap-6 px-6 text-center max-h-screen py-8 z-10">
+          <div className="flex flex-col items-center gap-4 px-6 text-center max-h-screen py-8 z-10">
+            {/* Emoji decorations for shareable milestones */}
+            {isShareable && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.1, type: "spring" }}
+                className="text-4xl"
+              >
+                🎉 🎉 🎉 🎉 🎉
+              </motion.div>
+            )}
+
             {/* Remi Image */}
             <motion.div
               initial={{ scale: 0, rotate: -10 }}
@@ -157,49 +199,62 @@ export const MilestoneCelebrationDialog = ({
               <img 
                 src={remiImage} 
                 alt="Remi celebrating" 
-                className="w-48 h-auto max-h-52 object-contain"
+                className="w-40 h-auto max-h-44 object-contain"
               />
-            </motion.div>
-
-            {/* Milestone number */}
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.5, type: "spring" }}
-              className="text-5xl font-bold text-foreground"
-            >
-              {milestoneValue}
             </motion.div>
 
             {/* Title */}
             <motion.h1
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.4 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
               className="text-2xl font-bold text-foreground"
             >
-              {milestoneType === 'hellos' ? 'Hellos' : 'Names'} Milestone!
+              {title}
             </motion.h1>
 
-            {/* Message */}
+            {/* Subtitle */}
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.4 }}
-              className="text-lg text-muted-foreground max-w-xs"
+              transition={{ delay: 0.5, duration: 0.4 }}
+              className="text-lg text-muted-foreground"
             >
-              {message}
+              {subtitle}
             </motion.p>
 
-            {/* Continue Button */}
+            {/* Quote for shareable milestones */}
+            {quote && (
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.4 }}
+                className="text-base whitespace-pre-line text-foreground"
+              >
+                {quote}
+              </motion.p>
+            )}
+
+            {/* Buttons */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.9, duration: 0.4 }}
-              className="w-full max-w-xs mt-4"
+              transition={{ delay: 0.8, duration: 0.4 }}
+              className="w-full max-w-xs mt-4 space-y-3"
             >
-              <Button onClick={onContinue} className="w-full" size="lg">
-                Keep Going!
+              {isShareable && onShare && (
+                <Button onClick={onShare} className="w-full" size="lg">
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share Achievement
+                </Button>
+              )}
+              <Button 
+                onClick={onContinue} 
+                variant={isShareable ? "ghost" : "default"} 
+                className="w-full" 
+                size="lg"
+              >
+                {isShareable ? 'Continue' : 'Keep Going!'}
               </Button>
             </motion.div>
           </div>
