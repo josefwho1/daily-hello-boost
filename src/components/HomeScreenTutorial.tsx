@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
+import { UserPlus, Mic } from "lucide-react";
 import remiWaving from "@/assets/remi-waving.webp";
 
 interface TutorialStep {
@@ -10,7 +11,8 @@ interface TutorialStep {
   title: string;
   body: string;
   position?: 'center';
-  highlight?: 'home-nav' | 'log-hello-btn' | 'hellobook-nav' | 'quests-nav';
+  highlight?: 'home-nav' | 'hellobook-nav' | 'quests-nav';
+  showButtonPreview?: boolean;
 }
 
 interface HomeScreenTutorialProps {
@@ -35,7 +37,7 @@ const tutorialSteps: TutorialStep[] = [
     title: "Log a Hello",
     body: "Any time you meet someone new, store them in here so you don't forget.\n\n💡 Use our AI dictate function to quickly log multiple hellos at once.",
     position: 'center',
-    highlight: 'log-hello-btn',
+    showButtonPreview: true,
   },
   {
     id: 'hellobook',
@@ -60,8 +62,6 @@ const getHighlightSelector = (highlight?: TutorialStep['highlight']): string | n
   switch (highlight) {
     case 'home-nav':
       return '[href="/"]';
-    case 'log-hello-btn':
-      return '#tutorial-log-hello-btn, #tutorial-dictate-btn';
     case 'hellobook-nav':
       return '[href="/hellobook"]';
     case 'quests-nav':
@@ -70,6 +70,19 @@ const getHighlightSelector = (highlight?: TutorialStep['highlight']): string | n
       return null;
   }
 };
+
+// Visual mockup of Log Hello buttons for the tutorial
+const LogHelloButtonPreview = () => (
+  <div className="flex gap-2 justify-center my-4">
+    <div className="flex-1 max-w-[200px] h-12 bg-primary text-primary-foreground rounded-md flex items-center justify-center gap-2 text-sm font-semibold shadow-md">
+      <UserPlus className="w-4 h-4" />
+      Log a Hello
+    </div>
+    <div className="h-12 w-12 bg-background border border-border rounded-md flex items-center justify-center shadow-sm">
+      <Mic className="w-4 h-4 text-foreground" />
+    </div>
+  </div>
+);
 
 // Highlight overlay component
 const HighlightOverlay = ({ highlight }: { highlight?: TutorialStep['highlight'] }) => {
@@ -240,9 +253,15 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
               </h3>
 
               {/* Body */}
-              <p className="text-muted-foreground text-center mb-5 leading-relaxed text-sm">
+              <p className="text-muted-foreground text-center leading-relaxed text-sm">
                 {formatBody(currentStepData.body)}
               </p>
+
+              {/* Button preview for Log a Hello step */}
+              {currentStepData.showButtonPreview && <LogHelloButtonPreview />}
+
+              {/* Spacer when no button preview */}
+              {!currentStepData.showButtonPreview && <div className="mb-5" />}
 
               {/* Progress dots */}
               <div className="flex justify-center gap-1.5 mb-4">
