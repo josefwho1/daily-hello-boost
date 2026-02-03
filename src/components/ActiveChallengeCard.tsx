@@ -167,7 +167,7 @@ export const ActiveChallengeCard = ({
       </div>
 
       {/* Button area */}
-      <div className="mt-3">
+      <div className="mt-1.5">
         {allChallengesComplete && onEndChallenge ? (
           <Button
             onClick={onEndChallenge}
