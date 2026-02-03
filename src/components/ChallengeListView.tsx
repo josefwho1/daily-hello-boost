@@ -65,12 +65,10 @@ export const ChallengeListView = ({
 
   const handleToggleComplete = (challenge: ThirtyDayChallenge) => {
     if (isDayLocked(challenge.day)) return;
-    
-    if (isDayComplete(challenge.day)) {
-      onUncomplete(challenge.day);
-    } else {
-      onComplete(challenge.day, challenge.name);
-    }
+
+    // View All list should only allow completing (not un-completing).
+    if (isDayComplete(challenge.day)) return;
+    onComplete(challenge.day, challenge.name);
   };
 
   const getChallengesInRange = (range: [number, number]) => {
@@ -178,12 +176,12 @@ export const ChallengeListView = ({
                             {/* Status icon / Complete button */}
                             <button
                               onClick={() => handleToggleComplete(challenge)}
-                              disabled={challengeLocked}
+                      disabled={challengeLocked || isComplete}
                               className={cn(
                                 "flex-shrink-0 transition-colors",
-                                !challengeLocked && "cursor-pointer hover:text-success"
+                        !challengeLocked && !isComplete && "cursor-pointer hover:text-success"
                               )}
-                              aria-label={isComplete ? "Mark as incomplete" : challengeLocked ? "Locked" : "Mark as complete"}
+                      aria-label={isComplete ? "Completed" : challengeLocked ? "Locked" : "Mark as complete"}
                             >
                               {challengeLocked ? (
                                 <Lock className="w-5 h-5 text-muted-foreground/30" />
