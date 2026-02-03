@@ -75,10 +75,8 @@ export default function Dashboard() {
   } = useChallengeProgress();
   const {
     guestProgress,
-    guestLogs,
     loading: guestLoading,
     updateProgress: updateGuestProgress,
-    addLog: addGuestLog,
     shouldShowSavePrompt,
     dismissSavePrompt,
     guestState,
@@ -86,6 +84,8 @@ export default function Dashboard() {
   } = useGuestMode();
 
   // Unified progress and logs
+  // IMPORTANT: Anonymous users now use the same Supabase tables as regular users
+  // so we always use cloudLogs for consistency and instant updates via React Query cache
   const progress = isAnonymous ? guestProgress ? {
     current_streak: guestProgress.current_streak,
     current_day: guestProgress.current_day,
@@ -104,23 +104,15 @@ export default function Dashboard() {
     has_seen_welcome_messages: guestProgress.has_seen_welcome_messages,
     total_hellos: guestProgress.total_hellos
   } : null : cloudProgress;
-  const logs = isAnonymous ? guestLogs.map(log => ({
-    ...log,
-    user_id: guestProgress?.user_id || '',
-    location: (log as any).location || null,
-    no_name_flag: (log as any).no_name_flag || false
-  })) : cloudLogs;
+  
+  // Always use cloudLogs since anonymous users have real Supabase sessions
+  // This ensures consistent data and proper React Query cache invalidation
+  const logs = cloudLogs;
+  
   const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
-  const addLog = isAnonymous ? async (data: Parameters<typeof addCloudLog>[0]) => {
-    const result = await addGuestLog({
-      name: data.name || null,
-      notes: data.notes || null,
-      rating: data.rating || null,
-      difficulty_rating: data.difficulty_rating || null,
-      timezone_offset: '+00:00'
-    });
-    return result;
-  } : addCloudLog;
+  
+  // Always use the cloud addLog since anonymous users have real Supabase sessions
+  const addLog = addCloudLog;
   const tzOffset = normalizeTimezoneOffset(timezoneOffset);
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [username, setUsername] = useState("");

@@ -92,6 +92,8 @@ export const useHelloLogs = () => {
       
       // Invalidate and refetch to ensure sync across all components
       await queryClient.invalidateQueries({ queryKey: ['hello-logs'] });
+      // Also invalidate user-progress since total_hellos may need updating
+      await queryClient.invalidateQueries({ queryKey: ['user-progress'] });
       
       return data;
     } catch (error) {
