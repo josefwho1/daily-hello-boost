@@ -252,8 +252,8 @@ const ViewHelloDialog = ({
         </AnimatePresence>
       </div>
 
-      {/* Bottom action bar - positioned above the navigation bar */}
-      <div className="flex-shrink-0 border-t border-border bg-background px-4 py-3 pb-20">
+      {/* Bottom action bar - positioned above the navigation bar with safe area */}
+      <div className="flex-shrink-0 border-t border-border bg-background px-4 py-3 pb-[calc(5rem+env(safe-area-inset-bottom))]">
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
