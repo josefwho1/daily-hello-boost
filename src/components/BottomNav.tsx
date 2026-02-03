@@ -48,7 +48,7 @@ export const BottomNav = () => {
     label: "Profile"
   }];
   return <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-50 shadow-lg" style={{
-    paddingBottom: 'env(safe-area-inset-bottom)'
+    paddingBottom: 'calc(env(safe-area-inset-bottom) / 2)'
   }}>
       <div className="max-w-md mx-auto flex justify-around items-center h-14 px-2 relative my-[2px]">
         {tabs.map(tab => <NavLink key={tab.to} to={tab.to} onClick={() => handleTabClick(tab.to)} className="relative flex flex-col items-center gap-0.5 py-2 px-4 text-muted-foreground transition-all duration-200 hover:text-primary touch-feedback min-h-[48px] min-w-[48px]" activeClassName="text-primary">
