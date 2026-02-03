@@ -13,6 +13,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       position="top-center"
       duration={3000}
       pauseWhenPageIsHidden={false}
+      style={{
+        // Push toasts below the iPhone notch / status bar
+        top: "env(safe-area-inset-top, 0px)",
+      }}
       toastOptions={{
         duration: 3000,
         classNames: {
