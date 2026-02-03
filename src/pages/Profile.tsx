@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { ProfilePictureSelector, getProfilePictureSrc } from "@/components/ProfilePictureSelector";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
-import { LogOut, Clock, Pencil, Check, X, Bell, Camera, Instagram, Globe, Mail, Smartphone, Share, ChevronDown, ChevronUp, Sparkles, Lock, Eye, EyeOff, AlertCircle, Trash2, BellRing } from "lucide-react";
+import { LogOut, Clock, Pencil, Check, X, Bell, Camera, Instagram, Globe, Mail, Smartphone, Share, ChevronDown, ChevronUp, Sparkles, Lock, Eye, EyeOff, AlertCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -514,17 +514,18 @@ const Profile = () => {
           </div>
         </Card>
 
-        {/* Email Notifications */}
+        {/* Notifications */}
         <Card className="p-5 mb-4 rounded-2xl">
           <div className="flex items-center gap-3 mb-4">
             <Bell className="text-primary w-5 h-5" />
-            <h3 className="font-semibold text-foreground">Email Notifications</h3>
+            <h3 className="font-semibold text-foreground">Notifications</h3>
           </div>
           
           <div className="space-y-4">
+            {/* Email toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-foreground">Email reminders</Label>
+                <Label className="text-foreground">Email</Label>
                 <p className="text-xs text-muted-foreground">Get friendly nudges from Remi 🦝</p>
               </div>
               <Switch
@@ -539,126 +540,118 @@ const Profile = () => {
                 }}
               />
             </div>
-          </div>
-        </Card>
 
-        {/* Push Notifications (Native platforms only) */}
-        {isNativePlatform && (
-          <Card className="p-5 mb-4 rounded-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <BellRing className="text-primary w-5 h-5" />
-              <h3 className="font-semibold text-foreground">Push Notifications</h3>
+            {/* Push toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-foreground">Push</Label>
+                <p className="text-xs text-muted-foreground">
+                  {isNativePlatform 
+                    ? (dailyModeState.isActive 
+                        ? "9am nudge + 3pm streak reminder" 
+                        : "Weekly check-in")
+                    : "Available in the mobile app"}
+                </p>
+              </div>
+              <Switch
+                checked={notificationPrefs.enabled}
+                disabled={!isNativePlatform}
+                onCheckedChange={async (checked) => {
+                  if (checked) {
+                    const granted = await requestPermission();
+                    if (!granted) {
+                      toast.error("Please enable notifications in Settings → One Hello → Notifications");
+                      return;
+                    }
+                    // Schedule notifications based on Daily Mode
+                    await scheduleNotifications(
+                      dailyModeState.isActive,
+                      dailyModeState.currentStreak
+                    );
+                    await updateNotificationPrefs(
+                      { enabled: true },
+                      dailyModeState.isActive,
+                      dailyModeState.currentStreak
+                    );
+                    toast.success("Push notifications enabled! 🦝");
+                  } else {
+                    await cancelAllNotifications();
+                    await updateNotificationPrefs(
+                      { enabled: false },
+                      dailyModeState.isActive,
+                      dailyModeState.currentStreak
+                    );
+                    toast.success("Push notifications disabled");
+                  }
+                }}
+              />
             </div>
-            
-            <div className="space-y-4">
+
+            {/* Morning time picker (only when enabled and Daily Mode is ON) */}
+            {isNativePlatform && notificationPrefs.enabled && dailyModeState.isActive && (
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-foreground">Daily reminders</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {dailyModeState.isActive 
-                      ? "9am nudge + 3pm streak reminder" 
-                      : "Weekly check-in"}
-                  </p>
+                  <Label className="text-foreground">Morning reminder</Label>
+                  <p className="text-xs text-muted-foreground">When to send the daily nudge</p>
                 </div>
-                <Switch
-                  checked={notificationPrefs.enabled}
-                  onCheckedChange={async (checked) => {
-                    if (checked) {
-                      const granted = await requestPermission();
-                      if (!granted) {
-                        toast.error("Please enable notifications in Settings → One Hello → Notifications");
-                        return;
-                      }
-                      // Schedule notifications based on Daily Mode
-                      await scheduleNotifications(
-                        dailyModeState.isActive,
-                        dailyModeState.currentStreak
-                      );
-                      await updateNotificationPrefs(
-                        { enabled: true },
-                        dailyModeState.isActive,
-                        dailyModeState.currentStreak
-                      );
-                      toast.success("Notifications enabled! 🦝");
-                    } else {
-                      await cancelAllNotifications();
-                      await updateNotificationPrefs(
-                        { enabled: false },
-                        dailyModeState.isActive,
-                        dailyModeState.currentStreak
-                      );
-                      toast.success("Push notifications disabled");
-                    }
+                <Select
+                  value={String(notificationPrefs.morningTime)}
+                  onValueChange={async (value) => {
+                    await updateNotificationPrefs(
+                      { morningTime: parseInt(value) },
+                      dailyModeState.isActive,
+                      dailyModeState.currentStreak
+                    );
+                    toast.success("Morning reminder time updated");
                   }}
-                />
+                >
+                  <SelectTrigger className="w-24 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">7 AM</SelectItem>
+                    <SelectItem value="8">8 AM</SelectItem>
+                    <SelectItem value="9">9 AM</SelectItem>
+                    <SelectItem value="10">10 AM</SelectItem>
+                    <SelectItem value="11">11 AM</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+            )}
 
-              {/* Morning time picker (only when enabled and Daily Mode is ON) */}
-              {notificationPrefs.enabled && dailyModeState.isActive && (
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-foreground">Morning reminder</Label>
-                    <p className="text-xs text-muted-foreground">When to send the daily nudge</p>
-                  </div>
-                  <Select
-                    value={String(notificationPrefs.morningTime)}
-                    onValueChange={async (value) => {
-                      await updateNotificationPrefs(
-                        { morningTime: parseInt(value) },
-                        dailyModeState.isActive,
-                        dailyModeState.currentStreak
-                      );
-                      toast.success("Morning reminder time updated");
-                    }}
-                  >
-                    <SelectTrigger className="w-24 rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="7">7 AM</SelectItem>
-                      <SelectItem value="8">8 AM</SelectItem>
-                      <SelectItem value="9">9 AM</SelectItem>
-                      <SelectItem value="10">10 AM</SelectItem>
-                      <SelectItem value="11">11 AM</SelectItem>
-                    </SelectContent>
-                  </Select>
+            {/* Afternoon time picker (only when enabled, Daily Mode is ON, and has streak) */}
+            {isNativePlatform && notificationPrefs.enabled && dailyModeState.isActive && dailyModeState.currentStreak >= 1 && (
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-foreground">Streak reminder</Label>
+                  <p className="text-xs text-muted-foreground">Reminder if no hello logged yet</p>
                 </div>
-              )}
-
-              {/* Afternoon time picker (only when enabled, Daily Mode is ON, and has streak) */}
-              {notificationPrefs.enabled && dailyModeState.isActive && dailyModeState.currentStreak >= 1 && (
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-foreground">Streak reminder</Label>
-                    <p className="text-xs text-muted-foreground">Reminder if no hello logged yet</p>
-                  </div>
-                  <Select
-                    value={String(notificationPrefs.afternoonTime)}
-                    onValueChange={async (value) => {
-                      await updateNotificationPrefs(
-                        { afternoonTime: parseInt(value) },
-                        dailyModeState.isActive,
-                        dailyModeState.currentStreak
-                      );
-                      toast.success("Streak reminder time updated");
-                    }}
-                  >
-                    <SelectTrigger className="w-24 rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="14">2 PM</SelectItem>
-                      <SelectItem value="15">3 PM</SelectItem>
-                      <SelectItem value="16">4 PM</SelectItem>
-                      <SelectItem value="17">5 PM</SelectItem>
-                      <SelectItem value="18">6 PM</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-          </Card>
-        )}
+                <Select
+                  value={String(notificationPrefs.afternoonTime)}
+                  onValueChange={async (value) => {
+                    await updateNotificationPrefs(
+                      { afternoonTime: parseInt(value) },
+                      dailyModeState.isActive,
+                      dailyModeState.currentStreak
+                    );
+                    toast.success("Streak reminder time updated");
+                  }}
+                >
+                  <SelectTrigger className="w-24 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="14">2 PM</SelectItem>
+                    <SelectItem value="15">3 PM</SelectItem>
+                    <SelectItem value="16">4 PM</SelectItem>
+                    <SelectItem value="17">5 PM</SelectItem>
+                    <SelectItem value="18">6 PM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+        </Card>
 
 
         {/* Password (Auth users only) */}
