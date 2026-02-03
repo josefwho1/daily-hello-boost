@@ -227,6 +227,11 @@ export const LogHelloScreen = ({
 
   const processAudio = async (audioBlob: Blob, filename = "recording.webm") => {
     setIsProcessing(true);
+    
+    // Create abort controller with 15 second timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
     try {
       // Step 1: Transcribe audio
       const formData = new FormData();
@@ -240,6 +245,7 @@ export const LogHelloScreen = ({
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: formData,
+          signal: controller.signal,
         }
       );
 
@@ -266,6 +272,7 @@ export const LogHelloScreen = ({
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({ text: transcribedText }),
+          signal: controller.signal,
         }
       );
 
@@ -316,10 +323,21 @@ export const LogHelloScreen = ({
       toast.success("Voice notes added!");
     } catch (error) {
       console.error("Error processing audio:", error);
+      
+      // Check if this was a timeout (abort)
+      if (error instanceof Error && error.name === 'AbortError') {
+        toast.error("Sorry, that didn't work. Please try again.", {
+          description: "The request took too long to process.",
+          duration: 5000,
+        });
+        return;
+      }
+      
       const message = error instanceof Error ? error.message : "Failed to process voice recording";
       // Keep the toast short; full details stay in console.
       toast.error(message.includes("Invalid file format") ? "Voice format not supported on this device" : "Failed to process voice recording");
     } finally {
+      clearTimeout(timeoutId);
       setIsProcessing(false);
     }
   };
