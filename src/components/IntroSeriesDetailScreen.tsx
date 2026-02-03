@@ -36,7 +36,7 @@ export const IntroSeriesDetailScreen = ({
   const isNotStarted = status === "not-started";
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background page-container">
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
