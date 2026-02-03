@@ -187,7 +187,7 @@ const Challenges = () => {
     }} />;
   }
   return <div className="min-h-screen bg-background page-container">
-      <div className="max-w-md mx-auto px-4 py-6">
+      <div className="max-w-md mx-auto px-4 py-6 pb-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -294,7 +294,7 @@ const Challenges = () => {
         </Card>
 
         {/* Remi's Vault Easter Egg */}
-        <div className="flex flex-col items-center pb-2">
+        <div className="pb-2 flex-row flex items-center justify-center">
           <button onClick={() => navigate('/vault')} className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 focus:outline-none">
             <img src={vaultIcon} alt="Remi's Vault" className="w-12 h-12 object-contain" />
           </button>
