@@ -247,13 +247,12 @@ const Community = ({ embedded = false }: CommunityProps) => {
                     <button
                       key={key}
                       onClick={() => setLeaderboardType(key)}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
                         leaderboardType === key
                           ? 'bg-background text-foreground shadow-sm'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      {key === 'hellos' ? <Hand className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
                       {leaderboardTypeLabels[key]}
                     </button>
                   ))}
