@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ChevronLeft, Check, Circle, Lightbulb, Lock } from "lucide-react";
+import { ChevronLeft, Check, Circle, Lightbulb, Lock, CircleDot } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { thirtyDayChallenge, ThirtyDayChallenge } from "@/data/thirtyDayChallenge";
@@ -10,6 +10,7 @@ interface ChallengeListViewProps {
   onComplete: (day: number, challengeName: string) => void;
   onUncomplete: (day: number) => void;
   onBack: () => void;
+  onSelectChallenge?: (index: number) => void;
 }
 
 export const ChallengeListView = ({
@@ -17,6 +18,7 @@ export const ChallengeListView = ({
   onComplete,
   onUncomplete,
   onBack,
+  onSelectChallenge,
 }: ChallengeListViewProps) => {
   const [expandedTips, setExpandedTips] = useState<Set<number>>(new Set());
 
@@ -101,7 +103,7 @@ export const ChallengeListView = ({
               <div key={challenge.day}>
                 <Card
                   className={cn(
-                    "p-4 transition-colors",
+                    "p-3 transition-colors",
                     isLocked 
                       ? "bg-muted/20 border-border/30 opacity-60"
                       : isComplete 
@@ -109,25 +111,25 @@ export const ChallengeListView = ({
                         : "bg-card border-border hover:bg-muted/20"
                   )}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-center gap-3">
                     {/* Status icon / Complete button */}
                     <button
                       onClick={() => handleToggleComplete(challenge)}
                       disabled={isLocked}
                       className={cn(
-                        "mt-0.5 flex-shrink-0 transition-colors",
+                        "flex-shrink-0 transition-colors",
                         !isLocked && "cursor-pointer hover:text-success"
                       )}
                       aria-label={isComplete ? "Mark as incomplete" : isLocked ? "Locked" : "Mark as complete"}
                     >
                       {isLocked ? (
-                        <Lock className="w-6 h-6 text-muted-foreground/30" />
+                        <Lock className="w-5 h-5 text-muted-foreground/30" />
                       ) : isComplete ? (
-                        <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center hover:bg-success/30">
-                          <Check className="w-4 h-4 text-success" />
+                        <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center hover:bg-success/30">
+                          <Check className="w-3 h-3 text-success" />
                         </div>
                       ) : (
-                        <Circle className="w-6 h-6 text-muted-foreground/50 hover:text-success" />
+                        <Circle className="w-5 h-5 text-muted-foreground/50 hover:text-success" />
                       )}
                     </button>
 
@@ -136,7 +138,7 @@ export const ChallengeListView = ({
                       {/* Challenge number and name */}
                       <div 
                         className={cn(
-                          "font-bold text-base",
+                          "font-semibold text-sm",
                           isLocked ? "text-muted-foreground/50" : isComplete ? "text-success" : "text-foreground"
                         )}
                       >
@@ -152,7 +154,7 @@ export const ChallengeListView = ({
                           onClick={() => challenge.suggestion && toggleTip(challenge.day)}
                         >
                           <p className={cn(
-                            "text-xs text-muted-foreground mt-1",
+                            "text-xs text-muted-foreground mt-0.5 line-clamp-2",
                             isComplete && "line-through opacity-70"
                           )}>
                             {showTip && challenge.suggestion 
@@ -161,7 +163,7 @@ export const ChallengeListView = ({
                           </p>
                           
                           {challenge.suggestion && (
-                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 mt-1">
+                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 mt-0.5">
                               <Lightbulb size={10} />
                               {showTip ? "Tap to show challenge" : "Tap to show tip"}
                             </div>
@@ -169,6 +171,17 @@ export const ChallengeListView = ({
                         </div>
                       )}
                     </div>
+
+                    {/* Select button - right side */}
+                    {!isLocked && onSelectChallenge && (
+                      <button
+                        onClick={() => onSelectChallenge(challenge.day - 1)}
+                        className="flex-shrink-0 p-2 rounded-full hover:bg-muted transition-colors"
+                        aria-label="Select this challenge"
+                      >
+                        <CircleDot className="w-5 h-5 text-muted-foreground hover:text-primary" />
+                      </button>
+                    )}
                   </div>
                 </Card>
 
