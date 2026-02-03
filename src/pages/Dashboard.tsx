@@ -272,7 +272,7 @@ export default function Dashboard() {
     }
   }, [dailyModeLoading, dailyModeState.isActive, checkAndResetStreak]);
 
-  const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string; hello_type?: string }) => {
+  const handleLogHello = async (data: { name?: string; location?: string; notes?: string; rating?: 'positive' | 'neutral' | 'negative'; difficulty_rating?: number; no_name_flag?: boolean; linked_to?: string; hello_type?: string; silent?: boolean }) => {
     const today = getDayKeyInOffset(new Date(), tzOffset);
 
     const result = await addLog({
@@ -292,7 +292,10 @@ export default function Dashboard() {
 
       await updateProgress(updates);
 
-      toast.success("Hello logged!");
+      // Only show toast if not silent (for multi-entry logging)
+      if (!data.silent) {
+        toast.success("Hello logged!");
+      }
       
       // Check for hello/name milestones
       const previousTotalHellos = progress?.total_hellos || logs.length;
