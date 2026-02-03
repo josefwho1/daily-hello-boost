@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useUserProgressQuery } from "@/hooks/useUserProgressQuery";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useDailyMode } from "@/hooks/useDailyMode";
@@ -18,6 +19,8 @@ import { toast } from "sonner";
 import { ChallengeUndoToast } from "@/components/ChallengeUndoToast";
 import questsIcon from "@/assets/quests-icon.webp";
 import remiQuest from "@/assets/remi-quest.webp";
+import vaultIcon from "@/assets/vault-icon.webp";
+import remiWaving from "@/assets/remi-waving.webp";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +59,18 @@ const Challenges = () => {
   const [showConfirmPause, setShowConfirmPause] = useState(false);
   const [showLogScreen, setShowLogScreen] = useState(false);
   const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{day: number; name: string} | null>(null);
+  
+  // Remi easter egg state
+  const [remiTapCount, setRemiTapCount] = useState(0);
+  const [showSpeechBubble, setShowSpeechBubble] = useState(false);
+  
+  const REMI_MESSAGES = [
+    "Hello!",
+    "Hey!",
+    "Yo yo yooo",
+    "Okay that's enough...",
+    null // Remi disappears
+  ];
 
   const progress = isAnonymous ? guestProgress : cloudProgress;
   const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
@@ -63,6 +78,22 @@ const Challenges = () => {
 
   // Check if quest is paused (selected_pack_id === 'daily' means showing Today's Hello)
   const isQuestPaused = progress?.selected_pack_id === 'daily';
+  
+  // Remi easter egg helpers
+  const remiMessage = remiTapCount > 0 ? REMI_MESSAGES[remiTapCount - 1] : null;
+  const isRemiGone = remiTapCount >= REMI_MESSAGES.length;
+  
+  const handleRemiTap = () => {
+    if (remiTapCount >= REMI_MESSAGES.length) return;
+    
+    setRemiTapCount(prev => prev + 1);
+    setShowSpeechBubble(true);
+    
+    // Hide speech bubble after a delay (except for the final "scared away" message)
+    if (remiTapCount < REMI_MESSAGES.length - 1) {
+      setTimeout(() => setShowSpeechBubble(false), 2000);
+    }
+  };
 
   const handleDailyModeToggle = async (enabled: boolean) => {
     if (enabled) {
@@ -326,7 +357,7 @@ const Challenges = () => {
         </Card>
 
         {/* Available Packs Section */}
-        <Card className="opacity-70">
+        <Card className="opacity-70 mb-8">
           <CardContent className="p-4">
             <h3 className="font-bold text-foreground mb-2">More Packs Coming Soon! 🦝</h3>
             <p className="text-sm text-muted-foreground mb-3">
@@ -341,6 +372,59 @@ const Challenges = () => {
             <p className="text-sm text-muted-foreground mt-3 italic">Stay tuned!</p>
           </CardContent>
         </Card>
+
+        {/* Remi's Vault Easter Egg */}
+        <div className="flex flex-col items-center pb-8">
+          <button
+            onClick={() => navigate('/vault')}
+            className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 focus:outline-none"
+          >
+            <img 
+              src={vaultIcon} 
+              alt="Remi's Vault" 
+              className="w-20 h-20 object-contain"
+            />
+          </button>
+          
+          {/* Remi peeking next to vault */}
+          <div className="relative mt-2">
+            <AnimatePresence>
+              {showSpeechBubble && remiMessage && !isRemiGone && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                  className="absolute -top-10 left-1/2 -translate-x-1/2 bg-card border border-border rounded-xl px-3 py-2 shadow-lg whitespace-nowrap z-10"
+                >
+                  <p className="text-sm font-medium text-foreground">{remiMessage}</p>
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-card border-r border-b border-border rotate-45" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            {isRemiGone ? (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="opacity-50"
+              >
+                <p className="text-xs text-muted-foreground">You scared Remi away...</p>
+              </motion.div>
+            ) : (
+              <motion.button
+                onClick={handleRemiTap}
+                whileTap={{ scale: 0.9 }}
+                className="opacity-30 hover:opacity-50 transition-opacity duration-300 focus:outline-none"
+              >
+                <img 
+                  src={remiWaving} 
+                  alt="Remi" 
+                  className="w-12 h-12 object-contain"
+                />
+              </motion.button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Confirm Restart Dialog */}
