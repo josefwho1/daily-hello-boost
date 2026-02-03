@@ -122,9 +122,9 @@ const ViewHelloDialog = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-background z-50 flex flex-col">
+    <div className="fixed inset-0 bg-background z-50 flex flex-col" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       {/* Header */}
-      <div className="p-4 flex items-center justify-between border-b border-border flex-shrink-0 safe-area-top">
+      <div className="p-4 flex items-center justify-between border-b border-border flex-shrink-0">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
             <ArrowLeft className="w-5 h-5" />
