@@ -261,7 +261,7 @@ export default function Onboarding() {
         return (
           <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <img 
-              src={remiWaving4} 
+              src="/remi-waving-4.webp" 
               alt="Remi waving" 
               width={224}
               height={224}
