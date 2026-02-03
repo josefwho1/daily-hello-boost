@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -39,12 +39,17 @@ const getStreakMessage = (streak: number): string => {
   return "Streak started!";
 };
 
+// Easing function for smooth animation
+const easeOutQuart = (t: number): number => 1 - Math.pow(1 - t, 4);
+
 export const StreakCelebrationDialog = ({
   open,
   onContinue,
   streakCount,
 }: StreakCelebrationDialogProps) => {
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [displayedNumber, setDisplayedNumber] = useState(streakCount - 1);
+  const [animationComplete, setAnimationComplete] = useState(false);
+  const animationRef = useRef<number | null>(null);
   const remiImage = useMemo(() => getRandomImage(remiCelebratingImages), []);
 
   const playCelebrationSound = useCallback(() => {
@@ -81,17 +86,53 @@ export const StreakCelebrationDialog = ({
     }
   }, []);
 
+  // Animate the number from (streakCount - 1) to streakCount
   useEffect(() => {
     if (open) {
-      setShowConfetti(true);
-      playCelebrationSound();
-      triggerVibration();
+      const startValue = Math.max(0, streakCount - 1);
+      const endValue = streakCount;
+      const duration = 800; // ms
+      const startTime = performance.now();
+      
+      setDisplayedNumber(startValue);
+      setAnimationComplete(false);
+      
+      // Delay the animation start to sync with UI appearance
+      const timeoutId = setTimeout(() => {
+        playCelebrationSound();
+        triggerVibration();
+        
+        const animate = (currentTime: number) => {
+          const elapsed = currentTime - startTime - 600; // Account for delay
+          const progress = Math.min(elapsed / duration, 1);
+          const easedProgress = easeOutQuart(progress);
+          
+          const currentValue = startValue + (endValue - startValue) * easedProgress;
+          setDisplayedNumber(Math.round(currentValue));
+          
+          if (progress < 1) {
+            animationRef.current = requestAnimationFrame(animate);
+          } else {
+            setAnimationComplete(true);
+          }
+        };
+        
+        animationRef.current = requestAnimationFrame(animate);
+      }, 600);
+      
+      return () => {
+        clearTimeout(timeoutId);
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
+      };
     }
-  }, [open, playCelebrationSound, triggerVibration]);
+  }, [open, streakCount, playCelebrationSound, triggerVibration]);
 
   if (!open) return null;
 
   const message = getStreakMessage(streakCount);
+  const previousStreak = Math.max(0, streakCount - 1);
 
   return (
     <AnimatePresence>
@@ -102,35 +143,6 @@ export const StreakCelebrationDialog = ({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background"
         >
-          {/* Confetti effect */}
-          {showConfetti && (
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {[...Array(60)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ y: -20, opacity: 1 }}
-                  animate={{ 
-                    y: window.innerHeight + 50,
-                    rotate: Math.random() * 720,
-                  }}
-                  transition={{ 
-                    duration: 2.5 + Math.random() * 2,
-                    delay: Math.random() * 0.6,
-                    ease: "easeOut"
-                  }}
-                  style={{
-                    position: 'absolute',
-                    left: `${Math.random() * 100}%`,
-                    backgroundColor: ['#ff6f3b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6b6b', '#9b59b6'][Math.floor(Math.random() * 6)],
-                    width: `${Math.random() * 10 + 5}px`,
-                    height: `${Math.random() * 10 + 5}px`,
-                    borderRadius: Math.random() > 0.5 ? '50%' : '0',
-                  }}
-                />
-              ))}
-            </div>
-          )}
-
           {/* Main content */}
           <div className="flex flex-col items-center gap-6 px-6 text-center max-h-screen py-8 z-10">
             {/* Remi Image */}
@@ -154,22 +166,61 @@ export const StreakCelebrationDialog = ({
               />
             </motion.div>
 
-            {/* Fire emoji and streak number */}
+            {/* Animated streak counter */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.4, type: "spring" }}
-              className="flex items-center gap-2"
+              className="flex flex-col items-center gap-2"
             >
-              <span className="text-5xl">🔥</span>
-              <span className="text-6xl font-bold text-foreground">+1</span>
+              {/* Number transition display */}
+              <div className="flex items-center gap-3">
+                <motion.span
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: animationComplete ? 0.4 : 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-5xl font-bold text-muted-foreground"
+                >
+                  {previousStreak}
+                </motion.span>
+                <motion.span
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.5, duration: 0.3 }}
+                  className="text-3xl text-primary"
+                >
+                  →
+                </motion.span>
+                <motion.span
+                  initial={{ scale: 0.8 }}
+                  animate={{ 
+                    scale: animationComplete ? [1, 1.15, 1] : 1,
+                  }}
+                  transition={{ 
+                    scale: { delay: animationComplete ? 0 : 1.4, duration: 0.4, type: "spring" }
+                  }}
+                  className="text-6xl font-bold text-primary"
+                >
+                  {displayedNumber}
+                </motion.span>
+              </div>
+              
+              {/* Fire emoji */}
+              <motion.span 
+                initial={{ scale: 0, rotate: -20 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.6, type: "spring", stiffness: 200 }}
+                className="text-4xl"
+              >
+                🔥
+              </motion.span>
             </motion.div>
 
             {/* Title */}
             <motion.h1
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.4 }}
+              transition={{ delay: 0.8, duration: 0.4 }}
               className="text-2xl font-bold text-foreground"
             >
               Day {streakCount} Streak!
@@ -179,7 +230,7 @@ export const StreakCelebrationDialog = ({
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.4 }}
+              transition={{ delay: 0.9, duration: 0.4 }}
               className="text-lg text-muted-foreground max-w-xs"
             >
               {message}
@@ -189,7 +240,7 @@ export const StreakCelebrationDialog = ({
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 1.2, duration: 0.4 }}
+              transition={{ delay: 1.4, duration: 0.4 }}
               className="w-full max-w-xs mt-4"
             >
               <Button onClick={onContinue} className="w-full" size="lg">
