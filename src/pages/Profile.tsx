@@ -48,6 +48,8 @@ const Profile = () => {
     preferences: notificationPrefs, 
     updatePreferences: updateNotificationPrefs,
     requestPermission,
+    scheduleNotifications,
+    cancelAllNotifications,
   } = useLocalNotifications();
   // Anonymous users are considered "guests" in our UI.
   // Use the auth user object directly to avoid cross-hook timing mismatches.
@@ -564,16 +566,29 @@ const Profile = () => {
                     if (checked) {
                       const granted = await requestPermission();
                       if (!granted) {
-                        toast.error("Please enable notifications in your device settings");
+                        toast.error("Please enable notifications in Settings → One Hello → Notifications");
                         return;
                       }
+                      // Schedule notifications based on Daily Mode
+                      await scheduleNotifications(
+                        dailyModeState.isActive,
+                        dailyModeState.currentStreak
+                      );
+                      await updateNotificationPrefs(
+                        { enabled: true },
+                        dailyModeState.isActive,
+                        dailyModeState.currentStreak
+                      );
+                      toast.success("Notifications enabled! 🦝");
+                    } else {
+                      await cancelAllNotifications();
+                      await updateNotificationPrefs(
+                        { enabled: false },
+                        dailyModeState.isActive,
+                        dailyModeState.currentStreak
+                      );
+                      toast.success("Push notifications disabled");
                     }
-                    await updateNotificationPrefs(
-                      { enabled: checked },
-                      dailyModeState.isActive,
-                      dailyModeState.currentStreak
-                    );
-                    toast.success(checked ? "Push notifications enabled" : "Push notifications disabled");
                   }}
                 />
               </div>
