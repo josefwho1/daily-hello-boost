@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -39,6 +40,9 @@ export const CurrentChallengeCard = ({
   onViewAll,
   onRestart,
 }: CurrentChallengeCardProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [showConfirmRestart, setShowConfirmRestart] = useState(false);
   const [showTip, setShowTip] = useState(false);
   
@@ -66,6 +70,20 @@ export const CurrentChallengeCard = ({
   };
   
   const [currentIndex, setCurrentIndex] = useState(getCurrentIndex);
+
+  // If user selected a challenge from the "View all" list, jump to it once.
+  useEffect(() => {
+    const selected = (location.state as any)?.selectedChallengeIndex;
+    if (typeof selected !== "number") return;
+
+    const clamped = Math.max(0, Math.min(selected, thirtyDayChallenge.length - 1));
+    setCurrentIndex(clamped);
+    setShowTip(false);
+
+    // Clear the navigation state so it doesn't keep re-applying.
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.state, location.pathname, navigate]);
+
   const currentChallenge = thirtyDayChallenge[currentIndex];
   const isChallengeComplete = completedDays.includes(currentChallenge?.day || 0);
   const isLocked = isDayLocked(currentChallenge?.day || 0);
