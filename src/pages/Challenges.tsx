@@ -107,7 +107,7 @@ const Challenges = () => {
           onUndo={() => unmarkDayComplete(day)}
         />
       ),
-      { duration: 5000 }
+      { duration: 3000 }
     );
   };
 
@@ -179,6 +179,9 @@ const Challenges = () => {
           await unmarkDayComplete(day);
         }}
         onBack={() => setShowChallengeList(false)}
+        onSelectChallenge={(index) => {
+          navigate('/', { state: { selectedChallengeIndex: index } });
+        }}
       />
     );
   }

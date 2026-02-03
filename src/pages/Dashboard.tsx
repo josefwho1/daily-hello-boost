@@ -363,7 +363,7 @@ export default function Dashboard() {
           onUndo={() => unmarkDayComplete(day)}
         />
       ),
-      { duration: 5000 }
+      { duration: 3000 }
     );
   };
 
@@ -407,6 +407,11 @@ export default function Dashboard() {
           await unmarkDayComplete(day);
         }}
         onBack={() => setShowChallengeList(false)}
+        onSelectChallenge={(index) => {
+          setShowChallengeList(false);
+          // Pass the index to the CurrentChallengeCard via state
+          navigate('/', { state: { selectedChallengeIndex: index }, replace: true });
+        }}
       />
     );
   }
