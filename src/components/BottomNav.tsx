@@ -45,13 +45,13 @@ export const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-50 shadow-lg" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <div className="max-w-md mx-auto flex justify-around items-center h-18 px-2 relative">
+      <div className="max-w-md mx-auto flex justify-around items-center h-14 px-2 relative">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
             to={tab.to}
             onClick={() => handleTabClick(tab.to)}
-            className="relative flex flex-col items-center gap-1 py-3 px-4 text-muted-foreground transition-all duration-200 hover:text-primary touch-feedback min-h-[56px] min-w-[56px]"
+            className="relative flex flex-col items-center gap-0.5 py-2 px-4 text-muted-foreground transition-all duration-200 hover:text-primary touch-feedback min-h-[48px] min-w-[48px]"
             activeClassName="text-primary"
           >
             <PawPrint show={lastClicked === tab.to} />
