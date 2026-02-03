@@ -36,21 +36,23 @@ const ViewToggle = ({
   <div className="flex gap-2 mb-4">
     <button
       onClick={() => setActiveView('mybook')}
-      className={`flex-1 py-2.5 px-4 rounded-xl text-center transition-colors duration-150 flex items-center justify-center gap-2 transform-gpu ${
+      className={`flex-1 py-2.5 px-4 rounded-xl text-center flex items-center justify-center gap-2 ${
         activeView === 'mybook'
           ? 'bg-primary text-primary-foreground shadow-md'
-          : 'bg-muted/50 text-muted-foreground active:bg-muted'
+          : 'bg-muted/50 text-muted-foreground'
       }`}
+      style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       <span className="text-sm font-medium">My Book</span>
     </button>
     <button
       onClick={() => setActiveView('global')}
-      className={`flex-1 py-2.5 px-4 rounded-xl text-center transition-colors duration-150 flex items-center justify-center gap-2 transform-gpu ${
+      className={`flex-1 py-2.5 px-4 rounded-xl text-center flex items-center justify-center gap-2 ${
         activeView === 'global'
           ? 'bg-primary text-primary-foreground shadow-md'
-          : 'bg-muted/50 text-muted-foreground active:bg-muted'
+          : 'bg-muted/50 text-muted-foreground'
       }`}
+      style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       <Globe className="w-4 h-4" />
       <span className="text-sm font-medium">Global</span>
@@ -302,44 +304,48 @@ const Hellobook = () => {
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setActiveFilter('all')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center transition-colors duration-150 transform-gpu ${
+            className={`flex-1 py-3 px-2 rounded-xl text-center ${
               activeFilter === 'all'
                 ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-muted/50 text-muted-foreground active:bg-muted'
+                : 'bg-muted/50 text-muted-foreground'
             }`}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <div className="text-xl font-bold">{stats.all}</div>
             <div className="text-xs">All</div>
           </button>
           <button
             onClick={() => setActiveFilter('names')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center transition-colors duration-150 transform-gpu ${
+            className={`flex-1 py-3 px-2 rounded-xl text-center ${
               activeFilter === 'names'
                 ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-muted/50 text-muted-foreground active:bg-muted'
+                : 'bg-muted/50 text-muted-foreground'
             }`}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <div className="text-xl font-bold">{stats.names}</div>
             <div className="text-xs">Names</div>
           </button>
           <button
             onClick={() => setActiveFilter('unknown')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center transition-colors duration-150 transform-gpu ${
+            className={`flex-1 py-3 px-2 rounded-xl text-center ${
               activeFilter === 'unknown'
                 ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-muted/50 text-muted-foreground active:bg-muted'
+                : 'bg-muted/50 text-muted-foreground'
             }`}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <div className="text-xl font-bold">{stats.unknown}</div>
             <div className="text-xs">Unknown</div>
           </button>
           <button
             onClick={() => setActiveFilter('favorites')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center transition-colors duration-150 transform-gpu ${
+            className={`flex-1 py-3 px-2 rounded-xl text-center ${
               activeFilter === 'favorites'
                 ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-muted/50 text-muted-foreground active:bg-muted'
+                : 'bg-muted/50 text-muted-foreground'
             }`}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <div className="text-xl font-bold flex items-center justify-center gap-1">
               <Bookmark className="w-4 h-4" />
