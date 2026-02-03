@@ -236,6 +236,7 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
                     src={remiWaving} 
                     alt="Remi" 
                     className="w-20 h-20 object-contain"
+                    loading="lazy"
                   />
                 </div>
               )}

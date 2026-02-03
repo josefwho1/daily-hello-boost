@@ -40,8 +40,8 @@ export const OnboardingCompleteMilestoneDialog = ({
         oscillator.start(startTime);
         oscillator.stop(startTime + 0.35);
       });
-    } catch (e) {
-      console.log('Audio not supported:', e);
+    } catch {
+      // Audio not supported - silent fail
     }
   }, []);
 
@@ -51,8 +51,8 @@ export const OnboardingCompleteMilestoneDialog = ({
       if ('vibrate' in navigator) {
         navigator.vibrate(pattern);
       }
-    } catch (e) {
-      console.log('Vibration not supported:', e);
+    } catch {
+      // Vibration not supported - silent fail
     }
   }, []);
 
@@ -146,7 +146,8 @@ export const OnboardingCompleteMilestoneDialog = ({
                   src={remiCelebrating} 
                   alt="Remi celebrating" 
                   className="w-36 h-auto max-h-36 object-contain mx-auto mb-6"
-                  animate={{ 
+                  loading="lazy"
+                  animate={{
                     y: [0, -10, 0],
                     rotate: [0, 3, -3, 0]
                   }}
@@ -189,6 +190,7 @@ export const OnboardingCompleteMilestoneDialog = ({
                   src={remiCelebrating} 
                   alt="Remi celebrating" 
                   className="w-32 h-auto max-h-32 object-contain mx-auto mb-6"
+                  loading="lazy"
                   initial={{ y: 30, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.1 }}

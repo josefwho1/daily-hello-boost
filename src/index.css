@@ -226,8 +226,10 @@ All colors MUST be HSL.
 /* Remove sticky hover on touch devices */
 @media (hover: none) {
   button:hover,
-  a:hover {
+  a:hover,
+  [role="button"]:hover {
     /* Reset hover styles - they don't work well on touch */
+    background-color: inherit;
   }
 
   /* Better tap highlight */
@@ -235,6 +237,15 @@ All colors MUST be HSL.
   a,
   [role="button"] {
     -webkit-tap-highlight-color: rgba(255, 111, 59, 0.15);
+  }
+  
+  /* Active press feedback for all interactive elements */
+  button:active,
+  a:active,
+  [role="button"]:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+    transition: transform 0.08s ease-out, opacity 0.08s ease-out;
   }
 }
 
@@ -247,6 +258,18 @@ All colors MUST be HSL.
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+/* Smooth 60fps scrolling optimization */
+.scroll-smooth {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optimize transforms for 60fps */
+.will-change-transform {
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 @keyframes bounce-soft {

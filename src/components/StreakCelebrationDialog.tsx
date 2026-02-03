@@ -66,8 +66,8 @@ export const StreakCelebrationDialog = ({
         oscillator.start(startTime);
         oscillator.stop(startTime + duration);
       });
-    } catch (error) {
-      console.log('Audio not supported:', error);
+    } catch {
+      // Audio not supported - silent fail
     }
   }, []);
 
@@ -76,8 +76,8 @@ export const StreakCelebrationDialog = ({
       if ('vibrate' in navigator) {
         navigator.vibrate([100, 50, 100, 50, 150, 50, 200]);
       }
-    } catch (error) {
-      console.log('Vibration not supported:', error);
+    } catch {
+      // Vibration not supported - silent fail
     }
   }, []);
 
@@ -150,6 +150,7 @@ export const StreakCelebrationDialog = ({
                 src={remiImage} 
                 alt="Remi celebrating" 
                 className="w-48 h-auto max-h-52 object-contain"
+                loading="lazy"
               />
             </motion.div>
 

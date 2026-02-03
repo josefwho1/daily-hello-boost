@@ -47,8 +47,8 @@ export const PackCompleteCelebrationDialog = ({
         oscillator.start(startTime);
         oscillator.stop(startTime + duration);
       });
-    } catch (error) {
-      console.log('Audio not supported:', error);
+    } catch {
+      // Audio not supported - silent fail
     }
   }, []);
 
@@ -57,8 +57,8 @@ export const PackCompleteCelebrationDialog = ({
       if ('vibrate' in navigator) {
         navigator.vibrate([100, 50, 100, 50, 100, 50, 200]);
       }
-    } catch (error) {
-      console.log('Vibration not supported:', error);
+    } catch {
+      // Vibration not supported - silent fail
     }
   }, []);
 
@@ -159,6 +159,7 @@ export const PackCompleteCelebrationDialog = ({
                 src={remiImage} 
                 alt="Remi celebrating" 
                 className="w-56 h-auto max-h-60 object-contain"
+                loading="lazy"
               />
             </motion.div>
 
