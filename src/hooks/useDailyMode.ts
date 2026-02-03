@@ -1,9 +1,10 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect, useRef } from 'react';
 import { useUserProgressQuery } from './useUserProgressQuery';
 import { useHelloLogs } from './useHelloLogs';
 import { useTimezone } from './useTimezone';
 import { getDayKeyInOffset, getDayKeyDifference, normalizeTimezoneOffset } from '@/lib/timezone';
 import { useLocalStorage } from './useLocalStorage';
+import { useLocalNotifications } from './useLocalNotifications';
 
 export interface DailyModeState {
   isActive: boolean;
@@ -19,6 +20,14 @@ export const useDailyMode = () => {
   const { progress, updateProgress, loading: progressLoading } = useUserProgressQuery();
   const { logs, loading: logsLoading } = useHelloLogs();
   const { timezoneOffset, loading: tzLoading } = useTimezone();
+  const { 
+    scheduleNotifications, 
+    onHelloLogged, 
+    onStreakChange, 
+    onDailyModeToggle,
+    isNativePlatform,
+    preferences: notificationPrefs,
+  } = useLocalNotifications();
   
   // Local storage for reminder tracking (resets at midnight client-side)
   const [morningReminderDismissed, setMorningReminderDismissed] = useLocalStorage<string | null>('daily_mode_morning_dismissed', null);
@@ -26,6 +35,10 @@ export const useDailyMode = () => {
 
   const tzOffset = normalizeTimezoneOffset(timezoneOffset);
   const todayKey = getDayKeyInOffset(new Date(), tzOffset);
+  
+  // Track previous streak for change detection
+  const prevStreakRef = useRef<number | null>(null);
+  const prevTodaysHelloCountRef = useRef<number>(0);
   
   // Calculate today's hello count from logs
   const todaysHelloCount = useMemo(() => {
@@ -37,6 +50,41 @@ export const useDailyMode = () => {
   }, [logs, todayKey, tzOffset]);
 
   const hasLoggedToday = todaysHelloCount > 0;
+
+  // Current state values
+  const isActive = progress?.daily_mode_active || false;
+  const currentStreak = progress?.daily_mode_current_streak || 0;
+  const bestStreak = progress?.daily_mode_best_streak || 0;
+
+  // Initialize notifications on mount and when Daily Mode state changes
+  useEffect(() => {
+    if (progressLoading || !isNativePlatform) return;
+    
+    scheduleNotifications(isActive, currentStreak);
+  }, [isActive, currentStreak, progressLoading, isNativePlatform, scheduleNotifications]);
+
+  // Detect hello logged and notify
+  useEffect(() => {
+    if (!isActive || !isNativePlatform) return;
+    
+    // Check if a new hello was logged today
+    if (todaysHelloCount > prevTodaysHelloCountRef.current) {
+      onHelloLogged(isActive, currentStreak, todaysHelloCount);
+    }
+    
+    prevTodaysHelloCountRef.current = todaysHelloCount;
+  }, [todaysHelloCount, isActive, currentStreak, isNativePlatform, onHelloLogged]);
+
+  // Detect streak changes and notify
+  useEffect(() => {
+    if (!isActive || !isNativePlatform) return;
+    
+    if (prevStreakRef.current !== null && prevStreakRef.current !== currentStreak) {
+      onStreakChange(currentStreak, prevStreakRef.current, isActive);
+    }
+    
+    prevStreakRef.current = currentStreak;
+  }, [currentStreak, isActive, isNativePlatform, onStreakChange]);
 
   // Check if reminders should show
   const shouldShowMorningReminder = useMemo(() => {
@@ -74,7 +122,10 @@ export const useDailyMode = () => {
       daily_mode_start_date: new Date().toISOString(),
       daily_mode_last_hello_date: null,
     });
-  }, [updateProgress]);
+    
+    // Notify notification system
+    await onDailyModeToggle(true, 0);
+  }, [updateProgress, onDailyModeToggle]);
 
   // Deactivate Daily Mode
   const deactivateDailyMode = useCallback(async () => {
@@ -84,20 +135,23 @@ export const useDailyMode = () => {
       daily_mode_start_date: null,
       daily_mode_last_hello_date: null,
     });
-  }, [updateProgress]);
+    
+    // Notify notification system
+    await onDailyModeToggle(false, 0);
+  }, [updateProgress, onDailyModeToggle]);
 
   // Called when user logs a hello - updates streak
   const recordHelloForDailyMode = useCallback(async () => {
     if (!progress?.daily_mode_active) return;
     
     const lastHelloDateStr = progress.daily_mode_last_hello_date;
-    const currentStreak = progress.daily_mode_current_streak || 0;
-    const bestStreak = progress.daily_mode_best_streak || 0;
+    const currentStreakValue = progress.daily_mode_current_streak || 0;
+    const bestStreakValue = progress.daily_mode_best_streak || 0;
     
     // If already logged today, don't increment streak again
     if (lastHelloDateStr === todayKey) return;
     
-    let newStreak = currentStreak;
+    let newStreak = currentStreakValue;
     
     if (!lastHelloDateStr) {
       // First hello in daily mode
@@ -107,7 +161,7 @@ export const useDailyMode = () => {
       
       if (dayDiff === 1) {
         // Consecutive day - increment streak
-        newStreak = currentStreak + 1;
+        newStreak = currentStreakValue + 1;
       } else if (dayDiff > 1) {
         // Missed day(s) - streak was already reset
         newStreak = 1;
@@ -117,7 +171,7 @@ export const useDailyMode = () => {
       }
     }
     
-    const newBestStreak = Math.max(bestStreak, newStreak);
+    const newBestStreak = Math.max(bestStreakValue, newStreak);
     
     await updateProgress({
       daily_mode_current_streak: newStreak,
@@ -144,9 +198,9 @@ export const useDailyMode = () => {
   }, [progress, todayKey, updateProgress]);
 
   const state: DailyModeState = {
-    isActive: progress?.daily_mode_active || false,
-    currentStreak: progress?.daily_mode_current_streak || 0,
-    bestStreak: progress?.daily_mode_best_streak || 0,
+    isActive,
+    currentStreak,
+    bestStreak,
     startDate: progress?.daily_mode_start_date || null,
     lastHelloDate: progress?.daily_mode_last_hello_date || null,
     todaysHelloCount,
@@ -164,5 +218,8 @@ export const useDailyMode = () => {
     shouldShowAfternoonReminder,
     dismissMorningReminder,
     dismissAfternoonReminder,
+    // Expose notification preferences for settings UI
+    notificationPrefs,
+    isNativePlatform,
   };
 };
