@@ -73,9 +73,34 @@ export const useLocalNotifications = () => {
     'notification_prefs',
     DEFAULT_PREFS
   );
+  const [hasRequestedPermission, setHasRequestedPermission] = useLocalStorage<boolean>(
+    'notification_permission_requested',
+    false
+  );
   
   const isNativePlatform = Capacitor.isNativePlatform();
   const initializingRef = useRef(false);
+
+  // Request permission on first launch
+  useEffect(() => {
+    if (!isNativePlatform || hasRequestedPermission || initializingRef.current) return;
+    
+    const requestOnFirstLaunch = async () => {
+      initializingRef.current = true;
+      try {
+        console.log('[Notifications] Requesting permission on first launch');
+        const permission = await LocalNotifications.requestPermissions();
+        console.log('[Notifications] Permission result:', permission.display);
+        setHasRequestedPermission(true);
+      } catch (error) {
+        console.error('[Notifications] Error requesting permission on first launch:', error);
+      } finally {
+        initializingRef.current = false;
+      }
+    };
+
+    requestOnFirstLaunch();
+  }, [isNativePlatform, hasRequestedPermission, setHasRequestedPermission]);
 
   // Check and request permissions
   const requestPermission = useCallback(async (): Promise<boolean> => {
