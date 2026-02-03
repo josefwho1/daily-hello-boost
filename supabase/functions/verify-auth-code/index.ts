@@ -108,107 +108,134 @@ serve(async (req: Request): Promise<Response> => {
     // Code is valid! Delete it
     await supabase.from("auth_codes").delete().eq("id", storedCode.id);
 
-    // Check if user exists
-    const { data: existingUsers } = await supabase.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(
-      (u) => u.email?.toLowerCase() === normalizedEmail
-    );
-
     let userId: string;
     let isNewUser = false;
 
-    if (existingUser) {
-      // Existing user - generate a magic link token for them
-      userId = existingUser.id;
-      
-      // Generate a one-time login link
-      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: normalizedEmail,
-      });
+    // Try to generate a magic link first (works for existing users)
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: normalizedEmail,
+    });
 
-      if (linkError) {
+    if (linkError) {
+      // User doesn't exist - create them
+      if (linkError.message.includes('not found') || linkError.message.includes('Unable to validate')) {
+        console.log("User not found, creating new user");
+        isNewUser = true;
+        
+        // Generate a secure random password (user won't need it - they'll use code auth)
+        const tempPassword = crypto.randomUUID() + crypto.randomUUID();
+        
+        const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+          email: normalizedEmail,
+          password: tempPassword,
+          email_confirm: true, // Auto-confirm since they verified via code
+          user_metadata: {
+            name: 'User',
+          },
+        });
+
+        if (createError) {
+          // If user already exists (race condition), try magic link again
+          if (createError.message.includes('already') || createError.code === 'email_exists') {
+            console.log("User already exists, generating magic link");
+            const { data: retryLinkData, error: retryLinkError } = await supabase.auth.admin.generateLink({
+              type: 'magiclink',
+              email: normalizedEmail,
+            });
+
+            if (retryLinkError) {
+              console.error("Error generating magic link on retry:", retryLinkError);
+              return new Response(
+                JSON.stringify({ error: "Failed to authenticate" }),
+                { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+
+            const url = new URL(retryLinkData.properties.action_link);
+            const token = url.searchParams.get('token');
+            const type = url.searchParams.get('type');
+
+            // Get user ID from the link data
+            userId = retryLinkData.user.id;
+
+            return new Response(
+              JSON.stringify({ 
+                success: true, 
+                isNewUser: false,
+                userId,
+                token,
+                type,
+                email: normalizedEmail,
+              }),
+              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+
+          console.error("Error creating user:", createError);
+          return new Response(
+            JSON.stringify({ error: "Failed to create account" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        userId = newUser.user.id;
+
+        // Generate a magic link for the new user to sign in
+        const { data: newUserLinkData, error: newUserLinkError } = await supabase.auth.admin.generateLink({
+          type: 'magiclink',
+          email: normalizedEmail,
+        });
+
+        if (newUserLinkError) {
+          console.error("Error generating magic link for new user:", newUserLinkError);
+          return new Response(
+            JSON.stringify({ error: "Failed to authenticate" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        const url = new URL(newUserLinkData.properties.action_link);
+        const token = url.searchParams.get('token');
+        const type = url.searchParams.get('type');
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            isNewUser: true,
+            userId,
+            token,
+            type,
+            email: normalizedEmail,
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } else {
         console.error("Error generating magic link:", linkError);
         return new Response(
           JSON.stringify({ error: "Failed to authenticate" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-
-      // Extract the token from the link
-      const url = new URL(linkData.properties.action_link);
-      const token = url.searchParams.get('token');
-      const type = url.searchParams.get('type');
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          isNewUser: false,
-          userId,
-          // Return the verification params for client to complete auth
-          token,
-          type,
-          email: normalizedEmail,
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    } else {
-      // New user - create account
-      isNewUser = true;
-      
-      // Generate a secure random password (user won't need it - they'll use code auth)
-      const tempPassword = crypto.randomUUID() + crypto.randomUUID();
-      
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-        email: normalizedEmail,
-        password: tempPassword,
-        email_confirm: true, // Auto-confirm since they verified via code
-        user_metadata: {
-          name: 'User',
-        },
-      });
-
-      if (createError) {
-        console.error("Error creating user:", createError);
-        return new Response(
-          JSON.stringify({ error: "Failed to create account" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      userId = newUser.user.id;
-
-      // Generate a magic link for the new user to sign in
-      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: normalizedEmail,
-      });
-
-      if (linkError) {
-        console.error("Error generating magic link:", linkError);
-        return new Response(
-          JSON.stringify({ error: "Failed to authenticate" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Extract the token from the link
-      const url = new URL(linkData.properties.action_link);
-      const token = url.searchParams.get('token');
-      const type = url.searchParams.get('type');
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          isNewUser: true,
-          userId,
-          token,
-          type,
-          email: normalizedEmail,
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
+
+    // Existing user - extract token from the link
+    const url = new URL(linkData.properties.action_link);
+    const token = url.searchParams.get('token');
+    const type = url.searchParams.get('type');
+    userId = linkData.user.id;
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        isNewUser: false,
+        userId,
+        token,
+        type,
+        email: normalizedEmail,
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (error) {
     console.error("Error in verify-auth-code:", error);
     return new Response(
