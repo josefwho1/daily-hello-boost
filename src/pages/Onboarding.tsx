@@ -263,7 +263,9 @@ export default function Onboarding() {
             <img 
               src={remiWaving4} 
               alt="Remi waving" 
-              className="w-56 h-auto max-h-56 mx-auto object-contain animate-bounce-soft"
+              width={224}
+              height={224}
+              className="w-56 h-56 mx-auto object-contain animate-bounce-soft"
               fetchPriority="high"
             />
             <div className="space-y-3">
