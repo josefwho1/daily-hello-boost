@@ -14,7 +14,7 @@ import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
 import { TierUnlockCelebrationDialog } from "@/components/TierUnlockCelebrationDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
-import { DailyModeReminderBanner } from "@/components/DailyModeReminderBanner";
+
 import { RecentHellosSection } from "@/components/RecentHellosSection";
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
@@ -64,10 +64,6 @@ export default function Dashboard() {
     state: dailyModeState,
     recordHelloForDailyMode,
     checkAndResetStreak,
-    shouldShowMorningReminder,
-    shouldShowAfternoonReminder,
-    dismissMorningReminder,
-    dismissAfternoonReminder,
     loading: dailyModeLoading
   } = useDailyMode();
   const {
@@ -436,9 +432,6 @@ export default function Dashboard() {
   return <div className="min-h-screen bg-background page-container">
       <div className="max-w-md mx-auto px-4 py-8">
 
-        {/* Daily Mode Reminder Banners */}
-        {shouldShowMorningReminder && <DailyModeReminderBanner type="morning" onDismiss={dismissMorningReminder} />}
-        {shouldShowAfternoonReminder && <DailyModeReminderBanner type="afternoon" onDismiss={dismissAfternoonReminder} />}
 
         {/* Friendly Header Greeting */}
         <div className="text-center mb-6">
