@@ -55,7 +55,6 @@ export const usePersonLogs = () => {
     if (!validation.success) {
       throw new Error(validation.error);
     }
-    const validatedData = validation.data;
 
     const { data, error } = await supabase
       .from('person_logs')
