@@ -40,13 +40,15 @@ export function ChallengeCompletionToast({
       });
     }, 1000);
 
-    // After 5 seconds, hide undo and trigger entry creation
+    // After 5 seconds, hide undo, trigger entry creation, and dismiss toast
     const undoTimer = setTimeout(() => {
       setShowUndo(false);
       if (!expiredRef.current) {
         expiredRef.current = true;
         onUndoExpired();
       }
+      // Auto-dismiss the toast when undo window expires
+      sonnerToast.dismiss(id);
     }, UNDO_WINDOW_MS);
 
     return () => {
