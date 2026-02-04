@@ -10,6 +10,7 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { toast } from "sonner";
 import hellobookIcon from "@/assets/hellobook-icon.webp";
 import remiLogging6 from "@/assets/remi-logging-6.webp";
+import remiHellobook from "@/assets/remi-hellobook.webp";
 import ViewHelloDialog from "@/components/ViewHelloDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import HellobookPersonCard from "@/components/HellobookPersonCard";
@@ -262,9 +263,12 @@ const Hellobook = () => {
     <div className="min-h-screen bg-background page-container">
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <img src={hellobookIcon} alt="Hellobook" className="w-10 h-auto max-h-10 object-contain" />
-          <h1 className="text-2xl font-bold text-foreground">Hellobook</h1>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <img src={hellobookIcon} alt="Hellobook" className="w-10 h-auto max-h-10 object-contain" />
+            <h1 className="text-2xl font-bold text-foreground">Hellobook</h1>
+          </div>
+          <img src={remiHellobook} alt="Remi" className="w-10 h-10 object-contain" />
         </div>
 
         {/* View Toggle */}

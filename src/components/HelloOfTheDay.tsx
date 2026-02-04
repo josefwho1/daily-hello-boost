@@ -2,7 +2,6 @@ import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shuffle, MapPin, ChevronDown, ChevronUp } from "lucide-react";
-import remiLogging1 from "@/assets/remi-logging-1.webp";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 
@@ -186,18 +185,11 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
 
         {/* Notes with expandable text */}
         {selectedMemory.notes && (
-          <div className="mt-2 pb-10">
+          <div className="mt-2">
             <ExpandableText text={selectedMemory.notes} />
           </div>
         )}
       </div>
-      
-      {/* Remi Logging - positioned bottom right */}
-      <img 
-        src={remiLogging1} 
-        alt="Remi the logging raccoon" 
-        className="absolute bottom-2 right-2 w-14 h-auto object-contain opacity-90"
-      />
     </Card>
   );
 };
