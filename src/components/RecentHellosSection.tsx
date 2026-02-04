@@ -56,7 +56,11 @@ const RecentHellosSectionComponent = ({ logs, onViewAll, onViewLog }: RecentHell
                 <div className="flex flex-col gap-1 min-w-0 flex-1">
                   {/* First row: Name + Location */}
                   <div className="flex items-center gap-2 min-w-0">
-                    <p className="font-medium text-foreground truncate">
+                    <p className={`font-medium truncate ${
+                      log.name && log.name.trim() !== "" 
+                        ? "text-foreground" 
+                        : "text-muted-foreground"
+                    }`}>
                       {displayName}
                     </p>
                     {log.location && (
