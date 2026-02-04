@@ -194,7 +194,7 @@ const Challenges = () => {
             <img src={questsIcon} alt="Quests" className="w-10 h-10 object-contain" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">Quests</h1>
-              <p className="text-sm text-muted-foreground">Track your progress</p>
+              <p className="text-sm text-muted-foreground">Ways to connect</p>
             </div>
           </div>
           <img src={remiQuest} alt="Remi" className="w-16 h-16 object-contain" />
