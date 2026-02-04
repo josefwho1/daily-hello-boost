@@ -40,6 +40,9 @@ All colors MUST be HSL.
     --success: 140 60% 50%;
     --success-foreground: 0 0% 100%;
 
+    --warning: 38 92% 50%; /* amber/yellow for warnings */
+    --warning-foreground: 0 0% 100%;
+
     --suggestion: 27 45% 48%; /* #a67c52 - light brown for suggestions */
 
     --radius: 1.25rem;
