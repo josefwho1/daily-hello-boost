@@ -1,7 +1,7 @@
 import { useState, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, MapPin, Bookmark } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, Bookmark, Target } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface HellobookPersonCardProps {
@@ -11,6 +11,15 @@ interface HellobookPersonCardProps {
   onViewClick: (log: HelloLog) => void;
   onToggleFavorite?: (id: string, isFavorite: boolean) => void;
 }
+
+// Check if a log is from a challenge
+const isFromChallenge = (log: HelloLog) => log.hello_type?.startsWith("challenge:");
+
+// Get challenge number from hello_type
+const getChallengeNumber = (log: HelloLog) => {
+  if (!log.hello_type?.startsWith("challenge:")) return null;
+  return parseInt(log.hello_type.split(":")[1], 10);
+};
 
 // Expandable text component for long notes
 const ExpandableText = ({ text }: { text: string }) => {
@@ -58,6 +67,8 @@ const HellobookPersonCardComponent = ({
 }: HellobookPersonCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const hasName = primaryLog.name && primaryLog.name.trim() !== "";
+  const isChallengeEntry = isFromChallenge(primaryLog);
+  const challengeNumber = getChallengeNumber(primaryLog);
   const allInteractions = [primaryLog, ...linkedLogs].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
@@ -74,11 +85,18 @@ const HellobookPersonCardComponent = ({
     }
   };
 
+  // Card styling based on entry type
+  const cardClasses = `p-4 rounded-2xl hover:shadow-md transition-all duration-200 animate-fade-in cursor-pointer active:scale-[0.98] relative ${
+    !hasName && isChallengeEntry 
+      ? 'bg-muted/30 border-dashed' // Challenge without details - subtle styling
+      : !hasName 
+        ? 'opacity-75' 
+        : ''
+  }`;
+
   return (
     <Card 
-      className={`p-4 rounded-2xl hover:shadow-md transition-all duration-200 animate-fade-in cursor-pointer active:scale-[0.98] relative ${
-        !hasName ? 'opacity-75' : ''
-      }`}
+      className={cardClasses}
       onClick={() => onViewClick(primaryLog)}
     >
       {/* Favorite bookmark button */}
@@ -99,10 +117,18 @@ const HellobookPersonCardComponent = ({
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0">
-              {/* Top row: Name, interaction count, Location, and Edit button */}
+              {/* Challenge badge for entries from quests */}
+              {isChallengeEntry && (
+                <div className="flex items-center gap-1.5 text-xs text-primary mb-1">
+                  <Target className="w-3 h-3" />
+                  <span className="font-medium">Quest #{challengeNumber}</span>
+                </div>
+              )}
+              
+              {/* Top row: Name, interaction count, Location */}
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-foreground truncate">
-                  {primaryLog.name || "Unknown"}
+                <h3 className={`font-semibold truncate ${hasName ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  {primaryLog.name || "????"}
                 </h3>
                 
                 {/* Interaction count badge */}
@@ -184,16 +210,24 @@ const HellobookPersonCardComponent = ({
         // Single interaction - simple card
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
-            {/* Top row: Name, Location, and Edit button */}
+            {/* Challenge badge for entries from quests */}
+            {isChallengeEntry && (
+              <div className="flex items-center gap-1.5 text-xs text-primary mb-1">
+                <Target className="w-3 h-3" />
+                <span className="font-medium">Quest #{challengeNumber}</span>
+              </div>
+            )}
+            
+            {/* Top row: Name, Location */}
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-foreground truncate">
-                {primaryLog.name || "Unknown"}
+              <h3 className={`font-semibold truncate ${hasName ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {primaryLog.name || "????"}
               </h3>
               
-              {/* Add Name badge for entries without names - next to Unknown label */}
+              {/* Badge for entries without details */}
               {!hasName && (
                 <span className="px-2 py-0.5 text-xs rounded-lg bg-primary/10 text-primary flex-shrink-0">
-                  Tap to add name
+                  Tap to add details
                 </span>
               )}
               

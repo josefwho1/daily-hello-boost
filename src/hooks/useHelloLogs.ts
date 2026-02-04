@@ -19,6 +19,7 @@ export interface HelloLog {
   timezone_offset: string;
   linked_to?: string | null;
   is_favorite?: boolean;
+  hello_type?: string | null;
 }
 
 export const useHelloLogs = () => {
@@ -59,6 +60,7 @@ export const useHelloLogs = () => {
     difficulty_rating?: number;
     no_name_flag?: boolean;
     linked_to?: string;
+    hello_type?: string;
   }) => {
     if (!user) return null;
 
@@ -83,7 +85,8 @@ export const useHelloLogs = () => {
           difficulty_rating: log.difficulty_rating || null,
           no_name_flag: log.no_name_flag || false,
           timezone_offset: timezoneOffset,
-          linked_to: log.linked_to || null
+          linked_to: log.linked_to || null,
+          hello_type: log.hello_type || null,
         })
         .select()
         .single();
