@@ -140,7 +140,7 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
           </Button>
         )}
 
-        {/* Expand/collapse notes toggle (aligned under shuffle) */}
+        {/* Expand/collapse notes toggle (bottom right) */}
         {showExpandToggle && (
           <Button
             type="button"
@@ -150,7 +150,7 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
               e.stopPropagation();
               setIsNotesExpanded((v) => !v);
             }}
-            className="absolute right-3 top-[52px] h-10 w-10 p-0 text-muted-foreground hover:text-foreground z-10"
+            className="absolute right-3 bottom-2 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-10"
             aria-label={isExpanded ? "Collapse notes" : "Expand notes"}
           >
             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
