@@ -496,27 +496,58 @@ export default function Dashboard() {
     }} />;
   }
 
-  // Full-screen Log Hello
+  // Full-screen Log Hello - also handles "Add Details" for challenge completions
   if (showLogDialog) {
-    return <LogHelloScreen onBack={() => {
-      setShowLogDialog(false);
-      setAutoStartRecording(false);
-      setPendingChallengeCompletion(null);
-    }} onLog={async data => {
-      await handleLogHello({
-        ...data,
-        hello_type: pendingChallengeCompletion ? `Challenge: ${pendingChallengeCompletion.name}` : data.hello_type
-      });
+    // If we're adding details for a challenge that already created a hello entry, 
+    // find and edit it. Otherwise, create a new one.
+    const challengeHelloLog = pendingChallengeCompletion 
+      ? logs.find(l => l.hello_type === `challenge:${pendingChallengeCompletion.day}`)
+      : null;
 
-      // If completing a challenge, mark it done
-      if (pendingChallengeCompletion) {
-        const previousCount = challengeState.completedDays.length;
-        await markDayComplete(pendingChallengeCompletion.day);
-        showChallengeCompletedToast(pendingChallengeCompletion.day, pendingChallengeCompletion.name);
-        checkAndShowCelebrations(previousCount, previousCount + 1);
+    return <LogHelloScreen 
+      onBack={() => {
+        setShowLogDialog(false);
+        setAutoStartRecording(false);
         setPendingChallengeCompletion(null);
-      }
-    }} challengeTitle={pendingChallengeCompletion?.name || null} autoStartRecording={autoStartRecording} existingLogs={logs} requireAtLeastOneField={!!pendingChallengeCompletion} />;
+      }} 
+      onLog={async data => {
+        if (challengeHelloLog) {
+          // Update existing challenge hello entry
+          await updateCloudLog(challengeHelloLog.id, {
+            name: data.name || null,
+            location: data.location || null,
+            notes: data.notes || null,
+            rating: data.rating || null,
+            difficulty_rating: data.difficulty_rating || null,
+          });
+          toast.success("Hello details saved!");
+        } else if (pendingChallengeCompletion) {
+          // Create new hello for challenge (if somehow entry wasn't created)
+          await handleLogHello({
+            ...data,
+            hello_type: `challenge:${pendingChallengeCompletion.day}`,
+          });
+          // Mark challenge complete if not already
+          if (!challengeState.completedDays.includes(pendingChallengeCompletion.day)) {
+            const previousCount = challengeState.completedDays.length;
+            await markDayComplete(pendingChallengeCompletion.day);
+            checkAndShowCelebrations(previousCount, previousCount + 1);
+          }
+        } else {
+          // Regular hello log
+          await handleLogHello(data);
+        }
+        setPendingChallengeCompletion(null);
+      }} 
+      challengeTitle={pendingChallengeCompletion?.name || null} 
+      autoStartRecording={autoStartRecording} 
+      existingLogs={logs}
+      // Pre-fill notes for challenge entries
+      initialNotes={pendingChallengeCompletion ? `Challenge #${pendingChallengeCompletion.day}: ${pendingChallengeCompletion.name}` : undefined}
+      initialName={challengeHelloLog?.name || undefined}
+      initialLocation={challengeHelloLog?.location || undefined}
+      requireAtLeastOneField={false}
+    />;
   }
   return <div className="min-h-screen bg-background page-container">
       <div className="max-w-md mx-auto px-4 py-8">
