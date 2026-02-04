@@ -1,51 +1,15 @@
 import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shuffle, MapPin, ChevronDown, ChevronUp } from "lucide-react";
+import { Shuffle, MapPin } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
+import { ClampedNotes } from "@/components/ClampedNotes";
 
 interface HelloOfTheDayProps {
   logs: HelloLog[];
   onViewLog?: (log: HelloLog) => void;
 }
-
-// Expandable text component matching Hellobook style
-const ExpandableText = ({ text, isExpanded, onToggle }: { 
-  text: string; 
-  isExpanded: boolean;
-  onToggle: (e: React.MouseEvent) => void;
-}) => {
-  const needsExpansion = text.length > 80;
-
-  if (!needsExpansion) {
-    return <p className="text-sm text-muted-foreground">{text}</p>;
-  }
-
-  return (
-    <div>
-      <p className={`text-sm text-muted-foreground ${!isExpanded ? 'line-clamp-2' : ''}`}>
-        {text}
-      </p>
-      <button
-        onClick={onToggle}
-        className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 mt-1 transition-colors"
-      >
-        {isExpanded ? (
-          <>
-            <ChevronUp className="w-3 h-3" />
-            Show less
-          </>
-        ) : (
-          <>
-            <ChevronDown className="w-3 h-3" />
-            Read more
-          </>
-        )}
-      </button>
-    </div>
-  );
-};
 
 // Get today's date key for localStorage
 const getTodayKey = () => {
@@ -96,6 +60,11 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
     return eligibleLogs[index];
   }, [eligibleLogs, shuffledIndex]);
 
+  // Always collapse notes when the selected entry changes.
+  useEffect(() => {
+    setIsNotesExpanded(false);
+  }, [selectedMemory?.id]);
+
   const handleShuffle = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (eligibleLogs.length <= 1) return;
@@ -137,16 +106,17 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
   };
 
   const displayLocation = selectedMemory?.location?.trim();
+  const notesText = selectedMemory?.notes?.trim() || "";
 
   if (!selectedMemory) return null;
 
   return (
     <Card 
-      className="rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98] relative overflow-hidden"
+      className="rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98] relative overflow-hidden h-[176px]"
       onClick={handleCardClick}
     >
       {/* Fixed height content area */}
-      <div className="p-4 min-h-[140px]">
+      <div className="p-4 h-full flex flex-col">
         {/* Shuffle button - top right */}
         {eligibleLogs.length > 1 && (
           <Button
@@ -158,11 +128,11 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
             <Shuffle className="w-3.5 h-3.5" />
           </Button>
         )}
-        
+
         <div 
           className={`pr-12 transition-all duration-150 ${
             isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-          }`}
+          } h-full flex flex-col`}
         >
           {/* Title header */}
           <div className="flex items-center gap-2 mb-3">
@@ -187,16 +157,14 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
             {formatTimestamp(selectedMemory.created_at, false)}
           </p>
 
-          {/* Notes with integrated expand/collapse */}
-          {selectedMemory.notes && (
-            <div className="mt-2">
-              <ExpandableText 
-                text={selectedMemory.notes} 
-                isExpanded={isNotesExpanded}
-                onToggle={(e) => {
-                  e.stopPropagation();
-                  setIsNotesExpanded(!isNotesExpanded);
-                }}
+          {/* Notes: always 2-line preview; expands via chevron (card height stays fixed) */}
+          {notesText && (
+            <div className="mt-2 flex-1 min-h-0">
+              <ClampedNotes
+                text={notesText}
+                expanded={isNotesExpanded}
+                onExpandedChange={setIsNotesExpanded}
+                lines={2}
               />
             </div>
           )}
