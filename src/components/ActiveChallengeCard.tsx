@@ -170,23 +170,22 @@ export const ActiveChallengeCard = ({
       </div>
 
       {/* Button area */}
-      <div className="mt-2 px-1">
-        <div className="h-9 flex items-center justify-center">
+      <div className="mt-3 px-2">
+        <div className="h-8 flex items-center justify-center">
           {allChallengesComplete && onEndChallenge ? (
-            <Button
+            <button
               onClick={onEndChallenge}
-              variant="outline"
-              className="w-full h-8 rounded-full text-xs font-medium"
+              className="w-full h-8 rounded-full border border-border bg-background text-foreground text-xs font-medium flex items-center justify-center hover:bg-muted transition-colors"
             >
               End Challenge
-            </Button>
+            </button>
           ) : challengeUnlocked && !challengeCompleted ? (
-            <Button
+            <button
               onClick={() => onLogHello(currentChallenge)}
-              className="w-full h-8 rounded-full text-xs font-medium"
+              className="w-full h-8 rounded-full bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center hover:bg-primary/90 transition-colors"
             >
               Complete Challenge
-            </Button>
+            </button>
           ) : challengeCompleted ? (
             <div className="w-full h-8 rounded-full bg-success/10 border border-success/30 flex items-center justify-center gap-1.5 text-success text-xs font-medium">
               <Check size={12} /> Completed
