@@ -10,26 +10,32 @@ interface HelloOfTheDayProps {
   onViewLog?: (log: HelloLog) => void;
 }
 
-// Expandable text component matching HellobookPersonCard
-const ExpandableText = ({ text }: { text: string }) => {
+// Expandable notes section that appears below the fixed card content
+const ExpandableNotesSection = ({ 
+  notes, 
+  onToggle 
+}: { 
+  notes: string; 
+  onToggle: (e: React.MouseEvent) => void;
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const needsExpansion = text.length > 80;
 
-  if (!needsExpansion) {
-    return <p className="text-sm text-muted-foreground">{text}</p>;
-  }
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggle(e);
+    setIsExpanded(!isExpanded);
+  };
 
   return (
-    <div>
-      <p className={`text-sm text-muted-foreground ${!isExpanded ? 'line-clamp-2' : ''}`}>
-        {text}
-      </p>
+    <div className="border-t border-border/50">
+      {isExpanded && (
+        <div className="px-4 pt-3 pb-1">
+          <p className="text-sm text-muted-foreground">{notes}</p>
+        </div>
+      )}
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsExpanded(!isExpanded);
-        }}
-        className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 mt-1 transition-colors"
+        onClick={handleToggle}
+        className="w-full flex items-center justify-center gap-1 text-xs text-primary hover:text-primary/80 py-2 transition-colors"
       >
         {isExpanded ? (
           <>
@@ -140,56 +146,69 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
 
   return (
     <Card 
-      className="p-4 rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98] relative"
+      className="rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98] relative overflow-hidden"
       onClick={handleCardClick}
     >
-      {/* Shuffle button - top right */}
-      {eligibleLogs.length > 1 && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleShuffle}
-          className="absolute top-3 right-3 h-10 w-10 p-0 text-muted-foreground hover:text-foreground z-10"
-        >
-          <Shuffle className="w-3.5 h-3.5" />
-        </Button>
-      )}
-      
-      <div 
-        className={`pr-12 transition-all duration-150 ${
-          isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-        }`}
-      >
-        {/* Title header */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">📖</span>
-          <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>Hello of the day</span>
-        </div>
+      {/* Fixed height content area */}
+      <div className="p-4 min-h-[140px]">
+        {/* Shuffle button - top right */}
+        {eligibleLogs.length > 1 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShuffle}
+            className="absolute top-3 right-3 h-10 w-10 p-0 text-muted-foreground hover:text-foreground z-10"
+          >
+            <Shuffle className="w-3.5 h-3.5" />
+          </Button>
+        )}
         
-        {/* Name row with location */}
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold truncate text-foreground">{selectedMemory.name}</h3>
+        <div 
+          className={`pr-12 transition-all duration-150 ${
+            isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+          }`}
+        >
+          {/* Title header */}
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">📖</span>
+            <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>Hello of the day</span>
+          </div>
           
-          {displayLocation && (
-            <div className="flex items-center gap-1 text-muted-foreground flex-shrink-0">
-              <MapPin className="w-3 h-3" />
-              <span className="text-sm">{displayLocation}</span>
+          {/* Name row with location */}
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold truncate text-foreground">{selectedMemory.name}</h3>
+            
+            {displayLocation && (
+              <div className="flex items-center gap-1 text-muted-foreground flex-shrink-0">
+                <MapPin className="w-3 h-3" />
+                <span className="text-sm">{displayLocation}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Timestamp */}
+          <p className="text-xs text-muted-foreground/70 mt-0.5">
+            {formatTimestamp(selectedMemory.created_at, false)}
+          </p>
+
+          {/* Notes - always show 2 lines max in fixed area */}
+          {selectedMemory.notes && (
+            <div className="mt-2">
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {selectedMemory.notes}
+              </p>
             </div>
           )}
         </div>
-
-        {/* Timestamp */}
-        <p className="text-xs text-muted-foreground/70 mt-0.5">
-          {formatTimestamp(selectedMemory.created_at, false)}
-        </p>
-
-        {/* Notes with expandable text */}
-        {selectedMemory.notes && (
-          <div className="mt-2">
-            <ExpandableText text={selectedMemory.notes} />
-          </div>
-        )}
       </div>
+      
+      {/* Expand/collapse button - outside fixed area */}
+      {selectedMemory.notes && selectedMemory.notes.length > 80 && (
+        <ExpandableNotesSection 
+          notes={selectedMemory.notes} 
+          onToggle={(e) => e.stopPropagation()}
+        />
+      )}
     </Card>
   );
 };
