@@ -1,7 +1,7 @@
-import { useMemo, useState, useEffect, useLayoutEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shuffle, MapPin } from "lucide-react";
+import { Shuffle, MapPin, ChevronDown, ChevronUp } from "lucide-react";
 import remiLogging1 from "@/assets/remi-logging-1.webp";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
@@ -11,6 +11,43 @@ interface HelloOfTheDayProps {
   onViewLog?: (log: HelloLog) => void;
 }
 
+// Expandable text component matching HellobookPersonCard
+const ExpandableText = ({ text }: { text: string }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const needsExpansion = text.length > 80;
+
+  if (!needsExpansion) {
+    return <p className="text-sm text-muted-foreground">{text}</p>;
+  }
+
+  return (
+    <div>
+      <p className={`text-sm text-muted-foreground ${!isExpanded ? 'line-clamp-2' : ''}`}>
+        {text}
+      </p>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsExpanded(!isExpanded);
+        }}
+        className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 mt-1 transition-colors"
+      >
+        {isExpanded ? (
+          <>
+            <ChevronUp className="w-3 h-3" />
+            Show less
+          </>
+        ) : (
+          <>
+            <ChevronDown className="w-3 h-3" />
+            Read more
+          </>
+        )}
+      </button>
+    </div>
+  );
+};
+
 // Get today's date key for localStorage
 const getTodayKey = () => {
   const today = new Date();
@@ -19,10 +56,7 @@ const getTodayKey = () => {
 
 export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
   const [shuffledIndex, setShuffledIndex] = useState<number | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isNotesOverflowing, setIsNotesOverflowing] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const notesRef = useRef<HTMLParagraphElement | null>(null);
   const { formatTimestamp } = useTimezone();
 
   // Filter logs with both name AND notes
@@ -83,7 +117,6 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
       } while (newIndex === currentIndex && eligibleLogs.length > 1);
       
       setShuffledIndex(newIndex);
-      setIsExpanded(false);
       
       // Persist to localStorage
       localStorage.setItem('memory-of-day-selection', JSON.stringify({
@@ -102,109 +135,60 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
     }
   };
 
-  const handleExpandToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsExpanded(!isExpanded);
-  };
-
-  const notesText = selectedMemory?.notes || "";
   const displayLocation = selectedMemory?.location?.trim();
-
-  // Determine whether the collapsed, clamped text actually overflows (more reliable than char count)
-  useLayoutEffect(() => {
-    if (isExpanded) return;
-    const el = notesRef.current;
-    if (!el) return;
-
-    const check = () => {
-      const overflowing = el.scrollHeight > el.clientHeight + 1;
-      setIsNotesOverflowing(overflowing);
-    };
-
-    check();
-
-    if (typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(check);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [isExpanded, notesText, selectedMemory?.id]);
 
   if (!selectedMemory) return null;
 
   return (
     <Card 
-      className="p-4 rounded-xl bg-card border-border/50 cursor-pointer hover:bg-muted/30 transition-colors relative overflow-hidden"
+      className="p-4 rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98] relative"
       onClick={handleCardClick}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div 
-          className={`flex-1 min-w-0 pr-12 transition-all duration-150 ${
-            isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-          }`}
+      {/* Shuffle button - top right */}
+      {eligibleLogs.length > 1 && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleShuffle}
+          className="absolute top-3 right-3 h-10 w-10 p-0 text-muted-foreground hover:text-foreground z-10"
         >
-          {/* Header */}
-          <div className="mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">📖</span>
-              <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>Hello of the day</span>
-            </div>
-          </div>
-          
-          {/* Name row */}
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="text-base font-semibold text-foreground">{selectedMemory.name}</span>
-            {displayLocation && (
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <MapPin className="w-3 h-3" />
-                <span className="text-sm">{displayLocation}</span>
-              </div>
-            )}
-          </div>
-          
-          {/* Timestamp - small and subtle */}
-          <p className="text-xs text-muted-foreground/70 mb-2">
-            {formatTimestamp(selectedMemory.created_at, false)}
-          </p>
-          
-          {/* Notes - always reserve 2 lines when collapsed */}
-          <div className={isExpanded ? "" : "relative h-[2.75rem] overflow-hidden"}>
-            <p
-              ref={notesRef}
-              className={`text-sm text-muted-foreground leading-relaxed ${isExpanded ? "" : "line-clamp-2"}`}
-            >
-              {notesText}
-              {isExpanded && isNotesOverflowing && (
-                <button
-                  onClick={handleExpandToggle}
-                  className="text-primary/70 hover:text-primary ml-1 transition-colors"
-                >
-                  less
-                </button>
-              )}
-            </p>
-
-            {!isExpanded && isNotesOverflowing && (
-              <span className="absolute bottom-0 right-0 flex items-end bg-gradient-to-l from-card via-card to-transparent pl-6 pr-1">
-                <button
-                  onClick={handleExpandToggle}
-                  className="text-xs font-medium text-primary/80 hover:text-primary transition-colors"
-                >
-                  more
-                </button>
-              </span>
-            )}
-          </div>
+          <Shuffle className="w-3.5 h-3.5" />
+        </Button>
+      )}
+      
+      <div 
+        className={`pr-12 transition-all duration-150 ${
+          isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+        }`}
+      >
+        {/* Title header */}
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">📖</span>
+          <span className="text-base font-semibold" style={{ color: '#ff6f3b' }}>Hello of the day</span>
         </div>
         
-        {eligibleLogs.length > 1 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleShuffle}
-            className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground flex-shrink-0"
-          >
-            <Shuffle className="w-3.5 h-3.5" />
-          </Button>
+        {/* Name row with location */}
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold truncate text-foreground">{selectedMemory.name}</h3>
+          
+          {displayLocation && (
+            <div className="flex items-center gap-1 text-muted-foreground flex-shrink-0">
+              <MapPin className="w-3 h-3" />
+              <span className="text-sm">{displayLocation}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Timestamp */}
+        <p className="text-xs text-muted-foreground/70 mt-0.5">
+          {formatTimestamp(selectedMemory.created_at, false)}
+        </p>
+
+        {/* Notes with expandable text */}
+        {selectedMemory.notes && (
+          <div className="mt-2 pb-10">
+            <ExpandableText text={selectedMemory.notes} />
+          </div>
         )}
       </div>
       
