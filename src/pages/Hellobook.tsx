@@ -130,13 +130,11 @@ const Hellobook = () => {
     const withNames = groupedPeople.filter(g => g.primaryLog.name && g.primaryLog.name.trim() !== "");
     const withoutNames = groupedPeople.filter(g => !g.primaryLog.name || g.primaryLog.name.trim() === "");
     const favorites = groupedPeople.filter(g => g.primaryLog.is_favorite);
-    const fromChallenges = groupedPeople.filter(g => g.primaryLog.hello_type?.startsWith("challenge:"));
     return {
       all: groupedPeople.length,
       names: withNames.length,
       unknown: withoutNames.length,
-      favorites: favorites.length,
-      challenges: fromChallenges.length
+      favorites: favorites.length
     };
   }, [groupedPeople]);
   
