@@ -185,18 +185,11 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
 
         {/* Notes with expandable text */}
         {selectedMemory.notes && (
-          <div className="mt-2 pb-10">
+          <div className="mt-2">
             <ExpandableText text={selectedMemory.notes} />
           </div>
         )}
       </div>
-      
-      {/* Remi Logging - positioned bottom right */}
-      <img 
-        src={remiLogging1} 
-        alt="Remi the logging raccoon" 
-        className="absolute bottom-2 right-2 w-14 h-auto object-contain opacity-90"
-      />
     </Card>
   );
 };
