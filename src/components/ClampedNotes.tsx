@@ -68,12 +68,15 @@ export function ClampedNotes({
 
   if (!text) return null;
 
+  // Tailwind can't statically detect `line-clamp-${lines}`. Keep this explicit.
+  const clampClass = lines === 3 ? "line-clamp-3" : lines === 4 ? "line-clamp-4" : "line-clamp-2";
+
   return (
     <div ref={containerRef} className={cn("relative h-full", className)}>
       <p
         className={cn(
           "text-sm text-muted-foreground whitespace-pre-wrap",
-          expanded ? "h-full overflow-auto pr-10" : `line-clamp-${lines} pr-10`,
+          expanded ? "h-full overflow-auto pr-10" : `${clampClass} pr-10`,
         )}
       >
         {text}
