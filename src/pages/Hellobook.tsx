@@ -306,57 +306,72 @@ const Hellobook = () => {
         </div>
 
         {/* Toggle Stats Bar */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-1.5 mb-4 overflow-x-auto">
           <button
             onClick={() => setActiveFilter('all')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center ${
+            className={`flex-1 py-2 px-1.5 rounded-xl text-center min-w-0 ${
               activeFilter === 'all'
                 ? 'bg-primary text-primary-foreground shadow-md'
                 : 'bg-muted/50 text-muted-foreground'
             }`}
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="text-xl font-bold">{stats.all}</div>
-            <div className="text-xs">All</div>
+            <div className="text-lg font-bold">{stats.all}</div>
+            <div className="text-[10px]">All</div>
           </button>
           <button
             onClick={() => setActiveFilter('names')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center ${
+            className={`flex-1 py-2 px-1.5 rounded-xl text-center min-w-0 ${
               activeFilter === 'names'
                 ? 'bg-primary text-primary-foreground shadow-md'
                 : 'bg-muted/50 text-muted-foreground'
             }`}
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="text-xl font-bold">{stats.names}</div>
-            <div className="text-xs">Names</div>
+            <div className="text-lg font-bold">{stats.names}</div>
+            <div className="text-[10px]">Names</div>
           </button>
           <button
             onClick={() => setActiveFilter('unknown')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center ${
+            className={`flex-1 py-2 px-1.5 rounded-xl text-center min-w-0 ${
               activeFilter === 'unknown'
                 ? 'bg-primary text-primary-foreground shadow-md'
                 : 'bg-muted/50 text-muted-foreground'
             }`}
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="text-xl font-bold">{stats.unknown}</div>
-            <div className="text-xs">Unknown</div>
+            <div className="text-lg font-bold">{stats.unknown}</div>
+            <div className="text-[10px]">????</div>
+          </button>
+          <button
+            onClick={() => setActiveFilter('challenges')}
+            className={`flex-1 py-2 px-1.5 rounded-xl text-center min-w-0 ${
+              activeFilter === 'challenges'
+                ? 'bg-primary text-primary-foreground shadow-md'
+                : 'bg-muted/50 text-muted-foreground'
+            }`}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            <div className="text-lg font-bold flex items-center justify-center gap-0.5">
+              <Target className="w-3.5 h-3.5" />
+              {stats.challenges}
+            </div>
+            <div className="text-[10px]">Quests</div>
           </button>
           <button
             onClick={() => setActiveFilter('favorites')}
-            className={`flex-1 py-3 px-2 rounded-xl text-center ${
+            className={`flex-1 py-2 px-1.5 rounded-xl text-center min-w-0 ${
               activeFilter === 'favorites'
                 ? 'bg-primary text-primary-foreground shadow-md'
                 : 'bg-muted/50 text-muted-foreground'
             }`}
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="text-xl font-bold flex items-center justify-center gap-1">
-              <Bookmark className="w-4 h-4" />
+            <div className="text-lg font-bold flex items-center justify-center gap-0.5">
+              <Bookmark className="w-3.5 h-3.5" />
               {stats.favorites}
             </div>
-            <div className="text-xs">Favorites</div>
+            <div className="text-[10px]">Saved</div>
           </button>
         </div>
 
