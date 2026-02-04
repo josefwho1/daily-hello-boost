@@ -8,8 +8,12 @@ const Switch = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
 >(({ className, ...props }, ref) => (
   <SwitchPrimitives.Root
+    data-compact
     className={cn(
-      "peer inline-flex h-6 w-11 min-h-6 min-w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+      // iOS/PWA: our global coarse-pointer rule enforces 44px min-size on buttons.
+      // Switch is a button under the hood, so that rule can turn it into a circle.
+      // We opt-out via data-compact and keep a larger hit-area using a transparent ::before.
+      "peer relative inline-flex h-6 w-11 min-h-6 min-w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors before:content-[''] before:absolute before:-inset-2 before:rounded-full before:bg-transparent data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}
     {...props}
