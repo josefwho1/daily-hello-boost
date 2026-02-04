@@ -446,6 +446,10 @@ export default function Dashboard() {
       ),
       {
         duration: 10000, // Total toast duration: 10 seconds
+        onDismiss: () => {
+          // When toast is swiped away, treat it as a save (create the hello entry)
+          createHelloEntry();
+        },
       }
     );
   };
