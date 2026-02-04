@@ -213,7 +213,7 @@ export const CurrentChallengeCard = ({
           <button onClick={e => {
             e.stopPropagation();
             handleCompleteClick();
-          }} className="h-9 px-4 rounded-full text-sm font-medium border hover:bg-success/10 transition-colors flex items-center justify-center gap-1 min-w-[140px] border-solid text-primary-foreground border-muted-foreground">
+          }} className="h-9 px-4 rounded-full text-sm font-medium border hover:bg-success/10 transition-colors flex items-center justify-center gap-1 min-w-[140px] border-solid border-muted-foreground text-muted-foreground">
                   Mark as complete
                 </button>}
               <button onClick={e => {
