@@ -33,6 +33,7 @@ interface LogHelloScreenProps {
     location?: string;
     notes?: string; 
     rating?: 'positive' | 'neutral' | 'negative';
+    difficulty_rating?: number;
     no_name_flag?: boolean;
     linked_to?: string;
     hello_type?: string;
@@ -42,6 +43,10 @@ interface LogHelloScreenProps {
   autoStartRecording?: boolean;
   existingLogs?: HelloLog[];
   requireAtLeastOneField?: boolean;
+  // For pre-filling the form (e.g., editing challenge hellos)
+  initialName?: string;
+  initialLocation?: string;
+  initialNotes?: string;
 }
 
 export const LogHelloScreen = ({ 
@@ -50,7 +55,10 @@ export const LogHelloScreen = ({
   challengeTitle,
   autoStartRecording = false,
   existingLogs = [],
-  requireAtLeastOneField = false
+  requireAtLeastOneField = false,
+  initialName,
+  initialLocation,
+  initialNotes,
 }: LogHelloScreenProps) => {
   // Draft storage key (scoped so each component instance doesn't collide)
   const DRAFT_KEY = "hello_log_draft";
