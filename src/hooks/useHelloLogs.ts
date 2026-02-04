@@ -59,6 +59,7 @@ export const useHelloLogs = () => {
     difficulty_rating?: number;
     no_name_flag?: boolean;
     linked_to?: string;
+    hello_type?: string;
   }) => {
     if (!user) return null;
 
