@@ -2,7 +2,6 @@ import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shuffle, MapPin, ChevronDown, ChevronUp } from "lucide-react";
-import remiLogging1 from "@/assets/remi-logging-1.webp";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 
