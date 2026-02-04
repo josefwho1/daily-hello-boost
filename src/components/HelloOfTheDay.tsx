@@ -56,6 +56,7 @@ const getTodayKey = () => {
 export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
   const [shuffledIndex, setShuffledIndex] = useState<number | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isNotesExpanded, setIsNotesExpanded] = useState(false);
   const { formatTimestamp } = useTimezone();
 
   // Filter logs with both name AND notes
