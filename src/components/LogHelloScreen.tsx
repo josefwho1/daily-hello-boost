@@ -76,9 +76,10 @@ export const LogHelloScreen = ({
 
   const savedDraft = loadDraft();
 
-  const [name, setName] = useState(savedDraft?.name ?? "");
-  const [location, setLocation] = useState(savedDraft?.location ?? "");
-  const [notes, setNotes] = useState(savedDraft?.notes ?? "");
+  // Priority: initialValue props > savedDraft > empty string
+  const [name, setName] = useState(initialName ?? savedDraft?.name ?? "");
+  const [location, setLocation] = useState(initialLocation ?? savedDraft?.location ?? "");
+  const [notes, setNotes] = useState(initialNotes ?? savedDraft?.notes ?? "");
   
   const [isLogging, setIsLogging] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
