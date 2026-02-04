@@ -119,7 +119,7 @@ export const CurrentChallengeCard = ({
     setCurrentIndex(0);
   };
   return <>
-      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[250px] flex flex-col py-[8px]">
+      <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden h-[250px] flex flex-col py-[8px] pb-[12px]">
         {/* Header */}
         <div className="flex items-center justify-between mx-0 py-0">
           <div className="flex-1 min-w-0">
@@ -199,7 +199,7 @@ export const CurrentChallengeCard = ({
             </div>
 
             {/* Buttons - fixed layout with justify-between to prevent movement */}
-            <div className="mt-auto pt-2 py-0 flex-row flex items-start justify-between">
+            <div className="mt-auto pt-2 flex-row flex items-center justify-between py-0">
               {isLocked ? <button disabled className="h-9 px-4 rounded-full text-sm font-medium border border-border/30 text-muted-foreground/40 flex items-center justify-center gap-1 min-w-[140px] cursor-not-allowed">
                   <Lock size={14} />
                   Locked
@@ -213,16 +213,13 @@ export const CurrentChallengeCard = ({
           <button onClick={e => {
             e.stopPropagation();
             handleCompleteClick();
-          }} className="h-9 px-4 rounded-full text-sm font-medium border border-border/50 text-muted-foreground hover:bg-success/10 hover:text-success hover:border-success/50 transition-colors flex items-center justify-center gap-1 min-w-[140px]">
+          }} className="h-9 px-4 rounded-full text-sm font-medium border hover:bg-success/10 transition-colors flex items-center justify-center gap-1 min-w-[140px] border-solid text-primary-foreground border-muted-foreground">
                   Mark as complete
                 </button>}
-              <button 
-                onClick={e => {
-                  e.stopPropagation();
-                  onViewAll();
-                }} 
-                className="h-9 px-4 rounded-full text-sm font-medium border border-border/50 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center justify-center gap-1 min-w-[140px]"
-              >
+              <button onClick={e => {
+            e.stopPropagation();
+            onViewAll();
+          }} className="h-9 px-4 rounded-full border-border/50 hover:bg-muted transition-colors flex items-center justify-center gap-1 min-w-[140px] border-0 text-sm text-muted-foreground font-normal">
                 View All
                 <ChevronRight className="w-4 h-4" />
               </button>
