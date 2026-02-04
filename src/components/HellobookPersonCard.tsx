@@ -85,11 +85,18 @@ const HellobookPersonCardComponent = ({
     }
   };
 
+  // Card styling based on entry type
+  const cardClasses = `p-4 rounded-2xl hover:shadow-md transition-all duration-200 animate-fade-in cursor-pointer active:scale-[0.98] relative ${
+    !hasName && isChallengeEntry 
+      ? 'bg-muted/30 border-dashed' // Challenge without details - subtle styling
+      : !hasName 
+        ? 'opacity-75' 
+        : ''
+  }`;
+
   return (
     <Card 
-      className={`p-4 rounded-2xl hover:shadow-md transition-all duration-200 animate-fade-in cursor-pointer active:scale-[0.98] relative ${
-        !hasName ? 'opacity-75' : ''
-      }`}
+      className={cardClasses}
       onClick={() => onViewClick(primaryLog)}
     >
       {/* Favorite bookmark button */}
