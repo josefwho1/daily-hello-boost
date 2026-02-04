@@ -16,7 +16,7 @@ import HellobookPersonCard from "@/components/HellobookPersonCard";
 import Community from "@/pages/Community";
 import { HelloOfTheDay } from "@/components/HelloOfTheDay";
 
-type FilterType = 'all' | 'names' | 'unknown' | 'favorites' | 'challenges';
+type FilterType = 'all' | 'names' | 'unknown' | 'favorites';
 type ViewType = 'mybook' | 'global';
 
 // Group logs by person - entries linked together are grouped
