@@ -49,9 +49,16 @@ export const useChallengeCompletionsQuery = () => {
     }) => {
       if (!user) throw new Error('No user');
 
+      // Validate input before database insert
+      const validation = validateSafe(challengeCompletionSchema, completion);
+      if (!validation.success) {
+        throw new Error(validation.error);
+      }
+      const validatedData = validation.data;
+
       const { data, error } = await supabase
         .from('challenge_completions')
-        .insert({ user_id: user.id, ...completion })
+        .insert({ user_id: user.id, ...validatedData })
         .select()
         .single();
 

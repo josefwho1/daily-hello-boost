@@ -65,6 +65,13 @@ export const useHelloLogs = () => {
   }) => {
     if (!user) return null;
 
+    // Validate input before database insert
+    const validation = validateSafe(helloLogSchema, log);
+    if (!validation.success) {
+      console.error('Hello log validation failed:', validation.error);
+      throw new Error(validation.error);
+    }
+
     try {
       // Get user's timezone preference
       const { data: profile } = await supabase
@@ -74,20 +81,21 @@ export const useHelloLogs = () => {
         .maybeSingle();
 
       const timezoneOffset = normalizeTimezoneOffset(profile?.timezone_preference);
+      const validatedLog = validation.data;
 
       const { data, error } = await supabase
         .from('hello_logs')
         .insert({
           user_id: user.id,
-          name: log.name || null,
-          location: log.location || null,
-          notes: log.notes || null,
-          rating: log.rating || null,
-          difficulty_rating: log.difficulty_rating || null,
-          no_name_flag: log.no_name_flag || false,
+          name: validatedLog.name || null,
+          location: validatedLog.location || null,
+          notes: validatedLog.notes || null,
+          rating: validatedLog.rating || null,
+          difficulty_rating: validatedLog.difficulty_rating || null,
+          no_name_flag: validatedLog.no_name_flag || false,
           timezone_offset: timezoneOffset,
-          linked_to: log.linked_to || null,
-          hello_type: log.hello_type || null,
+          linked_to: validatedLog.linked_to || null,
+          hello_type: validatedLog.hello_type || null,
         })
         .select()
         .single();

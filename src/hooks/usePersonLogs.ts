@@ -50,13 +50,20 @@ export const usePersonLogs = () => {
   ) => {
     if (!user) throw new Error('User not authenticated');
 
+    // Validate input before database insert
+    const validation = validateSafe(personLogSchema, { name, description, tags });
+    if (!validation.success) {
+      throw new Error(validation.error);
+    }
+    const validatedData = validation.data;
+
     const { data, error } = await supabase
       .from('person_logs')
       .insert({
         user_id: user.id,
-        name,
-        description: description || null,
-        tags: tags.length > 0 ? tags : null,
+        name: validatedData.name,
+        description: validatedData.description || null,
+        tags: validatedData.tags && validatedData.tags.length > 0 ? validatedData.tags : null,
         timezone_offset: timezoneOffset,
       })
       .select()
