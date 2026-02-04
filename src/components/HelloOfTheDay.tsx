@@ -121,8 +121,8 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
 
   return (
     <Card 
-      className={`rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98] relative overflow-hidden min-h-[176px] ${
-        isExpanded ? "h-auto" : "h-[176px]"
+      className={`rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98] relative overflow-hidden min-h-[156px] ${
+        isExpanded ? "h-auto" : "h-[156px]"
       }`}
       onClick={handleCardClick}
     >
