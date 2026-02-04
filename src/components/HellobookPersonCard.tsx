@@ -1,7 +1,7 @@
 import { useState, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, MapPin, Bookmark, Target } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, Bookmark } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface HellobookPersonCardProps {
