@@ -521,6 +521,8 @@ export default function Dashboard() {
             difficulty_rating: data.difficulty_rating || null,
           });
           toast.success("Hello details saved!");
+          setShowLogDialog(false);
+          setAutoStartRecording(false);
         } else if (pendingChallengeCompletion) {
           // Create new hello for challenge (if somehow entry wasn't created)
           await handleLogHello({
@@ -533,12 +535,14 @@ export default function Dashboard() {
             await markDayComplete(pendingChallengeCompletion.day);
             checkAndShowCelebrations(previousCount, previousCount + 1);
           }
+          setShowLogDialog(false);
+          setAutoStartRecording(false);
         } else {
-          // Regular hello log
+          // Regular hello log (LogHelloScreen calls onBack internally)
           await handleLogHello(data);
         }
         setPendingChallengeCompletion(null);
-      }} 
+      }}
       challengeTitle={pendingChallengeCompletion?.name || null} 
       autoStartRecording={autoStartRecording} 
       existingLogs={logs}
