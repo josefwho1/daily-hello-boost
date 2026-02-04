@@ -117,6 +117,7 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
       } while (newIndex === currentIndex && eligibleLogs.length > 1);
       
       setShuffledIndex(newIndex);
+      setIsNotesExpanded(false); // Collapse notes on shuffle
       
       // Persist to localStorage
       localStorage.setItem('memory-of-day-selection', JSON.stringify({
