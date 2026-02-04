@@ -10,26 +10,32 @@ interface HelloOfTheDayProps {
   onViewLog?: (log: HelloLog) => void;
 }
 
-// Expandable text component matching HellobookPersonCard
-const ExpandableText = ({ text }: { text: string }) => {
+// Expandable notes section that appears below the fixed card content
+const ExpandableNotesSection = ({ 
+  notes, 
+  onToggle 
+}: { 
+  notes: string; 
+  onToggle: (e: React.MouseEvent) => void;
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const needsExpansion = text.length > 80;
 
-  if (!needsExpansion) {
-    return <p className="text-sm text-muted-foreground">{text}</p>;
-  }
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggle(e);
+    setIsExpanded(!isExpanded);
+  };
 
   return (
-    <div>
-      <p className={`text-sm text-muted-foreground ${!isExpanded ? 'line-clamp-2' : ''}`}>
-        {text}
-      </p>
+    <div className="border-t border-border/50">
+      {isExpanded && (
+        <div className="px-4 pt-3 pb-1">
+          <p className="text-sm text-muted-foreground">{notes}</p>
+        </div>
+      )}
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsExpanded(!isExpanded);
-        }}
-        className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 mt-1 transition-colors"
+        onClick={handleToggle}
+        className="w-full flex items-center justify-center gap-1 text-xs text-primary hover:text-primary/80 py-2 transition-colors"
       >
         {isExpanded ? (
           <>
