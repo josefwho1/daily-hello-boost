@@ -31,12 +31,9 @@ export const ActiveChallengeCard = ({
   const pack = getPackById(packId);
   const [showTip, setShowTip] = useState(false);
 
-  if (!pack || pack.challenges.length === 0) {
-    return null;
-  }
-
   // Completion-based unlocking: a challenge is unlocked if all previous challenges are completed
   const isUnlocked = (idx: number) => {
+    if (!pack || pack.challenges.length === 0) return false;
     if (idx === 0) return true; // First challenge always unlocked
     // Check if all challenges before this one are completed
     for (let i = 0; i < idx; i++) {
@@ -50,6 +47,7 @@ export const ActiveChallengeCard = ({
 
   // Find the current challenge (first incomplete one that's unlocked)
   const getCurrentChallengeIndex = () => {
+    if (!pack || pack.challenges.length === 0) return 0;
     for (let i = 0; i < pack.challenges.length; i++) {
       const challenge = pack.challenges[i];
       const isComplete = completedTags.includes(challenge.tag) || completedDays.includes(challenge.day);
@@ -62,6 +60,11 @@ export const ActiveChallengeCard = ({
   };
 
   const [currentIndex, setCurrentIndex] = useState(getCurrentChallengeIndex());
+
+  if (!pack || pack.challenges.length === 0) {
+    return null;
+  }
+
   const currentChallenge = pack.challenges[currentIndex];
   const isCompleted = (c: Challenge) =>
     completedTags.includes(c.tag) || completedDays.includes(c.day);
