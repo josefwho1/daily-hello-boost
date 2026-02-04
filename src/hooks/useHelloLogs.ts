@@ -71,6 +71,7 @@ export const useHelloLogs = () => {
       console.error('Hello log validation failed:', validation.error);
       throw new Error(validation.error);
     }
+    const validatedLog = validation.data;
 
     try {
       // Get user's timezone preference
