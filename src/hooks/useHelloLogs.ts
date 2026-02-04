@@ -186,12 +186,15 @@ export const useHelloLogs = () => {
 
       if (error) throw error;
       
-      // Optimistically update cache
-      queryClient.setQueryData(['hello-logs', user.id, isGuest], (old: HelloLog[] = []) =>
+      // Immediately update cache for instant UI update
+      queryClient.setQueryData(['hello-logs', user.id], (old: HelloLog[] = []) =>
         old.filter(log => log.id !== id).map(log => 
           log.linked_to === id ? { ...log, linked_to: null } : log
         )
       );
+      
+      // Also invalidate to ensure consistency
+      await queryClient.invalidateQueries({ queryKey: ['hello-logs'] });
     } catch (error) {
       console.error('Error deleting hello log:', error);
       throw error;

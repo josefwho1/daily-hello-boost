@@ -336,7 +336,7 @@ const Hellobook = () => {
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <div className="text-lg font-bold">{stats.unknown}</div>
-            <div className="text-[10px]">?</div>
+            <div className="text-[10px]">👤</div>
           </button>
           <button
             onClick={() => setActiveFilter('favorites')}
