@@ -514,11 +514,11 @@ const Profile = () => {
           </div>
         </Card>
 
-        {/* Notifications */}
+        {/* Reminders */}
         <Card className="p-5 mb-4 rounded-2xl">
           <div className="flex items-center gap-3 mb-4">
             <Bell className="text-primary w-5 h-5" />
-            <h3 className="font-semibold text-foreground">Notifications</h3>
+            <h3 className="font-semibold text-foreground">Reminders</h3>
           </div>
           
           <div className="space-y-4">
@@ -526,7 +526,7 @@ const Profile = () => {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-foreground">Email</Label>
-                <p className="text-xs text-muted-foreground">Get friendly nudges from Remi 🦝</p>
+                <p className="text-xs text-muted-foreground">Occasional check-ins if I've been quiet</p>
               </div>
               <Switch
                 checked={!(progress as any)?.email_unsubscribed}
@@ -541,15 +541,13 @@ const Profile = () => {
               />
             </div>
 
-            {/* Push toggle */}
+            {/* Phone toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-foreground">Push</Label>
+                <Label className="text-foreground">Phone</Label>
                 <p className="text-xs text-muted-foreground">
                   {isNativePlatform 
-                    ? (dailyModeState.isActive 
-                        ? "9am nudge + 3pm streak reminder" 
-                        : "Weekly check-in")
+                    ? "Furry phone nudges from Remi"
                     : "Available in the mobile app"}
                 </p>
               </div>
@@ -619,28 +617,30 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Afternoon time picker (only when enabled, Daily Mode is ON, and has streak) */}
-            {isNativePlatform && notificationPrefs.enabled && dailyModeState.isActive && dailyModeState.currentStreak >= 1 && (
+            {/* Streak reminder picker (only when enabled and Daily Mode is ON) */}
+            {isNativePlatform && notificationPrefs.enabled && dailyModeState.isActive && (
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-foreground">Streak reminder</Label>
                   <p className="text-xs text-muted-foreground">Reminder if no hello logged yet</p>
                 </div>
                 <Select
-                  value={String(notificationPrefs.afternoonTime)}
+                  value={notificationPrefs.afternoonTime === 0 ? "off" : String(notificationPrefs.afternoonTime)}
                   onValueChange={async (value) => {
+                    const newTime = value === "off" ? 0 : parseInt(value);
                     await updateNotificationPrefs(
-                      { afternoonTime: parseInt(value) },
+                      { afternoonTime: newTime },
                       dailyModeState.isActive,
                       dailyModeState.currentStreak
                     );
-                    toast.success("Streak reminder time updated");
+                    toast.success(value === "off" ? "Streak reminder disabled" : "Streak reminder time updated");
                   }}
                 >
                   <SelectTrigger className="w-24 rounded-xl">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="off">Off</SelectItem>
                     <SelectItem value="14">2 PM</SelectItem>
                     <SelectItem value="15">3 PM</SelectItem>
                     <SelectItem value="16">4 PM</SelectItem>

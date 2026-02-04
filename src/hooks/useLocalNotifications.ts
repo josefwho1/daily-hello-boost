@@ -283,8 +283,8 @@ export const useLocalNotifications = () => {
       // Schedule morning notification (always for Daily Mode users)
       await scheduleMorningNotification();
 
-      // Only schedule afternoon if user has a streak (risk of losing it)
-      if (currentStreak >= 1) {
+      // Only schedule afternoon if user has a streak AND hasn't disabled it (afternoonTime > 0)
+      if (currentStreak >= 1 && preferences.afternoonTime > 0) {
         await scheduleAfternoonNotification();
       }
     } else {
