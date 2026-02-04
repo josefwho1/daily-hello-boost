@@ -10,43 +10,6 @@ interface HelloOfTheDayProps {
   onViewLog?: (log: HelloLog) => void;
 }
 
-// Expandable text component matching Hellobook style
-const ExpandableText = ({ text, isExpanded, onToggle }: { 
-  text: string; 
-  isExpanded: boolean;
-  onToggle: (e: React.MouseEvent) => void;
-}) => {
-  const needsExpansion = text.length > 80;
-
-  if (!needsExpansion) {
-    return <p className="text-sm text-muted-foreground">{text}</p>;
-  }
-
-  return (
-    <div>
-      <p className={`text-sm text-muted-foreground ${!isExpanded ? 'line-clamp-2' : ''}`}>
-        {text}
-      </p>
-      <button
-        onClick={onToggle}
-        className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 mt-1 transition-colors"
-      >
-        {isExpanded ? (
-          <>
-            <ChevronUp className="w-3 h-3" />
-            Show less
-          </>
-        ) : (
-          <>
-            <ChevronDown className="w-3 h-3" />
-            Read more
-          </>
-        )}
-      </button>
-    </div>
-  );
-};
-
 // Get today's date key for localStorage
 const getTodayKey = () => {
   const today = new Date();
@@ -137,16 +100,20 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
   };
 
   const displayLocation = selectedMemory?.location?.trim();
+  const notesText = selectedMemory?.notes?.trim() || "";
+  // Heuristic: if it's long enough to likely wrap beyond 2 lines, show the toggle.
+  // (We keep this simple + robust; the fixed-height card ensures stability regardless.)
+  const notesCanExpand = notesText.length > 90;
 
   if (!selectedMemory) return null;
 
   return (
     <Card 
-      className="rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98] relative overflow-hidden"
+      className="rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98] relative overflow-hidden h-[176px]"
       onClick={handleCardClick}
     >
       {/* Fixed height content area */}
-      <div className="p-4 min-h-[140px]">
+      <div className="p-4 h-full flex flex-col">
         {/* Shuffle button - top right */}
         {eligibleLogs.length > 1 && (
           <Button
@@ -156,6 +123,26 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
             className="absolute top-3 right-3 h-10 w-10 p-0 text-muted-foreground hover:text-foreground z-10"
           >
             <Shuffle className="w-3.5 h-3.5" />
+          </Button>
+        )}
+
+        {/* Notes expand/collapse toggle - bottom right (only if needed) */}
+        {notesCanExpand && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsNotesExpanded((v) => !v);
+            }}
+            className="absolute bottom-3 right-3 h-9 w-9 p-0 text-muted-foreground hover:text-foreground z-10"
+            aria-label={isNotesExpanded ? "Collapse notes" : "Expand notes"}
+          >
+            {isNotesExpanded ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
           </Button>
         )}
         
@@ -187,17 +174,14 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
             {formatTimestamp(selectedMemory.created_at, false)}
           </p>
 
-          {/* Notes with integrated expand/collapse */}
-          {selectedMemory.notes && (
-            <div className="mt-2">
-              <ExpandableText 
-                text={selectedMemory.notes} 
-                isExpanded={isNotesExpanded}
-                onToggle={(e) => {
-                  e.stopPropagation();
-                  setIsNotesExpanded(!isNotesExpanded);
-                }}
-              />
+          {/* Notes: always 2-line preview; expands within a scroll area (card height stays fixed) */}
+          {notesText && (
+            <div className="mt-2 flex-1 min-h-0">
+              <div className={`text-sm text-muted-foreground ${isNotesExpanded ? 'h-full overflow-auto pr-2' : ''}`}>
+                <p className={!isNotesExpanded ? 'line-clamp-2' : ''}>
+                  {notesText}
+                </p>
+              </div>
             </div>
           )}
         </div>
