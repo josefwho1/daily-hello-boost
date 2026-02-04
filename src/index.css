@@ -257,8 +257,13 @@ All colors MUST be HSL.
 
 /* Ensure tap targets are large enough on touch devices */
 @media (pointer: coarse) {
-  button,
-  a,
+  /*
+    On real touch devices (iPhone PWA / native webview), forcing *all* buttons/links
+    to 44px min size can unintentionally change carefully-sized compact UI (e.g. h-7/h-8).
+    Allow opt-out via data-compact for intentionally slim controls.
+  */
+  button:not([data-compact]),
+  a:not([data-compact]),
   input[type="checkbox"],
   input[type="radio"] {
     min-height: 44px;
