@@ -15,12 +15,6 @@ interface HellobookPersonCardProps {
 // Check if a log is from a challenge
 const isFromChallenge = (log: HelloLog) => log.hello_type?.startsWith("challenge:");
 
-// Get challenge number from hello_type
-const getChallengeNumber = (log: HelloLog) => {
-  if (!log.hello_type?.startsWith("challenge:")) return null;
-  return parseInt(log.hello_type.split(":")[1], 10);
-};
-
 // Expandable text component for long notes
 const ExpandableText = ({ text }: { text: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);

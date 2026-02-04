@@ -336,22 +336,7 @@ const Hellobook = () => {
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <div className="text-lg font-bold">{stats.unknown}</div>
-            <div className="text-[10px]">????</div>
-          </button>
-          <button
-            onClick={() => setActiveFilter('challenges')}
-            className={`flex-1 py-2 px-1.5 rounded-xl text-center min-w-0 ${
-              activeFilter === 'challenges'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-muted/50 text-muted-foreground'
-            }`}
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-          >
-            <div className="text-lg font-bold flex items-center justify-center gap-0.5">
-              <Target className="w-3.5 h-3.5" />
-              {stats.challenges}
-            </div>
-            <div className="text-[10px]">Quests</div>
+            <div className="text-[10px]">?</div>
           </button>
           <button
             onClick={() => setActiveFilter('favorites')}
