@@ -167,33 +167,33 @@ export const ActiveChallengeCard = ({
       </div>
 
       {/* Button area */}
-      <div className="mt-1.5">
-        {allChallengesComplete && onEndChallenge ? (
-          <Button
-            onClick={onEndChallenge}
-            variant="outline"
-            className="w-full rounded-full font-semibold"
-            size="sm"
-          >
-            End Challenge
-          </Button>
-        ) : challengeUnlocked && !challengeCompleted ? (
-          <Button
-            onClick={() => onLogHello(currentChallenge)}
-            className="w-full rounded-full font-semibold"
-            size="sm"
-          >
-            Complete Challenge
-          </Button>
-        ) : challengeCompleted ? (
-          <div className="flex items-center justify-center gap-1 text-success text-sm font-medium h-9">
-            <Check size={14} /> Completed
-          </div>
-        ) : (
-          <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs h-9">
-            <Lock size={12} /> Complete previous challenge to unlock
-          </div>
-        )}
+      <div className="mt-2 px-1">
+        <div className="h-9 flex items-center justify-center">
+          {allChallengesComplete && onEndChallenge ? (
+            <Button
+              onClick={onEndChallenge}
+              variant="outline"
+              className="w-full h-8 rounded-full text-xs font-medium"
+            >
+              End Challenge
+            </Button>
+          ) : challengeUnlocked && !challengeCompleted ? (
+            <Button
+              onClick={() => onLogHello(currentChallenge)}
+              className="w-full h-8 rounded-full text-xs font-medium"
+            >
+              Complete Challenge
+            </Button>
+          ) : challengeCompleted ? (
+            <div className="w-full h-8 rounded-full bg-success/10 border border-success/30 flex items-center justify-center gap-1.5 text-success text-xs font-medium">
+              <Check size={12} /> Completed
+            </div>
+          ) : (
+            <div className="w-full h-8 rounded-full bg-muted/30 border border-border/50 flex items-center justify-center gap-1.5 text-muted-foreground text-xs font-medium">
+              <Lock size={10} /> Locked
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Remi Proud - positioned bottom right */}
