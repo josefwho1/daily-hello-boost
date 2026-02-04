@@ -52,19 +52,20 @@ export const useChallengeCompletionsQuery = () => {
       // Validate input before database insert
       const validation = validateSafe(challengeCompletionSchema, completion);
       if (!validation.success) {
-        throw new Error(validation.error);
+        throw new Error((validation as { success: false; error: string }).error);
       }
+      const validatedData = (validation as { success: true; data: typeof completion }).data;
 
       const { data, error } = await supabase
         .from('challenge_completions')
         .insert({ 
           user_id: user.id, 
-          challenge_day: validation.data.challenge_day!,
-          challenge_tag: validation.data.challenge_tag,
-          interaction_name: validation.data.interaction_name,
-          notes: validation.data.notes,
-          rating: validation.data.rating!,
-          difficulty_rating: validation.data.difficulty_rating,
+          challenge_day: validatedData.challenge_day,
+          challenge_tag: validatedData.challenge_tag,
+          interaction_name: validatedData.interaction_name,
+          notes: validatedData.notes,
+          rating: validatedData.rating,
+          difficulty_rating: validatedData.difficulty_rating,
         })
         .select()
         .single();

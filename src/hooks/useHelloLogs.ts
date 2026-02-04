@@ -68,10 +68,10 @@ export const useHelloLogs = () => {
     // Validate input before database insert
     const validation = validateSafe(helloLogSchema, log);
     if (!validation.success) {
-      console.error('Hello log validation failed:', validation.error);
-      throw new Error(validation.error);
+      console.error('Hello log validation failed:', (validation as { success: false; error: string }).error);
+      throw new Error((validation as { success: false; error: string }).error);
     }
-    const validatedLog = validation.data;
+    const validatedLog = (validation as { success: true; data: typeof log }).data;
 
     try {
       // Get user's timezone preference

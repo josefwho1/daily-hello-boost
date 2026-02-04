@@ -53,16 +53,17 @@ export const usePersonLogs = () => {
     // Validate input before database insert
     const validation = validateSafe(personLogSchema, { name, description, tags });
     if (!validation.success) {
-      throw new Error(validation.error);
+      throw new Error((validation as { success: false; error: string }).error);
     }
+    const validatedData = (validation as { success: true; data: { name: string; description?: string | null; tags?: string[] | null } }).data;
 
     const { data, error } = await supabase
       .from('person_logs')
       .insert({
         user_id: user.id,
-        name: validation.data.name,
-        description: validation.data.description || null,
-        tags: validation.data.tags && validation.data.tags.length > 0 ? validation.data.tags : null,
+        name: validatedData.name,
+        description: validatedData.description || null,
+        tags: validatedData.tags && validatedData.tags.length > 0 ? validatedData.tags : null,
         timezone_offset: timezoneOffset,
       })
       .select()
