@@ -198,13 +198,13 @@ const HellobookPersonCardComponent = ({
             {/* Top row: Name, Location */}
             <div className="flex items-center gap-2">
               <h3 className={`font-semibold truncate ${hasName ? 'text-foreground' : 'text-muted-foreground'}`}>
-                {primaryLog.name || "?"}
+                {primaryLog.name || "Someone 👤"}
               </h3>
               
               {/* Badge for entries without details */}
               {!hasName && (
                 <span className="px-2 py-0.5 text-xs rounded-lg bg-primary/10 text-primary flex-shrink-0">
-                  Tap to add details
+                  Add their name →
                 </span>
               )}
               

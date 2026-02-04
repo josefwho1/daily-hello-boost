@@ -44,7 +44,7 @@ const RecentHellosSectionComponent = ({ logs, onViewAll, onViewLog }: RecentHell
       <div className="space-y-2">
         {recentLogs.map((log) => {
           const timeAgo = formatDistanceToNow(new Date(log.created_at), { addSuffix: true });
-          const displayName = log.name && log.name.trim() !== "" ? log.name : "?";
+          const displayName = log.name && log.name.trim() !== "" ? log.name : "Someone 👤";
           
           return (
             <Card 
