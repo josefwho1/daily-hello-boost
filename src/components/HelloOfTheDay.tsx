@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shuffle, MapPin } from "lucide-react";
+import { Shuffle, MapPin, ChevronDown, ChevronUp } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { ClampedNotes } from "@/components/ClampedNotes";
@@ -21,6 +21,7 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
   const [shuffledIndex, setShuffledIndex] = useState<number | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
+  const [canExpandNotes, setCanExpandNotes] = useState(false);
   const { formatTimestamp } = useTimezone();
 
   // Filter logs with both name AND notes
@@ -63,6 +64,11 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
   // Always collapse notes when the selected entry changes.
   useEffect(() => {
     setIsNotesExpanded(false);
+  }, [selectedMemory?.id]);
+
+  // When swapping entries, allow the can-expand measurement to recompute.
+  useEffect(() => {
+    setCanExpandNotes(false);
   }, [selectedMemory?.id]);
 
   const handleShuffle = (e: React.MouseEvent) => {
@@ -110,13 +116,18 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
 
   if (!selectedMemory) return null;
 
+  const isExpanded = isNotesExpanded;
+  const showExpandToggle = Boolean(notesText) && (canExpandNotes || isExpanded);
+
   return (
     <Card 
-      className="rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98] relative overflow-hidden h-[176px]"
+      className={`rounded-2xl hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98] relative overflow-hidden min-h-[176px] ${
+        isExpanded ? "h-auto" : "h-[176px]"
+      }`}
       onClick={handleCardClick}
     >
       {/* Fixed height content area */}
-      <div className="p-4 h-full flex flex-col">
+      <div className={`p-4 flex flex-col ${isExpanded ? "" : "h-full"}`}>
         {/* Shuffle button - top right */}
         {eligibleLogs.length > 1 && (
           <Button
@@ -129,10 +140,27 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
           </Button>
         )}
 
+        {/* Expand/collapse notes toggle (aligned under shuffle) */}
+        {showExpandToggle && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsNotesExpanded((v) => !v);
+            }}
+            className="absolute right-3 top-[52px] h-10 w-10 p-0 text-muted-foreground hover:text-foreground z-10"
+            aria-label={isExpanded ? "Collapse notes" : "Expand notes"}
+          >
+            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
+        )}
+
         <div 
           className={`pr-12 transition-all duration-150 ${
             isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-          } h-full flex flex-col`}
+          } ${isExpanded ? '' : 'h-full'} flex flex-col`}
         >
           {/* Title header */}
           <div className="flex items-center gap-2 mb-3">
@@ -159,12 +187,15 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
 
           {/* Notes: always 2-line preview; expands via chevron (card height stays fixed) */}
           {notesText && (
-            <div className="mt-2 flex-1 min-h-0">
+            <div className={isExpanded ? "mt-2" : "mt-2 flex-1 min-h-0"}>
               <ClampedNotes
                 text={notesText}
                 expanded={isNotesExpanded}
                 onExpandedChange={setIsNotesExpanded}
                 lines={2}
+                expandedMode="grow"
+                showToggle={false}
+                onCanExpandChange={setCanExpandNotes}
               />
             </div>
           )}

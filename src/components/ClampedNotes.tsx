@@ -11,6 +11,25 @@ interface ClampedNotesProps {
   lines?: number;
   className?: string;
   buttonClassName?: string;
+
+  /**
+   * Optional callback so the parent can place its own toggle button.
+   * Receives true only when the text exceeds the clamped line count.
+   */
+  onCanExpandChange?: (canExpand: boolean) => void;
+
+  /** Whether to render the built-in toggle button (default: true). */
+  showToggle?: boolean;
+
+  /**
+   * When expanded:
+   * - "scroll": keep height and scroll within container (default)
+   * - "grow": remove clamp and allow layout to grow naturally
+   */
+  expandedMode?: "scroll" | "grow";
+
+  /** Where to anchor the built-in toggle button (default: bottom-right). */
+  togglePosition?: "bottom-right" | "top-right";
 }
 
 /**
@@ -25,6 +44,10 @@ export function ClampedNotes({
   lines = 2,
   className,
   buttonClassName,
+  onCanExpandChange,
+  showToggle = true,
+  expandedMode = "scroll",
+  togglePosition = "bottom-right",
 }: ClampedNotesProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const measureRef = useRef<HTMLParagraphElement | null>(null);
@@ -45,13 +68,17 @@ export function ClampedNotes({
       const lineHeight = Number.isFinite(parseFloat(lineHeightRaw)) ? parseFloat(lineHeightRaw) : 0;
       if (!lineHeight) {
         // Fallback: be permissive (show toggle) rather than hiding it incorrectly.
-        setCanExpand(text.length > 0);
+        const next = text.length > 0;
+        setCanExpand(next);
+        onCanExpandChange?.(next);
         return;
       }
 
       const maxHeight = lineHeight * lines;
       // scrollHeight is the full content height for the un-clamped measurement element.
-      setCanExpand(measureEl.scrollHeight > maxHeight + 1);
+      const next = measureEl.scrollHeight > maxHeight + 1;
+      setCanExpand(next);
+      onCanExpandChange?.(next);
     };
 
     // Initial compute after layout.
@@ -71,12 +98,18 @@ export function ClampedNotes({
   // Tailwind can't statically detect `line-clamp-${lines}`. Keep this explicit.
   const clampClass = lines === 3 ? "line-clamp-3" : lines === 4 ? "line-clamp-4" : "line-clamp-2";
 
+  const expandedClass =
+    expandedMode === "grow" ? "pr-10" : "h-full overflow-auto pr-10";
+
+  const toggleAnchorClass =
+    togglePosition === "top-right" ? "top-0 right-0" : "bottom-0 right-0";
+
   return (
     <div ref={containerRef} className={cn("relative h-full", className)}>
       <p
         className={cn(
           "text-sm text-muted-foreground whitespace-pre-wrap",
-          expanded ? "h-full overflow-auto pr-10" : `${clampClass} pr-10`,
+          expanded ? expandedClass : `${clampClass} pr-10`,
         )}
       >
         {text}
@@ -91,7 +124,7 @@ export function ClampedNotes({
         {text}
       </p>
 
-      {canExpand && (
+      {showToggle && canExpand && (
         <Button
           type="button"
           variant="ghost"
@@ -101,7 +134,7 @@ export function ClampedNotes({
             onExpandedChange(!expanded);
           }}
           className={cn(
-            "absolute bottom-0 right-0 h-9 w-9 p-0 text-muted-foreground hover:text-foreground",
+            `absolute ${toggleAnchorClass} h-9 w-9 p-0 text-muted-foreground hover:text-foreground`,
             buttonClassName,
           )}
           aria-label={expanded ? "Collapse notes" : "Expand notes"}
