@@ -10,6 +10,7 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { toast } from "sonner";
 import hellobookIcon from "@/assets/hellobook-icon.webp";
 import remiLogging6 from "@/assets/remi-logging-6.webp";
+import remiHellobook from "@/assets/remi-hellobook.webp";
 import ViewHelloDialog from "@/components/ViewHelloDialog";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import HellobookPersonCard from "@/components/HellobookPersonCard";
