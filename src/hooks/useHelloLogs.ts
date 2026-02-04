@@ -84,7 +84,8 @@ export const useHelloLogs = () => {
           difficulty_rating: log.difficulty_rating || null,
           no_name_flag: log.no_name_flag || false,
           timezone_offset: timezoneOffset,
-          linked_to: log.linked_to || null
+          linked_to: log.linked_to || null,
+          hello_type: log.hello_type || null,
         })
         .select()
         .single();
