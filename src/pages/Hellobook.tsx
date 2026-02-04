@@ -356,15 +356,31 @@ const Hellobook = () => {
         </div>
 
         {/* Search */}
-        <div className="relative mb-6">
+        <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
             placeholder="Search by name, location, notes or date..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-card border-border rounded-xl"
+            className="pl-10 pr-10 bg-card border-border rounded-xl"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
+        
+        {/* Search results count */}
+        {searchQuery && (
+          <p className="text-sm text-muted-foreground mb-4">
+            {filteredPeople.length} result{filteredPeople.length !== 1 ? 's' : ''} for "{searchQuery}"
+          </p>
+        )}
 
         {/* Logs */}
         {filteredPeople.length === 0 ? (
