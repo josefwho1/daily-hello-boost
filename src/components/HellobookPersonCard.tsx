@@ -110,18 +110,10 @@ const HellobookPersonCardComponent = ({
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0">
-              {/* Challenge badge for entries from quests */}
-              {isChallengeEntry && (
-                <div className="flex items-center gap-1.5 text-xs text-primary mb-1">
-                  <Target className="w-3 h-3" />
-                  <span className="font-medium">Quest #{challengeNumber}</span>
-                </div>
-              )}
-              
               {/* Top row: Name, interaction count, Location */}
               <div className="flex items-center gap-2">
                 <h3 className={`font-semibold truncate ${hasName ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  {primaryLog.name || "????"}
+                  {primaryLog.name || "?"}
                 </h3>
                 
                 {/* Interaction count badge */}
