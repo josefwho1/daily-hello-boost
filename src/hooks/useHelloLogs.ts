@@ -19,6 +19,7 @@ export interface HelloLog {
   timezone_offset: string;
   linked_to?: string | null;
   is_favorite?: boolean;
+  hello_type?: string | null;
 }
 
 export const useHelloLogs = () => {
