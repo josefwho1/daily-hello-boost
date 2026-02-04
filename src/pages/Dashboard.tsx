@@ -353,7 +353,7 @@ export default function Dashboard() {
 
       // Create hello entry with challenge info
       const result = await addLog({
-        notes: `Challenge #${day}: ${challengeName}`,
+        notes: `The 30 Hellos #${day}: ${challengeName}`,
         hello_type: `challenge:${day}`,
       });
 

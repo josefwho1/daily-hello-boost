@@ -16,7 +16,7 @@ import HellobookPersonCard from "@/components/HellobookPersonCard";
 import Community from "@/pages/Community";
 import { HelloOfTheDay } from "@/components/HelloOfTheDay";
 
-type FilterType = 'all' | 'names' | 'unknown' | 'favorites' | 'challenges';
+type FilterType = 'all' | 'names' | 'unknown' | 'favorites';
 type ViewType = 'mybook' | 'global';
 
 // Group logs by person - entries linked together are grouped
@@ -130,13 +130,11 @@ const Hellobook = () => {
     const withNames = groupedPeople.filter(g => g.primaryLog.name && g.primaryLog.name.trim() !== "");
     const withoutNames = groupedPeople.filter(g => !g.primaryLog.name || g.primaryLog.name.trim() === "");
     const favorites = groupedPeople.filter(g => g.primaryLog.is_favorite);
-    const fromChallenges = groupedPeople.filter(g => g.primaryLog.hello_type?.startsWith("challenge:"));
     return {
       all: groupedPeople.length,
       names: withNames.length,
       unknown: withoutNames.length,
-      favorites: favorites.length,
-      challenges: fromChallenges.length
+      favorites: favorites.length
     };
   }, [groupedPeople]);
   
@@ -202,9 +200,6 @@ const Hellobook = () => {
       }
       if (activeFilter === 'favorites') {
         return group.primaryLog.is_favorite;
-      }
-      if (activeFilter === 'challenges') {
-        return group.primaryLog.hello_type?.startsWith("challenge:");
       }
       return true;
     })
@@ -341,22 +336,7 @@ const Hellobook = () => {
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <div className="text-lg font-bold">{stats.unknown}</div>
-            <div className="text-[10px]">????</div>
-          </button>
-          <button
-            onClick={() => setActiveFilter('challenges')}
-            className={`flex-1 py-2 px-1.5 rounded-xl text-center min-w-0 ${
-              activeFilter === 'challenges'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-muted/50 text-muted-foreground'
-            }`}
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-          >
-            <div className="text-lg font-bold flex items-center justify-center gap-0.5">
-              <Target className="w-3.5 h-3.5" />
-              {stats.challenges}
-            </div>
-            <div className="text-[10px]">Quests</div>
+            <div className="text-[10px]">?</div>
           </button>
           <button
             onClick={() => setActiveFilter('favorites')}
