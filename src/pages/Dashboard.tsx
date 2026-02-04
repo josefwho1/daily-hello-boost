@@ -341,17 +341,113 @@ export default function Dashboard() {
   }
   if (!progress) return null;
 
-  // Helper to show challenge completion toast with tappable banner
+  // Helper to show challenge completion toast with Undo and Add Details buttons
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
-    const toastId = toast.custom(id => <ChallengeUndoToast id={id} challengeName={challengeName} onUndo={() => unmarkDayComplete(day)} />, {
-      duration: 3000
-    });
+    // Track if hello entry has been created for this completion
+    let helloEntryCreated = false;
+    let createdHelloId: string | null = null;
 
-    // Hard safety-net: ensure the toast disappears after ~3s even if Sonner's internal
-    // timer gets paused by an interaction/gesture.
-    window.setTimeout(() => {
+    const createHelloEntry = async () => {
+      if (helloEntryCreated) return;
+      helloEntryCreated = true;
+
+      // Create hello entry with challenge info
+      const result = await addLog({
+        notes: `Challenge #${day}: ${challengeName}`,
+        hello_type: `challenge:${day}`,
+      });
+
+      if (result) {
+        createdHelloId = result.id;
+        // Update progress stats
+        const today = getDayKeyInOffset(new Date(), tzOffset);
+        const previousHellosThisWeek = progress?.hellos_this_week || 0;
+        const newHellosThisWeek = previousHellosThisWeek + 1;
+        const newTotalHellos = (progress?.total_hellos || logs.length) + 1;
+        
+        await updateProgress({
+          hellos_this_week: newHellosThisWeek,
+          last_completed_date: today,
+          total_hellos: newTotalHellos,
+        });
+
+        // Record for Daily Mode if active
+        if (dailyModeState.isActive) {
+          const todayKey = getDayKeyInOffset(new Date(), tzOffset);
+          const hasAlreadyRecordedForDailyModeToday = dailyModeState.lastHelloDate === todayKey;
+          const streakBeforeLog = dailyModeState.currentStreak;
+          await recordHelloForDailyMode();
+
+          // Trigger celebration only if this is the first daily mode hello of the day
+          if (!hasAlreadyRecordedForDailyModeToday) {
+            const newStreakValue = streakBeforeLog === 0 ? 1 : streakBeforeLog + 1;
+            setCelebratedStreakValue(newStreakValue);
+            setTimeout(() => setShowStreakCelebration(true), 500);
+          }
+        }
+      }
+    };
+
+    const handleUndo = async () => {
+      // Revert challenge completion
+      await unmarkDayComplete(day);
+
+      // Delete the hello entry if it was created
+      if (createdHelloId) {
+        try {
+          await deleteCloudLog(createdHelloId);
+          // Revert progress stats
+          const previousHellosThisWeek = progress?.hellos_this_week || 0;
+          const previousTotalHellos = progress?.total_hellos || logs.length;
+          await updateProgress({
+            hellos_this_week: Math.max(0, previousHellosThisWeek - 1),
+            total_hellos: Math.max(0, previousTotalHellos - 1),
+          });
+        } catch (error) {
+          console.error("Failed to delete hello entry on undo:", error);
+        }
+      }
+      helloEntryCreated = false;
+      createdHelloId = null;
       toast.dismiss(toastId);
-    }, 3100);
+    };
+
+    const handleAddDetails = () => {
+      toast.dismiss(toastId);
+      // Set up the log screen with pre-filled challenge data
+      // We'll edit the existing entry if it exists
+      if (createdHelloId) {
+        // Navigate to edit the existing hello
+        setEditingLog(logs.find(l => l.id === createdHelloId) || null);
+        // Find the log in the list - but we need to refresh logs first
+        // Instead, open the log dialog with the challenge pre-filled
+      }
+      // Open the log screen to add details
+      setPendingChallengeCompletion({ day, name: challengeName });
+      setAutoStartRecording(false);
+      setShowLogDialog(true);
+    };
+
+    const handleUndoExpired = () => {
+      // Create the hello entry after 5-second window expires
+      createHelloEntry();
+    };
+
+    const toastId = toast.custom(
+      (id) => (
+        <ChallengeCompletionToast
+          id={id}
+          challengeNumber={day}
+          challengeName={challengeName}
+          onUndo={handleUndo}
+          onAddDetails={handleAddDetails}
+          onUndoExpired={handleUndoExpired}
+        />
+      ),
+      {
+        duration: 10000, // Total toast duration: 10 seconds
+      }
+    );
   };
 
   // Helper to handle tier unlock celebrations
