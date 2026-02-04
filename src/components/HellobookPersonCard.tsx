@@ -1,7 +1,7 @@
 import { useState, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, MapPin, Bookmark } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, Bookmark, Target } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface HellobookPersonCardProps {
@@ -11,6 +11,15 @@ interface HellobookPersonCardProps {
   onViewClick: (log: HelloLog) => void;
   onToggleFavorite?: (id: string, isFavorite: boolean) => void;
 }
+
+// Check if a log is from a challenge
+const isFromChallenge = (log: HelloLog) => log.hello_type?.startsWith("challenge:");
+
+// Get challenge number from hello_type
+const getChallengeNumber = (log: HelloLog) => {
+  if (!log.hello_type?.startsWith("challenge:")) return null;
+  return parseInt(log.hello_type.split(":")[1], 10);
+};
 
 // Expandable text component for long notes
 const ExpandableText = ({ text }: { text: string }) => {
@@ -58,6 +67,8 @@ const HellobookPersonCardComponent = ({
 }: HellobookPersonCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const hasName = primaryLog.name && primaryLog.name.trim() !== "";
+  const isChallengeEntry = isFromChallenge(primaryLog);
+  const challengeNumber = getChallengeNumber(primaryLog);
   const allInteractions = [primaryLog, ...linkedLogs].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
