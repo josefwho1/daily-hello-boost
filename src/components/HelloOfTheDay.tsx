@@ -10,32 +10,26 @@ interface HelloOfTheDayProps {
   onViewLog?: (log: HelloLog) => void;
 }
 
-// Expandable notes section that appears below the fixed card content
-const ExpandableNotesSection = ({ 
-  notes, 
-  onToggle 
-}: { 
-  notes: string; 
+// Expandable text component matching Hellobook style
+const ExpandableText = ({ text, isExpanded, onToggle }: { 
+  text: string; 
+  isExpanded: boolean;
   onToggle: (e: React.MouseEvent) => void;
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const needsExpansion = text.length > 80;
 
-  const handleToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onToggle(e);
-    setIsExpanded(!isExpanded);
-  };
+  if (!needsExpansion) {
+    return <p className="text-sm text-muted-foreground">{text}</p>;
+  }
 
   return (
-    <div className="border-t border-border/50">
-      {isExpanded && (
-        <div className="px-4 pt-3 pb-1">
-          <p className="text-sm text-muted-foreground">{notes}</p>
-        </div>
-      )}
+    <div>
+      <p className={`text-sm text-muted-foreground ${!isExpanded ? 'line-clamp-2' : ''}`}>
+        {text}
+      </p>
       <button
-        onClick={handleToggle}
-        className="w-full flex items-center justify-center gap-1 text-xs text-primary hover:text-primary/80 py-2 transition-colors"
+        onClick={onToggle}
+        className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 mt-1 transition-colors"
       >
         {isExpanded ? (
           <>
@@ -62,6 +56,7 @@ const getTodayKey = () => {
 export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
   const [shuffledIndex, setShuffledIndex] = useState<number | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isNotesExpanded, setIsNotesExpanded] = useState(false);
   const { formatTimestamp } = useTimezone();
 
   // Filter logs with both name AND notes
@@ -122,6 +117,7 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
       } while (newIndex === currentIndex && eligibleLogs.length > 1);
       
       setShuffledIndex(newIndex);
+      setIsNotesExpanded(false); // Collapse notes on shuffle
       
       // Persist to localStorage
       localStorage.setItem('memory-of-day-selection', JSON.stringify({
@@ -191,24 +187,21 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
             {formatTimestamp(selectedMemory.created_at, false)}
           </p>
 
-          {/* Notes - always show 2 lines max in fixed area */}
+          {/* Notes with integrated expand/collapse */}
           {selectedMemory.notes && (
             <div className="mt-2">
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                {selectedMemory.notes}
-              </p>
+              <ExpandableText 
+                text={selectedMemory.notes} 
+                isExpanded={isNotesExpanded}
+                onToggle={(e) => {
+                  e.stopPropagation();
+                  setIsNotesExpanded(!isNotesExpanded);
+                }}
+              />
             </div>
           )}
         </div>
       </div>
-      
-      {/* Expand/collapse button - outside fixed area */}
-      {selectedMemory.notes && selectedMemory.notes.length > 80 && (
-        <ExpandableNotesSection 
-          notes={selectedMemory.notes} 
-          onToggle={(e) => e.stopPropagation()}
-        />
-      )}
     </Card>
   );
 };
