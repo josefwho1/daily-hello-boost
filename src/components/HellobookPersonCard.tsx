@@ -202,16 +202,24 @@ const HellobookPersonCardComponent = ({
         // Single interaction - simple card
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
-            {/* Top row: Name, Location, and Edit button */}
+            {/* Challenge badge for entries from quests */}
+            {isChallengeEntry && (
+              <div className="flex items-center gap-1.5 text-xs text-primary mb-1">
+                <Target className="w-3 h-3" />
+                <span className="font-medium">Quest #{challengeNumber}</span>
+              </div>
+            )}
+            
+            {/* Top row: Name, Location */}
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-foreground truncate">
-                {primaryLog.name || "Unknown"}
+              <h3 className={`font-semibold truncate ${hasName ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {primaryLog.name || "????"}
               </h3>
               
-              {/* Add Name badge for entries without names - next to Unknown label */}
+              {/* Badge for entries without details */}
               {!hasName && (
                 <span className="px-2 py-0.5 text-xs rounded-lg bg-primary/10 text-primary flex-shrink-0">
-                  Tap to add name
+                  Tap to add details
                 </span>
               )}
               
