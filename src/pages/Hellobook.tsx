@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Mail, Globe, Bookmark } from "lucide-react";
+import { Search, Mail, Globe, Bookmark, Target } from "lucide-react";
 import { useHelloLogs, HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
