@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { personLogSchema, validateSafe } from '@/lib/validation';
 
 export interface PersonLog {
   id: string;
@@ -49,13 +50,20 @@ export const usePersonLogs = () => {
   ) => {
     if (!user) throw new Error('User not authenticated');
 
+    // Validate input before database insert
+    const validation = validateSafe(personLogSchema, { name, description, tags });
+    if (!validation.success) {
+      throw new Error((validation as { success: false; error: string }).error);
+    }
+    const validatedData = (validation as { success: true; data: { name: string; description?: string | null; tags?: string[] | null } }).data;
+
     const { data, error } = await supabase
       .from('person_logs')
       .insert({
         user_id: user.id,
-        name,
-        description: description || null,
-        tags: tags.length > 0 ? tags : null,
+        name: validatedData.name,
+        description: validatedData.description || null,
+        tags: validatedData.tags && validatedData.tags.length > 0 ? validatedData.tags : null,
         timezone_offset: timezoneOffset,
       })
       .select()

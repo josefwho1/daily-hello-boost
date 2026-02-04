@@ -5,6 +5,7 @@ import { formatInTimeZone } from 'date-fns-tz';
 import { startOfWeek, parseISO } from 'date-fns';
 import { normalizeTimezoneOffset } from '@/lib/timezone';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { helloLogSchema, validateSafe } from '@/lib/validation';
 
 export interface HelloLog {
   id: string;
@@ -64,6 +65,14 @@ export const useHelloLogs = () => {
   }) => {
     if (!user) return null;
 
+    // Validate input before database insert
+    const validation = validateSafe(helloLogSchema, log);
+    if (!validation.success) {
+      console.error('Hello log validation failed:', (validation as { success: false; error: string }).error);
+      throw new Error((validation as { success: false; error: string }).error);
+    }
+    const validatedLog = (validation as { success: true; data: typeof log }).data;
+
     try {
       // Get user's timezone preference
       const { data: profile } = await supabase
@@ -78,15 +87,15 @@ export const useHelloLogs = () => {
         .from('hello_logs')
         .insert({
           user_id: user.id,
-          name: log.name || null,
-          location: log.location || null,
-          notes: log.notes || null,
-          rating: log.rating || null,
-          difficulty_rating: log.difficulty_rating || null,
-          no_name_flag: log.no_name_flag || false,
+          name: validatedLog.name || null,
+          location: validatedLog.location || null,
+          notes: validatedLog.notes || null,
+          rating: validatedLog.rating || null,
+          difficulty_rating: validatedLog.difficulty_rating || null,
+          no_name_flag: validatedLog.no_name_flag || false,
           timezone_offset: timezoneOffset,
-          linked_to: log.linked_to || null,
-          hello_type: log.hello_type || null,
+          linked_to: validatedLog.linked_to || null,
+          hello_type: validatedLog.hello_type || null,
         })
         .select()
         .single();

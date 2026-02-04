@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { challengeCompletionSchema, validateSafe } from '@/lib/validation';
 
 export interface ChallengeCompletion {
   id: string;
@@ -48,9 +49,24 @@ export const useChallengeCompletionsQuery = () => {
     }) => {
       if (!user) throw new Error('No user');
 
+      // Validate input before database insert
+      const validation = validateSafe(challengeCompletionSchema, completion);
+      if (!validation.success) {
+        throw new Error((validation as { success: false; error: string }).error);
+      }
+      const validatedData = (validation as { success: true; data: typeof completion }).data;
+
       const { data, error } = await supabase
         .from('challenge_completions')
-        .insert({ user_id: user.id, ...completion })
+        .insert({ 
+          user_id: user.id, 
+          challenge_day: validatedData.challenge_day,
+          challenge_tag: validatedData.challenge_tag,
+          interaction_name: validatedData.interaction_name,
+          notes: validatedData.notes,
+          rating: validatedData.rating,
+          difficulty_rating: validatedData.difficulty_rating,
+        })
         .select()
         .single();
 
