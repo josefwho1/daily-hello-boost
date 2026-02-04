@@ -147,10 +147,14 @@ export const useHelloLogs = () => {
 
       if (error) throw error;
       
-      // Optimistically update cache
-      queryClient.setQueryData(['hello-logs', user.id, isGuest], (old: HelloLog[] = []) =>
+      // Immediately update cache with new data for instant UI update
+      queryClient.setQueryData(['hello-logs', user.id], (old: HelloLog[] = []) =>
         old.map(log => log.id === id ? data as HelloLog : log)
       );
+      
+      // Also invalidate to ensure consistency across all views
+      await queryClient.invalidateQueries({ queryKey: ['hello-logs'] });
+      
       return data;
     } catch (error) {
       console.error('Error updating hello log:', error);
