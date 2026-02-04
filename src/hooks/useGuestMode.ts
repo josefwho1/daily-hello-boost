@@ -81,7 +81,7 @@ export interface UseGuestModeReturn {
 }
 
 // Trigger save prompt at specific hello milestones
-const SAVE_PROMPT_TRIGGERS = [2, 8, 20];
+const SAVE_PROMPT_TRIGGERS = [5, 12, 25];
 const PROMPT_COOLDOWN_HOURS = 24;
 
 export const useGuestMode = (): UseGuestModeReturn => {
