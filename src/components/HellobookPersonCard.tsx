@@ -113,7 +113,7 @@ const HellobookPersonCardComponent = ({
               {/* Top row: Name, interaction count, Location */}
               <div className="flex items-center gap-2">
                 <h3 className={`font-semibold truncate ${hasName ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  {primaryLog.name || "?"}
+                  {primaryLog.name || "Someone 👤"}
                 </h3>
                 
                 {/* Interaction count badge */}
