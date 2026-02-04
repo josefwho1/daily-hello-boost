@@ -237,10 +237,16 @@ const Challenges = () => {
                 🎯
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-foreground">The 30 Hellos</h3>
-                <p className="text-xs text-muted-foreground">30 ways to start real-world connection</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-foreground">The 30 Hellos</h3>
+                  {isQuestPaused && (
+                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-warning/20 text-warning rounded-full">
+                      PAUSED
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">30 ways to connect in real life</p>
                 <p className="text-xs text-success font-medium">FREE • Perfect for Everyone</p>
-                {isQuestPaused && <p className="text-xs text-warning font-medium mt-1">⏸️ Paused</p>}
               </div>
             </div>
             
