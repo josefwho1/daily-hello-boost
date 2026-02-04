@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Lock, Trophy, Check, Lightbulb } from "lucide-react";
 import { Challenge } from "@/types/challenge";
 import { getPackById } from "@/data/packs";
@@ -91,6 +90,7 @@ export const ActiveChallengeCard = ({
         <div>
           <button
             onClick={onViewPack}
+            data-compact
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
             <Trophy size={18} style={{ color: '#ff6f3b' }} />
@@ -107,6 +107,7 @@ export const ActiveChallengeCard = ({
             onClick={goLeft}
             disabled={!canGoLeft}
             aria-label="Previous challenge"
+            data-compact
             className={cn(
               "h-7 w-7 flex items-center justify-center rounded-lg transition-colors",
               canGoLeft ? "text-muted-foreground hover:text-foreground hover:bg-muted" : "text-muted-foreground/30 pointer-events-none"
@@ -118,6 +119,7 @@ export const ActiveChallengeCard = ({
             onClick={goRight}
             disabled={!canGoRight}
             aria-label="Next challenge"
+            data-compact
             className={cn(
               "h-7 w-7 flex items-center justify-center rounded-lg transition-colors",
               canGoRight ? "text-muted-foreground hover:text-foreground hover:bg-muted" : "text-muted-foreground/30 pointer-events-none"
@@ -170,11 +172,12 @@ export const ActiveChallengeCard = ({
       </div>
 
       {/* Button area */}
-      <div className="mt-3 px-2">
+      <div className="mt-3 px-2 pb-2">
         <div className="h-8 flex items-center justify-center">
           {allChallengesComplete && onEndChallenge ? (
             <button
               onClick={onEndChallenge}
+              data-compact
               className="w-full h-8 rounded-full border border-border bg-background text-foreground text-xs font-medium flex items-center justify-center hover:bg-muted transition-colors"
             >
               End Challenge
@@ -182,6 +185,7 @@ export const ActiveChallengeCard = ({
           ) : challengeUnlocked && !challengeCompleted ? (
             <button
               onClick={() => onLogHello(currentChallenge)}
+              data-compact
               className="w-full h-8 rounded-full bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center hover:bg-primary/90 transition-colors"
             >
               Complete Challenge
