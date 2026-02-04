@@ -5,6 +5,7 @@ import { formatInTimeZone } from 'date-fns-tz';
 import { startOfWeek, parseISO } from 'date-fns';
 import { normalizeTimezoneOffset } from '@/lib/timezone';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { helloLogSchema, validateSafe } from '@/lib/validation';
 
 export interface HelloLog {
   id: string;
