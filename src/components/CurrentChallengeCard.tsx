@@ -199,7 +199,7 @@ export const CurrentChallengeCard = ({
             </div>
 
             {/* Buttons - fixed layout with justify-between to prevent movement */}
-            <div className="mt-auto pt-2 flex-row flex items-center justify-between py-0">
+            <div className="mt-auto pt-2 flex-row py-0 flex items-start justify-between">
               {isLocked ? <button disabled className="h-9 px-4 rounded-full text-sm font-medium border border-border/30 text-muted-foreground/40 flex items-center justify-center gap-1 min-w-[140px] cursor-not-allowed">
                   <Lock size={14} />
                   Locked
