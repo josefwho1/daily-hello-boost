@@ -1,9 +1,10 @@
 import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shuffle, MapPin, ChevronDown, ChevronUp } from "lucide-react";
+import { Shuffle, MapPin } from "lucide-react";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
+import { ClampedNotes } from "@/components/ClampedNotes";
 
 interface HelloOfTheDayProps {
   logs: HelloLog[];
@@ -59,6 +60,11 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
     return eligibleLogs[index];
   }, [eligibleLogs, shuffledIndex]);
 
+  // Always collapse notes when the selected entry changes.
+  useEffect(() => {
+    setIsNotesExpanded(false);
+  }, [selectedMemory?.id]);
+
   const handleShuffle = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (eligibleLogs.length <= 1) return;
@@ -101,9 +107,6 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
 
   const displayLocation = selectedMemory?.location?.trim();
   const notesText = selectedMemory?.notes?.trim() || "";
-  // Heuristic: if it's long enough to likely wrap beyond 2 lines, show the toggle.
-  // (We keep this simple + robust; the fixed-height card ensures stability regardless.)
-  const notesCanExpand = notesText.length > 90;
 
   if (!selectedMemory) return null;
 
@@ -126,30 +129,10 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
           </Button>
         )}
 
-        {/* Notes expand/collapse toggle - bottom right (only if needed) */}
-        {notesCanExpand && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsNotesExpanded((v) => !v);
-            }}
-            className="absolute bottom-3 right-3 h-9 w-9 p-0 text-muted-foreground hover:text-foreground z-10"
-            aria-label={isNotesExpanded ? "Collapse notes" : "Expand notes"}
-          >
-            {isNotesExpanded ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
-          </Button>
-        )}
-        
         <div 
           className={`pr-12 transition-all duration-150 ${
             isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-          }`}
+          } h-full flex flex-col`}
         >
           {/* Title header */}
           <div className="flex items-center gap-2 mb-3">
@@ -174,14 +157,15 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
             {formatTimestamp(selectedMemory.created_at, false)}
           </p>
 
-          {/* Notes: always 2-line preview; expands within a scroll area (card height stays fixed) */}
+          {/* Notes: always 2-line preview; expands via chevron (card height stays fixed) */}
           {notesText && (
             <div className="mt-2 flex-1 min-h-0">
-              <div className={`text-sm text-muted-foreground ${isNotesExpanded ? 'h-full overflow-auto pr-2' : ''}`}>
-                <p className={!isNotesExpanded ? 'line-clamp-2' : ''}>
-                  {notesText}
-                </p>
-              </div>
+              <ClampedNotes
+                text={notesText}
+                expanded={isNotesExpanded}
+                onExpandedChange={setIsNotesExpanded}
+                lines={2}
+              />
             </div>
           )}
         </div>
