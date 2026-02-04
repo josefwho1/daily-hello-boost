@@ -201,9 +201,6 @@ const Hellobook = () => {
       if (activeFilter === 'favorites') {
         return group.primaryLog.is_favorite;
       }
-      if (activeFilter === 'challenges') {
-        return group.primaryLog.hello_type?.startsWith("challenge:");
-      }
       return true;
     })
     .filter(group => {
