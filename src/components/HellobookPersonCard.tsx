@@ -62,7 +62,6 @@ const HellobookPersonCardComponent = ({
   const [isOpen, setIsOpen] = useState(false);
   const hasName = primaryLog.name && primaryLog.name.trim() !== "";
   const isChallengeEntry = isFromChallenge(primaryLog);
-  const challengeNumber = getChallengeNumber(primaryLog);
   const allInteractions = [primaryLog, ...linkedLogs].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
