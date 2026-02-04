@@ -82,7 +82,6 @@ export const useHelloLogs = () => {
         .maybeSingle();
 
       const timezoneOffset = normalizeTimezoneOffset(profile?.timezone_preference);
-      const validatedLog = validation.data;
 
       const { data, error } = await supabase
         .from('hello_logs')

@@ -54,11 +54,18 @@ export const useChallengeCompletionsQuery = () => {
       if (!validation.success) {
         throw new Error(validation.error);
       }
-      const validatedData = validation.data;
 
       const { data, error } = await supabase
         .from('challenge_completions')
-        .insert({ user_id: user.id, ...validatedData })
+        .insert({ 
+          user_id: user.id, 
+          challenge_day: validation.data.challenge_day!,
+          challenge_tag: validation.data.challenge_tag,
+          interaction_name: validation.data.interaction_name,
+          notes: validation.data.notes,
+          rating: validation.data.rating!,
+          difficulty_rating: validation.data.difficulty_rating,
+        })
         .select()
         .single();
 

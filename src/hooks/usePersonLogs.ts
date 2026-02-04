@@ -60,9 +60,9 @@ export const usePersonLogs = () => {
       .from('person_logs')
       .insert({
         user_id: user.id,
-        name: validatedData.name,
-        description: validatedData.description || null,
-        tags: validatedData.tags && validatedData.tags.length > 0 ? validatedData.tags : null,
+        name: validation.data.name,
+        description: validation.data.description || null,
+        tags: validation.data.tags && validation.data.tags.length > 0 ? validation.data.tags : null,
         timezone_offset: timezoneOffset,
       })
       .select()
