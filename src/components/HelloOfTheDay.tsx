@@ -187,24 +187,21 @@ export const HelloOfTheDay = ({ logs, onViewLog }: HelloOfTheDayProps) => {
             {formatTimestamp(selectedMemory.created_at, false)}
           </p>
 
-          {/* Notes - always show 2 lines max in fixed area */}
+          {/* Notes with integrated expand/collapse */}
           {selectedMemory.notes && (
             <div className="mt-2">
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                {selectedMemory.notes}
-              </p>
+              <ExpandableText 
+                text={selectedMemory.notes} 
+                isExpanded={isNotesExpanded}
+                onToggle={(e) => {
+                  e.stopPropagation();
+                  setIsNotesExpanded(!isNotesExpanded);
+                }}
+              />
             </div>
           )}
         </div>
       </div>
-      
-      {/* Expand/collapse button - outside fixed area */}
-      {selectedMemory.notes && selectedMemory.notes.length > 80 && (
-        <ExpandableNotesSection 
-          notes={selectedMemory.notes} 
-          onToggle={(e) => e.stopPropagation()}
-        />
-      )}
     </Card>
   );
 };
