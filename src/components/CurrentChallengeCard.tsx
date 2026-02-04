@@ -216,13 +216,16 @@ export const CurrentChallengeCard = ({
           }} className="h-9 px-4 rounded-full text-sm font-medium border border-border/50 text-muted-foreground hover:bg-success/10 hover:text-success hover:border-success/50 transition-colors flex items-center justify-center gap-1 min-w-[140px]">
                   Mark as complete
                 </button>}
-              <Button variant="ghost" size="sm" onClick={e => {
-            e.stopPropagation();
-            onViewAll();
-          }} className="rounded-full border-0">
+              <button 
+                onClick={e => {
+                  e.stopPropagation();
+                  onViewAll();
+                }} 
+                className="h-9 px-4 rounded-full text-sm font-medium border border-border/50 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center justify-center gap-1 min-w-[140px]"
+              >
                 View All
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div> : null}
 
