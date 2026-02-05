@@ -190,16 +190,15 @@ export const useLocalNotifications = () => {
     }
   }, [isNativePlatform, preferences.morningTime]);
 
-  // Schedule afternoon notification (3pm daily for users with streak)
   const scheduleAfternoonNotification = useCallback(async () => {
     if (!isNativePlatform) return;
 
-    const message = getRandomMessage(afternoonMessages);
+    const body = getRandomMessage(afternoonMessages);
     
     const notification: LocalNotificationSchema = {
       id: NOTIFICATION_ID_AFTERNOON,
-      title: message.title,
-      body: message.body,
+      title: NOTIFICATION_TITLE,
+      body: body,
       schedule: {
         on: {
           hour: preferences.afternoonTime,
