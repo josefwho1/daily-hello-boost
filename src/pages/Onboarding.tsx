@@ -442,13 +442,13 @@ export default function Onboarding() {
                 Add to Hellobook
               </Button>
               <Button 
-                onClick={handleSkipHellobook}
+                onClick={() => setStep('no_worries')}
                 variant="ghost"
                 className="w-full text-muted-foreground" 
                 size="lg"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Loading..." : "I'll do this later"}
+                I'll do this later
               </Button>
             </div>
           </div>
