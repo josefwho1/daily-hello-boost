@@ -261,7 +261,7 @@ export default function Onboarding() {
   // Handle last connection answer
   const handleLastConnectionSelect = (answer: LastConnectionAnswer) => {
     setLastConnectionAnswer(answer);
-    if (isRecentConnection(answer)) {
+    if (answer === 'this_week' || answer === 'last_week' || answer === 'a_while_ago') {
       setStep('add_to_hellobook');
     } else {
       setStep('no_worries');
