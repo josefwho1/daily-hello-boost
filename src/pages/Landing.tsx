@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import remiWaving from "@/assets/remi-waving.webp";
-import logo from "@/assets/one-hello-logo-tagline.svg";
+import remiHoldingOrb from "@/assets/remi-holding-orb.webp";
+import logo from "@/assets/one-hello-logo.svg";
 
 const Index = () => {
   const navigate = useNavigate();
