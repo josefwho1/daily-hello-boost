@@ -9,7 +9,9 @@ interface TutorialStep {
   id: string;
   emoji?: string;
   title: string;
-  body: string;
+  body?: string;
+  bodyBefore?: string;
+  bodyAfter?: string;
   position?: 'center';
   highlight?: 'home-nav' | 'hellobook-nav' | 'quests-nav';
   showButtonPreview?: boolean;
