@@ -8,51 +8,54 @@ const NOTIFICATION_ID_MORNING = 1;
 const NOTIFICATION_ID_AFTERNOON = 2;
 const NOTIFICATION_ID_WEEKLY = 3;
 
+// Consistent title for all notifications
+const NOTIFICATION_TITLE = "One Hello 👋";
+
 // Morning messages (9am daily for Daily Mode users)
 const morningMessages = [
-  { title: "One Hello a day keeps the doctor away 👨‍⚕️", body: "Time to log your daily hello!" },
-  { title: "Met anyone cool lately?", body: "Store them in here so you don't forget" },
-  { title: "Let's make someone's day", body: "One Hello is all it takes 🦝" },
-  { title: "I once said hello and made a friend", body: "Just saying 🦝" },
-  { title: "Furry reminder", body: "Say your One Hello today" },
-  { title: "99% of people light up", body: "When a stranger is simply kind." },
-  { title: "The world is full of people", body: "Waiting for someone to say hello first." },
-  { title: "The smallest act of courage", body: "Can change someone's entire day." },
-  { title: "Your future best friend", body: "Is currently a stranger." },
-  { title: "A name remembered", body: "Is a heart acknowledged." },
-  { title: "Life is meaningless without connection", body: "Go make one today, however big or small." },
-  { title: "The world is waiting", body: "For someone to make the first move. Today, that's you." },
-  { title: "If it scares you a little", body: "It's probably worth doing." },
-  { title: "Saying hello is free", body: "But the pay off is infinite" },
-  { title: "You miss 100% of the connections", body: "You don't initiate." },
-  { title: "A small hello", body: "Can change someone's entire day." },
-  { title: "Let's reconnect the world", body: "One Hello at a time" },
+  "One Hello a day keeps the doctor away 👨‍⚕️",
+  "Met anyone cool lately? Don't forget them 🦝",
+  "Let's make someone's day today",
+  "I once said hello and made a friend",
+  "Furry reminder to say your hello 🦝",
+  "99% of people light up when you're kind",
+  "Someone's waiting for you to say hello first",
+  "The smallest act of courage changes days",
+  "Your future best friend is a stranger",
+  "A name remembered is a heart acknowledged",
+  "Go make a connection today 🦝",
+  "Make the first move today",
+  "If it scares you, it's worth doing",
+  "Saying hello is free, the payoff is infinite",
+  "You miss 100% of hellos you don't say",
+  "A small hello can change someone's day",
+  "Reconnect the world, one hello at a time",
 ];
 
-// Afternoon messages (3pm for Daily Mode users with streak >= 1, only if no hello logged today)
+// Afternoon messages (3pm for Daily Mode users with streak >= 1)
 const afternoonMessages = [
-  { title: "Time flies", body: "Don't forget to say your One Hello today :-)" },
-  { title: "Have you logged your hello today?", body: "🦝" },
-  { title: "Hello-icopter coming in for landing", body: "🚁" },
-  { title: "Your streak is still alive!", body: "One Hello is all it takes" },
-  { title: "It's not too late", body: "Come say hello and keep that streak going" },
-  { title: "Your streak lives on", body: "But I can't hold it any longer, come say hello!" },
-  { title: "One hello could brighten your day", body: "Plus it's free 🤷‍♂️" },
-  { title: "Any Hellos you want to tell me about?", body: "🦝" },
-  { title: "3pm already?!", body: "Time to log a hello to save your streak" },
-  { title: "Hello... it's me", body: "(Reminder Raccoon)" },
+  "Time flies! Log your hello today 🦝",
+  "Have you logged your hello today?",
+  "Hello-icopter coming in for landing 🚁",
+  "Your streak is alive! Log a hello now",
+  "Keep that streak going 🔥",
+  "Can't hold your streak much longer!",
+  "One hello could brighten your day",
+  "Any hellos to tell me about? 🦝",
+  "3pm already?! Save your streak",
+  "Hello... it's me (Reminder Raccoon)",
 ];
 
 // Weekly messages (for users with Daily Mode OFF)
 const weeklyMessages = [
-  { title: "Any Hellos you want to tell me about?", body: "🦝" },
-  { title: "Remi here", body: "Furry reminder to say Hello" },
-  { title: "Meet anyone new lately?", body: "Store their name in here so you don't forget" },
-  { title: "One Hello is all it takes", body: "Give it a try" },
-  { title: "Hey it's been a while", body: "Come say hello" },
+  "Any hellos to tell me about? 🦝",
+  "Furry reminder to say hello 🦝",
+  "Meet anyone new? Store their name here",
+  "One Hello is all it takes",
+  "Hey it's been a while, come say hello",
 ];
 
-function getRandomMessage(messages: { title: string; body: string }[]) {
+function getRandomMessage(messages: string[]): string {
   return messages[Math.floor(Math.random() * messages.length)];
 }
 
@@ -156,16 +159,15 @@ export const useLocalNotifications = () => {
     }
   }, [isNativePlatform]);
 
-  // Schedule morning notification (9am daily)
   const scheduleMorningNotification = useCallback(async () => {
     if (!isNativePlatform) return;
 
-    const message = getRandomMessage(morningMessages);
+    const body = getRandomMessage(morningMessages);
     
     const notification: LocalNotificationSchema = {
       id: NOTIFICATION_ID_MORNING,
-      title: message.title,
-      body: message.body,
+      title: NOTIFICATION_TITLE,
+      body: body,
       schedule: {
         on: {
           hour: preferences.morningTime,
@@ -188,16 +190,15 @@ export const useLocalNotifications = () => {
     }
   }, [isNativePlatform, preferences.morningTime]);
 
-  // Schedule afternoon notification (3pm daily for users with streak)
   const scheduleAfternoonNotification = useCallback(async () => {
     if (!isNativePlatform) return;
 
-    const message = getRandomMessage(afternoonMessages);
+    const body = getRandomMessage(afternoonMessages);
     
     const notification: LocalNotificationSchema = {
       id: NOTIFICATION_ID_AFTERNOON,
-      title: message.title,
-      body: message.body,
+      title: NOTIFICATION_TITLE,
+      body: body,
       schedule: {
         on: {
           hour: preferences.afternoonTime,
@@ -220,17 +221,16 @@ export const useLocalNotifications = () => {
     }
   }, [isNativePlatform, preferences.afternoonTime]);
 
-  // Schedule weekly notification (random day, 10am for users with Daily Mode OFF)
   const scheduleWeeklyNotification = useCallback(async () => {
     if (!isNativePlatform) return;
 
-    const message = getRandomMessage(weeklyMessages);
+    const body = getRandomMessage(weeklyMessages);
     const randomDay = Math.floor(Math.random() * 7) + 1; // 1-7 (Sunday-Saturday)
     
     const notification: LocalNotificationSchema = {
       id: NOTIFICATION_ID_WEEKLY,
-      title: message.title,
-      body: message.body,
+      title: NOTIFICATION_TITLE,
+      body: body,
       schedule: {
         on: {
           weekday: randomDay,
