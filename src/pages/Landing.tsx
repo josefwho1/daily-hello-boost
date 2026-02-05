@@ -18,9 +18,9 @@ const Index = () => {
         
         {/* Remi mascot */}
         <img 
-          src={remiWaving} 
-          alt="Remi waving" 
-          className="w-48 h-auto mx-auto animate-bounce-soft"
+          src={remiHoldingOrb} 
+          alt="Remi holding orb" 
+          className="w-48 h-auto mx-auto"
         />
         
         {/* Action buttons */}
