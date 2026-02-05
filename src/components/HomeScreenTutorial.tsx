@@ -1,18 +1,19 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { UserPlus, Mic } from "lucide-react";
 import remiWaving from "@/assets/remi-waving.webp";
 
 interface TutorialStep {
   id: string;
-  emoji: string;
+  emoji?: string;
   title: string;
   body: string;
   position?: 'center';
   highlight?: 'home-nav' | 'hellobook-nav' | 'quests-nav';
   showButtonPreview?: boolean;
+  showRemi?: boolean;
 }
 
 interface HomeScreenTutorialProps {
@@ -25,33 +26,33 @@ interface HomeScreenTutorialProps {
 const tutorialSteps: TutorialStep[] = [
   {
     id: 'home',
-    emoji: "🏠",
-    title: "Home",
-    body: "Here you'll find:\n\n• Your stats\n• Today's Hello or Challenge\n• Log a Hello",
+    title: "Welcome to the home page.",
+    body: "Here you'll find your:\n\n• Hello stats (streak + all time)\n• Friendly prompts & challenges\n• A place to log new hellos",
     position: 'center',
     highlight: 'home-nav',
+    showRemi: true,
   },
   {
     id: 'log-hello',
     emoji: "✏️",
     title: "Log a Hello",
-    body: "Any time you meet someone new, store them in here so you don't forget.\n\n💡 Use our AI dictate function to quickly log multiple hellos at once.",
+    body: "Tap here anytime you meet someone new.\n\n💡 Use our AI dictate 🎙️ to log multiple hellos at once.",
     position: 'center',
     showButtonPreview: true,
   },
   {
     id: 'hellobook',
     emoji: "📖",
-    title: "Your Hello Book",
-    body: "Every person you meet is saved here. Search by name or location—so you never forget who you've met.",
+    title: "Your Hellobook",
+    body: "This is where your hellos live.\n\nSearch by name, place or notes to revisit the stories you've collected along the way.",
     position: 'center',
     highlight: 'hellobook-nav',
   },
   {
     id: 'quests',
     emoji: "🎯",
-    title: "Your Quests",
-    body: "Select packs & challenges to complete.\n\nToggle Daily Mode for reminders and streak tracking.",
+    title: "Quests",
+    body: "Optional packs & challenges to create more stories.\n\nThe 30 Hellos is the best way to start.\n\nToggle Daily Mode on/off to track your streak.",
     position: 'center',
     highlight: 'quests-nav',
   },
@@ -102,7 +103,6 @@ const HighlightOverlay = ({ highlight }: { highlight?: TutorialStep['highlight']
     });
     setRects(newRects);
 
-    // Update on resize
     const handleResize = () => {
       const updatedRects: DOMRect[] = [];
       elements.forEach(el => {
@@ -160,7 +160,6 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
 
   const handleNext = () => {
     if (isLastStep) {
-      // Navigate back to home before completing
       navigate('/');
       setCurrentStep(0);
       hasStartedRef.current = false;
@@ -229,8 +228,8 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
               transition={{ duration: 0.25 }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Remi avatar for first step only */}
-              {currentStep === 0 && (
+              {/* Remi avatar for first step */}
+              {currentStepData.showRemi && (
                 <div className="flex justify-center mb-4">
                   <img 
                     src={remiWaving} 
@@ -242,7 +241,7 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
               )}
 
               {/* Emoji for other steps */}
-              {currentStep > 0 && (
+              {currentStepData.emoji && !currentStepData.showRemi && (
                 <div className="flex justify-center mb-3">
                   <span className="text-4xl">{currentStepData.emoji}</span>
                 </div>
@@ -282,7 +281,7 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
                   onClick={handleNext}
                   className="w-full bg-primary text-primary-foreground font-medium py-3 px-6 rounded-xl hover:bg-primary/90 transition-colors"
                 >
-                  {isLastStep ? "Get Started" : "Next"}
+                  {isLastStep ? "Let's begin" : "Next"}
                 </button>
                 {!isLastStep && (
                   <button
