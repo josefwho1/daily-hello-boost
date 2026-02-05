@@ -261,7 +261,7 @@ export default function Onboarding() {
   // Handle last connection answer
   const handleLastConnectionSelect = (answer: LastConnectionAnswer) => {
     setLastConnectionAnswer(answer);
-    if (isRecentConnection(answer)) {
+    if (answer === 'this_week' || answer === 'last_week' || answer === 'a_while_ago') {
       setStep('add_to_hellobook');
     } else {
       setStep('no_worries');
@@ -442,13 +442,13 @@ export default function Onboarding() {
                 Add to Hellobook
               </Button>
               <Button 
-                onClick={handleSkipHellobook}
+                onClick={() => setStep('no_worries')}
                 variant="ghost"
                 className="w-full text-muted-foreground" 
                 size="lg"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Loading..." : "I'll do this later"}
+                I'll do this later
               </Button>
             </div>
           </div>

@@ -9,7 +9,9 @@ interface TutorialStep {
   id: string;
   emoji?: string;
   title: string;
-  body: string;
+  body?: string;
+  bodyBefore?: string;
+  bodyAfter?: string;
   position?: 'center';
   highlight?: 'home-nav' | 'hellobook-nav' | 'quests-nav';
   showButtonPreview?: boolean;
@@ -36,7 +38,8 @@ const tutorialSteps: TutorialStep[] = [
     id: 'log-hello',
     emoji: "✏️",
     title: "Log a Hello",
-    body: "Tap here anytime you meet someone new.\n\n💡 Use our AI dictate 🎙️ to log multiple hellos at once.",
+    bodyBefore: "Tap here anytime you meet someone new.",
+    bodyAfter: "💡 Use our AI dictate 🎙️ to log multiple hellos at once.",
     position: 'center',
     showButtonPreview: true,
   },
@@ -252,13 +255,27 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
                 {currentStepData.title}
               </h3>
 
-              {/* Body */}
-              <p className="text-muted-foreground text-center leading-relaxed text-sm">
-                {formatBody(currentStepData.body)}
-              </p>
+              {/* Body - standard or split around button preview */}
+              {currentStepData.body && (
+                <p className="text-muted-foreground text-center leading-relaxed text-sm">
+                  {formatBody(currentStepData.body)}
+                </p>
+              )}
+              
+              {currentStepData.bodyBefore && (
+                <p className="text-muted-foreground text-center leading-relaxed text-sm">
+                  {currentStepData.bodyBefore}
+                </p>
+              )}
 
               {/* Button preview for Log a Hello step */}
               {currentStepData.showButtonPreview && <LogHelloButtonPreview />}
+              
+              {currentStepData.bodyAfter && (
+                <p className="text-muted-foreground text-center leading-relaxed text-sm">
+                  {currentStepData.bodyAfter}
+                </p>
+              )}
 
               {/* Spacer when no button preview */}
               {!currentStepData.showButtonPreview && <div className="mb-5" />}
