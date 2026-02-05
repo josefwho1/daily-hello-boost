@@ -55,7 +55,7 @@ const weeklyMessages = [
   "Hey it's been a while, come say hello",
 ];
 
-function getRandomMessage(messages: { title: string; body: string }[]) {
+function getRandomMessage(messages: string[]): string {
   return messages[Math.floor(Math.random() * messages.length)];
 }
 
