@@ -255,13 +255,27 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
                 {currentStepData.title}
               </h3>
 
-              {/* Body */}
-              <p className="text-muted-foreground text-center leading-relaxed text-sm">
-                {formatBody(currentStepData.body)}
-              </p>
+              {/* Body - standard or split around button preview */}
+              {currentStepData.body && (
+                <p className="text-muted-foreground text-center leading-relaxed text-sm">
+                  {formatBody(currentStepData.body)}
+                </p>
+              )}
+              
+              {currentStepData.bodyBefore && (
+                <p className="text-muted-foreground text-center leading-relaxed text-sm">
+                  {currentStepData.bodyBefore}
+                </p>
+              )}
 
               {/* Button preview for Log a Hello step */}
               {currentStepData.showButtonPreview && <LogHelloButtonPreview />}
+              
+              {currentStepData.bodyAfter && (
+                <p className="text-muted-foreground text-center leading-relaxed text-sm">
+                  {currentStepData.bodyAfter}
+                </p>
+              )}
 
               {/* Spacer when no button preview */}
               {!currentStepData.showButtonPreview && <div className="mb-5" />}
