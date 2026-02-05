@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { UserPlus, Mic } from "lucide-react";
 import remiWaving from "@/assets/remi-waving.webp";
+import { useAssetPreloader } from "@/hooks/useAssetPreloader";
 
 interface TutorialStep {
   id: string;
@@ -21,7 +22,6 @@ interface TutorialStep {
 interface HomeScreenTutorialProps {
   open: boolean;
   onComplete: () => void;
-  /** Called immediately when the tutorial opens so the caller can persist "seen" state */
   onMarkSeen?: () => void;
 }
 
@@ -61,22 +61,21 @@ const tutorialSteps: TutorialStep[] = [
   },
 ];
 
-// Helper to get highlight selector based on step
+// Preload tutorial assets
+const TUTORIAL_ASSETS = [remiWaving];
+
+// Helper to get highlight selector
 const getHighlightSelector = (highlight?: TutorialStep['highlight']): string | null => {
   switch (highlight) {
-    case 'home-nav':
-      return '[href="/"]';
-    case 'hellobook-nav':
-      return '[href="/hellobook"]';
-    case 'quests-nav':
-      return '[href="/challenges"]';
-    default:
-      return null;
+    case 'home-nav': return '[href="/"]';
+    case 'hellobook-nav': return '[href="/hellobook"]';
+    case 'quests-nav': return '[href="/challenges"]';
+    default: return null;
   }
 };
 
-// Visual mockup of Log Hello buttons for the tutorial
-const LogHelloButtonPreview = () => (
+// Memoized button preview component
+const LogHelloButtonPreview = memo(() => (
   <div className="flex gap-2 justify-center my-4">
     <div className="flex-1 max-w-[200px] h-12 bg-primary text-primary-foreground rounded-md flex items-center justify-center gap-2 text-sm font-semibold shadow-md">
       <UserPlus className="w-4 h-4" />
@@ -86,10 +85,11 @@ const LogHelloButtonPreview = () => (
       <Mic className="w-4 h-4 text-foreground" />
     </div>
   </div>
-);
+));
+LogHelloButtonPreview.displayName = 'LogHelloButtonPreview';
 
-// Highlight overlay component
-const HighlightOverlay = ({ highlight }: { highlight?: TutorialStep['highlight'] }) => {
+// Memoized highlight overlay
+const HighlightOverlay = memo(({ highlight }: { highlight?: TutorialStep['highlight'] }) => {
   const [rects, setRects] = useState<DOMRect[]>([]);
 
   useEffect(() => {
@@ -99,23 +99,16 @@ const HighlightOverlay = ({ highlight }: { highlight?: TutorialStep['highlight']
       return;
     }
 
-    const elements = document.querySelectorAll(selector);
-    const newRects: DOMRect[] = [];
-    elements.forEach(el => {
-      newRects.push(el.getBoundingClientRect());
-    });
-    setRects(newRects);
-
-    const handleResize = () => {
-      const updatedRects: DOMRect[] = [];
-      elements.forEach(el => {
-        updatedRects.push(el.getBoundingClientRect());
-      });
-      setRects(updatedRects);
+    const updateRects = () => {
+      const elements = document.querySelectorAll(selector);
+      const newRects: DOMRect[] = [];
+      elements.forEach(el => newRects.push(el.getBoundingClientRect()));
+      setRects(newRects);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    updateRects();
+    window.addEventListener('resize', updateRects);
+    return () => window.removeEventListener('resize', updateRects);
   }, [highlight]);
 
   if (rects.length === 0) return null;
@@ -136,21 +129,135 @@ const HighlightOverlay = ({ highlight }: { highlight?: TutorialStep['highlight']
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.15 }}
         />
       ))}
     </>,
     document.body
   );
-};
+});
+HighlightOverlay.displayName = 'HighlightOverlay';
 
-export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenTutorialProps) => {
+// Memoized step content component
+const StepContent = memo(({ 
+  step, 
+  isLast, 
+  onNext, 
+  onSkip 
+}: { 
+  step: TutorialStep; 
+  isLast: boolean; 
+  onNext: () => void; 
+  onSkip: () => void;
+}) => {
+  const formatBody = useCallback((text: string) => {
+    return text.split('\n').map((line, i, arr) => (
+      <span key={i}>
+        {line}
+        {i < arr.length - 1 && <br />}
+      </span>
+    ));
+  }, []);
+
+  return (
+    <motion.div
+      className="bg-card border-2 border-primary rounded-2xl p-5 shadow-2xl w-full max-w-[calc(100vw-2.5rem)] sm:max-w-sm pointer-events-auto"
+      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9, y: -20 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Remi avatar for first step */}
+      {step.showRemi && (
+        <div className="flex justify-center mb-4">
+          <img 
+            src={remiWaving} 
+            alt="Remi" 
+            className="w-20 h-20 object-contain"
+            loading="eager"
+          />
+        </div>
+      )}
+
+      {/* Emoji for other steps */}
+      {step.emoji && !step.showRemi && (
+        <div className="flex justify-center mb-3">
+          <span className="text-4xl">{step.emoji}</span>
+        </div>
+      )}
+
+      {/* Title */}
+      <h3 className="text-xl font-bold text-foreground text-center mb-2">
+        {step.title}
+      </h3>
+
+      {/* Body content */}
+      {step.body && (
+        <p className="text-muted-foreground text-center leading-relaxed text-sm">
+          {formatBody(step.body)}
+        </p>
+      )}
+      
+      {step.bodyBefore && (
+        <p className="text-muted-foreground text-center leading-relaxed text-sm">
+          {step.bodyBefore}
+        </p>
+      )}
+
+      {step.showButtonPreview && <LogHelloButtonPreview />}
+      
+      {step.bodyAfter && (
+        <p className="text-muted-foreground text-center leading-relaxed text-sm">
+          {step.bodyAfter}
+        </p>
+      )}
+
+      {!step.showButtonPreview && <div className="mb-5" />}
+
+      {/* Progress dots */}
+      <div className="flex justify-center gap-1.5 mb-4">
+        {tutorialSteps.map((_, index) => (
+          <div
+            key={index}
+            className={`w-2 h-2 rounded-full transition-colors duration-150 ${
+              index === tutorialSteps.findIndex(s => s.id === step.id) ? 'bg-primary' : 'bg-muted'
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Buttons */}
+      <div className="flex flex-col gap-2">
+        <button
+          onClick={onNext}
+          className="w-full bg-primary text-primary-foreground font-medium py-3 px-6 rounded-xl hover:bg-primary/90 transition-colors duration-150"
+        >
+          {isLast ? "Let's begin" : "Next"}
+        </button>
+        {!isLast && (
+          <button
+            onClick={onSkip}
+            className="w-full text-muted-foreground font-medium py-2 px-6 rounded-xl hover:text-foreground transition-colors duration-150 text-sm"
+          >
+            Skip tutorial
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
+});
+StepContent.displayName = 'StepContent';
+
+export const HomeScreenTutorial = memo(({ open, onComplete, onMarkSeen }: HomeScreenTutorialProps) => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const hasStartedRef = useRef(false);
   const markedSeenRef = useRef(false);
 
-  // Mark as seen immediately when tutorial opens (only once)
+  // Preload tutorial assets
+  useAssetPreloader(TUTORIAL_ASSETS);
+
+  // Mark as seen immediately when tutorial opens
   useEffect(() => {
     if (open && !markedSeenRef.current && onMarkSeen) {
       markedSeenRef.current = true;
@@ -158,165 +265,73 @@ export const HomeScreenTutorial = ({ open, onComplete, onMarkSeen }: HomeScreenT
     }
   }, [open, onMarkSeen]);
 
-  const currentStepData = tutorialSteps[currentStep];
-  const isLastStep = currentStep === tutorialSteps.length - 1;
+  // Reset on close
+  useEffect(() => {
+    if (!open) {
+      setCurrentStep(0);
+    }
+  }, [open]);
 
-  const handleNext = () => {
-    if (isLastStep) {
+  const handleNext = useCallback(() => {
+    if (currentStep === tutorialSteps.length - 1) {
       navigate('/');
       setCurrentStep(0);
-      hasStartedRef.current = false;
       onComplete();
     } else {
       setCurrentStep(prev => prev + 1);
     }
-  };
+  }, [currentStep, navigate, onComplete]);
 
-  // Reset step when closed
-  useEffect(() => {
-    if (!open) {
-      setCurrentStep(0);
-      hasStartedRef.current = false;
-    } else {
-      hasStartedRef.current = true;
-    }
-  }, [open]);
+  const handleSkip = useCallback(() => {
+    setCurrentStep(0);
+    onComplete();
+  }, [onComplete]);
 
   if (!open) return null;
 
-  // Format body text with line breaks
-  const formatBody = (text: string) => {
-    return text.split('\n').map((line, i) => (
-      <span key={i}>
-        {line}
-        {i < text.split('\n').length - 1 && <br />}
-      </span>
-    ));
-  };
+  const currentStepData = tutorialSteps[currentStep];
+  const isLastStep = currentStep === tutorialSteps.length - 1;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {open && (
         <>
-          {/* Highlight overlay for current step */}
           <HighlightOverlay highlight={currentStepData.highlight} />
           
-          {/* Dark overlay */}
+          {/* Dark overlay - instant render */}
           <motion.div
             className="fixed inset-0 bg-black/75 z-[100]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
           />
           
-          {/* Click layer to advance */}
-          <div 
-            className="fixed inset-0 z-[101]" 
-            onClick={handleNext}
-          />
+          {/* Click layer */}
+          <div className="fixed inset-0 z-[101]" onClick={handleNext} />
 
-          {/* Tooltip card - always centered */}
+          {/* Tooltip card container */}
           <motion.div
             className="fixed z-[102] px-5 inset-0 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
           >
-            <motion.div
-              key={currentStep}
-              className="bg-card border-2 border-primary rounded-2xl p-5 shadow-2xl w-full max-w-[calc(100vw-2.5rem)] sm:max-w-sm pointer-events-auto"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -20 }}
-              transition={{ duration: 0.25 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Remi avatar for first step */}
-              {currentStepData.showRemi && (
-                <div className="flex justify-center mb-4">
-                  <img 
-                    src={remiWaving} 
-                    alt="Remi" 
-                    className="w-20 h-20 object-contain"
-                    loading="lazy"
-                  />
-                </div>
-              )}
-
-              {/* Emoji for other steps */}
-              {currentStepData.emoji && !currentStepData.showRemi && (
-                <div className="flex justify-center mb-3">
-                  <span className="text-4xl">{currentStepData.emoji}</span>
-                </div>
-              )}
-
-              {/* Title */}
-              <h3 className="text-xl font-bold text-foreground text-center mb-2">
-                {currentStepData.title}
-              </h3>
-
-              {/* Body - standard or split around button preview */}
-              {currentStepData.body && (
-                <p className="text-muted-foreground text-center leading-relaxed text-sm">
-                  {formatBody(currentStepData.body)}
-                </p>
-              )}
-              
-              {currentStepData.bodyBefore && (
-                <p className="text-muted-foreground text-center leading-relaxed text-sm">
-                  {currentStepData.bodyBefore}
-                </p>
-              )}
-
-              {/* Button preview for Log a Hello step */}
-              {currentStepData.showButtonPreview && <LogHelloButtonPreview />}
-              
-              {currentStepData.bodyAfter && (
-                <p className="text-muted-foreground text-center leading-relaxed text-sm">
-                  {currentStepData.bodyAfter}
-                </p>
-              )}
-
-              {/* Spacer when no button preview */}
-              {!currentStepData.showButtonPreview && <div className="mb-5" />}
-
-              {/* Progress dots */}
-              <div className="flex justify-center gap-1.5 mb-4">
-                {tutorialSteps.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      index === currentStep ? 'bg-primary' : 'bg-muted'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Buttons */}
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={handleNext}
-                  className="w-full bg-primary text-primary-foreground font-medium py-3 px-6 rounded-xl hover:bg-primary/90 transition-colors"
-                >
-                  {isLastStep ? "Let's begin" : "Next"}
-                </button>
-                {!isLastStep && (
-                  <button
-                    onClick={() => {
-                      setCurrentStep(0);
-                      hasStartedRef.current = false;
-                      onComplete();
-                    }}
-                    className="w-full text-muted-foreground font-medium py-2 px-6 rounded-xl hover:text-foreground transition-colors text-sm"
-                  >
-                    Skip tutorial
-                  </button>
-                )}
-              </div>
-            </motion.div>
+            <AnimatePresence mode="wait">
+              <StepContent 
+                key={currentStep}
+                step={currentStepData}
+                isLast={isLastStep}
+                onNext={handleNext}
+                onSkip={handleSkip}
+              />
+            </AnimatePresence>
           </motion.div>
         </>
       )}
     </AnimatePresence>
   );
-};
+});
+
+HomeScreenTutorial.displayName = 'HomeScreenTutorial';
