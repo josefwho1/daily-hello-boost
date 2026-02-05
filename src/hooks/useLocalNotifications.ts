@@ -159,16 +159,15 @@ export const useLocalNotifications = () => {
     }
   }, [isNativePlatform]);
 
-  // Schedule morning notification (9am daily)
   const scheduleMorningNotification = useCallback(async () => {
     if (!isNativePlatform) return;
 
-    const message = getRandomMessage(morningMessages);
+    const body = getRandomMessage(morningMessages);
     
     const notification: LocalNotificationSchema = {
       id: NOTIFICATION_ID_MORNING,
-      title: message.title,
-      body: message.body,
+      title: NOTIFICATION_TITLE,
+      body: body,
       schedule: {
         on: {
           hour: preferences.morningTime,
