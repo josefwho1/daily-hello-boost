@@ -221,17 +221,16 @@ export const useLocalNotifications = () => {
     }
   }, [isNativePlatform, preferences.afternoonTime]);
 
-  // Schedule weekly notification (random day, 10am for users with Daily Mode OFF)
   const scheduleWeeklyNotification = useCallback(async () => {
     if (!isNativePlatform) return;
 
-    const message = getRandomMessage(weeklyMessages);
+    const body = getRandomMessage(weeklyMessages);
     const randomDay = Math.floor(Math.random() * 7) + 1; // 1-7 (Sunday-Saturday)
     
     const notification: LocalNotificationSchema = {
       id: NOTIFICATION_ID_WEEKLY,
-      title: message.title,
-      body: message.body,
+      title: NOTIFICATION_TITLE,
+      body: body,
       schedule: {
         on: {
           weekday: randomDay,
