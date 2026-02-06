@@ -20,14 +20,12 @@ Deno.serve(async (req) => {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
     
-    // Calculate week start (Monday)
-    const dayOfWeek = now.getDay();
-    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysToMonday);
+    // Last 7 days
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
     const weekStartStr = weekStart.toISOString();
 
-    // Calculate month start (1st of current month)
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Last 30 days
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
     const monthStartStr = monthStart.toISOString();
 
     // Total hellos logged
