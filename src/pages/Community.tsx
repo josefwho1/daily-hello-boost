@@ -158,9 +158,9 @@ const Community = ({ embedded = false }: CommunityProps) => {
 
   const timeFilterLabels: Record<TimeFilter, string> = {
     allTime: 'All',
-    thisMonth: 'Month',
-    thisWeek: 'Week',
-    today: 'Today',
+    thisMonth: '30d',
+    thisWeek: '7d',
+    today: '24h',
   };
 
   const leaderboardTypeLabels: Record<LeaderboardType, string> = {

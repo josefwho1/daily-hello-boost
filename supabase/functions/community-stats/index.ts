@@ -17,8 +17,8 @@ Deno.serve(async (req) => {
 
     // Get current dates
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+    // Last 24 hours
+    const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
     
     // Last 7 days
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
