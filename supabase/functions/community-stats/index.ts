@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
     const hellosAllTime = countHellosPerUser(allHelloData);
     const hellosMonth = countHellosPerUser(allHelloData, monthStartStr);
     const hellosWeek = countHellosPerUser(allHelloData, weekStartStr);
-    const hellosTodays = countHellosPerUser(allHelloData, todayStart);
+    const hellosTodays = countHellosPerUser(allHelloData, last24h);
 
     const namesAllTime = countNamesPerUser(allHelloData);
     const namesMonth = countNamesPerUser(allHelloData, monthStartStr);
