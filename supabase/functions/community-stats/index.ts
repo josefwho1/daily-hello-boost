@@ -52,12 +52,11 @@ Deno.serve(async (req) => {
       .select('*', { count: 'exact', head: true })
       .gte('created_at', weekStartStr);
 
-    // Hellos today
+    // Hellos last 24h
     const { count: hellosToday } = await supabase
       .from('hello_logs')
       .select('*', { count: 'exact', head: true })
-      .gte('created_at', todayStart)
-      .lt('created_at', todayEnd);
+      .gte('created_at', last24h);
 
     // Get all profiles to check hide_from_leaderboard and is_anonymous
     const { data: allProfiles } = await supabase
