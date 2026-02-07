@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
     const namesAllTime = countNamesPerUser(allHelloData);
     const namesMonth = countNamesPerUser(allHelloData, monthStartStr);
     const namesWeek = countNamesPerUser(allHelloData, weekStartStr);
-    const namesToday = countNamesPerUser(allHelloData, todayStart);
+    const namesToday = countNamesPerUser(allHelloData, last24h);
 
     // Get top 10 for each category
     const [
