@@ -17,8 +17,8 @@ Deno.serve(async (req) => {
 
     // Get current dates
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+    // Last 24 hours
+    const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
     
     // Last 7 days
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
@@ -52,12 +52,11 @@ Deno.serve(async (req) => {
       .select('*', { count: 'exact', head: true })
       .gte('created_at', weekStartStr);
 
-    // Hellos today
+    // Hellos last 24h
     const { count: hellosToday } = await supabase
       .from('hello_logs')
       .select('*', { count: 'exact', head: true })
-      .gte('created_at', todayStart)
-      .lt('created_at', todayEnd);
+      .gte('created_at', last24h);
 
     // Get all profiles to check hide_from_leaderboard and is_anonymous
     const { data: allProfiles } = await supabase
@@ -131,12 +130,12 @@ Deno.serve(async (req) => {
     const hellosAllTime = countHellosPerUser(allHelloData);
     const hellosMonth = countHellosPerUser(allHelloData, monthStartStr);
     const hellosWeek = countHellosPerUser(allHelloData, weekStartStr);
-    const hellosTodays = countHellosPerUser(allHelloData, todayStart);
+    const hellosTodays = countHellosPerUser(allHelloData, last24h);
 
     const namesAllTime = countNamesPerUser(allHelloData);
     const namesMonth = countNamesPerUser(allHelloData, monthStartStr);
     const namesWeek = countNamesPerUser(allHelloData, weekStartStr);
-    const namesToday = countNamesPerUser(allHelloData, todayStart);
+    const namesToday = countNamesPerUser(allHelloData, last24h);
 
     // Get top 10 for each category
     const [
