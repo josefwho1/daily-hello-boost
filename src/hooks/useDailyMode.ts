@@ -137,7 +137,7 @@ export const useDailyMode = () => {
     });
     
     // Notify notification system
-    await onDailyModeToggle(false, 0);
+    await onDailyModeToggle(false, 0, 0);
   }, [updateProgress, onDailyModeToggle]);
 
   // Called when user logs a hello - updates streak
