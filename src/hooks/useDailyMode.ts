@@ -124,7 +124,7 @@ export const useDailyMode = () => {
     });
     
     // Notify notification system
-    await onDailyModeToggle(true, 0);
+    await onDailyModeToggle(true, 0, 0);
   }, [updateProgress, onDailyModeToggle]);
 
   // Deactivate Daily Mode
