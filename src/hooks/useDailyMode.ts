@@ -60,8 +60,8 @@ export const useDailyMode = () => {
   useEffect(() => {
     if (progressLoading || !isNativePlatform) return;
     
-    scheduleNotifications(isActive, currentStreak);
-  }, [isActive, currentStreak, progressLoading, isNativePlatform, scheduleNotifications]);
+    scheduleNotifications(isActive, currentStreak, todaysHelloCount);
+  }, [isActive, currentStreak, todaysHelloCount, progressLoading, isNativePlatform, scheduleNotifications]);
 
   // Detect hello logged and notify
   useEffect(() => {
