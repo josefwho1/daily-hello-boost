@@ -60,8 +60,8 @@ export const useDailyMode = () => {
   useEffect(() => {
     if (progressLoading || !isNativePlatform) return;
     
-    scheduleNotifications(isActive, currentStreak);
-  }, [isActive, currentStreak, progressLoading, isNativePlatform, scheduleNotifications]);
+    scheduleNotifications(isActive, currentStreak, todaysHelloCount);
+  }, [isActive, currentStreak, todaysHelloCount, progressLoading, isNativePlatform, scheduleNotifications]);
 
   // Detect hello logged and notify
   useEffect(() => {
@@ -124,7 +124,7 @@ export const useDailyMode = () => {
     });
     
     // Notify notification system
-    await onDailyModeToggle(true, 0);
+    await onDailyModeToggle(true, 0, 0);
   }, [updateProgress, onDailyModeToggle]);
 
   // Deactivate Daily Mode
@@ -137,7 +137,7 @@ export const useDailyMode = () => {
     });
     
     // Notify notification system
-    await onDailyModeToggle(false, 0);
+    await onDailyModeToggle(false, 0, 0);
   }, [updateProgress, onDailyModeToggle]);
 
   // Called when user logs a hello - updates streak

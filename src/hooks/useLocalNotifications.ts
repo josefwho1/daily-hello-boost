@@ -257,7 +257,8 @@ export const useLocalNotifications = () => {
   // Main scheduling function based on Daily Mode state
   const scheduleNotifications = useCallback(async (
     dailyModeActive: boolean,
-    currentStreak: number
+    currentStreak: number,
+    todaysHelloCount: number = 0
   ) => {
     if (!isNativePlatform) {
       console.log('[Notifications] Not a native platform, skipping schedule');
@@ -283,8 +284,8 @@ export const useLocalNotifications = () => {
       // Schedule morning notification (always for Daily Mode users)
       await scheduleMorningNotification();
 
-      // Only schedule afternoon if user has a streak AND hasn't disabled it (afternoonTime > 0)
-      if (currentStreak >= 1 && preferences.afternoonTime > 0) {
+      // Only schedule afternoon if user has a streak >= 1 AND has NOT logged today AND hasn't disabled it
+      if (currentStreak >= 1 && todaysHelloCount === 0 && preferences.afternoonTime > 0) {
         await scheduleAfternoonNotification();
       }
     } else {
@@ -342,9 +343,10 @@ export const useLocalNotifications = () => {
   // Handle Daily Mode toggle
   const onDailyModeToggle = useCallback(async (
     isEnabled: boolean,
-    currentStreak: number
+    currentStreak: number,
+    todaysHelloCount: number = 0
   ) => {
-    await scheduleNotifications(isEnabled, currentStreak);
+    await scheduleNotifications(isEnabled, currentStreak, todaysHelloCount);
   }, [scheduleNotifications]);
 
   // Update preferences
