@@ -343,9 +343,10 @@ export const useLocalNotifications = () => {
   // Handle Daily Mode toggle
   const onDailyModeToggle = useCallback(async (
     isEnabled: boolean,
-    currentStreak: number
+    currentStreak: number,
+    todaysHelloCount: number = 0
   ) => {
-    await scheduleNotifications(isEnabled, currentStreak);
+    await scheduleNotifications(isEnabled, currentStreak, todaysHelloCount);
   }, [scheduleNotifications]);
 
   // Update preferences
