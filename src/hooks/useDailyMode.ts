@@ -183,6 +183,8 @@ export const useDailyMode = () => {
   // Check and reset streak at midnight (called on component mount/update)
   const checkAndResetStreak = useCallback(async () => {
     if (!progress?.daily_mode_active) return;
+    // Don't reset streak while timezone is still loading - could cause false resets
+    if (tzLoading) return;
     
     const lastHelloDateStr = progress.daily_mode_last_hello_date;
     if (!lastHelloDateStr) return;
@@ -195,7 +197,7 @@ export const useDailyMode = () => {
         daily_mode_current_streak: 0,
       });
     }
-  }, [progress, todayKey, updateProgress]);
+  }, [progress, todayKey, updateProgress, tzLoading]);
 
   const state: DailyModeState = {
     isActive,
