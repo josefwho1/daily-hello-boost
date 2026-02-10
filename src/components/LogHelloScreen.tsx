@@ -555,6 +555,16 @@ export const LogHelloScreen = ({
           />
         </div>
 
+        {/* Hello Type Tag - read-only */}
+        {challengeTitle && (
+          <div className="space-y-1">
+            <Label className="text-muted-foreground/60 text-xs">Hello type</Label>
+            <div className="text-xs text-muted-foreground/50 font-medium bg-muted/30 rounded-lg px-3 py-2">
+              {challengeTitle.includes("Challenge") ? challengeTitle : `7-Day Challenge · ${challengeTitle}`}
+            </div>
+          </div>
+        )}
+
         <Button 
           onClick={handleSubmit} 
           className="w-full h-12 text-lg mt-4" 
