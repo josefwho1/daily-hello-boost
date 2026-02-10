@@ -15,7 +15,7 @@ import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompl
 import { TierUnlockCelebrationDialog } from "@/components/TierUnlockCelebrationDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 
-import { RecentHellosSection } from "@/components/RecentHellosSection";
+
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
 import ViewHelloDialog from "@/components/ViewHelloDialog";
