@@ -128,6 +128,8 @@ export default function Dashboard() {
   const [showThirtyChallengeComplete, setShowThirtyChallengeComplete] = useState(false);
   const [showTierUnlock, setShowTierUnlock] = useState(false);
   const [tierUnlockValue, setTierUnlockValue] = useState<10 | 20>(10);
+  const [showChallengeReveal, setShowChallengeReveal] = useState(false);
+  const [challengeRevealDay, setChallengeRevealDay] = useState(0);
   const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{
     day: number;
     name: string;
