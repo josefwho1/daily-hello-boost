@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { UserPlus, Mic } from "lucide-react";
+import { } from "lucide-react";
 import remiWaving from "@/assets/remi-waving.webp";
 import { useAssetPreloader } from "@/hooks/useAssetPreloader";
 
