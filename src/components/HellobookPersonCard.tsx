@@ -23,9 +23,9 @@ const getHelloTypeLabel = (log: HelloLog): string => {
       4: "Compliment", 5: "How Are You?", 6: "Getting Personal", 7: "Taking Names"
     };
     const name = challengeNames[dayNum] || `Day ${dayNum}`;
-    return `Hello type: 7-Day Challenge · ${name}`;
+    return `7-Day Challenge · ${name}`;
   }
-  return "Hello type: Regular hello";
+  return "Regular hello";
 };
 
 // Check if a log is from a challenge
