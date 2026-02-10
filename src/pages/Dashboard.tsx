@@ -13,6 +13,7 @@ import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
 import { TierUnlockCelebrationDialog } from "@/components/TierUnlockCelebrationDialog";
+import { ChallengeRevealDialog } from "@/components/ChallengeRevealDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 
 
