@@ -33,7 +33,7 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
   },
   2: {
     image: onboardingHelpinghand,
-    headline: "Helping Hand",
+    headline: "Next: Helping Hand",
     body: [
       "People love being helpful. (Benjamin Franklin effect)",
       "Ask a stranger for a small favour —",
