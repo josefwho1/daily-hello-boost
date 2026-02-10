@@ -864,7 +864,7 @@ export default function MagicLinkSignIn() {
     );
   }
 
-  // Choose auth method (default)
+  // Choose auth method (default) - Password first, Email code second
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
       <div className="w-full max-w-md space-y-8">
@@ -891,7 +891,7 @@ export default function MagicLinkSignIn() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <form onSubmit={handleSendCode} className="space-y-4">
+            <form onSubmit={(e) => { e.preventDefault(); setAuthMode('password'); }} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -919,16 +919,10 @@ export default function MagicLinkSignIn() {
                 type="submit"
                 size="lg" 
                 className="w-full"
-                disabled={loading || !email}
+                disabled={!email}
               >
-                {loading ? (
-                  <span className="animate-pulse">Sending code...</span>
-                ) : (
-                  <>
-                    <KeyRound className="w-4 h-4 mr-2" />
-                    Continue with Email Code
-                  </>
-                )}
+                <Lock className="w-4 h-4 mr-2" />
+                Continue with Password
               </Button>
             </form>
 
@@ -942,13 +936,20 @@ export default function MagicLinkSignIn() {
             </div>
 
             <Button 
-              onClick={() => setAuthMode('password')}
+              onClick={() => handleSendCode()}
               size="lg" 
               variant="outline"
               className="w-full"
+              disabled={loading || !email}
             >
-              <Lock className="w-4 h-4 mr-2" />
-              Sign in with Password
+              {loading ? (
+                <span className="animate-pulse">Sending code...</span>
+              ) : (
+                <>
+                  <KeyRound className="w-4 h-4 mr-2" />
+                  Sign in with Email Code
+                </>
+              )}
             </Button>
           </CardContent>
         </Card>
