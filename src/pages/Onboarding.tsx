@@ -412,7 +412,7 @@ export default function Onboarding() {
                 I did it! 🎉
               </Button>
               <Button onClick={() => setStep('at_home')} variant="ghost" className="w-full text-muted-foreground" size="lg">
-                I'll do this later
+                I'll do it later
               </Button>
             </div>
           </div>
