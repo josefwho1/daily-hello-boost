@@ -458,14 +458,19 @@ export default function Dashboard() {
     );
   };
 
-  // Helper to handle tier unlock celebrations
+  // Helper to handle challenge celebrations
   const checkAndShowCelebrations = (previousCount: number, newCount: number) => {
     // Check for 7-day completion
     if (newCount === 7 && previousCount < 7) {
-      setTimeout(() => {
-        setShowThirtyChallengeComplete(true);
-      }, 500);
+      setChallengeRevealDay(7);
+      setTimeout(() => setShowChallengeReveal(true), 500);
       return;
+    }
+    
+    // Show next challenge reveal for days 1-6
+    if (newCount < 7 && newCount > previousCount) {
+      setChallengeRevealDay(newCount);
+      setTimeout(() => setShowChallengeReveal(true), 500);
     }
   };
 
