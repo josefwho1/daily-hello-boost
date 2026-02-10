@@ -1,10 +1,9 @@
-import { useState, useMemo } from "react";
-import { ChevronLeft, Check, Circle, Lightbulb, Lock, CircleDot, ChevronDown, ChevronRight } from "lucide-react";
+import { useMemo } from "react";
+import { ChevronLeft, Check, Circle, Lock } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
-import { thirtyDayChallenge, ThirtyDayChallenge, challengeSections } from "@/data/thirtyDayChallenge";
+import { thirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import { cn } from "@/lib/utils";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface ChallengeListViewProps {
   completedDays: number[];
@@ -21,66 +20,33 @@ export const ChallengeListView = ({
   onBack,
   onSelectChallenge,
 }: ChallengeListViewProps) => {
-  const [expandedTips, setExpandedTips] = useState<Set<number>>(new Set());
-  const [openSections, setOpenSections] = useState<Set<string>>(new Set(["Initiating", "Conversations", "Names & Plans"]));
-
   const completedCount = completedDays.length;
   const totalCount = thirtyDayChallenge.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   const isDayComplete = (day: number) => completedDays.includes(day);
 
-  // Progressive unlock logic
-  const unlockedTier = useMemo(() => {
-    if (completedCount >= 20) return 3; // All 30 unlocked
-    if (completedCount >= 10) return 2; // 1-20 unlocked
-    return 1; // 1-10 unlocked
-  }, [completedCount]);
-
-  const isDayLocked = (day: number) => {
-    if (day <= 10) return false;
-    if (day <= 20) return unlockedTier < 2;
-    return unlockedTier < 3;
-  };
-
-  const toggleTip = (day: number) => {
-    const newExpanded = new Set(expandedTips);
-    if (newExpanded.has(day)) {
-      newExpanded.delete(day);
-    } else {
-      newExpanded.add(day);
+  // Sequential unlock: a challenge is unlocked if all previous ones are done
+  const isUnlocked = (idx: number) => {
+    if (idx === 0) return true;
+    for (let i = 0; i < idx; i++) {
+      if (!completedDays.includes(thirtyDayChallenge[i].day)) return false;
     }
-    setExpandedTips(newExpanded);
+    return true;
   };
 
-  const toggleSection = (title: string) => {
-    const newOpen = new Set(openSections);
-    if (newOpen.has(title)) {
-      newOpen.delete(title);
-    } else {
-      newOpen.add(title);
+  // "Next" challenge = first incomplete & unlocked
+  const nextUnlockedIndex = useMemo(() => {
+    for (let i = 0; i < thirtyDayChallenge.length; i++) {
+      if (!completedDays.includes(thirtyDayChallenge[i].day) && isUnlocked(i)) return i;
     }
-    setOpenSections(newOpen);
-  };
+    return -1;
+  }, [completedDays]);
 
-  const handleToggleComplete = (challenge: ThirtyDayChallenge) => {
-    if (isDayLocked(challenge.day)) return;
-
-    // View All list should only allow completing (not un-completing).
-    if (isDayComplete(challenge.day)) return;
+  const handleComplete = (idx: number) => {
+    const challenge = thirtyDayChallenge[idx];
+    if (!isUnlocked(idx) || isDayComplete(challenge.day)) return;
     onComplete(challenge.day, challenge.name);
-  };
-
-  const getChallengesInRange = (range: [number, number]) => {
-    return thirtyDayChallenge.filter(c => c.day >= range[0] && c.day <= range[1]);
-  };
-
-  const getSectionCompletedCount = (range: [number, number]) => {
-    return completedDays.filter(d => d >= range[0] && d <= range[1]).length;
-  };
-
-  const isSectionLocked = (range: [number, number]) => {
-    return isDayLocked(range[0]);
   };
 
   return (
@@ -96,8 +62,8 @@ export const ChallengeListView = ({
             <ChevronLeft className="w-6 h-6" />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-foreground">The 30 Hellos</h1>
-            <p className="text-xs text-muted-foreground">30 ways to connect</p>
+            <h1 className="text-xl font-bold text-foreground">7-Day Challenge</h1>
+            <p className="text-xs text-muted-foreground">7 Days. 7 Strangers. 7 Hellos.</p>
           </div>
         </div>
 
@@ -109,147 +75,96 @@ export const ChallengeListView = ({
           <Progress value={progressPercent} className="h-2" />
         </div>
 
-        {/* Challenge sections */}
-        <div className="space-y-4">
-          {challengeSections.map((section) => {
-            const challenges = getChallengesInRange(section.range);
-            const sectionCompleted = getSectionCompletedCount(section.range);
-            const sectionTotal = section.range[1] - section.range[0] + 1;
-            const isLocked = isSectionLocked(section.range);
-            const isOpen = openSections.has(section.title);
+        {/* Challenge list - always visible, no collapsible */}
+        <div className="space-y-2">
+          {thirtyDayChallenge.map((challenge, idx) => {
+            const isComplete = isDayComplete(challenge.day);
+            const unlocked = isUnlocked(idx);
+            const isNext = idx === nextUnlockedIndex;
+            // "Next" = show name, grey description with hint
+            // Locked (not next, not unlocked) = hide name & description
+            const isLockedFuture = !unlocked && !isNext;
 
             return (
-              <Collapsible
-                key={section.title}
-                open={isOpen}
-                onOpenChange={() => toggleSection(section.title)}
+              <Card
+                key={challenge.day}
+                className={cn(
+                  "p-3 transition-colors",
+                  isLockedFuture
+                    ? "bg-muted/10 border-border/20 opacity-40"
+                    : !unlocked  // isNext but not unlocked
+                      ? "bg-muted/20 border-border/30 opacity-70"
+                      : isComplete
+                        ? "bg-success/5 border-success/30"
+                        : "bg-card border-border hover:bg-muted/20"
+                )}
               >
-                <CollapsibleTrigger className="w-full">
-                  <div className={cn(
-                    "flex items-center justify-between p-3 rounded-lg transition-colors",
-                    isLocked ? "bg-muted/30" : "bg-muted/50 hover:bg-muted/70"
-                  )}>
-                    <div className="flex items-center gap-2">
-                      {isLocked ? (
-                        <Lock className="w-4 h-4 text-muted-foreground/50" />
-                      ) : isOpen ? (
-                        <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                      )}
-                      <span className={cn(
-                        "font-semibold text-sm",
-                        isLocked ? "text-muted-foreground/50" : "text-foreground"
-                      )}>
-                        {section.range[0]}-{section.range[1]}: {section.title}
-                      </span>
-                    </div>
-                    <span className={cn(
-                      "text-xs",
-                      isLocked ? "text-muted-foreground/50" : "text-muted-foreground"
-                    )}>
-                      {sectionCompleted}/{sectionTotal}
-                    </span>
+                <div className="flex items-center gap-3">
+                  {/* Status icon */}
+                  <button
+                    onClick={() => handleComplete(idx)}
+                    disabled={!unlocked || isComplete}
+                    className={cn(
+                      "flex-shrink-0 transition-colors",
+                      unlocked && !isComplete && "cursor-pointer hover:text-success"
+                    )}
+                    aria-label={isComplete ? "Completed" : !unlocked ? "Locked" : "Complete challenge"}
+                  >
+                    {isLockedFuture ? (
+                      <Lock className="w-5 h-5 text-muted-foreground/20" />
+                    ) : !unlocked ? (
+                      <Lock className="w-5 h-5 text-muted-foreground/40" />
+                    ) : isComplete ? (
+                      <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-success" />
+                      </div>
+                    ) : (
+                      <Circle className="w-5 h-5 text-muted-foreground/50 hover:text-success" />
+                    )}
+                  </button>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    {isLockedFuture ? (
+                      // Fully locked: hide name and description
+                      <div className="text-sm text-muted-foreground/30 font-medium">
+                        Day {challenge.day} • Locked
+                      </div>
+                    ) : !unlocked ? (
+                      // Next (locked but visible name): show name, grey description
+                      <>
+                        <div className="font-semibold text-sm text-muted-foreground">
+                          {challenge.day}. {challenge.name}
+                        </div>
+                        <p className="text-xs text-muted-foreground/40 mt-0.5">
+                          Complete the current challenge to unlock
+                        </p>
+                      </>
+                    ) : (
+                      // Unlocked or completed
+                      <>
+                        <div className={cn(
+                          "font-semibold text-sm",
+                          isComplete ? "text-success" : "text-foreground"
+                        )}>
+                          {challenge.day}. {challenge.name}
+                        </div>
+                        <p className={cn(
+                          "text-xs text-muted-foreground mt-0.5 line-clamp-2",
+                          isComplete && "line-through opacity-70"
+                        )}>
+                          {challenge.description}
+                        </p>
+                        {challenge.suggestion && !isComplete && (
+                          <p className="text-xs text-muted-foreground/60 italic mt-1">
+                            💡 {challenge.suggestion}
+                          </p>
+                        )}
+                      </>
+                    )}
                   </div>
-                </CollapsibleTrigger>
-
-                <CollapsibleContent>
-                  <div className="space-y-2 mt-2">
-                    {challenges.map((challenge) => {
-                      const isComplete = isDayComplete(challenge.day);
-                      const challengeLocked = isDayLocked(challenge.day);
-                      const showTip = expandedTips.has(challenge.day);
-
-                      return (
-                        <Card
-                          key={challenge.day}
-                          className={cn(
-                            "p-3 transition-colors",
-                            challengeLocked 
-                              ? "bg-muted/20 border-border/30 opacity-60"
-                              : isComplete 
-                                ? "bg-success/5 border-success/30" 
-                                : "bg-card border-border hover:bg-muted/20"
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
-                            {/* Status icon / Complete button */}
-                            <button
-                              onClick={() => handleToggleComplete(challenge)}
-                      disabled={challengeLocked || isComplete}
-                              className={cn(
-                                "flex-shrink-0 transition-colors",
-                        !challengeLocked && !isComplete && "cursor-pointer hover:text-success"
-                              )}
-                      aria-label={isComplete ? "Completed" : challengeLocked ? "Locked" : "Mark as complete"}
-                            >
-                              {challengeLocked ? (
-                                <Lock className="w-5 h-5 text-muted-foreground/30" />
-                              ) : isComplete ? (
-                                <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center hover:bg-success/30">
-                                  <Check className="w-3 h-3 text-success" />
-                                </div>
-                              ) : (
-                                <Circle className="w-5 h-5 text-muted-foreground/50 hover:text-success" />
-                              )}
-                            </button>
-
-                            {/* Content */}
-                            <div className="flex-1 min-w-0">
-                              {/* Challenge number and name */}
-                              <div 
-                                className={cn(
-                                  "font-semibold text-sm",
-                                  challengeLocked ? "text-muted-foreground/50" : isComplete ? "text-success" : "text-foreground"
-                                )}
-                              >
-                                {challenge.day}. {challenge.name}
-                              </div>
-
-                              {/* Show description/tip for non-locked challenges */}
-                              {!challengeLocked && (
-                                <div 
-                                  className={cn(
-                                    challenge.suggestion && "cursor-pointer"
-                                  )}
-                                  onClick={() => challenge.suggestion && toggleTip(challenge.day)}
-                                >
-                                  <p className={cn(
-                                    "text-xs text-muted-foreground mt-0.5 line-clamp-2",
-                                    isComplete && "line-through opacity-70"
-                                  )}>
-                                    {showTip && challenge.suggestion 
-                                      ? challenge.suggestion
-                                      : challenge.description}
-                                  </p>
-                                  
-                                  {challenge.suggestion && (
-                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 mt-0.5">
-                                      <Lightbulb size={10} />
-                                      {showTip ? "Tap to show challenge" : "Tap to show tip"}
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Select button - right side */}
-                            {!challengeLocked && onSelectChallenge && (
-                              <button
-                                onClick={() => onSelectChallenge(challenge.day - 1)}
-                                className="flex-shrink-0 p-2 rounded-full hover:bg-muted transition-colors"
-                                aria-label="Select this challenge"
-                              >
-                                <CircleDot className="w-5 h-5 text-muted-foreground hover:text-primary" />
-                              </button>
-                            )}
-                          </div>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
+                </div>
+              </Card>
             );
           })}
         </div>

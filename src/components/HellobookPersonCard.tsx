@@ -2,6 +2,7 @@ import { useState, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp, MapPin, Bookmark } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface HellobookPersonCardProps {
