@@ -13,6 +13,15 @@ interface HellobookPersonCardProps {
   onToggleFavorite?: (id: string, isFavorite: boolean) => void;
 }
 
+// Get display label for hello type
+const getHelloTypeLabel = (log: HelloLog): string => {
+  if (log.hello_type?.startsWith("challenge:")) {
+    const dayNum = log.hello_type.split(":")[1];
+    return `7-Day Challenge · Day ${dayNum}`;
+  }
+  return "Regular hello";
+};
+
 // Check if a log is from a challenge
 const isFromChallenge = (log: HelloLog) => log.hello_type?.startsWith("challenge:");
 
