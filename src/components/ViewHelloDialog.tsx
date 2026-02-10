@@ -248,6 +248,18 @@ const ViewHelloDialog = ({
                 className="min-h-28 text-base"
               />
             </div>
+
+            {/* Hello Type Tag - read-only */}
+            {log.hello_type && (
+              <div className="space-y-1">
+                <Label className="text-muted-foreground/60 text-xs">Hello type</Label>
+                <div className="text-xs text-muted-foreground/50 font-medium bg-muted/30 rounded-lg px-3 py-2">
+                  {log.hello_type.startsWith("challenge:") 
+                    ? `7-Day Challenge · Day ${log.hello_type.split(":")[1]}`
+                    : "Regular hello"}
+                </div>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>

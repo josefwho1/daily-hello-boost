@@ -34,6 +34,17 @@ export const CurrentChallengeCard = ({
   const [showConfirmRestart, setShowConfirmRestart] = useState(false);
   const completedCount = completedDays.length;
 
+  // Sequential unlock logic (matches ChallengeListView)
+  const isUnlocked = (idx: number) => {
+    if (idx === 0) return true;
+    for (let i = 0; i < idx; i++) {
+      if (!completedDays.includes(thirtyDayChallenge[i].day)) return false;
+    }
+    return true;
+  };
+
+  const isDayComplete = (day: number) => completedDays.includes(day);
+
   const getCurrentIndex = () => {
     if (!nextChallenge) return Math.min(thirtyDayChallenge.length - 1, 6);
     const idx = thirtyDayChallenge.findIndex(c => c.day === nextChallenge.day);
@@ -51,8 +62,14 @@ export const CurrentChallengeCard = ({
   }, [location.state, location.pathname, navigate]);
 
   const currentChallenge = thirtyDayChallenge[currentIndex];
-  const isChallengeComplete = completedDays.includes(currentChallenge?.day || 0);
+  const isChallengeComplete = isDayComplete(currentChallenge?.day || 0);
+  const challengeUnlocked = isUnlocked(currentIndex);
   const progressPercent = totalCount > 0 ? completedCount / totalCount * 100 : 0;
+
+  // Visibility: is this the "next" locked challenge (name visible but desc hidden)?
+  const isNextLocked = !challengeUnlocked && currentIndex > 0 && isUnlocked(currentIndex - 1);
+  // Is this a future locked challenge (fully hidden)?
+  const isLockedFuture = !challengeUnlocked && !isNextLocked;
 
   const canGoLeft = currentIndex > 0;
   const canGoRight = currentIndex < thirtyDayChallenge.length - 1;
@@ -60,7 +77,7 @@ export const CurrentChallengeCard = ({
   const goRight = () => { if (canGoRight) setCurrentIndex(currentIndex + 1); };
 
   const handleCompleteClick = () => {
-    if (currentChallenge && !isChallengeComplete) {
+    if (currentChallenge && !isChallengeComplete && challengeUnlocked) {
       onComplete(currentChallenge.day, currentChallenge.name);
     }
   };
@@ -69,6 +86,16 @@ export const CurrentChallengeCard = ({
     onRestart();
     setShowConfirmRestart(false);
     setCurrentIndex(0);
+  };
+
+  // Find the name of the challenge that must be completed to unlock this one
+  const getBlockingChallengeName = () => {
+    for (let i = currentIndex - 1; i >= 0; i--) {
+      if (!completedDays.includes(thirtyDayChallenge[i].day)) {
+        return thirtyDayChallenge[i].name;
+      }
+    }
+    return null;
   };
 
   return <>
@@ -125,30 +152,43 @@ export const CurrentChallengeCard = ({
       ) : currentChallenge ? (
         <div className="flex-1 flex flex-col mt-3">
           {/* Challenge name */}
-          <h3 className="text-base font-bold text-foreground">
-            {currentChallenge.name}
+          <h3 className={cn(
+            "text-base font-bold",
+            isLockedFuture ? "text-muted-foreground/30" : 
+            isNextLocked ? "text-muted-foreground" :
+            isChallengeComplete ? "text-success" : "text-foreground"
+          )}>
+            {isLockedFuture ? `Day ${currentChallenge.day} • Locked` : currentChallenge.name}
           </h3>
           
-          {/* Description */}
-          <p className="text-sm text-muted-foreground mt-1">
-            {currentChallenge.description}
-          </p>
+          {/* Description - 2 line clamp, hidden for locked */}
+          {isLockedFuture ? (
+            <p className="text-xs text-muted-foreground/30 mt-1">
+              Complete previous challenges to unlock
+            </p>
+          ) : isNextLocked ? (
+            <p className="text-xs text-muted-foreground/50 mt-1">
+              Complete "{getBlockingChallengeName()}" to unlock
+            </p>
+          ) : (
+            <p className={cn(
+              "text-sm text-muted-foreground mt-1 line-clamp-2",
+              isChallengeComplete && "line-through opacity-70"
+            )}>
+              {currentChallenge.description}
+            </p>
+          )}
 
-          {/* Suggestion - always visible */}
-          {currentChallenge.suggestion && (
-            <p className="text-xs text-muted-foreground/70 italic mt-2">
+          {/* Suggestion - 2 line clamp, only for unlocked active */}
+          {challengeUnlocked && !isChallengeComplete && currentChallenge.suggestion && (
+            <p className="text-xs text-muted-foreground/70 italic mt-2 line-clamp-2">
               💡 {currentChallenge.suggestion}
             </p>
           )}
 
           {/* Buttons */}
           <div className="mt-4 flex items-center justify-between gap-2">
-            {isChallengeComplete ? (
-              <div className="h-10 px-5 rounded-full text-sm font-medium bg-success/10 text-success border border-success/50 flex items-center justify-center gap-1.5 flex-1" data-compact>
-                <Check size={16} />
-                Completed
-              </div>
-            ) : (
+            {challengeUnlocked && !isChallengeComplete ? (
               <button 
                 onClick={handleCompleteClick}
                 className="h-10 px-5 rounded-full font-semibold bg-orange-500 hover:bg-orange-600 text-white transition-colors flex items-center justify-center gap-1.5 flex-1 text-sm shadow-md"
@@ -156,6 +196,15 @@ export const CurrentChallengeCard = ({
               >
                 Complete Challenge
               </button>
+            ) : isChallengeComplete ? (
+              <div className="h-10 px-5 rounded-full text-sm font-medium bg-success/10 text-success border border-success/50 flex items-center justify-center gap-1.5 flex-1" data-compact>
+                <Check size={16} />
+                Completed
+              </div>
+            ) : (
+              <div className="h-10 px-5 rounded-full text-sm font-medium bg-muted/30 text-muted-foreground border border-border/50 flex items-center justify-center gap-1.5 flex-1" data-compact>
+                <Lock size={12} /> Locked
+              </div>
             )}
             <button 
               onClick={onViewAll}
