@@ -504,8 +504,24 @@ export default function Onboarding() {
                 For now, let me show you around.
               </p>
             </div>
-            <Button onClick={() => completeOnboarding(true)} className="w-full" size="lg">
+            <Button onClick={() => setStep('weather_chat_reveal')} className="w-full" size="lg">
               Continue
+            </Button>
+          </div>
+        );
+
+      case 'weather_chat_reveal':
+        return (
+          <div className={`${baseClasses} ${animClasses}`}>
+            <RemiImage src={onboardingWeatherchat} alt="Weather Chat" className="w-56 h-auto max-h-56 mx-auto object-contain" />
+            <div className="space-y-3">
+              <h1 className="text-2xl font-bold text-foreground">Next: Weather Chat</h1>
+              <p className="text-foreground">Comment on something you're both experiencing.</p>
+              <p className="text-muted-foreground">Weather, long lines, vibes — anything shared.</p>
+              <p className="text-muted-foreground italic text-sm">💡 "What a beautiful day" "Long line, hey?" "Great song"</p>
+            </div>
+            <Button onClick={() => completeOnboarding(true)} className="w-full" size="lg">
+              Let's do it
             </Button>
           </div>
         );
