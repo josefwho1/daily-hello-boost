@@ -482,7 +482,7 @@ export default function Onboarding() {
                 Let's show you around.
               </p>
             </div>
-            <Button onClick={() => completeOnboarding(true)} className="w-full" size="lg">
+            <Button onClick={() => setStep('weather_chat_reveal')} className="w-full" size="lg">
               Continue
             </Button>
           </div>
