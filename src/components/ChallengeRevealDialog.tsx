@@ -53,7 +53,7 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
   },
   4: {
     image: onboardingHowareyou,
-    headline: "How are you?",
+    headline: "Next: How Are You?",
     body: [
       "Great job.",
       "Now try asking how someone's day is going.",
