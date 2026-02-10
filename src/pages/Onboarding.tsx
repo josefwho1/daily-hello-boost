@@ -19,6 +19,7 @@ import remiSmiling1 from "@/assets/remi-smiling-1.webp";
 import remiLogging4 from "@/assets/remi-logging-4.webp";
 import remiLogging5 from "@/assets/remi-logging-5.webp";
 import onboardingFirsthello from "@/assets/onboarding-firsthello.webp";
+import onboardingWeatherchat from "@/assets/onboarding-weatherchat.webp";
 
 const ONBOARDING_ASSETS = [
   remiWaving4, remiShakingHand, remiCurious4, remiSad5,
