@@ -602,17 +602,24 @@ export default function Dashboard() {
 
       {/* Dialogs */}
 
-      {/* 30-Day Challenge Complete Celebration */}
-      <ThirtyChallengeCompleteDialog open={showThirtyChallengeComplete} onContinue={async () => {
-      setShowThirtyChallengeComplete(false);
-      // Switch to Today's Hello after completing 30 Hellos
-      await updateProgress({
-        selected_pack_id: 'daily'
-      });
-    }} timesCompleted={challengeState.timesCompleted} />
-
-      {/* Tier Unlock Celebration (10 or 20) */}
-      <TierUnlockCelebrationDialog open={showTierUnlock} onContinue={() => setShowTierUnlock(false)} tier={tierUnlockValue} />
+      {/* Challenge Reveal / Celebration Dialog */}
+      <ChallengeRevealDialog 
+        open={showChallengeReveal} 
+        completedDay={challengeRevealDay} 
+        userName={username}
+        onContinue={async () => {
+          setShowChallengeReveal(false);
+          // If day 7 completed, show normal mode transition
+          if (challengeRevealDay === 7) {
+            setChallengeRevealDay(8);
+            setTimeout(() => setShowChallengeReveal(true), 300);
+          }
+          // If showing post-completion screen (day 8), switch to daily mode
+          if (challengeRevealDay === 8) {
+            await updateProgress({ selected_pack_id: 'daily' });
+          }
+        }}
+      />
 
       {/* Milestone Celebrations */}
       <MilestoneCelebrationDialog open={showMilestoneCelebration} onContinue={() => setShowMilestoneCelebration(false)} milestoneValue={milestoneValue} milestoneType={milestoneType} />
