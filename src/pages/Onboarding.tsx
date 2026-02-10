@@ -169,11 +169,29 @@ export default function Onboarding() {
   }, [connectionName, connectionLocation, connectionNotes]);
 
   const handleSaveConnection = useCallback(async () => {
-    // After logging hello, go straight to walkthrough (skip "No worries" screen)
+    // User already completed first hello via handleFirstHelloDone - just update the existing log with details
     setIsSubmitting(true);
     try {
       const { userId } = await ensureUserAndProgress({ loggedFirstHello: true });
-      await logFirstHello(userId);
+      
+      // Update the existing challenge:1 hello log with user-provided details
+      const { data: existingLog } = await supabase
+        .from('hello_logs')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('hello_type', 'challenge:1')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingLog) {
+        await supabase.from('hello_logs').update({
+          name: connectionName.trim() || null,
+          location: connectionLocation.trim() || null,
+          notes: connectionNotes.trim() || `One Hello 7-Day Challenge | Day 1 | First Hello`,
+        }).eq('id', existingLog.id);
+      }
+
       // Go straight to home with tutorial
       sessionStorage.setItem('pending_home_tutorial', '1');
       window.location.replace('/');
@@ -181,7 +199,7 @@ export default function Onboarding() {
       console.error('Error saving connection:', error);
       setIsSubmitting(false);
     }
-  }, [ensureUserAndProgress, logFirstHello]);
+  }, [ensureUserAndProgress, connectionName, connectionLocation, connectionNotes]);
 
   const handleFirstHelloDone = useCallback(async () => {
     setStep('first_hello_done');
