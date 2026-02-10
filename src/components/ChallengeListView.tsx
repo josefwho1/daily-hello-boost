@@ -81,9 +81,10 @@ export const ChallengeListView = ({
             const isComplete = isDayComplete(challenge.day);
             const unlocked = isUnlocked(idx);
             const isNext = idx === nextUnlockedIndex;
-            // "Next" = show name, grey description with hint
-            // Locked (not next, not unlocked) = hide name & description
-            const isLockedFuture = !unlocked && !isNext;
+            // "Next locked" = first locked after current (show name, hide description)
+            const isNextLocked = !unlocked && idx > 0 && isUnlocked(idx - 1);
+            // Locked future = fully hidden (no name, no description)
+            const isLockedFuture = !unlocked && !isNextLocked;
 
             return (
               <Card
