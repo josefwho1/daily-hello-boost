@@ -194,9 +194,9 @@ export default function Onboarding() {
         }).eq('id', existingLog.id);
       }
 
-      // Go straight to home with tutorial
-      sessionStorage.setItem('pending_home_tutorial', '1');
-      window.location.replace('/');
+      // Show Weather Chat reveal before going home
+      setStep('weather_chat_reveal');
+      setIsSubmitting(false);
     } catch (error) {
       console.error('Error saving connection:', error);
       setIsSubmitting(false);
