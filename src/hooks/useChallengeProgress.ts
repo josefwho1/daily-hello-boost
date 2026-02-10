@@ -67,6 +67,17 @@ export const useChallengeProgress = () => {
       return; // Already completed
     }
 
+    // Enforce sequential order: all previous days must be completed
+    const challengeIndex = thirtyDayChallenge.findIndex(c => c.day === day);
+    if (challengeIndex > 0) {
+      for (let i = 0; i < challengeIndex; i++) {
+        if (!currentCompletedDays.includes(thirtyDayChallenge[i].day)) {
+          console.warn(`Cannot complete day ${day}: day ${thirtyDayChallenge[i].day} not yet completed`);
+          return;
+        }
+      }
+    }
+
     const newCompletedDays = [...currentCompletedDays, day].sort((a, b) => a - b);
     const isNowComplete = isAllChallengesComplete(newCompletedDays);
 
@@ -79,7 +90,7 @@ export const useChallengeProgress = () => {
       updates.challenge_started_at = new Date().toISOString();
     }
 
-    // If all 30 complete, set completed date and increment times completed
+    // If all complete, set completed date and increment times completed
     if (isNowComplete) {
       updates.challenge_completed_at = new Date().toISOString();
       updates.challenge_times_completed = ((currentProgress as any)?.challenge_times_completed || 0) + 1;
