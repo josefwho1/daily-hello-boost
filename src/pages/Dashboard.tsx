@@ -560,25 +560,24 @@ export default function Dashboard() {
   return <div className="min-h-screen bg-background page-container">
       <div className="max-w-md mx-auto px-4 py-8">
 
-
-        {/* Friendly Header Greeting */}
+        {/* Friendly Header Greeting with Remi */}
         <div className="text-center mb-6">
+          <img src={remiWaving4} alt="Remi waving" className="w-16 h-16 mx-auto mb-2 object-contain" />
           <h1 className="text-2xl font-bold text-foreground tracking-wide" style={{
           fontFamily: 'Fredoka, sans-serif'
         }}>
-            <span className="text-primary">Hello</span> {username} 👋
+            <span className="text-primary">Hello</span> {username}
           </h1>
         </div>
 
         {/* Stats Dashboard */}
         <HomeStatsBar logs={logs} lifetimeHellos={logs.length} />
 
-
-        {/* Main Dashboard - Connection-focused layout */}
-        <div className="space-y-6">
+        {/* Main Dashboard */}
+        <div className="space-y-4">
           
-          {/* Show Today's Hello when quest is paused, otherwise 30-Day Challenge Card */}
-          <div className="space-y-3" id="tutorial-todays-hello-card">
+          {/* Challenge Card */}
+          <div id="tutorial-todays-hello-card">
             {progress?.selected_pack_id === 'daily' ? <DailySuggestionCard /> : <CurrentChallengeCard completedDays={challengeState.completedDays} nextChallenge={challengeState.nextChallenge} totalCount={challengeState.totalCount} isComplete={challengeState.isComplete} onComplete={async (day, challengeName) => {
             const previousCount = challengeState.completedDays.length;
             await markDayComplete(day);
@@ -592,8 +591,8 @@ export default function Dashboard() {
           }} />}
           </div>
 
-          {/* Log a Hello Button */}
-          <div className="py-2">
+          {/* Log another hello - small and faded */}
+          <div>
             <SaveHelloButton onClick={() => {
             setAutoStartRecording(false);
             setShowLogDialog(true);
@@ -602,16 +601,6 @@ export default function Dashboard() {
             setShowLogDialog(true);
           }} />
           </div>
-
-          {/* Recent Hellos Section */}
-          <RecentHellosSection logs={logs} onViewAll={() => navigate('/hellobook')} onViewLog={log => {
-          const index = logs.findIndex(l => l.id === log.id);
-          setEditingLog(log);
-          setEditingLogIndex(index >= 0 ? index : 0);
-          setIsEditDialogOpen(true);
-        }} />
-          
-          {/* Spacer for bottom nav */}
           
         </div>
       </div>
