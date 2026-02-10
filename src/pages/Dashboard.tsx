@@ -538,7 +538,7 @@ export default function Dashboard() {
       autoStartRecording={autoStartRecording} 
       existingLogs={logs}
       // Pre-fill notes for challenge entries
-      initialNotes={pendingChallengeCompletion ? `Challenge #${pendingChallengeCompletion.day}: ${pendingChallengeCompletion.name}` : undefined}
+      initialNotes={pendingChallengeCompletion ? `One Hello 7-Day Challenge | Day ${pendingChallengeCompletion.day} | ${pendingChallengeCompletion.name}` : undefined}
       initialName={challengeHelloLog?.name || undefined}
       initialLocation={challengeHelloLog?.location || undefined}
       requireAtLeastOneField={false}
