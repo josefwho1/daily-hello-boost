@@ -457,25 +457,11 @@ export default function Dashboard() {
 
   // Helper to handle tier unlock celebrations
   const checkAndShowCelebrations = (previousCount: number, newCount: number) => {
-    // Check for 30 completion first
-    if (newCount === 30 && previousCount < 30) {
+    // Check for 7-day completion
+    if (newCount === 7 && previousCount < 7) {
       setTimeout(() => {
         setShowThirtyChallengeComplete(true);
       }, 500);
-      return;
-    }
-
-    // Check for tier 2 unlock (10 completed)
-    if (previousCount < 10 && newCount >= 10) {
-      setTierUnlockValue(10);
-      setTimeout(() => setShowTierUnlock(true), 500);
-      return;
-    }
-
-    // Check for tier 3 unlock (20 completed)
-    if (previousCount < 20 && newCount >= 20) {
-      setTierUnlockValue(20);
-      setTimeout(() => setShowTierUnlock(true), 500);
       return;
     }
   };
