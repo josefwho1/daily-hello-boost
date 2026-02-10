@@ -144,7 +144,7 @@ export default function Onboarding() {
       user_id: userId,
       name: connectionName.trim() || null,
       location: connectionLocation.trim() || null,
-      notes: connectionNotes.trim() || `One Hello 7-Day Challenge | Day 1 | First Hello`,
+      notes: connectionNotes.trim() || null,
       timezone_offset: detectedOffset,
       hello_type: 'challenge:1',
     });
