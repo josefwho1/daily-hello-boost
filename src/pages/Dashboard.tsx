@@ -15,7 +15,7 @@ import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompl
 import { TierUnlockCelebrationDialog } from "@/components/TierUnlockCelebrationDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 
-import { RecentHellosSection } from "@/components/RecentHellosSection";
+
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
 import ViewHelloDialog from "@/components/ViewHelloDialog";
@@ -27,6 +27,7 @@ import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
 import { toast } from "sonner";
 import { ChallengeCompletionToast } from "@/components/ChallengeCompletionToast";
 import { thirtyDayChallenge } from "@/data/thirtyDayChallenge";
+import remiWaving4 from "@/assets/remi-waving-4.webp";
 import { startOfWeek, isBefore, parseISO } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { normalizeTimezoneOffset, getDayKeyInOffset } from "@/lib/timezone";
@@ -353,7 +354,7 @@ export default function Dashboard() {
 
       // Create hello entry with challenge info
       const result = await addLog({
-        notes: `The 30 Hellos #${day}: ${challengeName}`,
+        notes: `One Hello 7-Day Challenge | Day ${day} | ${challengeName}`,
         hello_type: `challenge:${day}`,
       });
 
@@ -456,25 +457,11 @@ export default function Dashboard() {
 
   // Helper to handle tier unlock celebrations
   const checkAndShowCelebrations = (previousCount: number, newCount: number) => {
-    // Check for 30 completion first
-    if (newCount === 30 && previousCount < 30) {
+    // Check for 7-day completion
+    if (newCount === 7 && previousCount < 7) {
       setTimeout(() => {
         setShowThirtyChallengeComplete(true);
       }, 500);
-      return;
-    }
-
-    // Check for tier 2 unlock (10 completed)
-    if (previousCount < 10 && newCount >= 10) {
-      setTierUnlockValue(10);
-      setTimeout(() => setShowTierUnlock(true), 500);
-      return;
-    }
-
-    // Check for tier 3 unlock (20 completed)
-    if (previousCount < 20 && newCount >= 20) {
-      setTierUnlockValue(20);
-      setTimeout(() => setShowTierUnlock(true), 500);
       return;
     }
   };
@@ -551,7 +538,7 @@ export default function Dashboard() {
       autoStartRecording={autoStartRecording} 
       existingLogs={logs}
       // Pre-fill notes for challenge entries
-      initialNotes={pendingChallengeCompletion ? `Challenge #${pendingChallengeCompletion.day}: ${pendingChallengeCompletion.name}` : undefined}
+      initialNotes={pendingChallengeCompletion ? `One Hello 7-Day Challenge | Day ${pendingChallengeCompletion.day} | ${pendingChallengeCompletion.name}` : undefined}
       initialName={challengeHelloLog?.name || undefined}
       initialLocation={challengeHelloLog?.location || undefined}
       requireAtLeastOneField={false}
@@ -560,25 +547,24 @@ export default function Dashboard() {
   return <div className="min-h-screen bg-background page-container">
       <div className="max-w-md mx-auto px-4 py-8">
 
-
-        {/* Friendly Header Greeting */}
+        {/* Friendly Header Greeting with Remi */}
         <div className="text-center mb-6">
+          <img src={remiWaving4} alt="Remi waving" className="w-16 h-16 mx-auto mb-2 object-contain" />
           <h1 className="text-2xl font-bold text-foreground tracking-wide" style={{
           fontFamily: 'Fredoka, sans-serif'
         }}>
-            <span className="text-primary">Hello</span> {username} 👋
+            <span className="text-primary">Hello</span> {username}
           </h1>
         </div>
 
         {/* Stats Dashboard */}
         <HomeStatsBar logs={logs} lifetimeHellos={logs.length} />
 
-
-        {/* Main Dashboard - Connection-focused layout */}
-        <div className="space-y-6">
+        {/* Main Dashboard */}
+        <div className="space-y-4">
           
-          {/* Show Today's Hello when quest is paused, otherwise 30-Day Challenge Card */}
-          <div className="space-y-3" id="tutorial-todays-hello-card">
+          {/* Challenge Card */}
+          <div id="tutorial-todays-hello-card">
             {progress?.selected_pack_id === 'daily' ? <DailySuggestionCard /> : <CurrentChallengeCard completedDays={challengeState.completedDays} nextChallenge={challengeState.nextChallenge} totalCount={challengeState.totalCount} isComplete={challengeState.isComplete} onComplete={async (day, challengeName) => {
             const previousCount = challengeState.completedDays.length;
             await markDayComplete(day);
@@ -592,8 +578,8 @@ export default function Dashboard() {
           }} />}
           </div>
 
-          {/* Log a Hello Button */}
-          <div className="py-2">
+          {/* Log another hello - small and faded */}
+          <div>
             <SaveHelloButton onClick={() => {
             setAutoStartRecording(false);
             setShowLogDialog(true);
@@ -602,16 +588,6 @@ export default function Dashboard() {
             setShowLogDialog(true);
           }} />
           </div>
-
-          {/* Recent Hellos Section */}
-          <RecentHellosSection logs={logs} onViewAll={() => navigate('/hellobook')} onViewLog={log => {
-          const index = logs.findIndex(l => l.id === log.id);
-          setEditingLog(log);
-          setEditingLogIndex(index >= 0 ? index : 0);
-          setIsEditDialogOpen(true);
-        }} />
-          
-          {/* Spacer for bottom nav */}
           
         </div>
       </div>

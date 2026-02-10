@@ -200,29 +200,7 @@ const Challenges = () => {
           <img src={remiQuest} alt="Remi" className="w-16 h-16 object-contain" />
         </div>
 
-        {/* Daily Mode Toggle Section - Compressed */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-orange-500" />
-                <div>
-                  <span className="font-bold text-foreground">Daily Mode</span>
-                  <p className="text-xs text-muted-foreground">
-                    {dailyModeState.isActive ? `${dailyModeState.currentStreak} day streak 🔥` : "Track your streak"}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="sm" onClick={() => setShowDailyModeDetail(true)} className="text-xs text-muted-foreground px-2">
-                  Details
-                  <ChevronRight className="w-3 h-3 ml-0.5" />
-                </Button>
-                <Switch checked={dailyModeState.isActive} onCheckedChange={handleDailyModeToggle} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Daily Mode toggle removed - managed automatically */}
 
         {/* Current Quest Section - 30-Day Challenge */}
         <Card className="mb-6">
@@ -238,14 +216,14 @@ const Challenges = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-foreground">The 30 Hellos</h3>
+                  <h3 className="font-bold text-foreground">7-Day Challenge</h3>
                   {isQuestPaused && (
                     <span className="px-2 py-0.5 text-[10px] font-semibold bg-warning/20 text-warning rounded-full">
                       PAUSED
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">30 ways to connect in real life</p>
+                <p className="text-xs text-muted-foreground">7 ways to connect in real life</p>
                 <p className="text-xs text-success font-medium">FREE • Perfect for Everyone</p>
               </div>
             </div>
