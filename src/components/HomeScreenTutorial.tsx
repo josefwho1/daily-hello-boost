@@ -76,13 +76,9 @@ const getHighlightSelector = (highlight?: TutorialStep['highlight']): string | n
 
 // Memoized button preview component
 const LogHelloButtonPreview = memo(() => (
-  <div className="flex gap-2 justify-center my-4">
-    <div className="flex-1 max-w-[200px] h-12 bg-primary text-primary-foreground rounded-md flex items-center justify-center gap-2 text-sm font-semibold shadow-md">
-      <UserPlus className="w-4 h-4" />
-      Log a Hello
-    </div>
-    <div className="h-12 w-12 bg-background border border-border rounded-md flex items-center justify-center shadow-sm">
-      <Mic className="w-4 h-4 text-foreground" />
+  <div className="flex justify-center my-4">
+    <div className="max-w-[220px] h-10 bg-orange-500 text-white rounded-full flex items-center justify-center gap-2 text-sm font-semibold shadow-md px-5">
+      Complete Challenge
     </div>
   </div>
 ));
