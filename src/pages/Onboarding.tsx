@@ -185,6 +185,7 @@ export default function Onboarding() {
 
   const handleFirstHelloDone = useCallback(async () => {
     setStep('first_hello_done');
+    setFirstHelloLogged(true);
     setIsSubmitting(true);
     try {
       const { userId } = await ensureUserAndProgress({ loggedFirstHello: true });
