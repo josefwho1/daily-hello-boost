@@ -2,6 +2,7 @@ import { useState, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp, MapPin, Bookmark } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { HelloLog } from "@/hooks/useHelloLogs";
 
 interface HellobookPersonCardProps {
@@ -11,6 +12,15 @@ interface HellobookPersonCardProps {
   onViewClick: (log: HelloLog) => void;
   onToggleFavorite?: (id: string, isFavorite: boolean) => void;
 }
+
+// Get display label for hello type
+const getHelloTypeLabel = (log: HelloLog): string => {
+  if (log.hello_type?.startsWith("challenge:")) {
+    const dayNum = log.hello_type.split(":")[1];
+    return `7-Day Challenge · Day ${dayNum}`;
+  }
+  return "Regular hello";
+};
 
 // Check if a log is from a challenge
 const isFromChallenge = (log: HelloLog) => log.hello_type?.startsWith("challenge:");
@@ -135,6 +145,11 @@ const HellobookPersonCardComponent = ({
               <p className="text-xs text-muted-foreground/70 mt-0.5">
                 Last seen: {formatTimestamp(mostRecent.created_at, false)}
               </p>
+              
+              {/* Hello type tag */}
+              <span className="text-[10px] text-muted-foreground/50 font-medium">
+                {getHelloTypeLabel(primaryLog)}
+              </span>
 
               {/* Latest notes preview */}
               {mostRecent.notes && (
@@ -221,6 +236,13 @@ const HellobookPersonCardComponent = ({
             <p className="text-xs text-muted-foreground/70 mt-0.5">
               {formatTimestamp(primaryLog.created_at, false)}
             </p>
+
+            {/* Hello type tag */}
+            <div className="mt-1">
+              <span className="text-[10px] text-muted-foreground/50 font-medium">
+                {getHelloTypeLabel(primaryLog)}
+              </span>
+            </div>
 
             {/* Notes */}
             {primaryLog.notes && (

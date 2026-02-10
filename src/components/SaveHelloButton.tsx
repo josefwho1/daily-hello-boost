@@ -14,7 +14,7 @@ export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProp
         onClick={onClick}
         size="sm"
         variant="ghost"
-        className="flex-1 h-10 text-sm font-medium text-muted-foreground hover:text-foreground"
+        className="flex-1 h-10 text-sm font-medium text-muted-foreground/50 hover:text-muted-foreground"
       >
         <UserPlus className="w-4 h-4 mr-1.5" />
         Log another hello
@@ -25,7 +25,7 @@ export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProp
           onClick={onDictateClick}
           size="sm"
           variant="ghost"
-          className="h-10 px-3 text-muted-foreground hover:text-foreground"
+          className="h-10 px-3 text-muted-foreground/50 hover:text-muted-foreground"
           title="Quick dictate"
         >
           <Mic className="w-4 h-4" />

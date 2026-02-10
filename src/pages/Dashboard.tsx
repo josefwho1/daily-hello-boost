@@ -477,15 +477,15 @@ export default function Dashboard() {
   // Full-screen Challenge List View
   if (showChallengeList) {
     return <ChallengeListView completedDays={challengeState.completedDays} onComplete={async (day, challengeName) => {
-      const previousCount = challengeState.completedDays.length;
-      await markDayComplete(day);
-      showChallengeCompletedToast(day, challengeName);
-      checkAndShowCelebrations(previousCount, previousCount + 1);
+      // Go straight to Log Hello screen
+      setShowChallengeList(false);
+      setPendingChallengeCompletion({ day, name: challengeName });
+      setAutoStartRecording(false);
+      setShowLogDialog(true);
     }} onUncomplete={async day => {
       await unmarkDayComplete(day);
     }} onBack={() => setShowChallengeList(false)} onSelectChallenge={index => {
       setShowChallengeList(false);
-      // Pass the index to the CurrentChallengeCard via state
       navigate('/', {
         state: {
           selectedChallengeIndex: index
@@ -523,12 +523,12 @@ export default function Dashboard() {
           setShowLogDialog(false);
           setAutoStartRecording(false);
         } else if (pendingChallengeCompletion) {
-          // Create new hello for challenge (if somehow entry wasn't created)
+          // Create new hello for challenge with hello_type tag
           await handleLogHello({
             ...data,
             hello_type: `challenge:${pendingChallengeCompletion.day}`,
           });
-          // Mark challenge complete if not already
+          // Mark challenge complete
           if (!challengeState.completedDays.includes(pendingChallengeCompletion.day)) {
             const previousCount = challengeState.completedDays.length;
             await markDayComplete(pendingChallengeCompletion.day);
@@ -537,8 +537,11 @@ export default function Dashboard() {
           setShowLogDialog(false);
           setAutoStartRecording(false);
         } else {
-          // Regular hello log (LogHelloScreen calls onBack internally)
-          await handleLogHello(data);
+          // Regular hello log - tag as "regular"
+          await handleLogHello({
+            ...data,
+            hello_type: data.hello_type || 'regular',
+          });
         }
         setPendingChallengeCompletion(null);
       }}
@@ -574,10 +577,10 @@ export default function Dashboard() {
           {/* Challenge Card */}
           <div id="tutorial-todays-hello-card">
             {progress?.selected_pack_id === 'daily' ? <DailySuggestionCard /> : <CurrentChallengeCard completedDays={challengeState.completedDays} nextChallenge={challengeState.nextChallenge} totalCount={challengeState.totalCount} isComplete={challengeState.isComplete} onComplete={async (day, challengeName) => {
-            const previousCount = challengeState.completedDays.length;
-            await markDayComplete(day);
-            showChallengeCompletedToast(day, challengeName);
-            checkAndShowCelebrations(previousCount, previousCount + 1);
+            // Go straight to Log Hello screen instead of toast
+            setPendingChallengeCompletion({ day, name: challengeName });
+            setAutoStartRecording(false);
+            setShowLogDialog(true);
           }} onUncomplete={async day => {
             await unmarkDayComplete(day);
           }} onViewAll={() => setShowChallengeList(true)} onRestart={async () => {

@@ -110,6 +110,7 @@ export default function Onboarding() {
       challenge_completed_days: opts?.loggedFirstHello ? [1] : [],
       challenge_started_at: new Date().toISOString(),
       selected_pack_id: '30-day-hello',
+      current_streak: opts?.loggedFirstHello ? 1 : 0,
     };
 
     if (opts?.loggedFirstHello) {
@@ -168,14 +169,16 @@ export default function Onboarding() {
   }, [connectionName, connectionLocation, connectionNotes]);
 
   const handleSaveConnection = useCallback(async () => {
-    setStep('skip_for_now'); // Transition to "logged" screen
+    // After logging hello, go straight to walkthrough (skip "No worries" screen)
     setIsSubmitting(true);
     try {
       const { userId } = await ensureUserAndProgress({ loggedFirstHello: true });
       await logFirstHello(userId);
+      // Go straight to home with tutorial
+      sessionStorage.setItem('pending_home_tutorial', '1');
+      window.location.replace('/');
     } catch (error) {
       console.error('Error saving connection:', error);
-    } finally {
       setIsSubmitting(false);
     }
   }, [ensureUserAndProgress, logFirstHello]);
@@ -403,7 +406,7 @@ export default function Onboarding() {
               <Button onClick={() => setStep('log_hello')} className="w-full" size="lg">
                 Add to Hellobook
               </Button>
-              <Button onClick={() => setStep('skip_for_now')} variant="ghost" className="w-full text-muted-foreground" size="lg">
+              <Button onClick={() => completeOnboarding(true)} variant="ghost" className="w-full text-muted-foreground" size="lg">
                 Skip for now
               </Button>
             </div>
