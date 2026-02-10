@@ -110,6 +110,7 @@ export default function Onboarding() {
       challenge_completed_days: opts?.loggedFirstHello ? [1] : [],
       challenge_started_at: new Date().toISOString(),
       selected_pack_id: '30-day-hello',
+      current_streak: opts?.loggedFirstHello ? 1 : 0,
     };
 
     if (opts?.loggedFirstHello) {
