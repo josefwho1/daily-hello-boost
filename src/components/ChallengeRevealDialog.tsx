@@ -63,7 +63,7 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
   },
   5: {
     image: onboardingGettingpersonal,
-    headline: "Question",
+    headline: "Next: Getting Personal",
     body: [
       "You're doing great.",
       "Now ask something simple to learn more about them.",
