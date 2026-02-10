@@ -351,18 +351,14 @@ export const LogHelloScreen = ({
     }
   };
 
-  // Validation: at least one field must have content
+  // Validation: all fields are optional
   const hasName = name.trim() !== "";
   const hasLocation = location.trim() !== "";
   const hasNotes = notes.trim() !== "";
   const hasAnyContent = hasName || hasLocation || hasNotes;
-  const canSubmit = hasAnyContent && !isLogging && !isRecording && !isProcessing;
+  const canSubmit = !isLogging && !isRecording && !isProcessing;
 
   const handleSubmit = async () => {
-    if (!hasAnyContent) {
-      toast.error("Please enter some information - ideally a name!");
-      return;
-    }
 
     // Check for duplicate if there's a name
     if (name.trim()) {
