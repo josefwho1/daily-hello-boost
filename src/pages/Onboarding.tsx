@@ -431,7 +431,7 @@ export default function Onboarding() {
               <Button onClick={() => setStep('log_hello')} className="w-full" size="lg">
                 Add to Hellobook
               </Button>
-              <Button onClick={() => completeOnboarding(true)} variant="ghost" className="w-full text-muted-foreground" size="lg">
+              <Button onClick={() => setStep('weather_chat_reveal')} variant="ghost" className="w-full text-muted-foreground" size="lg">
                 Skip for now
               </Button>
             </div>
