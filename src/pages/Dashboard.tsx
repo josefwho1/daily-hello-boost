@@ -574,10 +574,10 @@ export default function Dashboard() {
           {/* Challenge Card */}
           <div id="tutorial-todays-hello-card">
             {progress?.selected_pack_id === 'daily' ? <DailySuggestionCard /> : <CurrentChallengeCard completedDays={challengeState.completedDays} nextChallenge={challengeState.nextChallenge} totalCount={challengeState.totalCount} isComplete={challengeState.isComplete} onComplete={async (day, challengeName) => {
-            const previousCount = challengeState.completedDays.length;
-            await markDayComplete(day);
-            showChallengeCompletedToast(day, challengeName);
-            checkAndShowCelebrations(previousCount, previousCount + 1);
+            // Go straight to Log Hello screen instead of toast
+            setPendingChallengeCompletion({ day, name: challengeName });
+            setAutoStartRecording(false);
+            setShowLogDialog(true);
           }} onUncomplete={async day => {
             await unmarkDayComplete(day);
           }} onViewAll={() => setShowChallengeList(true)} onRestart={async () => {
