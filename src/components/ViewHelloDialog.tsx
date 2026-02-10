@@ -249,15 +249,14 @@ const ViewHelloDialog = ({
               />
             </div>
 
-            {/* Hello Type Tag - read-only */}
+            {/* Hello Type Tag - single row, read-only */}
             {log.hello_type && (
-              <div className="space-y-1">
-                <Label className="text-muted-foreground/60 text-xs">Hello type</Label>
-                <div className="text-xs text-muted-foreground/50 font-medium bg-muted/30 rounded-lg px-3 py-2">
-                  {log.hello_type.startsWith("challenge:") 
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-muted-foreground/50 font-medium whitespace-nowrap">
+                  Hello type: {log.hello_type.startsWith("challenge:") 
                     ? `7-Day Challenge · Day ${log.hello_type.split(":")[1]}`
                     : "Regular hello"}
-                </div>
+                </span>
               </div>
             )}
           </motion.div>

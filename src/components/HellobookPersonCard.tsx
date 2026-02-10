@@ -16,10 +16,16 @@ interface HellobookPersonCardProps {
 // Get display label for hello type
 const getHelloTypeLabel = (log: HelloLog): string => {
   if (log.hello_type?.startsWith("challenge:")) {
-    const dayNum = log.hello_type.split(":")[1];
-    return `7-Day Challenge · Day ${dayNum}`;
+    const dayNum = parseInt(log.hello_type.split(":")[1], 10);
+    // Import challenge data to get the name
+    const challengeNames: Record<number, string> = {
+      1: "First Hello", 2: "Weather Chat", 3: "Helping Hand",
+      4: "Compliment", 5: "How Are You?", 6: "Getting Personal", 7: "Taking Names"
+    };
+    const name = challengeNames[dayNum] || `Day ${dayNum}`;
+    return `Hello type: 7-Day Challenge · ${name}`;
   }
-  return "Regular hello";
+  return "Hello type: Regular hello";
 };
 
 // Check if a log is from a challenge
