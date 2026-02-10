@@ -147,15 +147,10 @@ const HellobookPersonCardComponent = ({
 
               </div>
 
-              {/* Latest timestamp */}
+            {/* Latest timestamp · Hello type */}
               <p className="text-xs text-muted-foreground/70 mt-0.5">
-                Last seen: {formatTimestamp(mostRecent.created_at, false)}
+                Last seen: {formatTimestamp(mostRecent.created_at, false)} · {getHelloTypeLabel(primaryLog)}
               </p>
-              
-              {/* Hello type tag */}
-              <span className="text-[10px] text-muted-foreground/50 font-medium">
-                {getHelloTypeLabel(primaryLog)}
-              </span>
 
               {/* Latest notes preview */}
               {mostRecent.notes && (
