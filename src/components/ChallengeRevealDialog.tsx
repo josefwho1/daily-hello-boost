@@ -73,7 +73,7 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
   },
   6: {
     image: onboardingTakingnames,
-    headline: "Taking names",
+    headline: "Next: Taking Names",
     body: [
       "You're on a roll, it's time to start taking names!",
       "Names are like magic, they turn strangers into people.",

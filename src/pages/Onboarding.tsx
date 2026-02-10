@@ -212,7 +212,7 @@ export default function Onboarding() {
       const detectedOffset = detectBrowserTimezoneOffset();
       await supabase.from('hello_logs').insert({
         user_id: userId,
-        notes: `One Hello 7-Day Challenge | Day 1 | First Hello`,
+        notes: null,
         timezone_offset: detectedOffset,
         hello_type: 'challenge:1',
       });
