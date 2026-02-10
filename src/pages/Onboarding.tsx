@@ -37,7 +37,8 @@ export type OnboardingStep =
   | 'first_hello_done'     // 8a - completed first hello
   | 'log_hello'            // 9a - add to hellobook
   | 'skip_for_now'         // 9b - skip logging
-  | 'at_home';             // 7b - not in public
+  | 'at_home'              // 7b - not in public
+  | 'weather_chat_reveal'; // Day 2 reveal
 
 type ReflectionAnswer = 'this_week' | 'last_week' | 'few_weeks' | 'dont_remember' | null;
 
