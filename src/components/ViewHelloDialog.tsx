@@ -201,11 +201,18 @@ const ViewHelloDialog = ({
             transition={{ duration: 0.2, ease: "easeInOut" }}
             className="space-y-5"
           >
-            {/* Timestamp */}
+            {/* Timestamp + Hello Type */}
             <div className="text-center pb-2">
               <p className="text-sm text-muted-foreground">
                 {formatTimestamp(log.created_at, true)}
               </p>
+              {log.hello_type && (
+                <p className="text-[11px] text-muted-foreground/50 font-medium mt-0.5">
+                  {log.hello_type.startsWith("challenge:") 
+                    ? `7-Day Challenge · Day ${log.hello_type.split(":")[1]}`
+                    : "Regular hello"}
+                </p>
+              )}
               {logs.length > 1 && (
                 <p className="text-xs text-muted-foreground/60 mt-1">
                   {currentIndex + 1} of {logs.length}
@@ -249,16 +256,6 @@ const ViewHelloDialog = ({
               />
             </div>
 
-            {/* Hello Type Tag - single row, read-only */}
-            {log.hello_type && (
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted-foreground/50 font-medium whitespace-nowrap">
-                  Hello type: {log.hello_type.startsWith("challenge:") 
-                    ? `7-Day Challenge · Day ${log.hello_type.split(":")[1]}`
-                    : "Regular hello"}
-                </span>
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
       </div>
