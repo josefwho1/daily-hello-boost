@@ -24,7 +24,7 @@ import onboardingWeatherchat from "@/assets/onboarding-weatherchat.webp";
 const ONBOARDING_ASSETS = [
   remiWaving4, remiShakingHand, remiCurious4, remiSad5,
   remiCelebrating9, remiCelebrating7, remiCelebrating1,
-  remiSmiling1, remiLogging4, remiLogging5, onboardingFirsthello
+  remiSmiling1, remiLogging4, remiLogging5, onboardingFirsthello, onboardingWeatherchat
 ];
 
 export type OnboardingStep = 
