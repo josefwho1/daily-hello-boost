@@ -19,11 +19,12 @@ import remiSmiling1 from "@/assets/remi-smiling-1.webp";
 import remiLogging4 from "@/assets/remi-logging-4.webp";
 import remiLogging5 from "@/assets/remi-logging-5.webp";
 import onboardingFirsthello from "@/assets/onboarding-firsthello.webp";
+import onboardingWeatherchat from "@/assets/onboarding-weatherchat.webp";
 
 const ONBOARDING_ASSETS = [
   remiWaving4, remiShakingHand, remiCurious4, remiSad5,
   remiCelebrating9, remiCelebrating7, remiCelebrating1,
-  remiSmiling1, remiLogging4, remiLogging5, onboardingFirsthello
+  remiSmiling1, remiLogging4, remiLogging5, onboardingFirsthello, onboardingWeatherchat
 ];
 
 export type OnboardingStep = 
@@ -37,7 +38,8 @@ export type OnboardingStep =
   | 'first_hello_done'     // 8a - completed first hello
   | 'log_hello'            // 9a - add to hellobook
   | 'skip_for_now'         // 9b - skip logging
-  | 'at_home';             // 7b - not in public
+  | 'at_home'              // 7b - not in public
+  | 'weather_chat_reveal'; // Day 2 reveal
 
 type ReflectionAnswer = 'this_week' | 'last_week' | 'few_weeks' | 'dont_remember' | null;
 
@@ -144,7 +146,7 @@ export default function Onboarding() {
       user_id: userId,
       name: connectionName.trim() || null,
       location: connectionLocation.trim() || null,
-      notes: connectionNotes.trim() || `One Hello 7-Day Challenge | Day 1 | First Hello`,
+      notes: connectionNotes.trim() || null,
       timezone_offset: detectedOffset,
       hello_type: 'challenge:1',
     });
@@ -188,13 +190,13 @@ export default function Onboarding() {
         await supabase.from('hello_logs').update({
           name: connectionName.trim() || null,
           location: connectionLocation.trim() || null,
-          notes: connectionNotes.trim() || `One Hello 7-Day Challenge | Day 1 | First Hello`,
+          notes: connectionNotes.trim() || null,
         }).eq('id', existingLog.id);
       }
 
-      // Go straight to home with tutorial
-      sessionStorage.setItem('pending_home_tutorial', '1');
-      window.location.replace('/');
+      // Show Weather Chat reveal before going home
+      setStep('weather_chat_reveal');
+      setIsSubmitting(false);
     } catch (error) {
       console.error('Error saving connection:', error);
       setIsSubmitting(false);
@@ -212,7 +214,7 @@ export default function Onboarding() {
       const detectedOffset = detectBrowserTimezoneOffset();
       await supabase.from('hello_logs').insert({
         user_id: userId,
-        notes: `One Hello 7-Day Challenge | Day 1 | First Hello`,
+        notes: null,
         timezone_offset: detectedOffset,
         hello_type: 'challenge:1',
       });
@@ -410,7 +412,7 @@ export default function Onboarding() {
                 I did it! 🎉
               </Button>
               <Button onClick={() => setStep('at_home')} variant="ghost" className="w-full text-muted-foreground" size="lg">
-                I'll do this later
+                I'll do it later
               </Button>
             </div>
           </div>
@@ -429,7 +431,7 @@ export default function Onboarding() {
               <Button onClick={() => setStep('log_hello')} className="w-full" size="lg">
                 Add to Hellobook
               </Button>
-              <Button onClick={() => completeOnboarding(true)} variant="ghost" className="w-full text-muted-foreground" size="lg">
+              <Button onClick={() => setStep('weather_chat_reveal')} variant="ghost" className="w-full text-muted-foreground" size="lg">
                 Skip for now
               </Button>
             </div>
@@ -480,7 +482,7 @@ export default function Onboarding() {
                 Let's show you around.
               </p>
             </div>
-            <Button onClick={() => completeOnboarding(true)} className="w-full" size="lg">
+            <Button onClick={() => setStep('weather_chat_reveal')} className="w-full" size="lg">
               Continue
             </Button>
           </div>
@@ -502,8 +504,24 @@ export default function Onboarding() {
                 For now, let me show you around.
               </p>
             </div>
-            <Button onClick={() => completeOnboarding(true)} className="w-full" size="lg">
+            <Button onClick={() => setStep('weather_chat_reveal')} className="w-full" size="lg">
               Continue
+            </Button>
+          </div>
+        );
+
+      case 'weather_chat_reveal':
+        return (
+          <div className={`${baseClasses} ${animClasses}`}>
+            <RemiImage src={onboardingWeatherchat} alt="Weather Chat" className="w-56 h-auto max-h-56 mx-auto object-contain" />
+            <div className="space-y-3">
+              <h1 className="text-2xl font-bold text-foreground">Next: Weather Chat</h1>
+              <p className="text-foreground">Comment on something you're both experiencing.</p>
+              <p className="text-muted-foreground">Weather, long lines, vibes — anything shared.</p>
+              <p className="text-muted-foreground italic text-sm">💡 "What a beautiful day" "Long line, hey?" "Great song"</p>
+            </div>
+            <Button onClick={() => completeOnboarding(true)} className="w-full" size="lg">
+              Let's do it
             </Button>
           </div>
         );

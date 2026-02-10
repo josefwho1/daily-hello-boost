@@ -23,7 +23,7 @@ export interface ChallengeRevealConfig {
 const challengeReveals: Record<number, ChallengeRevealConfig> = {
   1: {
     image: onboardingWeatherchat,
-    headline: "Next up: Weather Chat",
+    headline: "Next: Weather Chat",
     body: [
       "Comment on something you're both experiencing.",
       "Weather, long lines, vibes — anything shared.",
@@ -33,7 +33,7 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
   },
   2: {
     image: onboardingHelpinghand,
-    headline: "Helping Hand",
+    headline: "Next: Helping Hand",
     body: [
       "People love being helpful. (Benjamin Franklin effect)",
       "Ask a stranger for a small favour —",
@@ -43,7 +43,7 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
   },
   3: {
     image: onboardingCompliment,
-    headline: "Compliment",
+    headline: "Next: Compliment",
     body: [
       "Nice work, knew you were a natural 🦝",
       "Let's make someone's day.",
@@ -53,7 +53,7 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
   },
   4: {
     image: onboardingHowareyou,
-    headline: "How are you?",
+    headline: "Next: How Are You?",
     body: [
       "Great job.",
       "Now try asking how someone's day is going.",
@@ -63,7 +63,7 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
   },
   5: {
     image: onboardingGettingpersonal,
-    headline: "Question",
+    headline: "Next: Getting Personal",
     body: [
       "You're doing great.",
       "Now ask something simple to learn more about them.",
@@ -73,7 +73,7 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
   },
   6: {
     image: onboardingTakingnames,
-    headline: "Taking names",
+    headline: "Next: Taking Names",
     body: [
       "You're on a roll, it's time to start taking names!",
       "Names are like magic, they turn strangers into people.",
