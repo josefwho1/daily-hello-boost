@@ -406,7 +406,7 @@ export default function Onboarding() {
               <Button onClick={() => setStep('log_hello')} className="w-full" size="lg">
                 Add to Hellobook
               </Button>
-              <Button onClick={() => setStep('skip_for_now')} variant="ghost" className="w-full text-muted-foreground" size="lg">
+              <Button onClick={() => completeOnboarding(true)} variant="ghost" className="w-full text-muted-foreground" size="lg">
                 Skip for now
               </Button>
             </div>
