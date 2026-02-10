@@ -168,14 +168,16 @@ export default function Onboarding() {
   }, [connectionName, connectionLocation, connectionNotes]);
 
   const handleSaveConnection = useCallback(async () => {
-    setStep('skip_for_now'); // Transition to "logged" screen
+    // After logging hello, go straight to walkthrough (skip "No worries" screen)
     setIsSubmitting(true);
     try {
       const { userId } = await ensureUserAndProgress({ loggedFirstHello: true });
       await logFirstHello(userId);
+      // Go straight to home with tutorial
+      sessionStorage.setItem('pending_home_tutorial', '1');
+      window.location.replace('/');
     } catch (error) {
       console.error('Error saving connection:', error);
-    } finally {
       setIsSubmitting(false);
     }
   }, [ensureUserAndProgress, logFirstHello]);
