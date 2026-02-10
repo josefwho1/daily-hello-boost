@@ -188,7 +188,7 @@ export default function Onboarding() {
         await supabase.from('hello_logs').update({
           name: connectionName.trim() || null,
           location: connectionLocation.trim() || null,
-          notes: connectionNotes.trim() || `One Hello 7-Day Challenge | Day 1 | First Hello`,
+          notes: connectionNotes.trim() || null,
         }).eq('id', existingLog.id);
       }
 
