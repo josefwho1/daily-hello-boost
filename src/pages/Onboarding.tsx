@@ -220,19 +220,23 @@ export default function Onboarding() {
     }
   }, [ensureUserAndProgress]);
 
+  // Track whether the first hello was already logged in this session
+  const [firstHelloLogged, setFirstHelloLogged] = useState(false);
+
   const completeOnboarding = useCallback(async (showTutorial: boolean) => {
     if (showTutorial) {
       sessionStorage.setItem('pending_home_tutorial', '1');
     }
     fireAndForget(async () => {
       try {
-        await ensureUserAndProgress();
+        // Pass loggedFirstHello if the user completed it during onboarding
+        await ensureUserAndProgress({ loggedFirstHello: firstHelloLogged });
       } catch (error) {
         console.error('Background onboarding error:', error);
       }
     });
     window.location.replace('/');
-  }, [ensureUserAndProgress]);
+  }, [ensureUserAndProgress, firstHelloLogged]);
 
   const progress = useMemo(() => {
     const steps: OnboardingStep[] = [
