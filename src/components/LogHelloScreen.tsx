@@ -555,11 +555,11 @@ export const LogHelloScreen = ({
           />
         </div>
 
-        {/* Hello Type Tag - single row, read-only */}
+        {/* Hello Type Tag - under header area */}
         {challengeTitle && (
           <div className="flex items-center gap-2">
             <span className="text-[11px] text-muted-foreground/50 font-medium whitespace-nowrap">
-              Hello type: {challengeTitle.includes("Challenge") ? challengeTitle : `7-Day Challenge · ${challengeTitle}`}
+              {challengeTitle.includes("Challenge") ? challengeTitle : `7-Day Challenge · ${challengeTitle}`}
             </span>
           </div>
         )}

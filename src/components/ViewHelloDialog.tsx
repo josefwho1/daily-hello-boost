@@ -256,16 +256,6 @@ const ViewHelloDialog = ({
               />
             </div>
 
-            {/* Hello Type Tag - single row, read-only */}
-            {log.hello_type && (
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted-foreground/50 font-medium whitespace-nowrap">
-                  Hello type: {log.hello_type.startsWith("challenge:") 
-                    ? `7-Day Challenge · Day ${log.hello_type.split(":")[1]}`
-                    : "Regular hello"}
-                </span>
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
       </div>
