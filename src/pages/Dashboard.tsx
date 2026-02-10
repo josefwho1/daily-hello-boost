@@ -477,15 +477,15 @@ export default function Dashboard() {
   // Full-screen Challenge List View
   if (showChallengeList) {
     return <ChallengeListView completedDays={challengeState.completedDays} onComplete={async (day, challengeName) => {
-      const previousCount = challengeState.completedDays.length;
-      await markDayComplete(day);
-      showChallengeCompletedToast(day, challengeName);
-      checkAndShowCelebrations(previousCount, previousCount + 1);
+      // Go straight to Log Hello screen
+      setShowChallengeList(false);
+      setPendingChallengeCompletion({ day, name: challengeName });
+      setAutoStartRecording(false);
+      setShowLogDialog(true);
     }} onUncomplete={async day => {
       await unmarkDayComplete(day);
     }} onBack={() => setShowChallengeList(false)} onSelectChallenge={index => {
       setShowChallengeList(false);
-      // Pass the index to the CurrentChallengeCard via state
       navigate('/', {
         state: {
           selectedChallengeIndex: index
