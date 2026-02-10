@@ -555,13 +555,12 @@ export const LogHelloScreen = ({
           />
         </div>
 
-        {/* Hello Type Tag - read-only */}
+        {/* Hello Type Tag - single row, read-only */}
         {challengeTitle && (
-          <div className="space-y-1">
-            <Label className="text-muted-foreground/60 text-xs">Hello type</Label>
-            <div className="text-xs text-muted-foreground/50 font-medium bg-muted/30 rounded-lg px-3 py-2">
-              {challengeTitle.includes("Challenge") ? challengeTitle : `7-Day Challenge · ${challengeTitle}`}
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-muted-foreground/50 font-medium whitespace-nowrap">
+              Hello type: {challengeTitle.includes("Challenge") ? challengeTitle : `7-Day Challenge · ${challengeTitle}`}
+            </span>
           </div>
         )}
 

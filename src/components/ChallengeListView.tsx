@@ -129,16 +129,16 @@ export const ChallengeListView = ({
                     {isLockedFuture ? (
                       // Fully locked: hide name and description
                       <div className="text-sm text-muted-foreground/30 font-medium">
-                        Day {challenge.day} • Locked
+                        Day {challenge.day} · Locked
                       </div>
-                    ) : !unlocked ? (
-                      // Next (locked but visible name): show name, grey description
+                    ) : isNextLocked ? (
+                      // Next locked: show name, hide description, show unlock hint
                       <>
                         <div className="font-semibold text-sm text-muted-foreground">
                           {challenge.day}. {challenge.name}
                         </div>
                         <p className="text-xs text-muted-foreground/40 mt-0.5">
-                          Complete the current challenge to unlock
+                          Complete "{thirtyDayChallenge[idx - 1]?.name}" to unlock
                         </p>
                       </>
                     ) : (
