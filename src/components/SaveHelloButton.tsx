@@ -12,22 +12,23 @@ export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProp
       <Button 
         id="tutorial-log-hello-btn"
         onClick={onClick}
-        size="lg"
-        className="flex-1 h-14 text-lg font-semibold shadow-md hover:shadow-lg transition-all"
+        size="sm"
+        variant="ghost"
+        className="flex-1 h-10 text-sm font-medium text-muted-foreground hover:text-foreground"
       >
-        <UserPlus className="w-5 h-5 mr-2" />
-        Log a Hello
+        <UserPlus className="w-4 h-4 mr-1.5" />
+        Log another hello
       </Button>
       {onDictateClick && (
         <Button 
           id="tutorial-dictate-btn"
           onClick={onDictateClick}
-          size="lg"
-          variant="outline"
-          className="h-14 px-4 shadow-sm hover:shadow-md"
+          size="sm"
+          variant="ghost"
+          className="h-10 px-3 text-muted-foreground hover:text-foreground"
           title="Quick dictate"
         >
-          <Mic className="w-5 h-5" />
+          <Mic className="w-4 h-4" />
         </Button>
       )}
     </div>
