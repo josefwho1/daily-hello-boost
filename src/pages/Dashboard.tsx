@@ -498,7 +498,9 @@ export default function Dashboard() {
   if (showLogDialog) {
     // If we're adding details for a challenge that already created a hello entry, 
     // find and edit it. Otherwise, create a new one.
-    const challengeHelloLog = pendingChallengeCompletion 
+    // Only look for existing challenge log if day is already completed (i.e. "Add Details" flow)
+    // After a restart, old logs still exist but the day won't be in completedDays
+    const challengeHelloLog = pendingChallengeCompletion && challengeState.completedDays.includes(pendingChallengeCompletion.day)
       ? logs.find(l => l.hello_type === `challenge:${pendingChallengeCompletion.day}`)
       : null;
 
