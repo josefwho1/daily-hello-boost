@@ -23,7 +23,7 @@ export interface ChallengeRevealConfig {
 const challengeReveals: Record<number, ChallengeRevealConfig> = {
   1: {
     image: onboardingWeatherchat,
-    headline: "Next up: Weather Chat",
+    headline: "Next: Weather Chat",
     body: [
       "Comment on something you're both experiencing.",
       "Weather, long lines, vibes — anything shared.",
