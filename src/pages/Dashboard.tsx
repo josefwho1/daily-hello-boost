@@ -523,12 +523,12 @@ export default function Dashboard() {
           setShowLogDialog(false);
           setAutoStartRecording(false);
         } else if (pendingChallengeCompletion) {
-          // Create new hello for challenge (if somehow entry wasn't created)
+          // Create new hello for challenge with hello_type tag
           await handleLogHello({
             ...data,
             hello_type: `challenge:${pendingChallengeCompletion.day}`,
           });
-          // Mark challenge complete if not already
+          // Mark challenge complete
           if (!challengeState.completedDays.includes(pendingChallengeCompletion.day)) {
             const previousCount = challengeState.completedDays.length;
             await markDayComplete(pendingChallengeCompletion.day);
@@ -537,8 +537,11 @@ export default function Dashboard() {
           setShowLogDialog(false);
           setAutoStartRecording(false);
         } else {
-          // Regular hello log (LogHelloScreen calls onBack internally)
-          await handleLogHello(data);
+          // Regular hello log - tag as "regular"
+          await handleLogHello({
+            ...data,
+            hello_type: data.hello_type || 'regular',
+          });
         }
         setPendingChallengeCompletion(null);
       }}
