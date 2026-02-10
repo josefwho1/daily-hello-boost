@@ -151,46 +151,49 @@ export const CurrentChallengeCard = ({
         </div>
       ) : currentChallenge ? (
         <div className="flex-1 flex flex-col mt-3">
-          {/* Challenge name */}
-          <h3 className={cn(
-            "text-base font-bold",
-            isLockedFuture ? "text-muted-foreground/30" : 
-            isNextLocked ? "text-muted-foreground" :
-            isChallengeComplete ? "text-success" : "text-foreground"
-          )}>
-            {isLockedFuture ? `Day ${currentChallenge.day} · Locked` : currentChallenge.name}
-          </h3>
-          
-          {/* Description - 2 line clamp, hidden for locked */}
-          {isLockedFuture ? (
-            <p className="text-xs text-muted-foreground/30 mt-1 line-clamp-2">
-              Complete previous challenges to unlock
-            </p>
-          ) : isNextLocked ? (
-            <p className="text-xs text-muted-foreground/50 mt-1 line-clamp-2">
-              Complete "{getBlockingChallengeName()}" to unlock
-            </p>
-          ) : (
-            <p className={cn(
-              "text-sm text-muted-foreground mt-1 line-clamp-2",
-              isChallengeComplete && "line-through opacity-70"
+          {/* Challenge name - fixed height */}
+          <div className="h-6 flex items-center">
+            <h3 className={cn(
+              "text-base font-bold line-clamp-1",
+              isLockedFuture ? "text-muted-foreground/30" : 
+              isNextLocked ? "text-muted-foreground" :
+              isChallengeComplete ? "text-success" : "text-foreground"
             )}>
-              {currentChallenge.description}
-            </p>
-          )}
+              {isLockedFuture ? `Day ${currentChallenge.day} · Locked` : currentChallenge.name}
+            </h3>
+          </div>
+          
+          {/* Description area - fixed height for 2 lines */}
+          <div className="h-[2.75rem] mt-1">
+            {isLockedFuture ? (
+              <p className="text-xs text-muted-foreground/30 line-clamp-2">
+                Complete previous challenges to unlock
+              </p>
+            ) : isNextLocked ? (
+              <p className="text-xs text-muted-foreground/50 line-clamp-2">
+                Complete "{getBlockingChallengeName()}" to unlock
+              </p>
+            ) : (
+              <p className={cn(
+                "text-sm text-muted-foreground line-clamp-2",
+                isChallengeComplete && "line-through opacity-70"
+              )}>
+                {currentChallenge.description}
+              </p>
+            )}
+          </div>
 
-          {/* Suggestion - 2 line clamp, only for unlocked active */}
-          {challengeUnlocked && !isChallengeComplete && currentChallenge.suggestion ? (
-            <p className="text-xs text-muted-foreground/70 italic mt-2 line-clamp-2">
-              💡 {currentChallenge.suggestion}
-            </p>
-          ) : (
-            /* Spacer to maintain height when no suggestion */
-            <div className="mt-2 min-h-[2rem]" />
-          )}
+          {/* Suggestion area - fixed height for 2 lines */}
+          <div className="h-[2.25rem] mt-1">
+            {challengeUnlocked && !isChallengeComplete && currentChallenge.suggestion && (
+              <p className="text-xs text-muted-foreground/70 italic line-clamp-2">
+                💡 {currentChallenge.suggestion}
+              </p>
+            )}
+          </div>
 
           {/* Buttons - pushed to bottom */}
-          <div className="mt-auto pt-3 flex items-center justify-between gap-2">
+          <div className="mt-auto pt-2 flex items-center justify-between gap-2">
             {challengeUnlocked && !isChallengeComplete ? (
               <button 
                 onClick={handleCompleteClick}
