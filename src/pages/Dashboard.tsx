@@ -13,6 +13,7 @@ import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
 import { TierUnlockCelebrationDialog } from "@/components/TierUnlockCelebrationDialog";
+import { ChallengeRevealDialog } from "@/components/ChallengeRevealDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 
 
@@ -127,6 +128,8 @@ export default function Dashboard() {
   const [showThirtyChallengeComplete, setShowThirtyChallengeComplete] = useState(false);
   const [showTierUnlock, setShowTierUnlock] = useState(false);
   const [tierUnlockValue, setTierUnlockValue] = useState<10 | 20>(10);
+  const [showChallengeReveal, setShowChallengeReveal] = useState(false);
+  const [challengeRevealDay, setChallengeRevealDay] = useState(0);
   const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{
     day: number;
     name: string;
@@ -455,14 +458,19 @@ export default function Dashboard() {
     );
   };
 
-  // Helper to handle tier unlock celebrations
+  // Helper to handle challenge celebrations
   const checkAndShowCelebrations = (previousCount: number, newCount: number) => {
     // Check for 7-day completion
     if (newCount === 7 && previousCount < 7) {
-      setTimeout(() => {
-        setShowThirtyChallengeComplete(true);
-      }, 500);
+      setChallengeRevealDay(7);
+      setTimeout(() => setShowChallengeReveal(true), 500);
       return;
+    }
+    
+    // Show next challenge reveal for days 1-6
+    if (newCount < 7 && newCount > previousCount) {
+      setChallengeRevealDay(newCount);
+      setTimeout(() => setShowChallengeReveal(true), 500);
     }
   };
 
@@ -594,17 +602,24 @@ export default function Dashboard() {
 
       {/* Dialogs */}
 
-      {/* 30-Day Challenge Complete Celebration */}
-      <ThirtyChallengeCompleteDialog open={showThirtyChallengeComplete} onContinue={async () => {
-      setShowThirtyChallengeComplete(false);
-      // Switch to Today's Hello after completing 30 Hellos
-      await updateProgress({
-        selected_pack_id: 'daily'
-      });
-    }} timesCompleted={challengeState.timesCompleted} />
-
-      {/* Tier Unlock Celebration (10 or 20) */}
-      <TierUnlockCelebrationDialog open={showTierUnlock} onContinue={() => setShowTierUnlock(false)} tier={tierUnlockValue} />
+      {/* Challenge Reveal / Celebration Dialog */}
+      <ChallengeRevealDialog 
+        open={showChallengeReveal} 
+        completedDay={challengeRevealDay} 
+        userName={username}
+        onContinue={async () => {
+          setShowChallengeReveal(false);
+          // If day 7 completed, show normal mode transition
+          if (challengeRevealDay === 7) {
+            setChallengeRevealDay(8);
+            setTimeout(() => setShowChallengeReveal(true), 300);
+          }
+          // If showing post-completion screen (day 8), switch to daily mode
+          if (challengeRevealDay === 8) {
+            await updateProgress({ selected_pack_id: 'daily' });
+          }
+        }}
+      />
 
       {/* Milestone Celebrations */}
       <MilestoneCelebrationDialog open={showMilestoneCelebration} onContinue={() => setShowMilestoneCelebration(false)} milestoneValue={milestoneValue} milestoneType={milestoneType} />

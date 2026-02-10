@@ -1,21 +1,24 @@
-import { createContext, useContext, useState, useCallback, useRef, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useRef, ReactNode } from "react";
 
 export type OnboardingStep = 
   | 'welcome'
   | 'greeting'
-  | 'philosophy'
-  | 'last_connection'
-  | 'add_to_hellobook'
+  | 'reflection'
+  | 'acknowledgement'
+  | 'challenge_intro'
+  | 'public_place'
+  | 'first_hello_prompt'
+  | 'first_hello_done'
   | 'log_hello'
-  | 'first_entry'
-  | 'no_worries';
+  | 'skip_for_now'
+  | 'at_home';
 
-export type LastConnectionAnswer = 'this_week' | 'last_week' | 'a_while_ago' | 'not_sure' | null;
+export type ReflectionAnswer = 'this_week' | 'last_week' | 'few_weeks' | 'dont_remember' | null;
 
 interface OnboardingState {
   step: OnboardingStep;
   userName: string;
-  lastConnectionAnswer: LastConnectionAnswer;
+  reflectionAnswer: ReflectionAnswer;
   connectionName: string;
   connectionLocation: string;
   connectionNotes: string;
@@ -26,7 +29,7 @@ interface OnboardingState {
 interface OnboardingContextValue extends OnboardingState {
   setStep: (step: OnboardingStep) => void;
   setUserName: (name: string) => void;
-  setLastConnectionAnswer: (answer: LastConnectionAnswer) => void;
+  setReflectionAnswer: (answer: ReflectionAnswer) => void;
   setConnectionName: (name: string) => void;
   setConnectionLocation: (location: string) => void;
   setConnectionNotes: (notes: string) => void;
@@ -38,7 +41,7 @@ interface OnboardingContextValue extends OnboardingState {
 const initialState: OnboardingState = {
   step: 'welcome',
   userName: '',
-  lastConnectionAnswer: null,
+  reflectionAnswer: null,
   connectionName: '',
   connectionLocation: '',
   connectionNotes: '',
@@ -50,46 +53,18 @@ const OnboardingContext = createContext<OnboardingContextValue | null>(null);
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<OnboardingState>(initialState);
-  
-  // Use refs to avoid stale closures in callbacks
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  const setStep = useCallback((step: OnboardingStep) => {
-    setState(prev => ({ ...prev, step }));
-  }, []);
-
-  const setUserName = useCallback((userName: string) => {
-    setState(prev => ({ ...prev, userName }));
-  }, []);
-
-  const setLastConnectionAnswer = useCallback((lastConnectionAnswer: LastConnectionAnswer) => {
-    setState(prev => ({ ...prev, lastConnectionAnswer }));
-  }, []);
-
-  const setConnectionName = useCallback((connectionName: string) => {
-    setState(prev => ({ ...prev, connectionName }));
-  }, []);
-
-  const setConnectionLocation = useCallback((connectionLocation: string) => {
-    setState(prev => ({ ...prev, connectionLocation }));
-  }, []);
-
-  const setConnectionNotes = useCallback((connectionNotes: string) => {
-    setState(prev => ({ ...prev, connectionNotes }));
-  }, []);
-
-  const setIsSubmitting = useCallback((isSubmitting: boolean) => {
-    setState(prev => ({ ...prev, isSubmitting }));
-  }, []);
-
-  const setAssetsLoaded = useCallback((assetsLoaded: boolean) => {
-    setState(prev => ({ ...prev, assetsLoaded }));
-  }, []);
-
-  const resetState = useCallback(() => {
-    setState(initialState);
-  }, []);
+  const setStep = useCallback((step: OnboardingStep) => setState(prev => ({ ...prev, step })), []);
+  const setUserName = useCallback((userName: string) => setState(prev => ({ ...prev, userName })), []);
+  const setReflectionAnswer = useCallback((reflectionAnswer: ReflectionAnswer) => setState(prev => ({ ...prev, reflectionAnswer })), []);
+  const setConnectionName = useCallback((connectionName: string) => setState(prev => ({ ...prev, connectionName })), []);
+  const setConnectionLocation = useCallback((connectionLocation: string) => setState(prev => ({ ...prev, connectionLocation })), []);
+  const setConnectionNotes = useCallback((connectionNotes: string) => setState(prev => ({ ...prev, connectionNotes })), []);
+  const setIsSubmitting = useCallback((isSubmitting: boolean) => setState(prev => ({ ...prev, isSubmitting })), []);
+  const setAssetsLoaded = useCallback((assetsLoaded: boolean) => setState(prev => ({ ...prev, assetsLoaded })), []);
+  const resetState = useCallback(() => setState(initialState), []);
 
   return (
     <OnboardingContext.Provider
@@ -97,7 +72,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         ...state,
         setStep,
         setUserName,
-        setLastConnectionAnswer,
+        setReflectionAnswer,
         setConnectionName,
         setConnectionLocation,
         setConnectionNotes,

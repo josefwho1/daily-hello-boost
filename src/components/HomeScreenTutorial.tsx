@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { UserPlus, Mic } from "lucide-react";
+
 import remiWaving from "@/assets/remi-waving.webp";
 import { useAssetPreloader } from "@/hooks/useAssetPreloader";
 
@@ -28,18 +28,18 @@ interface HomeScreenTutorialProps {
 const tutorialSteps: TutorialStep[] = [
   {
     id: 'home',
-    title: "Welcome to the home page.",
-    body: "Here you'll find your:\n\n• Hello stats (streak + all time)\n• Friendly prompts & challenges\n• A place to log new hellos",
+    title: "This is Home",
+    body: "Here you'll see:\n\n• Today's challenge\n• Your current streak\n• Your hello stats",
     position: 'center',
     highlight: 'home-nav',
     showRemi: true,
   },
   {
-    id: 'log-hello',
-    emoji: "✏️",
-    title: "Log a Hello",
-    bodyBefore: "Tap here anytime you meet someone new.",
-    bodyAfter: "💡 Use our AI dictate 🎙️ to log multiple hellos at once.",
+    id: 'complete-challenge',
+    emoji: "✅",
+    title: "Complete Your Challenge",
+    bodyBefore: "Tap here when you've done today's hello.",
+    bodyAfter: "You can log extra hellos anytime from the home screen.",
     position: 'center',
     showButtonPreview: true,
   },
@@ -47,7 +47,7 @@ const tutorialSteps: TutorialStep[] = [
     id: 'hellobook',
     emoji: "📖",
     title: "Your Hellobook",
-    body: "This is where your hellos live.\n\nSearch by name, place or notes to revisit the stories you've collected along the way.",
+    body: "This is where your hellos live.\n\nSearch by name, place or notes to revisit anyone you've met.",
     position: 'center',
     highlight: 'hellobook-nav',
   },
@@ -55,7 +55,7 @@ const tutorialSteps: TutorialStep[] = [
     id: 'quests',
     emoji: "🎯",
     title: "Quests",
-    body: "Optional packs & challenges to create more stories.\n\nThe 30 Hellos is the best way to start.\n\nToggle Daily Mode on/off to track your streak.",
+    body: "This is where you'll find packs to help you start more conversations.\n\nYou're starting with the 7-Day Challenge.\n\nMore challenge packs coming soon!",
     position: 'center',
     highlight: 'quests-nav',
   },
@@ -76,13 +76,9 @@ const getHighlightSelector = (highlight?: TutorialStep['highlight']): string | n
 
 // Memoized button preview component
 const LogHelloButtonPreview = memo(() => (
-  <div className="flex gap-2 justify-center my-4">
-    <div className="flex-1 max-w-[200px] h-12 bg-primary text-primary-foreground rounded-md flex items-center justify-center gap-2 text-sm font-semibold shadow-md">
-      <UserPlus className="w-4 h-4" />
-      Log a Hello
-    </div>
-    <div className="h-12 w-12 bg-background border border-border rounded-md flex items-center justify-center shadow-sm">
-      <Mic className="w-4 h-4 text-foreground" />
+  <div className="flex justify-center my-4">
+    <div className="max-w-[220px] h-10 bg-orange-500 text-white rounded-full flex items-center justify-center gap-2 text-sm font-semibold shadow-md px-5">
+      Complete Challenge
     </div>
   </div>
 ));
