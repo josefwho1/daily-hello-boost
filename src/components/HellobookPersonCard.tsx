@@ -232,6 +232,13 @@ const HellobookPersonCardComponent = ({
               {formatTimestamp(primaryLog.created_at, false)}
             </p>
 
+            {/* Hello type tag */}
+            <div className="mt-1">
+              <span className="text-[10px] text-muted-foreground/50 font-medium">
+                {getHelloTypeLabel(primaryLog)}
+              </span>
+            </div>
+
             {/* Notes */}
             {primaryLog.notes && (
               <div className="mt-2">
