@@ -43,7 +43,7 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
   },
   3: {
     image: onboardingCompliment,
-    headline: "Compliment",
+    headline: "Next: Compliment",
     body: [
       "Nice work, knew you were a natural 🦝",
       "Let's make someone's day.",
