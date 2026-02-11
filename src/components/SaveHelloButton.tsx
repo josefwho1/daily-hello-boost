@@ -17,7 +17,7 @@ export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProp
         className="flex-1 h-10 text-sm font-medium text-muted-foreground/80 border border-border/50 hover:text-foreground hover:border-border"
       >
         <UserPlus className="w-4 h-4 mr-1.5" />
-        Log another hello
+        Log a hello
       </Button>
       {onDictateClick && (
         <Button 

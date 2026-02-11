@@ -19,6 +19,7 @@ import { LogHelloScreen } from "@/components/LogHelloScreen";
 
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
+import { DailyQuote } from "@/components/DailyQuote";
 import ViewHelloDialog from "@/components/ViewHelloDialog";
 import { HelloLog } from "@/hooks/useHelloLogs";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
@@ -602,6 +603,9 @@ export default function Dashboard() {
           </div>
           
         </div>
+
+        {/* Daily Quote */}
+        <DailyQuote />
       </div>
 
       {/* Dialogs */}
