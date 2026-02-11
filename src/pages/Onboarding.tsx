@@ -18,13 +18,14 @@ import remiCelebrating1 from "@/assets/remi-celebrating-1.webp";
 import remiSmiling1 from "@/assets/remi-smiling-1.webp";
 import remiLogging4 from "@/assets/remi-logging-4.webp";
 import remiLogging5 from "@/assets/remi-logging-5.webp";
+import remiLogging6 from "@/assets/remi-logging-6.webp";
 import onboardingFirsthello from "@/assets/onboarding-firsthello.webp";
 import onboardingWeatherchat from "@/assets/onboarding-weatherchat.webp";
 
 const ONBOARDING_ASSETS = [
   remiWaving4, remiShakingHand, remiCurious4, remiSad5,
   remiCelebrating9, remiCelebrating7, remiCelebrating1,
-  remiSmiling1, remiLogging4, remiLogging5, onboardingFirsthello, onboardingWeatherchat
+  remiSmiling1, remiLogging4, remiLogging5, remiLogging6, onboardingFirsthello, onboardingWeatherchat
 ];
 
 export type OnboardingStep = 
@@ -32,6 +33,7 @@ export type OnboardingStep =
   | 'greeting'
   | 'reflection'
   | 'acknowledgement'
+  | 'research'
   | 'challenge_intro'
   | 'public_place'
   | 'first_hello_prompt'   // 7a - yes, public place
@@ -261,12 +263,12 @@ export default function Onboarding() {
 
   const progress = useMemo(() => {
     const steps: OnboardingStep[] = [
-      'welcome', 'greeting', 'reflection', 'acknowledgement',
+      'welcome', 'greeting', 'reflection', 'acknowledgement', 'research',
       'challenge_intro', 'public_place', 'first_hello_prompt',
       'first_hello_done', 'log_hello', 'skip_for_now', 'at_home'
     ];
     const index = steps.indexOf(step);
-    return Math.max(0.1, Math.min(1, (index + 1) / 8));
+    return Math.max(0.1, Math.min(1, (index + 1) / 9));
   }, [step]);
 
   const baseClasses = "text-center space-y-6";
@@ -344,17 +346,30 @@ export default function Onboarding() {
                 Most of us go days, even weeks, without talking to someone new.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                What if you changed that, starting today?
+                What if that changed?
               </p>
             </div>
-            <div className="flex flex-col gap-3 pt-2">
-              <Button onClick={() => setStep('challenge_intro')} className="w-full" size="lg">
-                I'm in
-              </Button>
-              <Button onClick={() => setStep('challenge_intro')} variant="outline" className="w-full" size="lg">
-                Tell me more
-              </Button>
+            <Button onClick={() => setStep('research')} className="w-full" size="lg">
+              Continue
+            </Button>
+          </div>
+        );
+
+      case 'research':
+        return (
+          <div className={`${baseClasses} ${animClasses}`}>
+            <RemiImage src={remiLogging6} alt="Remi with research" className="w-44 h-auto max-h-44 mx-auto object-contain" />
+            <div className="space-y-4">
+              <p className="text-lg text-foreground leading-relaxed font-medium">
+                Research shows even brief conversations with strangers increase happiness.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Ready to try it?
+              </p>
             </div>
+            <Button onClick={() => setStep('challenge_intro')} className="w-full" size="lg">
+              I'm curious
+            </Button>
           </div>
         );
 
@@ -366,11 +381,11 @@ export default function Onboarding() {
               <p className="text-sm text-muted-foreground font-medium">Introducing the…</p>
               <h1 className="text-2xl font-bold text-foreground">One Hello 7-Day Challenge</h1>
               <p className="text-muted-foreground">One small action a day.</p>
-              <p className="text-lg font-semibold text-foreground">7 Days. 7 Strangers. 7 Hellos.</p>
-              <p className="text-muted-foreground">Are you up for it?</p>
+              <p className="text-lg font-semibold text-foreground">7 Days. 7 Hellos.</p>
+              <p className="text-muted-foreground">Are you in?</p>
             </div>
             <Button onClick={() => setStep('public_place')} className="w-full" size="lg">
-              Let's do it 🚀
+              Let's do it
             </Button>
           </div>
         );

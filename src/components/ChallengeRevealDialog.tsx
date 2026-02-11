@@ -11,6 +11,7 @@ import onboardingGettingpersonal from "@/assets/onboarding-gettingpersonal.webp"
 import onboardingTakingnames from "@/assets/onboarding-takingnames.webp";
 import remiCongrats1 from "@/assets/remi-congrats-1.webp";
 import remiLogging1 from "@/assets/remi-logging-1.webp";
+import remiLogging5 from "@/assets/remi-logging-5.webp";
 
 export interface ChallengeRevealConfig {
   image: string;
@@ -99,7 +100,7 @@ const finalCompletion: ChallengeRevealConfig = {
 
 // Post-completion normal mode screen
 const normalModeScreen: ChallengeRevealConfig = {
-  image: remiLogging1,
+  image: remiLogging5,
   headline: "Your journey doesn't stop here.",
   body: [
     "Keep saying hello to maintain your streak.",
