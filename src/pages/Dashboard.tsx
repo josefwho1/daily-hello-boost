@@ -557,8 +557,8 @@ export default function Dashboard() {
       requireAtLeastOneField={false}
     />;
   }
-  return <div className="min-h-screen bg-background page-container">
-      <div className="max-w-md mx-auto px-4 py-8">
+  return <div className="min-h-screen bg-background page-container flex flex-col">
+      <div className="max-w-md mx-auto px-4 py-8 w-full">
 
         {/* Friendly Header Greeting with Remi */}
         <div className="text-center mb-6">
@@ -579,7 +579,6 @@ export default function Dashboard() {
           {/* Challenge Card */}
           <div id="tutorial-todays-hello-card">
             {progress?.selected_pack_id === 'daily' ? <DailySuggestionCard /> : <CurrentChallengeCard completedDays={challengeState.completedDays} nextChallenge={challengeState.nextChallenge} totalCount={challengeState.totalCount} isComplete={challengeState.isComplete} onComplete={async (day, challengeName) => {
-            // Go straight to Log Hello screen instead of toast
             setPendingChallengeCompletion({ day, name: challengeName });
             setAutoStartRecording(false);
             setShowLogDialog(true);
@@ -591,7 +590,7 @@ export default function Dashboard() {
           }} />}
           </div>
 
-          {/* Log another hello - small and faded */}
+          {/* Log a hello */}
           <div>
             <SaveHelloButton onClick={() => {
             setAutoStartRecording(false);
@@ -603,8 +602,10 @@ export default function Dashboard() {
           </div>
           
         </div>
+      </div>
 
-        {/* Daily Quote */}
+      {/* Daily Quote - centered between content and nav */}
+      <div className="flex-1 flex items-center justify-center max-w-md mx-auto px-4 w-full pb-16">
         <DailyQuote />
       </div>
 
