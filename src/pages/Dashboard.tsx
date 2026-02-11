@@ -557,8 +557,8 @@ export default function Dashboard() {
       requireAtLeastOneField={false}
     />;
   }
-  return <div className="min-h-screen bg-background page-container flex flex-col">
-      <div className="max-w-md mx-auto px-4 py-8 w-full">
+  return <div className="bg-background page-container">
+      <div className="max-w-md mx-auto px-4 py-8">
 
         {/* Friendly Header Greeting with Remi */}
         <div className="text-center mb-6">
@@ -602,12 +602,12 @@ export default function Dashboard() {
           </div>
           
         </div>
-      </div>
+          {/* Daily Quote */}
+          <div className="mt-8">
+            <DailyQuote />
+          </div>
 
-      {/* Daily Quote - centered between content and nav */}
-      <div className="flex-1 flex items-center justify-center max-w-md mx-auto px-4 w-full pb-16">
-        <DailyQuote />
-      </div>
+        </div>
 
       {/* Dialogs */}
 
