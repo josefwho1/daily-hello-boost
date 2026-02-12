@@ -1,172 +1,111 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useUserProgressQuery } from "@/hooks/useUserProgressQuery";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useDailyMode } from "@/hooks/useDailyMode";
 import { useChallengeProgress } from "@/hooks/useChallengeProgress";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
-import { useTimezone } from "@/hooks/useTimezone";
-import { DailyModeDetailScreen } from "@/components/DailyModeDetailScreen";
 import { ChallengeListView } from "@/components/ChallengeListView";
 import { ThirtyHellosListView } from "@/components/ThirtyHellosListView";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Switch } from "@/components/ui/switch";
-import { Target, Flame, RotateCcw, ChevronRight, Pause, Play } from "lucide-react";
+import { Target, ChevronRight, RotateCcw, Pause, Play, Shuffle, Check } from "lucide-react";
 import { toast } from "sonner";
 import { ChallengeUndoToast } from "@/components/ChallengeUndoToast";
 import questsIcon from "@/assets/quests-icon.webp";
 import remiQuest from "@/assets/remi-quest.webp";
 import vaultIcon from "@/assets/vault-icon.webp";
-import remiWaving from "@/assets/remi-waving.webp";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { thirtyHellosChallenge } from "@/data/thirtyHellosChallenge";
+
 const Challenges = () => {
   const navigate = useNavigate();
-  const {
-    progress: cloudProgress,
-    updateProgress: updateCloudProgress,
-    loading: cloudLoading
-  } = useUserProgressQuery();
-  const {
-    guestProgress,
-    updateProgress: updateGuestProgress,
-    isAnonymous,
-    loading: guestLoading
-  } = useGuestMode();
-  const {
-    logs,
-    addLog
-  } = useHelloLogs();
-  const {
-    timezoneOffset
-  } = useTimezone();
-  const {
-    state: dailyModeState,
-    activateDailyMode,
-    deactivateDailyMode,
-    loading: dailyModeLoading
-  } = useDailyMode();
-  const {
-    state: challengeState,
-    markDayComplete,
-    unmarkDayComplete,
-    restartChallenge,
-    loading: challengeLoading
-  } = useChallengeProgress();
-  const [showDailyModeDetail, setShowDailyModeDetail] = useState(false);
+  const { progress: cloudProgress, updateProgress: updateCloudProgress, loading: cloudLoading } = useUserProgressQuery();
+  const { guestProgress, updateProgress: updateGuestProgress, isAnonymous, loading: guestLoading } = useGuestMode();
+  const { logs, addLog } = useHelloLogs();
+  const { state: dailyModeState, activateDailyMode, deactivateDailyMode, loading: dailyModeLoading } = useDailyMode();
+  const { state: challengeState, markDayComplete, unmarkDayComplete, restartChallenge, loading: challengeLoading } = useChallengeProgress();
+
   const [showChallengeList, setShowChallengeList] = useState(false);
   const [showThirtyHellosList, setShowThirtyHellosList] = useState(false);
-  const [showConfirmRestart, setShowConfirmRestart] = useState(false);
-  const [showConfirmDailyModeOff, setShowConfirmDailyModeOff] = useState(false);
-  const [showConfirmPause, setShowConfirmPause] = useState(false);
-  const [showConfirmPauseThirty, setShowConfirmPauseThirty] = useState(false);
+  const [showConfirmRestart7Day, setShowConfirmRestart7Day] = useState(false);
+  const [showConfirmSwitch, setShowConfirmSwitch] = useState<string | null>(null); // target pack id
   const [showLogScreen, setShowLogScreen] = useState(false);
-  const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{
-    day: number;
-    name: string;
-  } | null>(null);
+  const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{ day: number; name: string } | null>(null);
 
-  // Remi easter egg state
+  // Remi easter egg
   const [remiTapCount, setRemiTapCount] = useState(0);
   const [showSpeechBubble, setShowSpeechBubble] = useState(false);
-  const REMI_MESSAGES = ["Hello!", "Hey!", "Yo yo yooo", "Okay that's enough...", null // Remi disappears
-  ];
+  const REMI_MESSAGES = ["Hello!", "Hey!", "Yo yo yooo", "Okay that's enough...", null];
+
   const progress = isAnonymous ? guestProgress : cloudProgress;
   const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
   const isLoading = (isAnonymous ? guestLoading : cloudLoading) || challengeLoading || dailyModeLoading;
 
-  // Check if quest is paused (selected_pack_id === 'daily' means showing Today's Hello)
-  const isQuestPaused = progress?.selected_pack_id === 'daily';
-  const isThirtyHellosQuestPaused = progress?.selected_pack_id !== '30-hellos' && progress?.selected_pack_id !== 'daily';
+  const selectedPack = progress?.selected_pack_id || 'daily';
 
-  // Count 30 Hellos completions (stored separately in localStorage for now)
-  const thirtyHellosCompleted = 0; // TODO: track separately if needed
+  // 30 Hellos completion tracking (from challenge_completions with tag, or we track via hello_type)
+  const thirtyHellosCompletedCount = logs.filter(l => l.hello_type?.startsWith('thirty:')).length;
 
-  // Remi easter egg helpers
   const remiMessage = remiTapCount > 0 ? REMI_MESSAGES[remiTapCount - 1] : null;
   const isRemiGone = remiTapCount >= REMI_MESSAGES.length;
   const handleRemiTap = () => {
     if (remiTapCount >= REMI_MESSAGES.length) return;
     setRemiTapCount(prev => prev + 1);
     setShowSpeechBubble(true);
-
-    // Hide speech bubble after a delay (except for the final "scared away" message)
     if (remiTapCount < REMI_MESSAGES.length - 1) {
       setTimeout(() => setShowSpeechBubble(false), 2000);
     }
   };
-  const handleDailyModeToggle = async (enabled: boolean) => {
-    if (enabled) {
-      await activateDailyMode();
-      toast.success("Daily Mode activated! 🔥");
+
+  // Switch to a pack (with confirmation if another quest is active)
+  const handleSelectPack = (packId: string) => {
+    if (selectedPack === packId) return;
+    // If currently on a quest (not daily), confirm switch
+    if (selectedPack !== 'daily' && packId !== selectedPack) {
+      setShowConfirmSwitch(packId);
     } else {
-      // Show warning when turning OFF
-      setShowConfirmDailyModeOff(true);
+      doSwitch(packId);
     }
   };
-  const handleConfirmDailyModeOff = async () => {
-    await deactivateDailyMode();
-    setShowConfirmDailyModeOff(false);
-    toast.success("Daily Mode deactivated");
+
+  const doSwitch = async (packId: string) => {
+    await updateProgress({ selected_pack_id: packId });
+    setShowConfirmSwitch(null);
+    const names: Record<string, string> = {
+      'daily': "Today's Hello",
+      '30-day-hello': '7-Day Challenge',
+      '30-hellos': '30 Hellos',
+    };
+    toast.success(`${names[packId] || packId} activated! 🎯`);
   };
-  const handleRestartChallenge = async () => {
-    await restartChallenge();
-    setShowConfirmRestart(false);
-    toast.success("Challenge restarted! Day 1 ready.");
-  };
-  const handlePauseQuest = async () => {
-    await updateProgress({
-      selected_pack_id: 'daily'
-    });
-    setShowConfirmPause(false);
+
+  const handlePauseToDailyMode = async () => {
+    await updateProgress({ selected_pack_id: 'daily' });
     toast.success("Quest paused. Enjoy Today's Hello!");
   };
-  const handleResumeQuest = async () => {
-    await updateProgress({
-      selected_pack_id: '30-day-hello'
-    });
-    toast.success("Quest resumed! Keep going! 🎯");
+
+  const handleRestart7Day = async () => {
+    await restartChallenge();
+    setShowConfirmRestart7Day(false);
+    toast.success("Challenge restarted! Day 1 ready.");
   };
 
-  const handleActivateThirtyHellos = async () => {
-    await updateProgress({
-      selected_pack_id: '30-hellos'
-    });
-    toast.success("30 Hellos activated! 🎯");
-  };
-
-  const handlePauseThirtyHellos = async () => {
-    await updateProgress({
-      selected_pack_id: 'daily'
-    });
-    setShowConfirmPauseThirty(false);
-    toast.success("30 Hellos paused. Enjoy Today's Hello!");
-  };
-
-  // Helper to show challenge completion toast (banner is clickable to undo)
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
-    const toastId = toast.custom(id => <ChallengeUndoToast id={id} challengeName={challengeName} onUndo={() => unmarkDayComplete(day)} />, {
-      duration: 3000
-    });
-
-    // Hard safety-net: ensure it always auto-dismisses after ~3s.
-    window.setTimeout(() => {
-      toast.dismiss(toastId);
-    }, 3100);
+    const toastId = toast.custom(id => (
+      <ChallengeUndoToast id={id} challengeName={challengeName} onUndo={() => unmarkDayComplete(day)} />
+    ), { duration: 3000 });
+    window.setTimeout(() => toast.dismiss(toastId), 3100);
   };
+
   const handleLogHello = async (data: {
-    name?: string;
-    location?: string;
-    notes?: string;
-    no_name_flag?: boolean;
-    hello_type?: string;
+    name?: string; location?: string; notes?: string;
+    no_name_flag?: boolean; hello_type?: string;
   }) => {
     await addLog(data);
-
-    // Mark challenge complete
     if (pendingChallengeCompletion) {
       await markDayComplete(pendingChallengeCompletion.day);
       showChallengeCompletedToast(pendingChallengeCompletion.day, pendingChallengeCompletion.name);
@@ -175,25 +114,19 @@ const Challenges = () => {
     setShowLogScreen(false);
   };
 
-  // Show Daily Mode detail screen
-  if (showDailyModeDetail) {
-    return <DailyModeDetailScreen isActive={dailyModeState.isActive} currentStreak={dailyModeState.currentStreak} bestStreak={dailyModeState.bestStreak} startDate={dailyModeState.startDate} onActivate={activateDailyMode} onDeactivate={deactivateDailyMode} onBack={() => setShowDailyModeDetail(false)} />;
-  }
-
-  // Show Log Hello screen for challenge completion
+  // Sub-screens
   if (showLogScreen && pendingChallengeCompletion) {
-    return <LogHelloScreen onBack={() => {
-      setShowLogScreen(false);
-      setPendingChallengeCompletion(null);
-    }} onLog={async data => {
-      await handleLogHello({
-        ...data,
-        hello_type: `Challenge: ${pendingChallengeCompletion.name}`
-      });
-    }} challengeTitle={pendingChallengeCompletion.name} existingLogs={logs} requireAtLeastOneField={true} />;
+    return <LogHelloScreen
+      onBack={() => { setShowLogScreen(false); setPendingChallengeCompletion(null); }}
+      onLog={async data => {
+        await handleLogHello({ ...data, hello_type: `Challenge: ${pendingChallengeCompletion.name}` });
+      }}
+      challengeTitle={pendingChallengeCompletion.name}
+      existingLogs={logs}
+      requireAtLeastOneField={true}
+    />;
   }
 
-  // Show 30 Hellos list view
   if (showThirtyHellosList) {
     return <ThirtyHellosListView
       completedDays={challengeState.completedDays}
@@ -205,22 +138,102 @@ const Challenges = () => {
     />;
   }
 
-  // Show Challenge List view
   if (showChallengeList) {
-    return <ChallengeListView completedDays={challengeState.completedDays} onComplete={async (day, name) => {
-      await markDayComplete(day);
-      showChallengeCompletedToast(day, name);
-    }} onUncomplete={async day => {
-      await unmarkDayComplete(day);
-    }} onBack={() => setShowChallengeList(false)} onSelectChallenge={index => {
-      navigate('/', {
-        state: {
-          selectedChallengeIndex: index
-        }
-      });
-    }} />;
+    return <ChallengeListView
+      completedDays={challengeState.completedDays}
+      onComplete={async (day, name) => {
+        await markDayComplete(day);
+        showChallengeCompletedToast(day, name);
+      }}
+      onUncomplete={async day => { await unmarkDayComplete(day); }}
+      onBack={() => setShowChallengeList(false)}
+      onSelectChallenge={index => {
+        navigate('/', { state: { selectedChallengeIndex: index } });
+      }}
+    />;
   }
-  return <div className="min-h-screen bg-background page-container">
+
+  // --- Quest Card Component ---
+  const QuestCard = ({ 
+    id, icon, title, description, subtitle,
+    isActive, isComplete, progressValue, progressLabel,
+    onStart, onPause, onViewChallenges, onRestart,
+  }: {
+    id: string; icon: string; title: string; description: string; subtitle: string;
+    isActive: boolean; isComplete?: boolean; progressValue: number; progressLabel: string;
+    onStart: () => void; onPause?: () => void; onViewChallenges?: () => void; onRestart?: () => void;
+  }) => (
+    <Card className={`mb-4 transition-all ${isActive ? 'ring-2 ring-primary/50 border-primary/30' : ''}`}>
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">
+            {icon}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-foreground text-sm">{title}</h3>
+              {isActive && (
+                <span className="px-2 py-0.5 text-[10px] font-semibold bg-success/20 text-success rounded-full">
+                  ACTIVE
+                </span>
+              )}
+              {isComplete && !isActive && (
+                <span className="px-2 py-0.5 text-[10px] font-semibold bg-muted text-muted-foreground rounded-full">
+                  DONE
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+            <p className="text-xs text-success font-medium mt-0.5">{subtitle}</p>
+          </div>
+        </div>
+
+        {/* Progress */}
+        {id !== 'daily' && (
+          <div className="mb-3">
+            <div className="flex items-center justify-between text-xs mb-1">
+              <span className="text-muted-foreground">{progressLabel}</span>
+            </div>
+            <Progress value={progressValue} className="h-1.5" />
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          {!isActive ? (
+            <Button variant="default" size="sm" onClick={onStart} className="flex-1 rounded-full text-xs h-8">
+              <Play className="w-3.5 h-3.5 mr-1" />
+              {id === 'daily' ? 'Activate' : 'Start'}
+            </Button>
+          ) : (
+            <>
+              {id !== 'daily' && onPause && (
+                <Button variant="outline" size="sm" onClick={onPause} className="rounded-full text-xs h-8" title="Pause">
+                  <Pause className="w-3.5 h-3.5" />
+                </Button>
+              )}
+            </>
+          )}
+          
+          {onViewChallenges && (
+            <Button variant="outline" size="sm" onClick={onViewChallenges} className="flex-1 rounded-full text-xs h-8">
+              View Challenges
+              <ChevronRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          )}
+
+          {onRestart && (
+            <Button variant="ghost" size="sm" onClick={onRestart} className="rounded-full text-xs h-8 px-2" title="Restart">
+              <RotateCcw className="w-3.5 h-3.5" />
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="min-h-screen bg-background page-container">
       <div className="max-w-md mx-auto px-4 py-6 pb-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -228,175 +241,84 @@ const Challenges = () => {
             <img src={questsIcon} alt="Quests" className="w-10 h-10 object-contain" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">Quests</h1>
-              <p className="text-sm text-muted-foreground">Ways to connect</p>
+              <p className="text-sm text-muted-foreground">Choose your path</p>
             </div>
           </div>
           <img src={remiQuest} alt="Remi" className="w-16 h-16 object-contain" />
         </div>
 
-        {/* Daily Mode toggle removed - managed automatically */}
+        {/* Daily Mode Card */}
+        <QuestCard
+          id="daily"
+          icon="💡"
+          title="Today's Hello"
+          description="Random daily prompts shuffled from all challenges. Perfect for staying social without commitment."
+          subtitle="Always Free"
+          isActive={selectedPack === 'daily'}
+          progressValue={0}
+          progressLabel=""
+          onStart={() => handleSelectPack('daily')}
+        />
 
-        {/* Current Quest Section - 30-Day Challenge */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Target className="w-5 h-5 text-primary" />
-              <span className="font-bold text-foreground">Your Active Quest</span>
-            </div>
-            
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
-                🎯
-              </div>
-              <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-foreground">7-Day Challenge</h3>
-                  {isQuestPaused && progress?.selected_pack_id !== '30-hellos' && (
-                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-warning/20 text-warning rounded-full">
-                      PAUSED
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">Perfect for a confidence boost, from friendly hello to getting a strangers name</p>
-                <p className="text-xs text-success font-medium">FREE • Perfect for Everyone</p>
-              </div>
-            </div>
-            
-            <div className="mb-4">
-              <div className="flex items-center justify-between text-sm mb-1.5">
-                <span className="text-muted-foreground">
-                  Progress: {challengeState.completedCount}/{challengeState.totalCount} Complete
-                </span>
-              </div>
-              <Progress value={challengeState.progressPercent} className="h-2" />
-            </div>
+        {/* 7-Day Challenge Card */}
+        <QuestCard
+          id="30-day-hello"
+          icon="🎯"
+          title="7-Day Challenge"
+          description="Perfect for a confidence boost, from friendly hello to getting a strangers name"
+          subtitle="FREE • Perfect for Everyone"
+          isActive={selectedPack === '30-day-hello'}
+          isComplete={challengeState.isComplete}
+          progressValue={challengeState.progressPercent}
+          progressLabel={`${challengeState.completedCount}/${challengeState.totalCount} Complete`}
+          onStart={() => handleSelectPack('30-day-hello')}
+          onPause={handlePauseToDailyMode}
+          onViewChallenges={() => setShowChallengeList(true)}
+          onRestart={() => setShowConfirmRestart7Day(true)}
+        />
 
-            {challengeState.isComplete && <div className="bg-success/10 rounded-lg p-3 mb-4 text-center">
-                <p className="text-success font-medium">🎉 Challenge Complete!</p>
-              </div>}
-            
-            <div className="flex gap-2">
-              <Button variant="default" size="sm" onClick={() => setShowChallengeList(true)} className="flex-1 rounded-full">
-                View Challenges
-              </Button>
-              
-              {/* Pause/Resume button - hide when challenge is complete */}
-              {!challengeState.isComplete && (isQuestPaused ? <Button variant="outline" size="sm" onClick={handleResumeQuest} className="rounded-full" title="Resume Quest">
-                    <Play className="w-4 h-4" />
-                  </Button> : <Button variant="outline" size="sm" onClick={() => setShowConfirmPause(true)} className="rounded-full" title="Pause Quest">
-                    <Pause className="w-4 h-4" />
-                  </Button>)}
-              
-              <Button variant="outline" size="sm" onClick={() => setShowConfirmRestart(true)} className="rounded-full" title="Restart Challenge">
-                <RotateCcw className="w-4 h-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* 30 Hellos Card */}
+        <QuestCard
+          id="30-hellos"
+          icon="🗓️"
+          title="30 Hellos"
+          description="30 unique social prompts to build your confidence. Complete them in any order."
+          subtitle="FREE • For the committed"
+          isActive={selectedPack === '30-hellos'}
+          progressValue={(thirtyHellosCompletedCount / 30) * 100}
+          progressLabel={`${thirtyHellosCompletedCount}/30 Complete`}
+          onStart={() => handleSelectPack('30-hellos')}
+          onPause={handlePauseToDailyMode}
+          onViewChallenges={() => setShowThirtyHellosList(true)}
+        />
 
-        {/* 30 Hellos Pack */}
-        <Card className="mb-8">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Target className="w-5 h-5 text-accent-foreground" />
-              <span className="font-bold text-foreground">30 Hellos</span>
-            </div>
-            
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-2xl">
-                🗓️
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-foreground">30 Hellos</h3>
-                  {progress?.selected_pack_id === '30-hellos' && !isThirtyHellosQuestPaused && (
-                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-success/20 text-success rounded-full">
-                      ACTIVE
-                    </span>
-                  )}
-                  {isThirtyHellosQuestPaused && (
-                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-warning/20 text-warning rounded-full">
-                      PAUSED
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">30 unique social prompts to build your confidence</p>
-                <p className="text-xs text-success font-medium">FREE • For the committed</p>
-              </div>
-            </div>
-
-            {/* 30 Hellos Progress */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between text-sm mb-1.5">
-                <span className="text-muted-foreground">
-                  Progress: {thirtyHellosCompleted}/30 Complete
-                </span>
-              </div>
-              <Progress value={(thirtyHellosCompleted / 30) * 100} className="h-2" />
-            </div>
-            
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1 rounded-full" onClick={() => setShowThirtyHellosList(true)}>
-                View Challenges
-              </Button>
-              
-              {progress?.selected_pack_id === '30-hellos' ? (
-                <Button variant="outline" size="sm" onClick={() => setShowConfirmPauseThirty(true)} className="rounded-full" title="Pause 30 Hellos">
-                  <Pause className="w-4 h-4" />
-                </Button>
-              ) : (
-                <Button variant="default" size="sm" onClick={handleActivateThirtyHellos} className="rounded-full" title="Activate 30 Hellos">
-                  <Play className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Remi's Vault Easter Egg */}
-        <div className="pb-2 flex-row flex items-center justify-center">
+        {/* Vault Easter Egg */}
+        <div className="pb-2 flex-row flex items-center justify-center mt-4">
           <button onClick={() => navigate('/vault')} className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 focus:outline-none">
             <img src={vaultIcon} alt="Remi's Vault" className="w-12 h-12 object-contain" />
           </button>
-          
-          {/* Remi peeking next to vault */}
           <div className="relative mt-2">
             <AnimatePresence>
-              {showSpeechBubble && remiMessage && !isRemiGone && <motion.div initial={{
-              opacity: 0,
-              scale: 0.8,
-              y: 10
-            }} animate={{
-              opacity: 1,
-              scale: 1,
-              y: 0
-            }} exit={{
-              opacity: 0,
-              scale: 0.8,
-              y: 10
-            }} className="absolute -top-10 left-1/2 -translate-x-1/2 bg-card border border-border rounded-xl px-3 py-2 shadow-lg whitespace-nowrap z-10">
+              {showSpeechBubble && remiMessage && !isRemiGone && (
+                <motion.div initial={{ opacity: 0, scale: 0.8, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.8, y: 10 }} className="absolute -top-10 left-1/2 -translate-x-1/2 bg-card border border-border rounded-xl px-3 py-2 shadow-lg whitespace-nowrap z-10">
                   <p className="text-sm font-medium text-foreground">{remiMessage}</p>
                   <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-card border-r border-b border-border rotate-45" />
-                </motion.div>}
+                </motion.div>
+              )}
             </AnimatePresence>
-            
-            {isRemiGone ? <motion.div initial={{
-            opacity: 0
-          }} animate={{
-            opacity: 1
-          }} className="opacity-50">
+            {isRemiGone ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="opacity-50">
                 <p className="text-xs text-muted-foreground">You scared Remi away...</p>
-              </motion.div> : <motion.button onClick={handleRemiTap} whileTap={{
-            scale: 0.9
-          }} className="opacity-30 hover:opacity-50 transition-opacity duration-300 focus:outline-none">
-                
-              </motion.button>}
+              </motion.div>
+            ) : (
+              <motion.button onClick={handleRemiTap} whileTap={{ scale: 0.9 }} className="opacity-30 hover:opacity-50 transition-opacity duration-300 focus:outline-none" />
+            )}
           </div>
         </div>
       </div>
 
-      {/* Confirm Restart Dialog */}
-      <AlertDialog open={showConfirmRestart} onOpenChange={setShowConfirmRestart}>
+      {/* Confirm Restart 7-Day Dialog */}
+      <AlertDialog open={showConfirmRestart7Day} onOpenChange={setShowConfirmRestart7Day}>
         <AlertDialogContent className="rounded-2xl max-w-sm">
           <AlertDialogHeader>
             <AlertDialogTitle>Restart the challenge?</AlertDialogTitle>
@@ -406,66 +328,30 @@ const Challenges = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRestartChallenge} className="rounded-xl">
-              Restart
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleRestart7Day} className="rounded-xl">Restart</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Confirm Daily Mode Off Dialog */}
-      <AlertDialog open={showConfirmDailyModeOff} onOpenChange={setShowConfirmDailyModeOff}>
+      {/* Confirm Switch Quest Dialog */}
+      <AlertDialog open={!!showConfirmSwitch} onOpenChange={() => setShowConfirmSwitch(null)}>
         <AlertDialogContent className="rounded-2xl max-w-sm">
           <AlertDialogHeader>
-            <AlertDialogTitle>Turn off Daily Mode?</AlertDialogTitle>
+            <AlertDialogTitle>Switch quest?</AlertDialogTitle>
             <AlertDialogDescription>
-              Your current streak will end and be saved if it's your best. Daily reminders will stop. You can turn Daily Mode back on anytime to start a new streak.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Keep On</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDailyModeOff} className="rounded-xl">
-              Turn Off
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Confirm Pause Quest Dialog */}
-      <AlertDialog open={showConfirmPause} onOpenChange={setShowConfirmPause}>
-        <AlertDialogContent className="rounded-2xl max-w-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Pause your quest?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your progress will be saved. The Home screen will show "Today's Hello" prompts instead. You can resume anytime.
+              Your current quest will be paused. Progress is saved and you can resume anytime.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handlePauseQuest} className="rounded-xl">
-              Pause Quest
+            <AlertDialogAction onClick={() => showConfirmSwitch && doSwitch(showConfirmSwitch)} className="rounded-xl">
+              Switch
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Confirm Pause 30 Hellos Dialog */}
-      <AlertDialog open={showConfirmPauseThirty} onOpenChange={setShowConfirmPauseThirty}>
-        <AlertDialogContent className="rounded-2xl max-w-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Pause 30 Hellos?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your progress will be saved. The Home screen will show "Today's Hello" prompts instead. You can resume anytime.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handlePauseThirtyHellos} className="rounded-xl">
-              Pause
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>;
+    </div>
+  );
 };
+
 export default Challenges;
