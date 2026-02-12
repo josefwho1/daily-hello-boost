@@ -10,13 +10,6 @@ export const packs: Pack[] = [
     challenges: challenges.slice(0, 7),
     isFree: true,
   },
-  {
-    id: "pack-1",
-    name: "More packs coming soon",
-    description: "New challenges to expand your social circle.",
-    icon: "🚀",
-    challenges: [],
-  },
 ];
 
 export const getPackById = (id: string): Pack | undefined => {

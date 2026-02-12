@@ -1,11 +1,15 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useDailyMode } from "@/hooks/useDailyMode";
-import { Flame } from "lucide-react";
+import { useHelloLogs } from "@/hooks/useHelloLogs";
+import { Flame, Eye, EyeOff } from "lucide-react";
+import { startOfMonth, startOfWeek, isAfter } from "date-fns";
 
 interface HelloLog {
   id: string;
   created_at: string;
 }
+
+type CountMode = 'total' | 'month' | 'week';
 
 interface HomeStatsBarProps {
   logs: HelloLog[];
@@ -46,14 +50,39 @@ const CircleProgress = ({ count }: { count: number }) => {
   );
 };
 
+const LABELS: Record<CountMode, string> = {
+  total: 'Total',
+  month: 'Month',
+  week: 'Week',
+};
+
 const HomeStatsBarComponent = ({ logs, lifetimeHellos }: HomeStatsBarProps) => {
   const { state: dailyModeState } = useDailyMode();
+  const [countMode, setCountMode] = useState<CountMode>('total');
+  const [showStreak, setShowStreak] = useState(true);
 
   const todayCount = dailyModeState.todaysHelloCount;
   const currentStreak = dailyModeState.currentStreak;
 
+  const cycleCountMode = () => {
+    setCountMode(prev => {
+      if (prev === 'total') return 'month';
+      if (prev === 'month') return 'week';
+      return 'total';
+    });
+  };
+
+  const getCount = () => {
+    if (countMode === 'total') return lifetimeHellos;
+    const now = new Date();
+    const boundary = countMode === 'month'
+      ? startOfMonth(now)
+      : startOfWeek(now, { weekStartsOn: 1 });
+    return logs.filter(l => isAfter(new Date(l.created_at), boundary)).length;
+  };
+
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-card border border-border/40 shadow-sm px-5 py-3 mb-6">
+    <div className="flex items-center justify-evenly rounded-2xl bg-card border border-border/40 shadow-sm px-4 py-3 mb-6">
       {/* Today */}
       <div className="flex items-center gap-2.5">
         <CircleProgress count={todayCount} />
@@ -62,19 +91,31 @@ const HomeStatsBarComponent = ({ logs, lifetimeHellos }: HomeStatsBarProps) => {
 
       <div className="w-px h-8 bg-border/40" />
 
-      {/* Streak */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-lg font-bold text-foreground leading-none">{currentStreak}</span>
-        <Flame className="w-4 h-4 text-orange-500" />
-      </div>
+      {/* Streak - tappable to hide/show */}
+      <button
+        onClick={() => setShowStreak(prev => !prev)}
+        className="flex items-center gap-1.5 focus:outline-none active:scale-95 transition-transform"
+      >
+        {showStreak ? (
+          <>
+            <span className="text-lg font-bold text-foreground leading-none">{currentStreak}</span>
+            <Flame className="w-4 h-4 text-orange-500" />
+          </>
+        ) : (
+          <EyeOff className="w-4 h-4 text-muted-foreground" />
+        )}
+      </button>
 
       <div className="w-px h-8 bg-border/40" />
 
-      {/* Lifetime */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-lg font-bold text-foreground leading-none">{lifetimeHellos}</span>
-        <span className="text-xs font-medium text-muted-foreground">Total</span>
-      </div>
+      {/* Lifetime / Month / Week - tappable to cycle */}
+      <button
+        onClick={cycleCountMode}
+        className="flex items-center gap-1.5 focus:outline-none active:scale-95 transition-transform"
+      >
+        <span className="text-lg font-bold text-foreground leading-none">{getCount()}</span>
+        <span className="text-xs font-medium text-muted-foreground">{LABELS[countMode]}</span>
+      </button>
     </div>
   );
 };

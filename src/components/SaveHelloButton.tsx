@@ -13,8 +13,7 @@ export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProp
         id="tutorial-log-hello-btn"
         onClick={onClick}
         size="sm"
-        variant="ghost"
-        className="flex-1 h-10 text-sm font-medium text-muted-foreground/80 border border-border/50 hover:text-foreground hover:border-border"
+        className="flex-1 h-10 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 rounded-full"
       >
         <UserPlus className="w-4 h-4 mr-1.5" />
         Log a hello
@@ -24,8 +23,7 @@ export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProp
           id="tutorial-dictate-btn"
           onClick={onDictateClick}
           size="sm"
-          variant="ghost"
-          className="h-10 px-3 text-muted-foreground/80 border border-border/50 hover:text-foreground hover:border-border"
+          className="h-10 px-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full"
           title="Quick dictate"
         >
           <Mic className="w-4 h-4" />
