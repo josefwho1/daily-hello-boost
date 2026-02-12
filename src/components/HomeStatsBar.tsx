@@ -59,7 +59,7 @@ const LABELS: Record<CountMode, string> = {
 const HomeStatsBarComponent = ({ logs, lifetimeHellos }: HomeStatsBarProps) => {
   const { state: dailyModeState } = useDailyMode();
   const [countMode, setCountMode] = useState<CountMode>('total');
-  const [showStreak, setShowStreak] = useState(true);
+  const [showStreak, setShowStreak] = useState(() => localStorage.getItem('hideStreak') !== 'true');
 
   const todayCount = dailyModeState.todaysHelloCount;
   const currentStreak = dailyModeState.currentStreak;
@@ -93,7 +93,11 @@ const HomeStatsBarComponent = ({ logs, lifetimeHellos }: HomeStatsBarProps) => {
 
       {/* Streak - tappable to hide/show */}
       <button
-        onClick={() => setShowStreak(prev => !prev)}
+        onClick={() => setShowStreak(prev => {
+          const next = !prev;
+          localStorage.setItem('hideStreak', next ? 'false' : 'true');
+          return next;
+        })}
         className="flex items-center justify-center gap-1.5 focus:outline-none active:scale-95 transition-transform min-h-[36px]"
       >
         {showStreak ? (

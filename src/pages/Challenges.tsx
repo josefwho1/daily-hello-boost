@@ -282,8 +282,8 @@ const Challenges = () => {
           id="30-hellos"
           icon="🗓️"
           title="30 Hellos"
-          description="30 unique social prompts to build your confidence. Complete them in any order."
-          subtitle="FREE • For the committed"
+          description="30 progressive prompts to help you connect with people in person."
+          subtitle="FREE • 30 progressive prompts to help you connect with people in person"
           isActive={selectedPack === '30-hellos'}
           progressValue={(thirtyHellosCompletedCount / 30) * 100}
           progressLabel={`${thirtyHellosCompletedCount}/30 Complete`}

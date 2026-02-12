@@ -330,7 +330,9 @@ export default function Dashboard() {
         await recordHelloForDailyMode();
 
         // Trigger celebration only if this is the first daily mode hello of the day
-        if (!hasAlreadyRecordedForDailyModeToday) {
+        // AND streak is not hidden by the user
+        const isStreakHidden = localStorage.getItem('hideStreak') === 'true';
+        if (!hasAlreadyRecordedForDailyModeToday && !isStreakHidden) {
           const newStreakValue = streakBeforeLog === 0 ? 1 : streakBeforeLog + 1;
           setCelebratedStreakValue(newStreakValue);
           setTimeout(() => setShowStreakCelebration(true), 500);
@@ -360,8 +362,9 @@ export default function Dashboard() {
       helloEntryCreated = true;
 
       // Create hello entry with challenge info
+      const helloTypePrefix = progress?.selected_pack_id === '30-hellos' ? 'thirty' : 'challenge';
       const result = await addLog({
-        hello_type: `challenge:${day}`,
+        hello_type: `${helloTypePrefix}:${day}`,
       });
 
       if (result) {
@@ -385,8 +388,9 @@ export default function Dashboard() {
           const streakBeforeLog = dailyModeState.currentStreak;
           await recordHelloForDailyMode();
 
-          // Trigger celebration only if this is the first daily mode hello of the day
-          if (!hasAlreadyRecordedForDailyModeToday) {
+          // Trigger celebration only if streak is visible
+          const isStreakHidden = localStorage.getItem('hideStreak') === 'true';
+          if (!hasAlreadyRecordedForDailyModeToday && !isStreakHidden) {
             const newStreakValue = streakBeforeLog === 0 ? 1 : streakBeforeLog + 1;
             setCelebratedStreakValue(newStreakValue);
             setTimeout(() => setShowStreakCelebration(true), 500);
@@ -461,8 +465,11 @@ export default function Dashboard() {
     );
   };
 
-  // Helper to handle challenge celebrations
+  // Helper to handle challenge celebrations — only for 7-day challenge
   const checkAndShowCelebrations = (previousCount: number, newCount: number) => {
+    // Only show challenge reveal screens during 7-day challenge
+    if (progress?.selected_pack_id === '30-hellos' || progress?.selected_pack_id === 'daily') return;
+
     // Check for 7-day completion
     if (newCount === 7 && previousCount < 7) {
       setChallengeRevealDay(7);
@@ -537,9 +544,11 @@ export default function Dashboard() {
           setAutoStartRecording(false);
         } else if (pendingChallengeCompletion) {
           // Create new hello for challenge with hello_type tag
+          // Use different prefix for 30 Hellos vs 7-day challenge
+          const helloTypePrefix = progress?.selected_pack_id === '30-hellos' ? 'thirty' : 'challenge';
           await handleLogHello({
             ...data,
-            hello_type: `challenge:${pendingChallengeCompletion.day}`,
+            hello_type: `${helloTypePrefix}:${pendingChallengeCompletion.day}`,
           });
           // Mark challenge complete
           if (!challengeState.completedDays.includes(pendingChallengeCompletion.day)) {
