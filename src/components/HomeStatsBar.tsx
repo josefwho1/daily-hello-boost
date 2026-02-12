@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import { useDailyMode } from "@/hooks/useDailyMode";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
-import { Flame, Eye, EyeOff } from "lucide-react";
+import { Flame, Eye } from "lucide-react";
 import { startOfMonth, startOfWeek, isAfter } from "date-fns";
 
 interface HelloLog {
@@ -82,19 +82,19 @@ const HomeStatsBarComponent = ({ logs, lifetimeHellos }: HomeStatsBarProps) => {
   };
 
   return (
-    <div className="flex items-center justify-evenly rounded-2xl bg-card border border-border/40 shadow-sm px-4 py-3 mb-6">
+    <div className="grid grid-cols-[1fr_1px_1fr_1px_1fr] items-center rounded-2xl bg-card border border-border/40 shadow-sm px-2 py-3 mb-6">
       {/* Today */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-center gap-2.5">
         <CircleProgress count={todayCount} />
         <span className="text-xs font-medium text-muted-foreground">Today</span>
       </div>
 
-      <div className="w-px h-8 bg-border/40" />
+      <div className="h-8 bg-border/40" />
 
       {/* Streak - tappable to hide/show */}
       <button
         onClick={() => setShowStreak(prev => !prev)}
-        className="flex items-center gap-1.5 focus:outline-none active:scale-95 transition-transform"
+        className="flex items-center justify-center gap-1.5 focus:outline-none active:scale-95 transition-transform min-h-[36px]"
       >
         {showStreak ? (
           <>
@@ -102,16 +102,16 @@ const HomeStatsBarComponent = ({ logs, lifetimeHellos }: HomeStatsBarProps) => {
             <Flame className="w-4 h-4 text-orange-500" />
           </>
         ) : (
-          <EyeOff className="w-4 h-4 text-muted-foreground" />
+          <Eye className="w-4 h-4 text-muted-foreground/50" />
         )}
       </button>
 
-      <div className="w-px h-8 bg-border/40" />
+      <div className="h-8 bg-border/40" />
 
       {/* Lifetime / Month / Week - tappable to cycle */}
       <button
         onClick={cycleCountMode}
-        className="flex items-center gap-1.5 focus:outline-none active:scale-95 transition-transform"
+        className="flex items-center justify-center gap-1.5 focus:outline-none active:scale-95 transition-transform min-h-[36px]"
       >
         <span className="text-lg font-bold text-foreground leading-none">{getCount()}</span>
         <span className="text-xs font-medium text-muted-foreground">{LABELS[countMode]}</span>

@@ -9,6 +9,7 @@ import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { DailyModeDetailScreen } from "@/components/DailyModeDetailScreen";
 import { ChallengeListView } from "@/components/ChallengeListView";
+import { ThirtyHellosListView } from "@/components/ThirtyHellosListView";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ const Challenges = () => {
   } = useChallengeProgress();
   const [showDailyModeDetail, setShowDailyModeDetail] = useState(false);
   const [showChallengeList, setShowChallengeList] = useState(false);
+  const [showThirtyHellosList, setShowThirtyHellosList] = useState(false);
   const [showConfirmRestart, setShowConfirmRestart] = useState(false);
   const [showConfirmDailyModeOff, setShowConfirmDailyModeOff] = useState(false);
   const [showConfirmPause, setShowConfirmPause] = useState(false);
@@ -171,6 +173,18 @@ const Challenges = () => {
     }} challengeTitle={pendingChallengeCompletion.name} existingLogs={logs} requireAtLeastOneField={true} />;
   }
 
+  // Show 30 Hellos list view
+  if (showThirtyHellosList) {
+    return <ThirtyHellosListView
+      completedDays={challengeState.completedDays}
+      onComplete={async (day, name) => {
+        await markDayComplete(day);
+        showChallengeCompletedToast(day, name);
+      }}
+      onBack={() => setShowThirtyHellosList(false)}
+    />;
+  }
+
   // Show Challenge List view
   if (showChallengeList) {
     return <ChallengeListView completedDays={challengeState.completedDays} onComplete={async (day, name) => {
@@ -276,8 +290,8 @@ const Challenges = () => {
             <p className="text-sm text-muted-foreground mb-3">
               Expand your comfort zone with 30 creative ways to connect — from compliments to lunch dates.
             </p>
-            <Button variant="outline" size="sm" className="w-full rounded-full" disabled>
-              Coming Soon
+            <Button variant="outline" size="sm" className="w-full rounded-full" onClick={() => setShowThirtyHellosList(true)}>
+              View Challenges
             </Button>
           </CardContent>
         </Card>
