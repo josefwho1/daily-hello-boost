@@ -17,7 +17,6 @@ interface HellobookPersonCardProps {
 const getHelloTypeLabel = (log: HelloLog): string => {
   if (log.hello_type?.startsWith("challenge:")) {
     const dayNum = parseInt(log.hello_type.split(":")[1], 10);
-    // Import challenge data to get the name
     const challengeNames: Record<number, string> = {
       1: "First Hello", 2: "Weather Chat", 3: "Helping Hand",
       4: "Compliment", 5: "How Are You?", 6: "Getting Personal", 7: "Taking Names"
@@ -25,11 +24,14 @@ const getHelloTypeLabel = (log: HelloLog): string => {
     const name = challengeNames[dayNum] || `Day ${dayNum}`;
     return `7-Day Challenge · ${name}`;
   }
+  if (log.hello_type?.startsWith("thirty:")) {
+    return "30 Hellos";
+  }
   return "Regular hello";
 };
 
 // Check if a log is from a challenge
-const isFromChallenge = (log: HelloLog) => log.hello_type?.startsWith("challenge:");
+const isFromChallenge = (log: HelloLog) => log.hello_type?.startsWith("challenge:") || log.hello_type?.startsWith("thirty:");
 
 // Expandable text component for long notes
 const ExpandableText = ({ text }: { text: string }) => {
