@@ -62,6 +62,7 @@ const Challenges = () => {
   const [showConfirmRestart, setShowConfirmRestart] = useState(false);
   const [showConfirmDailyModeOff, setShowConfirmDailyModeOff] = useState(false);
   const [showConfirmPause, setShowConfirmPause] = useState(false);
+  const [showConfirmPauseThirty, setShowConfirmPauseThirty] = useState(false);
   const [showLogScreen, setShowLogScreen] = useState(false);
   const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{
     day: number;
@@ -79,6 +80,10 @@ const Challenges = () => {
 
   // Check if quest is paused (selected_pack_id === 'daily' means showing Today's Hello)
   const isQuestPaused = progress?.selected_pack_id === 'daily';
+  const isThirtyHellosQuestPaused = progress?.selected_pack_id !== '30-hellos' && progress?.selected_pack_id !== 'daily';
+
+  // Count 30 Hellos completions (stored separately in localStorage for now)
+  const thirtyHellosCompleted = 0; // TODO: track separately if needed
 
   // Remi easter egg helpers
   const remiMessage = remiTapCount > 0 ? REMI_MESSAGES[remiTapCount - 1] : null;
@@ -124,6 +129,21 @@ const Challenges = () => {
       selected_pack_id: '30-day-hello'
     });
     toast.success("Quest resumed! Keep going! 🎯");
+  };
+
+  const handleActivateThirtyHellos = async () => {
+    await updateProgress({
+      selected_pack_id: '30-hellos'
+    });
+    toast.success("30 Hellos activated! 🎯");
+  };
+
+  const handlePauseThirtyHellos = async () => {
+    await updateProgress({
+      selected_pack_id: 'daily'
+    });
+    setShowConfirmPauseThirty(false);
+    toast.success("30 Hellos paused. Enjoy Today's Hello!");
   };
 
   // Helper to show challenge completion toast (banner is clickable to undo)
@@ -229,15 +249,15 @@ const Challenges = () => {
                 🎯
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                   <h3 className="font-bold text-foreground">7-Day Challenge</h3>
-                  {isQuestPaused && (
+                  {isQuestPaused && progress?.selected_pack_id !== '30-hellos' && (
                     <span className="px-2 py-0.5 text-[10px] font-semibold bg-warning/20 text-warning rounded-full">
                       PAUSED
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">7 ways to connect in real life</p>
+                <p className="text-xs text-muted-foreground">Perfect for a confidence boost, from friendly hello to getting a strangers name</p>
                 <p className="text-xs text-success font-medium">FREE • Perfect for Everyone</p>
               </div>
             </div>
@@ -277,22 +297,59 @@ const Challenges = () => {
         {/* 30 Hellos Pack */}
         <Card className="mb-8">
           <CardContent className="p-4">
-            <div className="flex items-start gap-4 mb-3">
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="w-5 h-5 text-accent-foreground" />
+              <span className="font-bold text-foreground">30 Hellos</span>
+            </div>
+            
+            <div className="flex items-start gap-4 mb-4">
               <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-2xl">
                 🗓️
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-foreground">30 Hellos</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-foreground">30 Hellos</h3>
+                  {progress?.selected_pack_id === '30-hellos' && !isThirtyHellosQuestPaused && (
+                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-success/20 text-success rounded-full">
+                      ACTIVE
+                    </span>
+                  )}
+                  {isThirtyHellosQuestPaused && (
+                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-warning/20 text-warning rounded-full">
+                      PAUSED
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">30 unique social prompts to build your confidence</p>
                 <p className="text-xs text-success font-medium">FREE • For the committed</p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-3">
-              Expand your comfort zone with 30 creative ways to connect — from compliments to lunch dates.
-            </p>
-            <Button variant="outline" size="sm" className="w-full rounded-full" onClick={() => setShowThirtyHellosList(true)}>
-              View Challenges
-            </Button>
+
+            {/* 30 Hellos Progress */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between text-sm mb-1.5">
+                <span className="text-muted-foreground">
+                  Progress: {thirtyHellosCompleted}/30 Complete
+                </span>
+              </div>
+              <Progress value={(thirtyHellosCompleted / 30) * 100} className="h-2" />
+            </div>
+            
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="flex-1 rounded-full" onClick={() => setShowThirtyHellosList(true)}>
+                View Challenges
+              </Button>
+              
+              {progress?.selected_pack_id === '30-hellos' ? (
+                <Button variant="outline" size="sm" onClick={() => setShowConfirmPauseThirty(true)} className="rounded-full" title="Pause 30 Hellos">
+                  <Pause className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button variant="default" size="sm" onClick={handleActivateThirtyHellos} className="rounded-full" title="Activate 30 Hellos">
+                  <Play className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -387,6 +444,24 @@ const Challenges = () => {
             <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handlePauseQuest} className="rounded-xl">
               Pause Quest
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm Pause 30 Hellos Dialog */}
+      <AlertDialog open={showConfirmPauseThirty} onOpenChange={setShowConfirmPauseThirty}>
+        <AlertDialogContent className="rounded-2xl max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Pause 30 Hellos?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your progress will be saved. The Home screen will show "Today's Hello" prompts instead. You can resume anytime.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handlePauseThirtyHellos} className="rounded-xl">
+              Pause
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
