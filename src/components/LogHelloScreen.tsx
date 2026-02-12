@@ -237,16 +237,17 @@ export const LogHelloScreen = ({
   const processAudio = async (audioBlob: Blob, filename = "recording.webm") => {
     setIsProcessing(true);
     
-    // Create abort controller with 15 second timeout
+    // Create abort controller with 20 second timeout (increased for reliability)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
     
     try {
-      // Step 1: Transcribe audio
+      // Combined transcription + extraction in a single request
       const formData = new FormData();
       formData.append('audio', audioBlob, filename);
+      formData.append('extract', 'true');
 
-      const transcribeResponse = await fetch(
+      const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe-audio`,
         {
           method: 'POST',
@@ -258,82 +259,41 @@ export const LogHelloScreen = ({
         }
       );
 
-      if (!transcribeResponse.ok) {
-        const errorText = await transcribeResponse.text().catch(() => "");
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "");
         throw new Error(errorText || "Transcription failed");
       }
 
-      const transcription = await transcribeResponse.json();
-      const transcribedText = transcription.text || '';
+      const result = await response.json();
+      const transcribedText = result.text || '';
 
       if (!transcribedText) {
         toast.error("No speech detected. Please try again.");
         return;
       }
 
-      // Step 2: Extract name, location, and notes using AI (now supports multiple entries)
-      const extractResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-name`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text: transcribedText }),
-          signal: controller.signal,
-        }
-      );
-
-      if (!extractResponse.ok) {
-        // Fallback: put everything in notes
-        setNotes((prev) => (prev ? `${prev}\n${transcribedText}` : transcribedText));
-        toast.success("Transcription added to notes!");
-        return;
-      }
-
-      const extracted = await extractResponse.json();
-
-      // Handle multi-entry response
-      if (extracted.entries && Array.isArray(extracted.entries)) {
-        if (extracted.entries.length > 1) {
-          // Multiple people detected - show multi-entry review
-          setMultiEntries(extracted.entries);
-          toast.success(`Detected ${extracted.entries.length} people!`);
+      // Handle extracted entries
+      if (result.entries && Array.isArray(result.entries)) {
+        if (result.entries.length > 1) {
+          setMultiEntries(result.entries);
+          toast.success(`Detected ${result.entries.length} people!`);
           return;
-        } else if (extracted.entries.length === 1) {
-          // Single entry - populate form fields
-          const entry = extracted.entries[0];
-          if (entry.name && !name) {
-            setName(entry.name);
-          }
-          if (entry.location && !location) {
-            setLocation(entry.location);
-          }
-          if (entry.notes) {
-            setNotes((prev) => (prev ? `${prev}\n${entry.notes}` : entry.notes));
-          }
+        } else if (result.entries.length === 1) {
+          const entry = result.entries[0];
+          if (entry.name && !name) setName(entry.name);
+          if (entry.location && !location) setLocation(entry.location);
+          if (entry.notes) setNotes((prev) => (prev ? `${prev}\n${entry.notes}` : entry.notes));
           toast.success("Voice notes added!");
           return;
         }
       }
 
-      // Legacy single-entry fallback
-      if (extracted.name && !name) {
-        setName(extracted.name);
-      }
-      if (extracted.location && !location) {
-        setLocation(extracted.location);
-      }
-      if (extracted.notes) {
-        setNotes((prev) => (prev ? `${prev}\n${extracted.notes}` : extracted.notes));
-      }
-
-      toast.success("Voice notes added!");
+      // Fallback: put transcription in notes
+      setNotes((prev) => (prev ? `${prev}\n${transcribedText}` : transcribedText));
+      toast.success("Transcription added to notes!");
     } catch (error) {
       console.error("Error processing audio:", error);
       
-      // Check if this was a timeout (abort)
       if (error instanceof Error && error.name === 'AbortError') {
         toast.error("Sorry, that didn't work. Please try again.", {
           description: "The request took too long to process.",
@@ -343,7 +303,6 @@ export const LogHelloScreen = ({
       }
       
       const message = error instanceof Error ? error.message : "Failed to process voice recording";
-      // Keep the toast short; full details stay in console.
       toast.error(message.includes("Invalid file format") ? "Voice format not supported on this device" : "Failed to process voice recording");
     } finally {
       clearTimeout(timeoutId);
