@@ -210,6 +210,8 @@ const ViewHelloDialog = ({
                 <p className="text-[11px] text-muted-foreground/50 font-medium mt-0.5">
                   {log.hello_type.startsWith("challenge:") 
                     ? `7-Day Challenge · Day ${log.hello_type.split(":")[1]}`
+                    : log.hello_type.startsWith("thirty:")
+                    ? "30 Hellos"
                     : "Regular hello"}
                 </p>
               )}
