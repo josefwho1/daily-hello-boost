@@ -10,7 +10,9 @@ import { useDailyMode } from "@/hooks/useDailyMode";
 import { useChallengeProgress } from "@/hooks/useChallengeProgress";
 import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
 import { DailySuggestionCard } from "@/components/DailySuggestionCard";
+import { ThirtyHellosCard } from "@/components/ThirtyHellosCard";
 import { ChallengeListView } from "@/components/ChallengeListView";
+import { ThirtyHellosListView } from "@/components/ThirtyHellosListView";
 import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompleteDialog";
 import { TierUnlockCelebrationDialog } from "@/components/TierUnlockCelebrationDialog";
 import { ChallengeRevealDialog } from "@/components/ChallengeRevealDialog";
@@ -126,6 +128,7 @@ export default function Dashboard() {
   const [autoStartRecording, setAutoStartRecording] = useState(false);
   const [showHomeTutorial, setShowHomeTutorial] = useState(false);
   const [showChallengeList, setShowChallengeList] = useState(false);
+  const [showThirtyHellosList, setShowThirtyHellosList] = useState(false);
   const [showThirtyChallengeComplete, setShowThirtyChallengeComplete] = useState(false);
   const [showTierUnlock, setShowTierUnlock] = useState(false);
   const [tierUnlockValue, setTierUnlockValue] = useState<10 | 20>(10);
@@ -474,10 +477,23 @@ export default function Dashboard() {
     }
   };
 
+  // Full-screen 30 Hellos List View
+  if (showThirtyHellosList) {
+    return <ThirtyHellosListView
+      completedDays={challengeState.completedDays}
+      onComplete={async (day, name) => {
+        setShowThirtyHellosList(false);
+        setPendingChallengeCompletion({ day, name });
+        setAutoStartRecording(false);
+        setShowLogDialog(true);
+      }}
+      onBack={() => setShowThirtyHellosList(false)}
+    />;
+  }
+
   // Full-screen Challenge List View
   if (showChallengeList) {
     return <ChallengeListView completedDays={challengeState.completedDays} onComplete={async (day, challengeName) => {
-      // Go straight to Log Hello screen
       setShowChallengeList(false);
       setPendingChallengeCompletion({ day, name: challengeName });
       setAutoStartRecording(false);
@@ -486,12 +502,7 @@ export default function Dashboard() {
       await unmarkDayComplete(day);
     }} onBack={() => setShowChallengeList(false)} onSelectChallenge={index => {
       setShowChallengeList(false);
-      navigate('/', {
-        state: {
-          selectedChallengeIndex: index
-        },
-        replace: true
-      });
+      navigate('/', { state: { selectedChallengeIndex: index }, replace: true });
     }} />;
   }
 
@@ -578,16 +589,37 @@ export default function Dashboard() {
           
           {/* Challenge Card */}
           <div id="tutorial-todays-hello-card">
-            {progress?.selected_pack_id === 'daily' ? <DailySuggestionCard /> : <CurrentChallengeCard completedDays={challengeState.completedDays} nextChallenge={challengeState.nextChallenge} totalCount={challengeState.totalCount} isComplete={challengeState.isComplete} onComplete={async (day, challengeName) => {
-            setPendingChallengeCompletion({ day, name: challengeName });
-            setAutoStartRecording(false);
-            setShowLogDialog(true);
-          }} onUncomplete={async day => {
-            await unmarkDayComplete(day);
-          }} onViewAll={() => setShowChallengeList(true)} onRestart={async () => {
-            await restartChallenge();
-            toast.success("Challenge restarted! Day 1 ready.");
-          }} />}
+            {progress?.selected_pack_id === 'daily' ? (
+              <DailySuggestionCard />
+            ) : progress?.selected_pack_id === '30-hellos' ? (
+              <ThirtyHellosCard
+                completedDays={challengeState.completedDays}
+                onComplete={async (day, challengeName) => {
+                  setPendingChallengeCompletion({ day, name: challengeName });
+                  setAutoStartRecording(false);
+                  setShowLogDialog(true);
+                }}
+                onViewAll={() => setShowThirtyHellosList(true)}
+              />
+            ) : (
+              <CurrentChallengeCard
+                completedDays={challengeState.completedDays}
+                nextChallenge={challengeState.nextChallenge}
+                totalCount={challengeState.totalCount}
+                isComplete={challengeState.isComplete}
+                onComplete={async (day, challengeName) => {
+                  setPendingChallengeCompletion({ day, name: challengeName });
+                  setAutoStartRecording(false);
+                  setShowLogDialog(true);
+                }}
+                onUncomplete={async day => { await unmarkDayComplete(day); }}
+                onViewAll={() => setShowChallengeList(true)}
+                onRestart={async () => {
+                  await restartChallenge();
+                  toast.success("Challenge restarted! Day 1 ready.");
+                }}
+              />
+            )}
           </div>
 
           {/* Log a hello */}
