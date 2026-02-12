@@ -260,20 +260,25 @@ const Challenges = () => {
           </CardContent>
         </Card>
 
-        {/* Available Packs Section */}
-        <Card className="opacity-70 mb-8">
+        {/* 30 Hellos Pack */}
+        <Card className="mb-8">
           <CardContent className="p-4">
-            <h3 className="font-bold text-foreground mb-2">More Packs Coming Soon! 🦝</h3>
+            <div className="flex items-start gap-4 mb-3">
+              <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-2xl">
+                🗓️
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-foreground">30 Hellos</h3>
+                <p className="text-xs text-muted-foreground">30 unique social prompts to build your confidence</p>
+                <p className="text-xs text-success font-medium">FREE • For the committed</p>
+              </div>
+            </div>
             <p className="text-sm text-muted-foreground mb-3">
-              We're building new challenge packs like:
+              Expand your comfort zone with 30 creative ways to connect — from compliments to lunch dates.
             </p>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Reconnect (14 days)</li>
-              <li>• New In Town (21 days)</li>
-              <li>• Social Courage (10 days)</li>
-              <li>• Night Out (7 days)</li>
-            </ul>
-            <p className="text-sm text-muted-foreground mt-3 italic">Stay tuned!</p>
+            <Button variant="outline" size="sm" className="w-full rounded-full" disabled>
+              Coming Soon
+            </Button>
           </CardContent>
         </Card>
 
