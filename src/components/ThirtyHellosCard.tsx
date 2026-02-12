@@ -16,9 +16,7 @@ export const ThirtyHellosCard = ({
   onComplete,
   onViewAll,
 }: ThirtyHellosCardProps) => {
-  const completedCount = completedDays.filter(d => d >= 100 && d < 200).length; // 30-hellos days use offset 100+
-  // For now, track by checking which thirtyHellosChallenge days are in completedDays
-  // We'll use the raw day numbers and let the parent handle namespacing
+  // completedDays now contains clean 1-30 day numbers (offset handled by parent)
   const totalCount = 30;
 
   // Find first incomplete challenge

@@ -67,19 +67,24 @@ export const useChallengeProgress = () => {
       return; // Already completed
     }
 
-    // Enforce sequential order: all previous days must be completed
-    const challengeIndex = thirtyDayChallenge.findIndex(c => c.day === day);
-    if (challengeIndex > 0) {
-      for (let i = 0; i < challengeIndex; i++) {
-        if (!currentCompletedDays.includes(thirtyDayChallenge[i].day)) {
-          console.warn(`Cannot complete day ${day}: day ${thirtyDayChallenge[i].day} not yet completed`);
-          return;
+    // Enforce sequential order only for 7-day challenge (days 1-7)
+    // 30 Hellos days (101-130) can be completed in any order
+    if (day <= 7) {
+      const challengeIndex = thirtyDayChallenge.findIndex(c => c.day === day);
+      if (challengeIndex > 0) {
+        for (let i = 0; i < challengeIndex; i++) {
+          if (!currentCompletedDays.includes(thirtyDayChallenge[i].day)) {
+            console.warn(`Cannot complete day ${day}: day ${thirtyDayChallenge[i].day} not yet completed`);
+            return;
+          }
         }
       }
     }
 
     const newCompletedDays = [...currentCompletedDays, day].sort((a, b) => a - b);
-    const isNowComplete = isAllChallengesComplete(newCompletedDays);
+    // Only check 7-day completion for days 1-7
+    const sevenDayDays = newCompletedDays.filter(d => d >= 1 && d <= 7);
+    const isNowComplete = isAllChallengesComplete(sevenDayDays);
 
     const updates: Record<string, unknown> = {
       challenge_completed_days: newCompletedDays,

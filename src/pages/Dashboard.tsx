@@ -362,9 +362,11 @@ export default function Dashboard() {
       helloEntryCreated = true;
 
       // Create hello entry with challenge info
-      const helloTypePrefix = progress?.selected_pack_id === '30-hellos' ? 'thirty' : 'challenge';
+      const isThirtyHellos = day >= 101;
+      const helloTypePrefix = isThirtyHellos ? 'thirty' : 'challenge';
+      const tagDay = isThirtyHellos ? day - 100 : day;
       const result = await addLog({
-        hello_type: `${helloTypePrefix}:${day}`,
+        hello_type: `${helloTypePrefix}:${tagDay}`,
       });
 
       if (result) {
@@ -486,11 +488,16 @@ export default function Dashboard() {
 
   // Full-screen 30 Hellos List View
   if (showThirtyHellosList) {
+    // Filter to only 30 Hellos days (101-130) and map back to 1-30 for display
+    const thirtyHellosCompleted = challengeState.completedDays
+      .filter(d => d >= 101 && d <= 130)
+      .map(d => d - 100);
     return <ThirtyHellosListView
-      completedDays={challengeState.completedDays}
+      completedDays={thirtyHellosCompleted}
       onComplete={async (day, name) => {
         setShowThirtyHellosList(false);
-        setPendingChallengeCompletion({ day, name });
+        // Store with offset so it doesn't clash with 7-day challenge
+        setPendingChallengeCompletion({ day: day + 100, name });
         setAutoStartRecording(false);
         setShowLogDialog(true);
       }}
@@ -519,8 +526,14 @@ export default function Dashboard() {
     // find and edit it. Otherwise, create a new one.
     // Only look for existing challenge log if day is already completed (i.e. "Add Details" flow)
     // After a restart, old logs still exist but the day won't be in completedDays
+    // For 30 Hellos, pendingChallengeCompletion.day is offset (101-130)
+    // For hello_type tag and log lookup, use the raw day number
+    const rawDay = pendingChallengeCompletion ? (pendingChallengeCompletion.day >= 101 ? pendingChallengeCompletion.day - 100 : pendingChallengeCompletion.day) : null;
+    const helloTypeForLookup = pendingChallengeCompletion 
+      ? (pendingChallengeCompletion.day >= 101 ? `thirty:${rawDay}` : `challenge:${rawDay}`)
+      : null;
     const challengeHelloLog = pendingChallengeCompletion && challengeState.completedDays.includes(pendingChallengeCompletion.day)
-      ? logs.find(l => l.hello_type === `challenge:${pendingChallengeCompletion.day}`)
+      ? logs.find(l => l.hello_type === helloTypeForLookup)
       : null;
 
     return <LogHelloScreen 
@@ -545,10 +558,12 @@ export default function Dashboard() {
         } else if (pendingChallengeCompletion) {
           // Create new hello for challenge with hello_type tag
           // Use different prefix for 30 Hellos vs 7-day challenge
-          const helloTypePrefix = progress?.selected_pack_id === '30-hellos' ? 'thirty' : 'challenge';
+          const isThirtyHellos = pendingChallengeCompletion.day >= 101;
+          const helloTypePrefix = isThirtyHellos ? 'thirty' : 'challenge';
+          const tagDay = isThirtyHellos ? pendingChallengeCompletion.day - 100 : pendingChallengeCompletion.day;
           await handleLogHello({
             ...data,
-            hello_type: `${helloTypePrefix}:${pendingChallengeCompletion.day}`,
+            hello_type: `${helloTypePrefix}:${tagDay}`,
           });
           // Mark challenge complete
           if (!challengeState.completedDays.includes(pendingChallengeCompletion.day)) {
@@ -602,9 +617,12 @@ export default function Dashboard() {
               <DailySuggestionCard />
             ) : progress?.selected_pack_id === '30-hellos' ? (
               <ThirtyHellosCard
-                completedDays={challengeState.completedDays}
+                completedDays={challengeState.completedDays
+                  .filter(d => d >= 101 && d <= 130)
+                  .map(d => d - 100)}
                 onComplete={async (day, challengeName) => {
-                  setPendingChallengeCompletion({ day, name: challengeName });
+                  // Store with offset so it doesn't clash with 7-day challenge
+                  setPendingChallengeCompletion({ day: day + 100, name: challengeName });
                   setAutoStartRecording(false);
                   setShowLogDialog(true);
                 }}
