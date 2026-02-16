@@ -782,7 +782,7 @@ const Profile = () => {
           <h3 className="font-semibold mb-4 text-foreground">Follow us on</h3>
           <div className="flex justify-center gap-6 mb-6">
             <a 
-              href="https://www.instagram.com/onehelloapp/" 
+              href="https://www.instagram.com/onehelloco" 
               target="_blank" 
               rel="noopener noreferrer"
               className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"

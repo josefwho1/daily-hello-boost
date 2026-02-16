@@ -103,9 +103,9 @@ const normalModeScreen: ChallengeRevealConfig = {
   image: remiLogging5,
   headline: "Your journey doesn't stop here.",
   body: [
-    "Keep saying hello to maintain your streak.",
-    "Log names in your Hellobook.",
-    "Explore quests for new ways to connect."
+    "You'll now see \"Today's Hello\" for daily ideas.",
+    "You can keep saying one hello to maintain your streak.",
+    "Log names in your Hellobook."
   ],
   button: "Let's do it",
 };
