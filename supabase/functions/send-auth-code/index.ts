@@ -119,7 +119,7 @@ serve(async (req: Request): Promise<Response> => {
     const resend = new Resend(resendApiKey);
 
     const emailResponse = await resend.emails.send({
-      from: "One Hello <noreply@onehello.io>",
+      from: "One Hello <noreply@onehello.co>",
       to: [normalizedEmail],
       subject: "Your One Hello login code",
       html: `

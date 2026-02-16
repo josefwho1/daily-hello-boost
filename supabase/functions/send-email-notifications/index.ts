@@ -136,7 +136,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Remi 🦝 <remi@onehello.io>',
+        from: 'Remi 🦝 <remi@onehello.co>',
         to: [to],
         subject,
         html,
