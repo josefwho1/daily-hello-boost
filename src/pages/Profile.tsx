@@ -79,6 +79,13 @@ const Profile = () => {
   const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   
+  // Email change state
+  const [showEmailSection, setShowEmailSection] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [isSavingEmail, setIsSavingEmail] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailSuccess, setEmailSuccess] = useState(false);
+  
   // Use cloud progress for authenticated users, guest progress otherwise
   const progress = user ? cloudProgress : (guestProgress ? {
     has_completed_onboarding: guestProgress.has_completed_onboarding,
@@ -769,6 +776,115 @@ const Profile = () => {
                     <>
                       <Lock className="w-4 h-4 mr-2" />
                       Set Password
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Change Email (Auth users only) */}
+        {user && !isAnonymousAuthUser && (
+          <Card className="p-5 mb-4 rounded-2xl">
+            <button
+              onClick={() => {
+                setShowEmailSection(!showEmailSection);
+                setEmailError(null);
+                setEmailSuccess(false);
+                setNewEmail('');
+              }}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <Mail className="text-primary w-5 h-5" />
+                <h3 className="font-semibold text-foreground">Change Email</h3>
+              </div>
+              {showEmailSection ? (
+                <ChevronUp className="w-5 h-5 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              )}
+            </button>
+            
+            {showEmailSection && (
+              <div className="mt-4 space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Current email: <span className="font-medium text-foreground">{user.email}</span>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  You'll receive a confirmation link at both your current and new email address.
+                </p>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="new-email">New Email</Label>
+                  <Input
+                    id="new-email"
+                    type="email"
+                    placeholder="Enter new email address"
+                    value={newEmail}
+                    onChange={(e) => {
+                      setNewEmail(e.target.value);
+                      setEmailError(null);
+                    }}
+                  />
+                </div>
+
+                {emailError && (
+                  <div className="flex items-start gap-2 text-sm text-destructive">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>{emailError}</span>
+                  </div>
+                )}
+
+                {emailSuccess && (
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <Check className="w-4 h-4" />
+                    <span>Confirmation email sent! Check both your old and new inbox.</span>
+                  </div>
+                )}
+
+                <Button
+                  onClick={async () => {
+                    setEmailError(null);
+                    setEmailSuccess(false);
+                    
+                    if (!newEmail.trim()) {
+                      setEmailError("Please enter an email address");
+                      return;
+                    }
+                    
+                    if (newEmail.trim().toLowerCase() === user.email?.toLowerCase()) {
+                      setEmailError("That's already your current email");
+                      return;
+                    }
+
+                    setIsSavingEmail(true);
+                    try {
+                      const { error } = await supabase.auth.updateUser({
+                        email: newEmail.trim(),
+                      });
+                      if (error) throw error;
+                      
+                      setEmailSuccess(true);
+                      setNewEmail('');
+                    } catch (error) {
+                      if (error instanceof Error) {
+                        setEmailError(error.message);
+                      }
+                    } finally {
+                      setIsSavingEmail(false);
+                    }
+                  }}
+                  className="w-full"
+                  disabled={isSavingEmail || !newEmail.trim()}
+                >
+                  {isSavingEmail ? (
+                    <span className="animate-pulse">Sending...</span>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4 mr-2" />
+                      Update Email
                     </>
                   )}
                 </Button>
