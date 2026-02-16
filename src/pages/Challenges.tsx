@@ -203,7 +203,7 @@ const Challenges = () => {
           {!isActive ? (
             <Button variant="default" size="sm" onClick={onStart} className="flex-1 rounded-full text-xs h-8">
               <Play className="w-3.5 h-3.5 mr-1" />
-              {id === 'daily' ? 'Activate' : 'Start'}
+              {id === 'daily' ? 'Activate' : (progressValue > 0 ? 'Resume' : 'Start')}
             </Button>
           ) : (
             <>
@@ -252,7 +252,7 @@ const Challenges = () => {
           id="daily"
           icon="💡"
           title="Today's Hello"
-          description="Random daily prompts shuffled from all challenges. Perfect for staying social without commitment."
+          description="Daily prompts for ideas or inspiration."
           subtitle="Always Free"
           isActive={selectedPack === 'daily'}
           progressValue={0}
@@ -277,20 +277,6 @@ const Challenges = () => {
           onRestart={() => setShowConfirmRestart7Day(true)}
         />
 
-        {/* 30 Hellos Card */}
-        <QuestCard
-          id="30-hellos"
-          icon="🗓️"
-          title="30 Hellos"
-          description="30 progressive prompts to help you connect with people in person."
-          subtitle="FREE"
-          isActive={selectedPack === '30-hellos'}
-          progressValue={(thirtyHellosCompletedCount / 30) * 100}
-          progressLabel={`${thirtyHellosCompletedCount}/30 Complete`}
-          onStart={() => handleSelectPack('30-hellos')}
-          onPause={handlePauseToDailyMode}
-          onViewChallenges={() => setShowThirtyHellosList(true)}
-        />
 
         {/* Vault Easter Egg */}
         <div className="pb-2 flex-row flex items-center justify-center mt-4">
