@@ -76,10 +76,10 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
     image: onboardingTakingnames,
     headline: "Next: Taking Names",
     body: [
-      "You're on a roll, it's time to start taking names!",
+      "You're on a roll!",
       "Names are like magic, they turn strangers into people.",
-      "Start a conversation with a stranger and get their name.",
-      "Save it in your Hellobook so you don't forget."
+      "Start a conversation with a stranger and exchange names.",
+      "📖 Save it here so you don't forget."
     ],
     button: "Got it, Remi.",
   },
@@ -132,13 +132,10 @@ export const ChallengeRevealDialog = memo(({ open, completedDay, userName, onCon
     config = challengeReveals[completedDay] || challengeReveals[1];
   }
 
-  // Inject user name into body if available
+  // Inject user name into body if available (only replace {name} placeholders, not the word "name")
   const bodyLines = config.body.map(line => {
     if (userName) {
-      return line.replace(/\bname\b/i, (match) => {
-        // Only replace standalone "name" that looks like a placeholder
-        return match === 'name' ? userName : match;
-      });
+      return line.replace(/\{name\}/g, userName);
     }
     return line;
   });
