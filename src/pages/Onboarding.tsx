@@ -34,6 +34,7 @@ export type OnboardingStep =
   | 'reflection'
   | 'acknowledgement'
   | 'research'
+  | 'why_here'
   | 'challenge_intro'
   | 'public_place'
   | 'first_hello_prompt'   // 7a - yes, public place
@@ -60,6 +61,7 @@ export default function Onboarding() {
   const [connectionName, setConnectionName] = useState('');
   const [connectionLocation, setConnectionLocation] = useState('');
   const [connectionNotes, setConnectionNotes] = useState('');
+  const [whyHere, setWhyHere] = useState<string | null>(null);
 
   const { isLoaded: assetsReady } = useAssetPreloader(ONBOARDING_ASSETS);
 
@@ -115,6 +117,7 @@ export default function Onboarding() {
       challenge_started_at: new Date().toISOString(),
       selected_pack_id: '30-day-hello',
       current_streak: opts?.loggedFirstHello ? 1 : 0,
+      why_here: whyHere,
     };
 
     if (opts?.loggedFirstHello) {
@@ -137,7 +140,7 @@ export default function Onboarding() {
     if (progressResult.error) throw progressResult.error;
 
     return { userId };
-  }, [userName]);
+  }, [userName, whyHere]);
 
   const logFirstHello = useCallback(async (userId: string) => {
     const { detectBrowserTimezoneOffset, getDayKeyInOffset } = await import('@/lib/timezone');
@@ -261,7 +264,7 @@ export default function Onboarding() {
   const progress = useMemo(() => {
     const steps: OnboardingStep[] = [
       'welcome', 'greeting', 'reflection', 'acknowledgement', 'research',
-      'challenge_intro', 'public_place', 'first_hello_prompt',
+      'why_here', 'challenge_intro', 'public_place', 'first_hello_prompt',
       'first_hello_done', 'log_hello', 'skip_for_now', 'at_home'
     ];
     const index = steps.indexOf(step);
@@ -364,8 +367,40 @@ export default function Onboarding() {
                 Ready to try it?
               </p>
             </div>
-            <Button onClick={() => setStep('challenge_intro')} className="w-full" size="lg">
+            <Button onClick={() => setStep('why_here')} className="w-full" size="lg">
               I'm curious
+            </Button>
+          </div>
+        );
+
+      case 'why_here':
+        return (
+          <div className={`${baseClasses} ${animClasses}`}>
+            <RemiImage src={remiCurious4} alt="Remi curious" className="w-44 h-auto max-h-44 mx-auto object-contain" />
+            <div className="space-y-3">
+              <h1 className="text-xl font-bold text-foreground">One quick thing...</h1>
+              <p className="text-muted-foreground">What brings you to One Hello?</p>
+            </div>
+            <div className="flex flex-col gap-3 pt-2">
+              {[
+                { value: 'more_social', label: '🤝 Want to be more social' },
+                { value: 'disconnected', label: '😶 Feeling a bit disconnected' },
+                { value: 'new_place', label: '🏙️ Just moved somewhere new' },
+                { value: 'curious', label: '👀 Just curious' },
+              ].map(({ value, label }) => (
+                <Button
+                  key={value}
+                  onClick={() => setWhyHere(value)}
+                  variant={whyHere === value ? 'default' : 'outline'}
+                  className="w-full h-12 text-base"
+                  size="lg"
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+            <Button onClick={() => setStep('challenge_intro')} className="w-full" size="lg" disabled={!whyHere}>
+              Continue
             </Button>
           </div>
         );
@@ -541,7 +576,7 @@ export default function Onboarding() {
       default:
         return null;
     }
-  }, [step, userName, connectionName, connectionLocation, connectionNotes, isSubmitting, navigate, handleSaveConnection, handleFirstHelloDone, completeOnboarding]);
+  }, [step, userName, whyHere, connectionName, connectionLocation, connectionNotes, isSubmitting, navigate, handleSaveConnection, handleFirstHelloDone, completeOnboarding]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
