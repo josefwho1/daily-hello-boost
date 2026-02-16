@@ -26,7 +26,11 @@ export const BottomNav = () => {
   if (location.pathname === '/auth' || location.pathname === '/onboarding' || location.pathname === '/landing' || location.pathname === '/signin') {
     return null;
   }
-  const handleTabClick = (path: string) => {
+  const handleTabClick = (e: React.MouseEvent, path: string) => {
+    // Prevent scroll-to-top when double-tapping the already active tab
+    if (location.pathname === path) {
+      e.preventDefault();
+    }
     setLastClicked(path);
     setTimeout(() => setLastClicked(null), 600);
   };
@@ -51,7 +55,7 @@ export const BottomNav = () => {
     paddingBottom: 'calc(env(safe-area-inset-bottom) / 2)'
   }}>
       <div className="max-w-md mx-auto flex justify-around items-center h-14 px-2 relative my-[2px]">
-        {tabs.map(tab => <NavLink key={tab.to} to={tab.to} onClick={() => handleTabClick(tab.to)} className="relative flex flex-col items-center gap-0.5 py-2 px-4 text-muted-foreground transition-all duration-200 hover:text-primary touch-feedback min-h-[48px] min-w-[48px]" activeClassName="text-primary">
+        {tabs.map(tab => <NavLink key={tab.to} to={tab.to} onClick={(e) => handleTabClick(e, tab.to)} className="relative flex flex-col items-center gap-0.5 py-2 px-4 text-muted-foreground transition-all duration-200 hover:text-primary touch-feedback min-h-[48px] min-w-[48px]" activeClassName="text-primary">
             <PawPrint show={lastClicked === tab.to} />
             <tab.icon size={24} className="transition-transform duration-200" strokeWidth={location.pathname === tab.to ? 2.5 : 2} />
             <span className="text-xs font-medium">{tab.label}</span>
