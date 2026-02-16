@@ -790,7 +790,7 @@ const Profile = () => {
               <Instagram className="w-6 h-6 text-primary" />
             </a>
             <a 
-              href="https://www.tiktok.com/@onehelloapp" 
+              href="https://www.tiktok.com/@onehelloco" 
               target="_blank" 
               rel="noopener noreferrer"
               className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
@@ -800,7 +800,7 @@ const Profile = () => {
               </svg>
             </a>
             <a 
-              href="https://www.youtube.com/@onehelloapp" 
+              href="https://www.youtube.com/@onehelloco" 
               target="_blank" 
               rel="noopener noreferrer"
               className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"

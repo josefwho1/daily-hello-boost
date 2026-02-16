@@ -81,8 +81,8 @@ function createEmailHtml(bodyContent: string, username: string, unsubscribeUrl: 
           <tr>
             <td style="padding: 20px 32px; background-color: #faf5f2; text-align: center; border-top: 1px solid #f0e6df;">
               <p style="margin: 0 0 12px 0; color: #666; font-size: 13px;">Follow us</p>
-              <a href="https://www.instagram.com/onehelloapp/" style="color: #ff6f3b; text-decoration: none; margin: 0 12px; font-size: 14px;">Instagram</a>
-              <a href="https://www.tiktok.com/@onehelloapp" style="color: #ff6f3b; text-decoration: none; margin: 0 12px; font-size: 14px;">TikTok</a>
+              <a href="https://www.instagram.com/onehelloco/" style="color: #ff6f3b; text-decoration: none; margin: 0 12px; font-size: 14px;">Instagram</a>
+              <a href="https://www.tiktok.com/@onehelloco" style="color: #ff6f3b; text-decoration: none; margin: 0 12px; font-size: 14px;">TikTok</a>
             </td>
           </tr>
           
