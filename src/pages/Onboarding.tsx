@@ -390,8 +390,11 @@ export default function Onboarding() {
               ].map(({ value, label }) => (
                 <Button
                   key={value}
-                  onClick={() => setWhyHere(value)}
-                  variant={whyHere === value ? 'default' : 'outline'}
+                  onClick={() => {
+                    setWhyHere(value);
+                    setStep('challenge_intro');
+                  }}
+                  variant="outline"
                   className="w-full h-12 text-base"
                   size="lg"
                 >
@@ -399,9 +402,6 @@ export default function Onboarding() {
                 </Button>
               ))}
             </div>
-            <Button onClick={() => setStep('challenge_intro')} className="w-full" size="lg" disabled={!whyHere}>
-              Continue
-            </Button>
           </div>
         );
 
