@@ -250,14 +250,11 @@ export default function Onboarding() {
     if (showTutorial) {
       sessionStorage.setItem('pending_home_tutorial', '1');
     }
-    fireAndForget(async () => {
-      try {
-        // Pass loggedFirstHello if the user completed it during onboarding
-        await ensureUserAndProgress({ loggedFirstHello: firstHelloLogged });
-      } catch (error) {
-        console.error('Background onboarding error:', error);
-      }
-    });
+    try {
+      await ensureUserAndProgress({ loggedFirstHello: firstHelloLogged });
+    } catch (error) {
+      console.error('Onboarding completion error:', error);
+    }
     window.location.replace('/');
   }, [ensureUserAndProgress, firstHelloLogged]);
 
@@ -519,8 +516,8 @@ export default function Onboarding() {
                 For now, let me show you around.
               </p>
             </div>
-            <Button onClick={() => setStep('weather_chat_reveal')} className="w-full" size="lg">
-              Continue
+            <Button onClick={() => completeOnboarding(true)} className="w-full" size="lg">
+              Show me around
             </Button>
           </div>
         );
