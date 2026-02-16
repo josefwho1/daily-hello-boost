@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+
 import { useUserProgressQuery } from "@/hooks/useUserProgressQuery";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useDailyMode } from "@/hooks/useDailyMode";
@@ -36,30 +36,14 @@ const Challenges = () => {
   const [showLogScreen, setShowLogScreen] = useState(false);
   const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{ day: number; name: string } | null>(null);
 
-  // Remi easter egg
-  const [remiTapCount, setRemiTapCount] = useState(0);
-  const [showSpeechBubble, setShowSpeechBubble] = useState(false);
-  const REMI_MESSAGES = ["Hello!", "Hey!", "Yo yo yooo", "Okay that's enough...", null];
-
   const progress = isAnonymous ? guestProgress : cloudProgress;
   const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
   const isLoading = (isAnonymous ? guestLoading : cloudLoading) || challengeLoading || dailyModeLoading;
 
   const selectedPack = progress?.selected_pack_id || 'daily';
 
-  // 30 Hellos completion tracking (from challenge_completions with tag, or we track via hello_type)
   const thirtyHellosCompletedCount = logs.filter(l => l.hello_type?.startsWith('thirty:')).length;
 
-  const remiMessage = remiTapCount > 0 ? REMI_MESSAGES[remiTapCount - 1] : null;
-  const isRemiGone = remiTapCount >= REMI_MESSAGES.length;
-  const handleRemiTap = () => {
-    if (remiTapCount >= REMI_MESSAGES.length) return;
-    setRemiTapCount(prev => prev + 1);
-    setShowSpeechBubble(true);
-    if (remiTapCount < REMI_MESSAGES.length - 1) {
-      setTimeout(() => setShowSpeechBubble(false), 2000);
-    }
-  };
 
   // Switch to a pack (with confirmation if another quest is active)
   const handleSelectPack = (packId: string) => {
@@ -278,28 +262,28 @@ const Challenges = () => {
         />
 
 
+        {/* More quests coming soon note */}
+        <div className="text-center mt-4 mb-4">
+          <p className="text-sm text-muted-foreground">
+            More quests coming soon! For ideas, feedback or suggestions message us at{' '}
+            <a
+              href="https://www.instagram.com/onehelloco"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary font-medium hover:underline"
+            >
+              @onehelloco
+            </a>
+            {' '}on Instagram.
+          </p>
+        </div>
+
         {/* Vault Easter Egg */}
-        <div className="pb-2 flex-row flex items-center justify-center mt-4">
-          <button onClick={() => navigate('/vault')} className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 focus:outline-none">
+        <div className="pb-2 flex-row flex items-center justify-center mt-2">
+          <button onClick={() => navigate('/vault')} className="relative focus:outline-none">
             <img src={vaultIcon} alt="Remi's Vault" className="w-12 h-12 object-contain" />
           </button>
-          <div className="relative mt-2">
-            <AnimatePresence>
-              {showSpeechBubble && remiMessage && !isRemiGone && (
-                <motion.div initial={{ opacity: 0, scale: 0.8, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.8, y: 10 }} className="absolute -top-10 left-1/2 -translate-x-1/2 bg-card border border-border rounded-xl px-3 py-2 shadow-lg whitespace-nowrap z-10">
-                  <p className="text-sm font-medium text-foreground">{remiMessage}</p>
-                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-card border-r border-b border-border rotate-45" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {isRemiGone ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="opacity-50">
-                <p className="text-xs text-muted-foreground">You scared Remi away...</p>
-              </motion.div>
-            ) : (
-              <motion.button onClick={handleRemiTap} whileTap={{ scale: 0.9 }} className="opacity-30 hover:opacity-50 transition-opacity duration-300 focus:outline-none" />
-            )}
-          </div>
+          <p className="text-xs text-muted-foreground ml-2">What do we have here...?</p>
         </div>
       </div>
 
