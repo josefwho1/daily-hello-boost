@@ -214,11 +214,13 @@ export const CurrentChallengeCard = ({
             )}
             <button 
               onClick={onViewAll}
-              className="h-10 px-4 rounded-full hover:bg-muted transition-colors flex items-center justify-center gap-1 text-muted-foreground text-xs"
+              className="h-10 px-4 rounded-full hover:bg-muted transition-colors flex items-center justify-center text-muted-foreground text-xs text-center"
               data-compact
             >
-              View All
-              <ChevronRight className="w-4 h-4" />
+              <span className="flex items-center justify-center gap-1">
+                View All
+                <ChevronRight className="w-4 h-4" />
+              </span>
             </button>
           </div>
         </div>
