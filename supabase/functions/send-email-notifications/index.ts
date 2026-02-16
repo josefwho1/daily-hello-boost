@@ -350,8 +350,8 @@ Deno.serve(async (req) => {
       const daysSinceLastReengagement = lastReengagement ? daysBetween(now, lastReengagement) : 999
       
       const shouldSendReengagement = 
-        daysSinceActivity >= 2 && // 2+ days after last activity
-        (reengagementIndex === 0 || daysSinceLastReengagement >= 2) // 2+ days between emails
+        daysSinceActivity >= 3 && // 3+ days after last activity
+        (reengagementIndex === 0 || daysSinceLastReengagement >= 3) // 3+ days between emails
       
       if (shouldSendReengagement) {
         shouldSend = true
