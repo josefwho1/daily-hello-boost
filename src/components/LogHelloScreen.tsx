@@ -1,10 +1,10 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback, useDeferredValue } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
-import { ArrowLeft, Mic, Square, Loader2 } from "lucide-react";
+import { ArrowLeft, Mic, Square, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { MultiEntryReview, ExtractedEntry } from "@/components/MultiEntryReview";
 import { DuplicatePersonDialog } from "@/components/DuplicatePersonDialog";
@@ -103,6 +103,26 @@ export const LogHelloScreen = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const lastChunkTypeRef = useRef<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Cycling processing messages
+  const processingMessages = [
+    "Listening to your voice...",
+    "Transcribing your hello...",
+    "Almost there...",
+  ];
+  const [processingMsgIndex, setProcessingMsgIndex] = useState(0);
+
+  useEffect(() => {
+    if (!isProcessing) {
+      setProcessingMsgIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setProcessingMsgIndex((prev) => (prev + 1) % 3);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isProcessing]);
 
   const remiImage = useMemo(() => getRandomLoggingImage(), []);
 
@@ -239,6 +259,7 @@ export const LogHelloScreen = ({
     
     // Create abort controller with 20 second timeout (increased for reliability)
     const controller = new AbortController();
+    abortControllerRef.current = controller;
     const timeoutId = setTimeout(() => controller.abort(), 20000);
     
     try {
@@ -295,8 +316,7 @@ export const LogHelloScreen = ({
       console.error("Error processing audio:", error);
       
       if (error instanceof Error && error.name === 'AbortError') {
-        toast.error("Sorry, that didn't work. Please try again.", {
-          description: "The request took too long to process.",
+        toast.error("Hmm, that didn't work. Give it another go?", {
           duration: 5000,
         });
         return;
@@ -309,6 +329,14 @@ export const LogHelloScreen = ({
       setIsProcessing(false);
     }
   };
+
+  const cancelProcessing = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsProcessing(false);
+  }, []);
 
   // Validation: all fields are optional
   const hasName = name.trim() !== "";
@@ -456,22 +484,32 @@ export const LogHelloScreen = ({
               onChange={(e) => setName(e.target.value)}
               className="text-base flex-1"
             />
-            <Button
-              type="button"
-              variant={isRecording ? "destructive" : "outline"}
-              size="icon"
-              className="flex-shrink-0 h-10 w-10"
-              onClick={isRecording ? stopRecording : startRecording}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : isRecording ? (
-                <Square className="w-5 h-5" />
-              ) : (
-                <Mic className="w-5 h-5" />
-              )}
-            </Button>
+            {isProcessing ? (
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="flex-shrink-0 h-10 w-10"
+                onClick={cancelProcessing}
+                title="Cancel"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant={isRecording ? "destructive" : "outline"}
+                size="icon"
+                className="flex-shrink-0 h-10 w-10"
+                onClick={isRecording ? stopRecording : startRecording}
+              >
+                {isRecording ? (
+                  <Square className="w-5 h-5" />
+                ) : (
+                  <Mic className="w-5 h-5" />
+                )}
+              </Button>
+            )}
           </div>
           {isRecording && (
             <p className="text-sm text-muted-foreground animate-pulse">
@@ -479,9 +517,9 @@ export const LogHelloScreen = ({
             </p>
           )}
           {isProcessing && (
-            <div className="flex items-center gap-2 text-sm text-primary">
+            <div className="flex items-center gap-2 text-sm text-primary animate-pulse">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Transcribing your voice...</span>
+              <span>{processingMessages[processingMsgIndex]}</span>
             </div>
           )}
         </div>
