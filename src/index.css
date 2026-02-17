@@ -220,7 +220,7 @@ All colors MUST be HSL.
   /* Bottom nav height is 3.5rem (56px) + safe area */
   .page-container {
     min-height: 100vh;
-    padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px) + 0.5rem);
+    padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px) + 0.1rem);
   }
 
   /* Fixed element positioned above bottom nav */
