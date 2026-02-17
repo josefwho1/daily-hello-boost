@@ -32,6 +32,8 @@ import { toast } from "sonner";
 import { ChallengeCompletionToast } from "@/components/ChallengeCompletionToast";
 import { thirtyDayChallenge } from "@/data/thirtyDayChallenge";
 import remiWaving4 from "@/assets/remi-waving-4.webp";
+import remiSuper1 from "@/assets/remi-super-1.webp";
+import remiSuper2 from "@/assets/remi-super-2.webp";
 import { startOfWeek, isBefore, parseISO } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { normalizeTimezoneOffset, getDayKeyInOffset } from "@/lib/timezone";
@@ -147,6 +149,9 @@ export default function Dashboard() {
   // Streak celebration states
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [celebratedStreakValue, setCelebratedStreakValue] = useState(0);
+
+  // Easter egg: Remi super saiyan tap counter
+  const [remiTapCount, setRemiTapCount] = useState(0);
 
   // Edit hello dialog states
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
@@ -597,7 +602,12 @@ export default function Dashboard() {
 
         {/* Friendly Header Greeting with Remi */}
         <div className="text-center mb-6">
-          <img src={remiWaving4} alt="Remi waving" className="w-16 h-16 mx-auto mb-2 object-contain" />
+          <img 
+            src={remiTapCount < 5 ? remiWaving4 : remiTapCount < 10 ? remiSuper1 : remiSuper2} 
+            alt="Remi" 
+            className={`w-16 h-16 mx-auto mb-2 object-contain cursor-pointer active:scale-110 transition-transform ${remiTapCount >= 5 ? 'animate-pulse' : ''}`}
+            onClick={() => setRemiTapCount(prev => prev >= 14 ? 0 : prev + 1)}
+          />
           <h1 className="text-2xl font-bold text-foreground tracking-wide" style={{
           fontFamily: 'Fredoka, sans-serif'
         }}>
