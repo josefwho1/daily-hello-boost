@@ -11,6 +11,7 @@ import { scheduleBackgroundTask, fireAndForget } from "@/lib/backgroundTask";
 import remiWaving4 from "@/assets/remi-waving-4.webp";
 import remiShakingHand from "@/assets/remi-shaking-hand.webp";
 import remiCurious4 from "@/assets/remi-curious-4.webp";
+import remiWaving3 from "@/assets/remi-waving-3.webp";
 import remiSad5 from "@/assets/remi-sad-5.webp";
 import remiCelebrating9 from "@/assets/remi-celebrating-9.webp";
 import remiCelebrating7 from "@/assets/remi-celebrating-7.webp";
@@ -23,7 +24,7 @@ import onboardingFirsthello from "@/assets/onboarding-firsthello.webp";
 import onboardingWeatherchat from "@/assets/onboarding-weatherchat.webp";
 
 const ONBOARDING_ASSETS = [
-  remiWaving4, remiShakingHand, remiCurious4, remiSad5,
+  remiWaving4, remiShakingHand, remiCurious4, remiWaving3, remiSad5,
   remiCelebrating9, remiCelebrating7, remiCelebrating1,
   remiSmiling1, remiLogging4, remiLogging5, remiLogging6, onboardingFirsthello, onboardingWeatherchat
 ];
@@ -358,7 +359,7 @@ export default function Onboarding() {
       case 'why_here':
         return (
           <div className={`${baseClasses} ${animClasses}`}>
-            <RemiImage src={remiCurious4} alt="Remi curious" className="w-44 h-auto max-h-44 mx-auto object-contain" />
+            <RemiImage src={remiWaving3} alt="Remi waving" className="w-44 h-auto max-h-44 mx-auto object-contain" />
             <div className="space-y-3">
               <h1 className="text-xl font-bold text-foreground">One quick thing...</h1>
               <p className="text-muted-foreground">What brings you to One Hello?</p>
