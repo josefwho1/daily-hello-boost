@@ -8,7 +8,7 @@ export const useTimezone = () => {
   // Initialize with browser-detected timezone instead of hardcoded UTC
   const [timezoneOffset, setTimezoneOffset] = useState<string>(detectBrowserTimezoneOffset());
   const [autoDetect, setAutoDetect] = useState<boolean>(true);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Start as false — browser timezone is available instantly
 
   useEffect(() => {
     const fetchTimezone = async () => {
