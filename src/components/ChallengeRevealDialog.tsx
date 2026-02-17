@@ -88,7 +88,7 @@ const challengeReveals: Record<number, ChallengeRevealConfig> = {
 // Final completion screen (day 7 done)
 const finalCompletion: ChallengeRevealConfig = {
   image: remiCongrats1,
-  headline: "🎉 Initiation Complete 🎉",
+  headline: "🎉 Challenge Complete 🎉",
   body: [
     "You showed up. You spoke to strangers. You did the thing.",
     "You can officially turn a stranger into a friend.",
@@ -104,8 +104,8 @@ const normalModeScreen: ChallengeRevealConfig = {
   headline: "Your journey doesn't stop here.",
   body: [
     "You'll now see \"Today's Hello\" for daily ideas.",
-    "You can keep saying one hello to maintain your streak.",
-    "Log names in your Hellobook."
+    "Keep saying one hello a day to maintain your streak.",
+    "Log names in your Hellobook for mems."
   ],
   button: "Let's do it",
 };
