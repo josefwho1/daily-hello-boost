@@ -48,9 +48,15 @@ export const CurrentChallengeCard = ({
   const getCurrentIndex = () => {
     if (!nextChallenge) return Math.min(thirtyDayChallenge.length - 1, 6);
     const idx = thirtyDayChallenge.findIndex(c => c.day === nextChallenge.day);
-    return idx;
+    return idx >= 0 ? idx : 0;
   };
   const [currentIndex, setCurrentIndex] = useState(getCurrentIndex);
+
+  // Keep currentIndex in sync with nextChallenge changes (e.g. after completing from list view)
+  useEffect(() => {
+    const newIdx = getCurrentIndex();
+    setCurrentIndex(newIdx);
+  }, [nextChallenge]);
 
   useEffect(() => {
     const selected = (location.state as any)?.selectedChallengeIndex;
@@ -66,10 +72,7 @@ export const CurrentChallengeCard = ({
   const challengeUnlocked = isUnlocked(currentIndex);
   const progressPercent = totalCount > 0 ? completedCount / totalCount * 100 : 0;
 
-  // Visibility: is this the "next" locked challenge (name visible but desc hidden)?
-  const isNextLocked = !challengeUnlocked && currentIndex > 0 && isUnlocked(currentIndex - 1);
-  // Is this a future locked challenge (fully hidden)?
-  const isLockedFuture = !challengeUnlocked && !isNextLocked;
+  const isLocked = !challengeUnlocked;
 
   const canGoLeft = currentIndex > 0;
   const canGoRight = currentIndex < thirtyDayChallenge.length - 1;
@@ -155,23 +158,18 @@ export const CurrentChallengeCard = ({
           <div className="h-6 flex items-center">
             <h3 className={cn(
               "text-base font-bold line-clamp-1",
-              isLockedFuture ? "text-muted-foreground/30" : 
-              isNextLocked ? "text-muted-foreground" :
+              isLocked ? "text-muted-foreground/50" :
               isChallengeComplete ? "text-success" : "text-foreground"
             )}>
-              {isLockedFuture ? `Day ${currentChallenge.day} · Locked` : currentChallenge.name}
+              {currentChallenge.name}
             </h3>
           </div>
           
           {/* Description area - fixed height for 2 lines */}
           <div className="h-[2.75rem] mt-1">
-            {isLockedFuture ? (
-              <p className="text-xs text-muted-foreground/30 line-clamp-2">
-                Complete previous challenges to unlock
-              </p>
-            ) : isNextLocked ? (
-              <p className="text-xs text-muted-foreground/50 line-clamp-2">
-                Complete "{getBlockingChallengeName()}" to unlock
+            {isLocked ? (
+              <p className="text-xs text-muted-foreground/40 line-clamp-2">
+                {currentChallenge.description}
               </p>
             ) : (
               <p className={cn(
