@@ -123,6 +123,7 @@ const Vault = () => {
   const [remiTapCount, setRemiTapCount] = useState(0);
   const [showSpeechBubble, setShowSpeechBubble] = useState(false);
   const [showMasterList, setShowMasterList] = useState(false);
+  const [expandedHelloId, setExpandedHelloId] = useState<number | null>(null);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
@@ -407,33 +408,45 @@ const Vault = () => {
       </div>
 
 
-      {/* Today's Hello Master List Dialog */}
-      <Dialog open={showMasterList} onOpenChange={setShowMasterList}>
-        <DialogContent className="max-w-md max-h-[85vh] p-0">
-          <DialogHeader className="p-5 pb-2">
-            <DialogTitle className="text-xl font-bold">Today's Hello Master List</DialogTitle>
-            <p className="text-sm text-muted-foreground">40 different ways to say hello</p>
-          </DialogHeader>
-          <ScrollArea className="h-[65vh] px-5 pb-5">
-            <div className="space-y-3">
-              {dailyHellos.map((hello, index) => (
-                <div key={hello.id} className="p-3 bg-muted/50 rounded-xl">
-                  <div className="flex items-start gap-3">
-                    <span className="w-7 h-7 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-600 font-bold text-xs flex-shrink-0 mt-0.5">
-                      {index + 1}
-                    </span>
-                    <div className="space-y-1">
-                      <p className="font-semibold text-sm text-foreground">{hello.title}</p>
-                      <p className="text-xs text-muted-foreground">{hello.description}</p>
-                      {hello.suggestion && (
-                        <p className="text-xs text-muted-foreground/80 italic mt-1">💡 {hello.suggestion}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+      {/* Today's Hello Master List - Full Screen */}
+      <Dialog open={showMasterList} onOpenChange={(open) => { setShowMasterList(open); if (!open) setExpandedHelloId(null); }}>
+        <DialogContent className="w-screen h-screen max-w-none max-h-none rounded-none border-none p-0 translate-x-0 translate-y-0 top-0 left-0">
+          <div className="flex flex-col h-full safe-area-top">
+            <div className="flex items-center justify-between px-4 py-4 border-b border-border/50">
+              <div>
+                <DialogTitle className="text-xl font-bold">Today's Hello Master List</DialogTitle>
+                <p className="text-sm text-muted-foreground">40 different ways to say hello</p>
+              </div>
             </div>
-          </ScrollArea>
+            <ScrollArea className="flex-1">
+              <div className="px-4 py-3 space-y-2 pb-8">
+                {dailyHellos.map((hello, index) => {
+                  const isExpanded = expandedHelloId === hello.id;
+                  return (
+                    <div
+                      key={hello.id}
+                      className="p-3 bg-muted/50 rounded-xl cursor-pointer active:scale-[0.98] transition-transform"
+                      onClick={() => setExpandedHelloId(isExpanded ? null : hello.id)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="w-7 h-7 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-600 font-bold text-xs flex-shrink-0 mt-0.5">
+                          {index + 1}
+                        </span>
+                        <div className="space-y-1 min-w-0">
+                          <p className="font-semibold text-sm text-foreground">{hello.title}</p>
+                          {isExpanded && hello.suggestion ? (
+                            <p className="text-xs text-muted-foreground/80 italic animate-fade-in">💡 {hello.suggestion}</p>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">{hello.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </div>
         </DialogContent>
       </Dialog>
 
