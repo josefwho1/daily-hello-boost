@@ -605,7 +605,7 @@ export default function Dashboard() {
           <img 
             src={remiTapCount < 5 ? remiWaving4 : remiTapCount < 10 ? remiSuper1 : remiSuper2} 
             alt="Remi" 
-            className={`w-16 h-16 mx-auto mb-2 object-contain cursor-pointer active:scale-110 transition-transform ${remiTapCount >= 5 ? 'animate-pulse' : ''}`}
+            className="w-16 h-16 mx-auto mb-2 object-contain cursor-pointer active:scale-110 transition-transform"
             onClick={() => setRemiTapCount(prev => prev >= 14 ? 0 : prev + 1)}
           />
           <h1 className="text-2xl font-bold text-foreground tracking-wide" style={{
