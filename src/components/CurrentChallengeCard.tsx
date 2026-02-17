@@ -133,23 +133,35 @@ export const CurrentChallengeCard = ({
 
       {/* Content */}
       {isComplete && currentIndex === thirtyDayChallenge.length - 1 ? (
-        <div className="flex-1 flex flex-col justify-center space-y-3 mt-3 min-h-[160px]">
-          <div className="flex items-center gap-2 text-success">
-            <Check className="w-5 h-5" />
-            <span className="font-semibold">🎉 Challenge Complete!</span>
+        <div className="flex-1 flex flex-col mt-3">
+          <div className="flex-1 flex flex-col justify-center space-y-2">
+            <div className="flex items-center gap-2 text-success">
+              <Check className="w-5 h-5" />
+              <span className="font-semibold">🎉 Challenge Complete!</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              You're officially a Conversation Starter!
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            You're officially a Conversation Starter!
-          </p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowConfirmRestart(true)} className="flex-1 rounded-full">
-              <RotateCcw className="w-4 h-4 mr-1" />
+          <div className="mt-auto pt-2 flex items-center justify-between gap-2">
+            <button 
+              onClick={() => setShowConfirmRestart(true)}
+              className="h-10 px-5 rounded-full font-semibold bg-primary hover:bg-primary/90 text-primary-foreground transition-colors flex items-center justify-center gap-1.5 flex-1 text-sm shadow-md"
+              data-compact
+            >
+              <RotateCcw className="w-4 h-4" />
               Restart
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onViewAll} className="flex-1 rounded-full">
-              View All
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
+            </button>
+            <button 
+              onClick={onViewAll}
+              className="h-10 px-4 rounded-full hover:bg-muted transition-colors flex items-center justify-center text-muted-foreground text-xs text-center"
+              data-compact
+            >
+              <span className="flex items-center justify-center gap-1">
+                View All
+                <ChevronRight className="w-4 h-4" />
+              </span>
+            </button>
           </div>
         </div>
       ) : currentChallenge ? (
