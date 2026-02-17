@@ -133,7 +133,7 @@ export const CurrentChallengeCard = ({
 
       {/* Content */}
       {isComplete && currentIndex === thirtyDayChallenge.length - 1 ? (
-        <div className="flex-1 flex flex-col justify-center space-y-3 mt-3">
+        <div className="flex-1 flex flex-col justify-center space-y-3 mt-3 min-h-[160px]">
           <div className="flex items-center gap-2 text-success">
             <Check className="w-5 h-5" />
             <span className="font-semibold">🎉 Challenge Complete!</span>
