@@ -28,7 +28,12 @@ const getDailyRemiCurious = () => {
 export const DailySuggestionCard = memo(() => {
   const [shuffledHello, setShuffledHello] = useState<DailyHello | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const remiImage = getDailyRemiCurious();
+  const [remiIndex, setRemiIndex] = useState(() => {
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    return dayOfYear % remiCuriousImages.length;
+  });
+  const remiImage = remiCuriousImages[remiIndex];
   
   // Load persisted shuffle on mount
   useEffect(() => {
@@ -66,6 +71,7 @@ export const DailySuggestionCard = memo(() => {
       } while (newHello.id === currentId && dailyHellos.length > 1);
       
       setShuffledHello(newHello);
+      setRemiIndex((prev) => (prev + 1) % remiCuriousImages.length);
       
       // Persist to localStorage
       localStorage.setItem('todays-hello-selection', JSON.stringify({
@@ -122,7 +128,9 @@ export const DailySuggestionCard = memo(() => {
       <img 
         src={remiImage} 
         alt="Remi" 
-        className="absolute bottom-2 right-2 w-12 h-auto object-contain opacity-90 pointer-events-none"
+        className={`absolute bottom-2 right-2 w-12 h-auto object-contain opacity-90 pointer-events-none transition-all duration-150 ${
+          isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+        }`}
       />
     </Card>
   );
