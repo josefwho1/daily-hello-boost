@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserProgress } from "@/hooks/useUserProgress";
+import { useUserProgressQuery } from "@/hooks/useUserProgressQuery";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
 import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
@@ -17,7 +17,7 @@ import { ThirtyChallengeCompleteDialog } from "@/components/ThirtyChallengeCompl
 import { TierUnlockCelebrationDialog } from "@/components/TierUnlockCelebrationDialog";
 import { ChallengeRevealDialog } from "@/components/ChallengeRevealDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
-
+import { DashboardSkeleton } from "@/components/DashboardSkeleton";
 
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
@@ -55,7 +55,7 @@ export default function Dashboard() {
     loading: progressLoading,
     updateProgress: updateCloudProgress,
     refetch
-  } = useUserProgress();
+  } = useUserProgressQuery();
   const {
     logs: cloudLogs,
     loading: logsLoading,
@@ -66,7 +66,6 @@ export default function Dashboard() {
   } = useHelloLogs();
   const {
     timezoneOffset,
-    loading: timezoneLoading
   } = useTimezone();
   const {
     state: dailyModeState,
@@ -241,7 +240,7 @@ export default function Dashboard() {
   // Weekly reset logic
   const [weeklyResetDone, setWeeklyResetDone] = useState(false);
   useEffect(() => {
-    if (!progress || progressLoading || weeklyResetDone || timezoneLoading) return;
+    if (!progress || progressLoading || weeklyResetDone) return;
     if (progress.is_onboarding_week) return;
     const weekStartStr = getWeekStartKeyInOffset(new Date(), tzOffset);
     if (progress.week_start_date) {
@@ -262,7 +261,7 @@ export default function Dashboard() {
         weekly_goal_achieved_this_week: false
       });
     }
-  }, [progress, progressLoading, weeklyResetDone, timezoneLoading, tzOffset]);
+  }, [progress, progressLoading, weeklyResetDone, tzOffset]);
 
   // Daily Mode streak reset check on mount
   useEffect(() => {
@@ -345,14 +344,10 @@ export default function Dashboard() {
       }
     }
   };
-  const isLoading = isAnonymous ? guestLoading || timezoneLoading : progressLoading || logsLoading || timezoneLoading || challengeLoading;
+  // Timezone uses browser-detected value instantly, so never block on it
+  const isLoading = isAnonymous ? guestLoading : progressLoading || logsLoading || challengeLoading;
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>;
+    return <DashboardSkeleton />;
   }
   if (!progress) return null;
 
