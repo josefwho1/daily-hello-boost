@@ -281,12 +281,18 @@ export const useLocalNotifications = () => {
     await cancelAllNotifications();
 
     if (dailyModeActive) {
-      // Schedule morning notification (always for Daily Mode users)
-      await scheduleMorningNotification();
+      // Only schedule notifications if user has NOT logged any hellos today
+      if (todaysHelloCount === 0) {
+        // Schedule morning notification
+        await scheduleMorningNotification();
 
-      // Only schedule afternoon if user has a streak >= 1 AND has NOT logged today AND hasn't disabled it
-      if (currentStreak >= 1 && todaysHelloCount === 0 && preferences.afternoonTime > 0) {
-        await scheduleAfternoonNotification();
+        // Only schedule afternoon if user has a streak >= 1 AND hasn't disabled it
+        if (currentStreak >= 1 && preferences.afternoonTime > 0) {
+          await scheduleAfternoonNotification();
+        }
+      } else {
+        // User has already logged today - no notifications needed
+        console.log('[Notifications] User has logged today, skipping all notifications');
       }
     } else {
       // Daily Mode OFF - schedule weekly notification
@@ -302,7 +308,7 @@ export const useLocalNotifications = () => {
     scheduleWeeklyNotification,
   ]);
 
-  // Handle hello logged - cancel afternoon notification for today
+  // Handle hello logged - cancel ALL notifications for today since user has logged
   const onHelloLogged = useCallback(async (
     dailyModeActive: boolean,
     currentStreak: number,
@@ -310,16 +316,12 @@ export const useLocalNotifications = () => {
   ) => {
     if (!isNativePlatform || !dailyModeActive) return;
 
-    // If this is the first hello of the day, cancel afternoon notification
+    // User has logged at least one hello today - cancel all daily notifications
     if (todaysHelloCount >= 1) {
-      await cancelAfternoonNotification();
-      
-      // Reschedule for tomorrow (if user has streak)
-      if (currentStreak >= 1) {
-        await scheduleAfternoonNotification();
-      }
+      console.log('[Notifications] Hello logged today, cancelling all daily notifications');
+      await cancelAllNotifications();
     }
-  }, [isNativePlatform, cancelAfternoonNotification, scheduleAfternoonNotification]);
+  }, [isNativePlatform, cancelAllNotifications]);
 
   // Handle streak changes
   const onStreakChange = useCallback(async (

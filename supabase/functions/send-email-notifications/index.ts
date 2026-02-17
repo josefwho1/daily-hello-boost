@@ -324,6 +324,18 @@ Deno.serve(async (req) => {
       const email = authUser.user.email
       const username = user.username || 'Friend'
       const unsubscribeUrl = `https://daily-hello-boost.lovable.app/settings?unsubscribe=true`
+
+      // CRITICAL: Check if user has logged any hellos TODAY - if so, skip ALL notifications
+      const todayStart = `${todayStr}T00:00:00Z`
+      const { count: todaysHellos } = await supabase
+        .from('hello_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.user_id)
+        .gte('created_at', todayStart)
+
+      if (todaysHellos && todaysHellos > 0) {
+        continue // User has logged today, no notification needed
+      }
       
       let shouldSend = false
       let subject = ''
