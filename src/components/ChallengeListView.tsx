@@ -81,23 +81,18 @@ export const ChallengeListView = ({
             const isComplete = isDayComplete(challenge.day);
             const unlocked = isUnlocked(idx);
             const isNext = idx === nextUnlockedIndex;
-            // "Next locked" = first locked after current (show name, hide description)
-            const isNextLocked = !unlocked && idx > 0 && isUnlocked(idx - 1);
-            // Locked future = fully hidden (no name, no description)
-            const isLockedFuture = !unlocked && !isNextLocked;
+            const isLocked = !unlocked;
 
             return (
               <Card
                 key={challenge.day}
                 className={cn(
                   "p-3 transition-colors",
-                  isLockedFuture
-                    ? "bg-muted/10 border-border/20 opacity-40"
-                    : !unlocked  // isNext but not unlocked
-                      ? "bg-muted/20 border-border/30 opacity-70"
-                      : isComplete
-                        ? "bg-success/5 border-success/30"
-                        : "bg-card border-border hover:bg-muted/20"
+                  isLocked
+                    ? "bg-muted/10 border-border/20 opacity-50"
+                    : isComplete
+                      ? "bg-success/5 border-success/30"
+                      : "bg-card border-border hover:bg-muted/20"
                 )}
               >
                 <div className="flex items-center gap-3">
@@ -111,10 +106,8 @@ export const ChallengeListView = ({
                     )}
                     aria-label={isComplete ? "Completed" : !unlocked ? "Locked" : "Complete challenge"}
                   >
-                    {isLockedFuture ? (
-                      <Lock className="w-5 h-5 text-muted-foreground/20" />
-                    ) : !unlocked ? (
-                      <Lock className="w-5 h-5 text-muted-foreground/40" />
+                    {isLocked ? (
+                      <Lock className="w-5 h-5 text-muted-foreground/30" />
                     ) : isComplete ? (
                       <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center">
                         <Check className="w-3 h-3 text-success" />
@@ -124,44 +117,24 @@ export const ChallengeListView = ({
                     )}
                   </button>
 
-                  {/* Content */}
+                  {/* Content - always visible */}
                   <div className="flex-1 min-w-0">
-                    {isLockedFuture ? (
-                      // Fully locked: hide name and description
-                      <div className="text-sm text-muted-foreground/30 font-medium">
-                        Day {challenge.day} · Locked
-                      </div>
-                    ) : isNextLocked ? (
-                      // Next locked: show name, hide description, show unlock hint
-                      <>
-                        <div className="font-semibold text-sm text-muted-foreground">
-                          {challenge.day}. {challenge.name}
-                        </div>
-                        <p className="text-xs text-muted-foreground/40 mt-0.5">
-                          Complete "{thirtyDayChallenge[idx - 1]?.name}" to unlock
-                        </p>
-                      </>
-                    ) : (
-                      // Unlocked or completed
-                      <>
-                        <div className={cn(
-                          "font-semibold text-sm",
-                          isComplete ? "text-success" : "text-foreground"
-                        )}>
-                          {challenge.day}. {challenge.name}
-                        </div>
-                        <p className={cn(
-                          "text-xs text-muted-foreground mt-0.5 line-clamp-2",
-                          isComplete && "line-through opacity-70"
-                        )}>
-                          {challenge.description}
-                        </p>
-                        {challenge.suggestion && !isComplete && (
-                          <p className="text-xs text-muted-foreground/60 italic mt-1">
-                            💡 {challenge.suggestion}
-                          </p>
-                        )}
-                      </>
+                    <div className={cn(
+                      "font-semibold text-sm",
+                      isComplete ? "text-success" : isLocked ? "text-muted-foreground" : "text-foreground"
+                    )}>
+                      {challenge.day}. {challenge.name}
+                    </div>
+                    <p className={cn(
+                      "text-xs mt-0.5 line-clamp-2",
+                      isComplete ? "text-muted-foreground line-through opacity-70" : isLocked ? "text-muted-foreground/50" : "text-muted-foreground"
+                    )}>
+                      {challenge.description}
+                    </p>
+                    {challenge.suggestion && !isComplete && !isLocked && (
+                      <p className="text-xs text-muted-foreground/60 italic mt-1">
+                        💡 {challenge.suggestion}
+                      </p>
                     )}
                   </div>
                 </div>
