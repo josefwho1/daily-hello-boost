@@ -329,29 +329,11 @@ export default function Onboarding() {
                 { key: 'few_weeks', label: 'A few weeks ago' },
                 { key: 'dont_remember', label: "I don't remember" },
               ].map(({ key, label }) => (
-                <Button key={key} onClick={() => setStep('acknowledgement')} variant="outline" className="w-full h-12 text-base" size="lg">
+                <Button key={key} onClick={() => setStep('research')} variant="outline" className="w-full h-12 text-base" size="lg">
                   {label}
                 </Button>
               ))}
             </div>
-          </div>
-        );
-
-      case 'acknowledgement':
-        return (
-          <div className={`${baseClasses} ${animClasses}`}>
-            <RemiImage src={remiSad5} alt="Remi thoughtful" className="w-44 h-auto max-h-44 mx-auto object-contain" />
-            <div className="space-y-4">
-              <p className="text-lg text-foreground leading-relaxed font-medium">
-                Most of us go days, even weeks, without talking to someone new.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                What if that changed?
-              </p>
-            </div>
-            <Button onClick={() => setStep('research')} className="w-full" size="lg">
-              Continue
-            </Button>
           </div>
         );
 
