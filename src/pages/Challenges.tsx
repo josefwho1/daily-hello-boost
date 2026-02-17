@@ -126,8 +126,8 @@ const Challenges = () => {
     return <ChallengeListView
       completedDays={challengeState.completedDays}
       onComplete={async (day, name) => {
-        await markDayComplete(day);
-        showChallengeCompletedToast(day, name);
+        setPendingChallengeCompletion({ day, name });
+        setShowLogScreen(true);
       }}
       onUncomplete={async day => { await unmarkDayComplete(day); }}
       onBack={() => setShowChallengeList(false)}
