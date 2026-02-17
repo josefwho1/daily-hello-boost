@@ -593,7 +593,7 @@ export default function Dashboard() {
     />;
   }
   return <div className="bg-background page-container">
-      <div className="max-w-md mx-auto px-4 py-8">
+      <div className="max-w-md mx-auto px-4 pt-8 pb-2">
 
         {/* Friendly Header Greeting with Remi */}
         <div className="text-center mb-6">
@@ -660,11 +660,11 @@ export default function Dashboard() {
           }} />
           </div>
           
-        </div>
           {/* Daily Quote */}
-          <div className="mt-8">
+          <div className="mt-6">
             <DailyQuote />
           </div>
+        </div>
 
         </div>
 
