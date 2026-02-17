@@ -27,9 +27,13 @@ export const BottomNav = () => {
     return null;
   }
   const handleTabClick = (e: React.MouseEvent, path: string) => {
-    // Prevent scroll-to-top when double-tapping the already active tab
+    // If already on hellobook, scroll to top instead of preventing default
     if (location.pathname === path) {
-      e.preventDefault();
+      if (path === '/hellobook') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        e.preventDefault();
+      }
     }
     setLastClicked(path);
     setTimeout(() => setLastClicked(null), 600);
