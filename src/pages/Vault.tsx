@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Sparkles, Globe, Lightbulb, MessageCircle, Image } from "lucide-react";
+import { ChevronRight, Sparkles, Globe, Lightbulb, MessageCircle, Image, List, X } from "lucide-react";
 import { wallpapers, type Wallpaper } from "@/data/wallpapers";
 import { WallpaperPreviewDialog } from "@/components/WallpaperPreviewDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { dailyHellos } from "@/data/dailyHellos";
 import remiMascot from "@/assets/remi-waving.webp";
 import vaultIcon from "@/assets/vault-icon.webp";
 
@@ -119,6 +122,7 @@ const Vault = () => {
   const [selectedWallpaper, setSelectedWallpaper] = useState<Wallpaper | null>(null);
   const [remiTapCount, setRemiTapCount] = useState(0);
   const [showSpeechBubble, setShowSpeechBubble] = useState(false);
+  const [showMasterList, setShowMasterList] = useState(false);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
@@ -211,6 +215,26 @@ const Vault = () => {
                 ))}
               </div>
             )}
+          </Card>
+
+
+          {/* Today's Hello Master List */}
+          <Card 
+            className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all duration-200"
+            onClick={() => setShowMasterList(true)}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                  <List className="w-5 h-5 text-orange-500" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Today's Hello Master List</h3>
+                  <p className="text-xs text-muted-foreground">40 different ways to say hello</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </div>
           </Card>
 
           {/* Remi's Top Tips - SECOND */}
@@ -382,6 +406,36 @@ const Vault = () => {
         </div>
       </div>
 
+
+      {/* Today's Hello Master List Dialog */}
+      <Dialog open={showMasterList} onOpenChange={setShowMasterList}>
+        <DialogContent className="max-w-md max-h-[85vh] p-0">
+          <DialogHeader className="p-5 pb-2">
+            <DialogTitle className="text-xl font-bold">Today's Hello Master List</DialogTitle>
+            <p className="text-sm text-muted-foreground">40 different ways to say hello</p>
+          </DialogHeader>
+          <ScrollArea className="h-[65vh] px-5 pb-5">
+            <div className="space-y-3">
+              {dailyHellos.map((hello, index) => (
+                <div key={hello.id} className="p-3 bg-muted/50 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <span className="w-7 h-7 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-600 font-bold text-xs flex-shrink-0 mt-0.5">
+                      {index + 1}
+                    </span>
+                    <div className="space-y-1">
+                      <p className="font-semibold text-sm text-foreground">{hello.title}</p>
+                      <p className="text-xs text-muted-foreground">{hello.description}</p>
+                      {hello.suggestion && (
+                        <p className="text-xs text-muted-foreground/80 italic mt-1">💡 {hello.suggestion}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
 
       {/* Wallpaper Preview Dialog */}
       <WallpaperPreviewDialog
