@@ -197,7 +197,7 @@ export const CurrentChallengeCard = ({
             {challengeUnlocked && !isChallengeComplete ? (
               <button 
                 onClick={handleCompleteClick}
-                className="h-10 px-5 rounded-full font-semibold bg-orange-500 hover:bg-orange-600 text-white transition-colors flex items-center justify-center gap-1.5 flex-1 text-sm shadow-md"
+                className="h-10 px-5 rounded-full font-semibold bg-primary hover:bg-primary/90 text-primary-foreground transition-colors flex items-center justify-center gap-1.5 flex-1 text-sm shadow-md"
                 data-compact
               >
                 Complete Challenge
