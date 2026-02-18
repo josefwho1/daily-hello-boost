@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useUserProgressQuery } from './useUserProgressQuery';
+import { useQuery } from '@tanstack/react-query';
 
 export interface GuestProgress {
   id?: string;
@@ -86,20 +88,34 @@ const PROMPT_COOLDOWN_HOURS = 24;
 
 export const useGuestMode = (): UseGuestModeReturn => {
   const { user, loading: authLoading } = useAuth();
-  const [guestProgress, setGuestProgress] = useState<GuestProgress | null>(null);
-  const [guestLogs, setGuestLogs] = useState<GuestHelloLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // Use shared React Query for progress data — deduplicates across all consumers
+  const { progress: queryProgress, loading: progressLoading, updateProgress: updateQueryProgress, refetch: refetchProgress } = useUserProgressQuery();
+  
   const [sessionPromptShown, setSessionPromptShown] = useState(false);
   const [lastPromptShownAt, setLastPromptShownAt] = useState<string | null>(null);
-  const [profileIsAnonymous, setProfileIsAnonymous] = useState<boolean | null>(null);
+
+  // Use React Query for is_anonymous check — shared cache across all useGuestMode consumers
+  const { data: profileIsAnonymous, isLoading: profileLoading } = useQuery({
+    queryKey: ['profile-is-anonymous', user?.id],
+    queryFn: async () => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_anonymous')
+        .eq('id', user!.id)
+        .maybeSingle();
+      return profile?.is_anonymous ?? null;
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
 
   // Check if user is an anonymous user
-  // We use the profiles table is_anonymous flag as the source of truth since
-  // Supabase's user.is_anonymous stays true even after linking email/password
   const isAnonymous = profileIsAnonymous ?? user?.is_anonymous === true;
-  
-  // User is a "guest" if they are anonymous (we use Supabase anonymous auth now)
   const isGuest = isAnonymous;
+
+  // Derive guestProgress from shared React Query data (no separate fetch)
+  const guestProgress = isAnonymous && queryProgress ? queryProgress as unknown as GuestProgress : null;
 
   // Simulated guest state for compatibility
   const guestState = isAnonymous ? {
@@ -107,89 +123,17 @@ export const useGuestMode = (): UseGuestModeReturn => {
     total_hellos_logged: guestProgress?.total_hellos || 0,
   } : null;
 
-  // Check if user is truly anonymous based on profiles table
-  useEffect(() => {
-    const checkProfileAnonymousStatus = async () => {
-      if (!user) {
-        setProfileIsAnonymous(null);
-        return;
-      }
-      
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_anonymous')
-        .eq('id', user.id)
-        .maybeSingle();
-      
-      if (profile !== null) {
-        setProfileIsAnonymous(profile.is_anonymous);
-      }
-    };
-    
-    checkProfileAnonymousStatus();
-  }, [user]);
-
-  // Load anonymous user's progress and logs from Supabase
-  const loadAnonymousUserData = useCallback(async () => {
-    if (!user || !isAnonymous) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      // Load progress
-      const { data: progress } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (progress) {
-        setGuestProgress(progress as GuestProgress);
-      }
-
-      // Load logs
-      const { data: logs } = await supabase
-        .from('hello_logs')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      setGuestLogs((logs as GuestHelloLog[]) || []);
-    } catch (error) {
-      console.error('Error loading anonymous user data:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, isAnonymous]);
-
-  useEffect(() => {
-    if (authLoading) return;
-    // Wait for profileIsAnonymous to be determined before deciding what to load
-    if (profileIsAnonymous === null && user) return;
-    
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-    
-    if (isAnonymous) {
-      loadAnonymousUserData();
-    } else {
-      setLoading(false);
-    }
-  }, [user, authLoading, isAnonymous, profileIsAnonymous, loadAnonymousUserData]);
+  // Loading: auth + profile anonymous check + (if anonymous) progress query
+  const loading = authLoading || (!!user && profileLoading) || (isAnonymous && progressLoading);
 
   // Initialize anonymous auth for guests
   const initializeAnonymous = useCallback(async (): Promise<{ success: boolean; userId?: string; error?: string }> => {
     try {
-      // Check if already signed in using local session first (avoids network call that can fail)
       const { data: { session: existingSession } } = await supabase.auth.getSession();
       if (existingSession?.user) {
         return { success: true, userId: existingSession.user.id };
       }
 
-      // Sign in anonymously
       const { data, error } = await supabase.auth.signInAnonymously();
       
       if (error) {
@@ -202,7 +146,6 @@ export const useGuestMode = (): UseGuestModeReturn => {
         return { success: false, error: 'No user ID returned' };
       }
 
-      // Create profile for anonymous user
       await supabase.from('profiles').upsert({
         id: userId,
         username: 'Guest',
@@ -210,7 +153,6 @@ export const useGuestMode = (): UseGuestModeReturn => {
         hide_from_leaderboard: false,
       }, { onConflict: 'id' });
 
-      // Create user_progress for anonymous user with mode='daily' (single mode now)
       await supabase.from('user_progress').upsert({
         user_id: userId,
         current_streak: 0,
@@ -229,18 +171,11 @@ export const useGuestMode = (): UseGuestModeReturn => {
     }
   }, []);
 
+  // Update progress using shared React Query mutation
   const updateProgress = useCallback(async (updates: Partial<GuestProgress>) => {
     if (!user || !isAnonymous) return;
-    
-    const { error } = await supabase
-      .from('user_progress')
-      .update(updates)
-      .eq('user_id', user.id);
-    
-    if (!error) {
-      setGuestProgress(prev => prev ? { ...prev, ...updates } : null);
-    }
-  }, [user, isAnonymous]);
+    await updateQueryProgress(updates as any);
+  }, [user, isAnonymous, updateQueryProgress]);
 
   const addLog = useCallback(async (log: Omit<GuestHelloLog, 'id' | 'created_at' | 'user_id'>): Promise<GuestHelloLog | null> => {
     if (!user || !isAnonymous) return null;
@@ -261,11 +196,7 @@ export const useGuestMode = (): UseGuestModeReturn => {
         .single();
       
       if (error) throw error;
-      
-      const newLog = data as GuestHelloLog;
-      setGuestLogs(prev => [newLog, ...prev]);
-      
-      return newLog;
+      return data as GuestHelloLog;
     } catch (error) {
       console.error('Error adding log:', error);
       return null;
@@ -275,7 +206,7 @@ export const useGuestMode = (): UseGuestModeReturn => {
   const updateLog = useCallback(async (id: string, updates: Partial<GuestHelloLog>) => {
     if (!user || !isAnonymous) return;
     
-    const { error } = await supabase
+    await supabase
       .from('hello_logs')
       .update({
         name: updates.name,
@@ -285,10 +216,6 @@ export const useGuestMode = (): UseGuestModeReturn => {
       })
       .eq('id', id)
       .eq('user_id', user.id);
-    
-    if (!error) {
-      setGuestLogs(prev => prev.map(log => log.id === id ? { ...log, ...updates } : log));
-    }
   }, [user, isAnonymous]);
 
   const shouldShowSavePrompt = useCallback((): boolean => {
@@ -296,11 +223,8 @@ export const useGuestMode = (): UseGuestModeReturn => {
     if (sessionPromptShown) return false;
     
     const totalHellos = guestProgress?.total_hellos || 0;
-    
-    // Check if we hit a trigger milestone (2, 8, or 20 hellos)
     if (!SAVE_PROMPT_TRIGGERS.includes(totalHellos)) return false;
     
-    // Check cooldown
     if (lastPromptShownAt) {
       const lastShown = new Date(lastPromptShownAt);
       const hoursSinceShown = (Date.now() - lastShown.getTime()) / (1000 * 60 * 60);
@@ -315,14 +239,12 @@ export const useGuestMode = (): UseGuestModeReturn => {
     setLastPromptShownAt(new Date().toISOString());
   }, []);
 
-  // Link anonymous account to email (convert to full account)
   const linkToEmail = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     if (!user || !isAnonymous) {
       return { success: false, error: 'Not an anonymous user' };
     }
 
     try {
-      // Get current username from profiles before conversion
       const { data: profile } = await supabase
         .from('profiles')
         .select('username')
@@ -333,7 +255,6 @@ export const useGuestMode = (): UseGuestModeReturn => {
         ? profile.username 
         : (guestProgress?.username || 'Friend');
 
-      // Update the anonymous user's email and password, also set user_metadata.name
       const { error } = await supabase.auth.updateUser({
         email,
         password,
@@ -344,14 +265,12 @@ export const useGuestMode = (): UseGuestModeReturn => {
         return { success: false, error: error.message };
       }
 
-      // Update profile to mark as no longer anonymous and preserve username
       await supabase.from('profiles').update({
         is_anonymous: false,
         email,
         username: currentUsername,
       }).eq('id', user.id);
 
-      // Also ensure user_progress has the correct username
       await supabase.from('user_progress').update({
         username: currentUsername,
       }).eq('user_id', user.id);
@@ -363,12 +282,10 @@ export const useGuestMode = (): UseGuestModeReturn => {
     }
   }, [user, isAnonymous, guestProgress?.username]);
 
-  // Clear challenge completions for a specific pack (for restart functionality)
   const clearPackCompletions = useCallback(async (packId: string) => {
     if (!user || !isAnonymous) return;
 
     try {
-      // Delete challenge completions that match this pack's challenge tags
       const { error } = await supabase
         .from('challenge_completions')
         .delete()
@@ -383,18 +300,16 @@ export const useGuestMode = (): UseGuestModeReturn => {
   }, [user, isAnonymous]);
 
   const refetch = useCallback(async () => {
-    if (user && isAnonymous) {
-      await loadAnonymousUserData();
-    }
-  }, [user, isAnonymous, loadAnonymousUserData]);
+    await refetchProgress();
+  }, [refetchProgress]);
 
   return {
     isGuest,
     isAnonymous,
     guestState,
     guestProgress,
-    guestLogs,
-    loading: loading || authLoading,
+    guestLogs: [], // No longer fetched separately — use useHelloLogs directly
+    loading,
     updateProgress,
     addLog,
     updateLog,

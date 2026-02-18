@@ -1,6 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { useGuestMode } from './useGuestMode';
 import { formatInTimeZone } from 'date-fns-tz';
 import { startOfWeek, parseISO } from 'date-fns';
 import { normalizeTimezoneOffset } from '@/lib/timezone';
@@ -25,7 +24,6 @@ export interface HelloLog {
 
 export const useHelloLogs = () => {
   const { user } = useAuth();
-  const { isGuest, updateLog: updateGuestLog } = useGuestMode();
   const queryClient = useQueryClient();
 
   // Use React Query for caching - prevents refetch on tab switch
@@ -122,19 +120,6 @@ export const useHelloLogs = () => {
     difficulty_rating?: number | null;
     is_favorite?: boolean;
   }) => {
-    // Handle guest log updates
-    if (isGuest && !user) {
-      try {
-        await updateGuestLog(id, updates);
-        // Invalidate to refetch guest logs
-        queryClient.invalidateQueries({ queryKey: ['hello-logs'] });
-        return { id, ...updates };
-      } catch (error) {
-        console.error('Error updating guest hello log:', error);
-        return null;
-      }
-    }
-
     if (!user) return null;
 
     try {
