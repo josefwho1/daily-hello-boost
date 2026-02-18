@@ -9,7 +9,7 @@ const NOTIFICATION_ID_AFTERNOON = 2;
 const NOTIFICATION_ID_WEEKLY = 3;
 
 // Consistent title for all notifications
-const NOTIFICATION_TITLE = "One Hello 👋";
+const NOTIFICATION_TITLE = "Remi 🦝";
 
 // Morning messages (9am daily for Daily Mode users)
 const morningMessages = [
