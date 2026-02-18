@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -122,7 +122,7 @@ export default function Dashboard() {
   const addLog = addCloudLog;
   const tzOffset = normalizeTimezoneOffset(timezoneOffset);
   const [showLogDialog, setShowLogDialog] = useState(false);
-  const [username, setUsername] = useState("");
+  
 
   // Dialog states
   const [showSavePrompt, setShowSavePrompt] = useState(false);
@@ -156,38 +156,11 @@ export default function Dashboard() {
   const [editingLog, setEditingLog] = useState<HelloLog | null>(null);
   const [editingLogIndex, setEditingLogIndex] = useState(0);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  useEffect(() => {
-    const fetchUsername = async () => {
-      let resolvedName: string | null = null;
-      if (user) {
-        const {
-          data: profile,
-          error
-        } = await supabase.from('profiles').select('username').eq('id', user.id).maybeSingle();
-        if (!error && profile?.username) {
-          resolvedName = profile.username;
-        }
-        if (!resolvedName && user.user_metadata?.name) {
-          resolvedName = user.user_metadata.name;
-        }
-        if (!resolvedName && (progress as any)?.username) {
-          resolvedName = (progress as any).username;
-        }
-        if (!resolvedName && guestProgress?.username) {
-          resolvedName = guestProgress.username;
-        }
-      } else {
-        if (guestProgress?.username) {
-          resolvedName = guestProgress.username;
-        }
-        if (!resolvedName && (progress as any)?.username) {
-          resolvedName = (progress as any).username;
-        }
-      }
-      setUsername(resolvedName || 'Friend');
-    };
-    fetchUsername();
-  }, [user?.id, user?.user_metadata?.name, guestProgress?.username, (progress as any)?.username]);
+
+  // Derive username from already-loaded progress data — no extra API call
+  const username = useMemo(() => {
+    return (progress as any)?.username || guestProgress?.username || user?.user_metadata?.name || 'Friend';
+  }, [(progress as any)?.username, guestProgress?.username, user?.user_metadata?.name]);
 
   // Show walkthrough tutorial for users coming from onboarding
   const tutorialShownRef = useRef(false);
