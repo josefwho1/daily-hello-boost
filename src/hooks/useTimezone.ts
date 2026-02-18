@@ -1,84 +1,71 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { detectBrowserTimezoneOffset, normalizeTimezoneOffset } from '@/lib/timezone';
 
+const TIMEZONE_QUERY_KEY = ['timezone-preference'];
+
 export const useTimezone = () => {
   const { user } = useAuth();
-  // Initialize with browser-detected timezone instead of hardcoded UTC
-  const [timezoneOffset, setTimezoneOffset] = useState<string>(detectBrowserTimezoneOffset());
-  const [autoDetect, setAutoDetect] = useState<boolean>(true);
-  const [loading, setLoading] = useState(false); // Start as false — browser timezone is available instantly
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchTimezone = async () => {
-      if (!user) {
-        // For non-authenticated users, use browser-detected timezone
-        setTimezoneOffset(detectBrowserTimezoneOffset());
-        setAutoDetect(true);
-        setLoading(false);
-        return;
-      }
+  // Single React Query for timezone — shared across ALL consumers
+  const { data: tzData } = useQuery({
+    queryKey: TIMEZONE_QUERY_KEY,
+    queryFn: async () => {
+      if (!user) return null;
 
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('timezone_preference, timezone_auto_detect')
-          .eq('id', user.id)
-          .single();
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('timezone_preference, timezone_auto_detect')
+        .eq('id', user.id)
+        .single();
 
-        if (error) throw error;
-        
-        const isAutoDetect = data?.timezone_auto_detect !== false; // default true
-        setAutoDetect(isAutoDetect);
-        
-        if (isAutoDetect) {
-          // Auto-detect mode: always use browser timezone and save it
-          const detected = detectBrowserTimezoneOffset();
-          setTimezoneOffset(detected);
-          
-          // Update in DB if different
-          if (data?.timezone_preference !== detected) {
-            await supabase
-              .from('profiles')
-              .update({ timezone_preference: detected })
-              .eq('id', user.id);
-          }
-        } else if (data?.timezone_preference) {
-          // Manual mode: use stored timezone
-          const normalized = normalizeTimezoneOffset(data.timezone_preference);
-          setTimezoneOffset(normalized);
-          
-          // If the stored value was malformed, update it in the database
-          if (normalized !== data.timezone_preference) {
-            console.log(`Fixing malformed timezone: "${data.timezone_preference}" -> "${normalized}"`);
-            await supabase
-              .from('profiles')
-              .update({ timezone_preference: normalized })
-              .eq('id', user.id);
-          }
-        } else {
-          // No timezone set - use browser detection and save it
-          const detected = detectBrowserTimezoneOffset();
-          setTimezoneOffset(detected);
-          await supabase
+      if (error) throw error;
+
+      const isAutoDetect = data?.timezone_auto_detect !== false;
+      const detected = detectBrowserTimezoneOffset();
+
+      if (isAutoDetect) {
+        // Auto-detect: use browser timezone, update DB if different (fire-and-forget)
+        if (data?.timezone_preference !== detected) {
+          supabase
             .from('profiles')
             .update({ timezone_preference: detected })
-            .eq('id', user.id);
+            .eq('id', user.id)
+            .then(() => {});
         }
-      } catch (error) {
-        console.error('Error fetching timezone:', error);
-        // Fall back to browser detection on error
-        setTimezoneOffset(detectBrowserTimezoneOffset());
-      } finally {
-        setLoading(false);
+        return { timezoneOffset: detected, autoDetect: true };
+      } else if (data?.timezone_preference) {
+        const normalized = normalizeTimezoneOffset(data.timezone_preference);
+        if (normalized !== data.timezone_preference) {
+          supabase
+            .from('profiles')
+            .update({ timezone_preference: normalized })
+            .eq('id', user.id)
+            .then(() => {});
+        }
+        return { timezoneOffset: normalized, autoDetect: false };
+      } else {
+        supabase
+          .from('profiles')
+          .update({ timezone_preference: detected })
+          .eq('id', user.id)
+          .then(() => {});
+        return { timezoneOffset: detected, autoDetect: true };
       }
-    };
+    },
+    enabled: !!user,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+  });
 
-    fetchTimezone();
-  }, [user]);
+  // Fallback to browser-detected timezone when no user or query hasn't loaded
+  const timezoneOffset = tzData?.timezoneOffset ?? detectBrowserTimezoneOffset();
+  const autoDetect = tzData?.autoDetect ?? true;
 
-  const updateTimezone = async (newOffset: string) => {
+  const updateTimezone = useCallback(async (newOffset: string) => {
     if (!user) throw new Error('User not authenticated');
 
     const { error } = await supabase
@@ -87,19 +74,19 @@ export const useTimezone = () => {
       .eq('id', user.id);
 
     if (error) throw error;
-    setTimezoneOffset(newOffset);
-  };
+    queryClient.setQueryData(TIMEZONE_QUERY_KEY, { timezoneOffset: newOffset, autoDetect: false });
+  }, [user, queryClient]);
 
-  const updateAutoDetect = async (enabled: boolean) => {
+  const updateAutoDetect = useCallback(async (enabled: boolean) => {
     if (!user) throw new Error('User not authenticated');
 
     const updates: Record<string, unknown> = { timezone_auto_detect: enabled };
-    
-    // If enabling auto-detect, also update the timezone to current browser value
+    let newOffset = timezoneOffset;
+
     if (enabled) {
       const detected = detectBrowserTimezoneOffset();
       updates.timezone_preference = detected;
-      setTimezoneOffset(detected);
+      newOffset = detected;
     }
 
     const { error } = await supabase
@@ -108,17 +95,14 @@ export const useTimezone = () => {
       .eq('id', user.id);
 
     if (error) throw error;
-    setAutoDetect(enabled);
-  };
+    queryClient.setQueryData(TIMEZONE_QUERY_KEY, { timezoneOffset: newOffset, autoDetect: enabled });
+  }, [user, queryClient, timezoneOffset]);
 
-  const getUserTimezoneOffset = () => {
-    return timezoneOffset;
-  };
+  const getUserTimezoneOffset = useCallback(() => timezoneOffset, [timezoneOffset]);
 
-  const formatTimestamp = (timestamp: string, includeDay = false) => {
+  const formatTimestamp = useCallback((timestamp: string, includeDay = false) => {
     const date = new Date(timestamp);
     
-    // Parse the offset (e.g., "+05:30" or "-08:00")
     const offsetMatch = timezoneOffset.match(/([+-])(\d{2}):(\d{2})/);
     if (!offsetMatch) return date.toLocaleString();
     
@@ -126,18 +110,15 @@ export const useTimezone = () => {
     const hours = parseInt(offsetMatch[2]);
     const minutes = parseInt(offsetMatch[3]);
     
-    // Apply the offset
     const offsetMinutes = (sign === '+' ? 1 : -1) * (hours * 60 + minutes);
     const localDate = new Date(date.getTime() + offsetMinutes * 60000);
     
     if (includeDay) {
-      // Format: "Day of week, date" (e.g., "Monday, 15 Jan 2025")
       const weekday = localDate.toLocaleString('en-GB', { weekday: 'long' });
       const dateStr = localDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
       return `${weekday}, ${dateStr}`;
     }
     
-    // Date only format (e.g., "15 Jan 2025")
     const options: Intl.DateTimeFormatOptions = {
       day: '2-digit',
       month: 'short',
@@ -145,12 +126,12 @@ export const useTimezone = () => {
     };
     
     return localDate.toLocaleString('en-GB', options);
-  };
+  }, [timezoneOffset]);
 
   return {
     timezoneOffset,
     autoDetect,
-    loading,
+    loading: false, // Browser timezone is always available instantly
     updateTimezone,
     updateAutoDetect,
     getUserTimezoneOffset,
