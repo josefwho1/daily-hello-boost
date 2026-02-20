@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { getCachedProgress, setCachedProgress } from '@/lib/offlineCache';
 
 export interface UserProgress {
   current_streak: number;
@@ -66,29 +67,45 @@ export const useUserProgressQuery = () => {
     queryFn: async (): Promise<UserProgress | null> => {
       if (!user) return null;
 
-      const { data, error } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('user_progress')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-      if (error) throw error;
-      if (!data) return null;
+        if (error) throw error;
+        if (!data) return null;
 
-      // Normalize legacy data
-      const legacyCompleted = !data.has_completed_onboarding && Boolean((data as any).onboarding_completed_at);
-      const legacyMode = data.mode === 'first_hellos';
+        // Normalize legacy data
+        const legacyCompleted = !data.has_completed_onboarding && Boolean((data as any).onboarding_completed_at);
+        const legacyMode = data.mode === 'first_hellos';
 
-      return {
-        ...(data as any),
-        has_completed_onboarding: Boolean(data.has_completed_onboarding) || legacyCompleted,
-        mode: legacyMode ? 'daily' : data.mode,
-        is_onboarding_week: legacyCompleted ? false : data.is_onboarding_week,
-        current_phase: legacyCompleted ? 'active' : data.current_phase,
-      };
+        const normalized = {
+          ...(data as any),
+          has_completed_onboarding: Boolean(data.has_completed_onboarding) || legacyCompleted,
+          mode: legacyMode ? 'daily' : data.mode,
+          is_onboarding_week: legacyCompleted ? false : data.is_onboarding_week,
+          current_phase: legacyCompleted ? 'active' : data.current_phase,
+        };
+
+        // Cache for offline/instant load
+        setCachedProgress(normalized);
+        return normalized;
+      } catch (error) {
+        // Offline fallback
+        const cached = getCachedProgress<UserProgress>();
+        if (cached) {
+          console.warn('Using cached progress (offline)');
+          return cached;
+        }
+        throw error;
+      }
     },
+    // Serve cached data instantly
+    initialData: () => getCachedProgress<UserProgress>() ?? undefined,
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   const updateMutation = useMutation({

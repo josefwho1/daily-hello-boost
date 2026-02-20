@@ -8,6 +8,8 @@ import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useDailyMode } from "@/hooks/useDailyMode";
 import { useChallengeProgress } from "@/hooks/useChallengeProgress";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { SyncStatusBadge } from "@/components/SyncStatusBadge";
 import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
 import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ThirtyHellosCard } from "@/components/ThirtyHellosCard";
@@ -89,6 +91,7 @@ export default function Dashboard() {
     guestState,
     isAnonymous
   } = useGuestMode();
+  const { syncStatus, pendingCount } = useOfflineSync();
 
   // Unified progress and logs
   // IMPORTANT: Anonymous users now use the same Supabase tables as regular users
@@ -582,6 +585,13 @@ export default function Dashboard() {
             <span className="text-primary">Hello</span> {username}
           </h1>
         </div>
+
+        {/* Sync Status */}
+        {syncStatus !== 'synced' && (
+          <div className="flex justify-center mb-2">
+            <SyncStatusBadge status={syncStatus} pendingCount={pendingCount} />
+          </div>
+        )}
 
         {/* Stats Dashboard */}
         <HomeStatsBar logs={logs} lifetimeHellos={logs.length} />
