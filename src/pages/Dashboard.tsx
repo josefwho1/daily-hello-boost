@@ -586,6 +586,13 @@ export default function Dashboard() {
           </h1>
         </div>
 
+        {/* Sync Status */}
+        {syncStatus !== 'synced' && (
+          <div className="flex justify-center mb-2">
+            <SyncStatusBadge status={syncStatus} pendingCount={pendingCount} />
+          </div>
+        )}
+
         {/* Stats Dashboard */}
         <HomeStatsBar logs={logs} lifetimeHellos={logs.length} />
 
