@@ -8,6 +8,8 @@ import { useTimezone } from "@/hooks/useTimezone";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useDailyMode } from "@/hooks/useDailyMode";
 import { useChallengeProgress } from "@/hooks/useChallengeProgress";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { SyncStatusBadge } from "@/components/SyncStatusBadge";
 import { CurrentChallengeCard } from "@/components/CurrentChallengeCard";
 import { DailySuggestionCard } from "@/components/DailySuggestionCard";
 import { ThirtyHellosCard } from "@/components/ThirtyHellosCard";
