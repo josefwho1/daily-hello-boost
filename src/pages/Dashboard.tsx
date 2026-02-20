@@ -91,6 +91,7 @@ export default function Dashboard() {
     guestState,
     isAnonymous
   } = useGuestMode();
+  const { syncStatus, pendingCount } = useOfflineSync();
 
   // Unified progress and logs
   // IMPORTANT: Anonymous users now use the same Supabase tables as regular users
