@@ -352,8 +352,13 @@ export default function Dashboard() {
         const isStreakHidden = localStorage.getItem('hideStreak') === 'true';
         if (!hasAlreadyRecordedForDailyModeToday && !isStreakHidden) {
           const newStreakValue = streakBeforeLog === 0 ? 1 : streakBeforeLog + 1;
-          setCelebratedStreakValue(newStreakValue);
-          setTimeout(() => setShowStreakCelebration(true), 500);
+          if (isChallengeCompletionRef.current) {
+            // Queue streak for after challenge celebration
+            queuedStreakRef.current = newStreakValue;
+          } else {
+            setCelebratedStreakValue(newStreakValue);
+            setTimeout(() => setShowStreakCelebration(true), 500);
+          }
         }
       }
     }
