@@ -10,7 +10,7 @@ import { setCachedProgress } from '@/lib/offlineCache';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Mail, ArrowLeft, Check, AlertCircle, Lock, Eye, EyeOff, KeyRound } from 'lucide-react';
-import logo from '@/assets/one-hello-logo-tagline.svg';
+import logo from '@/assets/one-hello-logo.svg';
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email" });
 
@@ -890,7 +890,7 @@ export default function MagicLinkSignIn() {
       <div className="w-full max-w-md space-y-8">
         <Button
           variant="ghost"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/')}
           className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
