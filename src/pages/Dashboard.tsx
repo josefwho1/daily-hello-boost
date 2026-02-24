@@ -492,7 +492,7 @@ export default function Dashboard() {
   // Queues the reveal day; the challenge day celebration is shown first
   const checkAndShowCelebrations = (previousCount: number, newCount: number, completedDay: number, challengeName: string) => {
     // Only show challenge reveal screens during 7-day challenge
-    if (progress?.selected_pack_id === '30-hellos' || progress?.selected_pack_id === 'daily') return;
+    if (effectivePackId === '30-hellos' || effectivePackId === 'daily') return;
 
     // Queue the reveal day
     if (newCount === 7 && previousCount < 7) {
