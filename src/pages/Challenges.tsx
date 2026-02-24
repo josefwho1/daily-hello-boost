@@ -15,6 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { Target, ChevronRight, RotateCcw, Pause, Play, Shuffle, Check, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { ChallengeUndoToast } from "@/components/ChallengeUndoToast";
+import { vibrateSuccess, vibrateCelebration } from "@/lib/haptics";
 import questsIcon from "@/assets/quests-icon.webp";
 import remiQuest from "@/assets/remi-quest.webp";
 import vaultIcon from "@/assets/vault-icon.webp";
@@ -105,6 +106,7 @@ const Challenges = () => {
   };
 
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
+    vibrateCelebration();
     const toastId = toast.custom(id => (
       <ChallengeUndoToast id={id} challengeName={challengeName} onUndo={() => unmarkDayComplete(day)} />
     ), { duration: 3000 });
@@ -115,6 +117,7 @@ const Challenges = () => {
     name?: string; location?: string; notes?: string;
     no_name_flag?: boolean; hello_type?: string;
   }) => {
+    vibrateSuccess();
     await addLog(data);
     if (pendingChallengeCompletion) {
       await markDayComplete(pendingChallengeCompletion.day);
