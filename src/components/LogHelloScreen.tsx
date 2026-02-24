@@ -502,6 +502,8 @@ export const LogHelloScreen = ({
                 size="icon"
                 className="flex-shrink-0 h-10 w-10"
                 onClick={isRecording ? stopRecording : startRecording}
+                disabled={!isRecording && !navigator.onLine}
+                title={!navigator.onLine ? "Dictation unavailable offline" : undefined}
               >
                 {isRecording ? (
                   <Square className="w-5 h-5" />
