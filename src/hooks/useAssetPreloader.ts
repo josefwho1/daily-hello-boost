@@ -54,17 +54,10 @@ export function useAssetPreloader(assets: string[]): {
   // Check if all assets are already loaded
   const isLoaded = assets.every(src => loadedAssets.has(src));
 
-  // Start preloading on mount if not already loaded
+  // Start preloading immediately on mount (no idle deferral)
   useEffect(() => {
     if (!isLoaded) {
-      // Use requestIdleCallback for non-blocking preload, with setTimeout fallback
-      const schedulePreload = typeof requestIdleCallback !== 'undefined'
-        ? requestIdleCallback
-        : (cb: () => void) => setTimeout(cb, 1);
-      
-      schedulePreload(() => {
-        preloadNow();
-      });
+      preloadNow();
     }
   }, [isLoaded, preloadNow]);
 

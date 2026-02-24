@@ -30,6 +30,10 @@ const ONBOARDING_ASSETS = [
   remiSmiling1, remiLogging4, remiLogging5, remiLogging6, onboardingFirsthello, onboardingWeatherchat
 ];
 
+// Preload the first screen image immediately at module level (no waiting for React)
+const _preloadWelcome = new Image();
+_preloadWelcome.src = remiWaving4;
+
 export type OnboardingStep = 
   | 'welcome'
   | 'greeting'
@@ -48,8 +52,8 @@ export type OnboardingStep =
 
 type ReflectionAnswer = 'this_week' | 'last_week' | 'few_weeks' | 'dont_remember' | null;
 
-const RemiImage = memo(({ src, alt, className = "w-48 h-auto max-h-48 mx-auto object-contain", priority = false }: { src: string; alt: string; className?: string; priority?: boolean }) => (
-  <img src={src} alt={alt} className={className} loading={priority ? "eager" : "lazy"} decoding="async" />
+const RemiImage = memo(({ src, alt, className = "w-48 h-auto max-h-48 mx-auto object-contain" }: { src: string; alt: string; className?: string }) => (
+  <img src={src} alt={alt} className={className} loading="eager" decoding="sync" />
 ));
 RemiImage.displayName = 'RemiImage';
 
@@ -304,7 +308,7 @@ export default function Onboarding() {
       case 'welcome':
         return (
           <div className={`${baseClasses} ${animClasses}`}>
-            <RemiImage src={remiWaving4} alt="Remi waving" className="w-56 h-56 mx-auto object-contain" priority />
+            <RemiImage src={remiWaving4} alt="Remi waving" className="w-56 h-56 mx-auto object-contain" />
             <div className="space-y-3">
               <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
               <p className="text-lg text-muted-foreground">I'm Remi.</p>
