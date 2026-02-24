@@ -107,6 +107,17 @@ export default function Onboarding() {
   const [connectionNotes, setConnectionNotes] = useState(savedState.connectionNotes || '');
   const [whyHere, setWhyHere] = useState<string | null>(savedState.whyHere ?? null);
 
+  // Wrap setStep to persist state to sessionStorage on every step change
+  const setStep = useCallback((newStep: OnboardingStep) => {
+    setStepRaw(newStep);
+    // We'll persist in an effect below to capture all latest state
+  }, []);
+
+  // Persist all onboarding state to sessionStorage whenever it changes
+  useEffect(() => {
+    saveSessionState({ step, userName, whyHere, connectionName, connectionLocation, connectionNotes, firstHelloLogged: firstHelloLoggedRef.current });
+  }, [step, userName, whyHere, connectionName, connectionLocation, connectionNotes]);
+
   const { isLoaded: assetsReady } = useAssetPreloader(ONBOARDING_ASSETS);
 
   // Auto-advance from greeting
@@ -296,7 +307,12 @@ export default function Onboarding() {
   }, [ensureUserAndProgress]);
 
   // Track whether the first hello was already logged in this session
-  const [firstHelloLogged, setFirstHelloLogged] = useState(false);
+  const [firstHelloLogged, setFirstHelloLoggedRaw] = useState(savedState.firstHelloLogged || false);
+  const firstHelloLoggedRef = useRef(firstHelloLogged);
+  const setFirstHelloLogged = useCallback((v: boolean) => {
+    firstHelloLoggedRef.current = v;
+    setFirstHelloLoggedRaw(v);
+  }, []);
 
   const completeOnboarding = useCallback(async (showTutorial: boolean) => {
     if (showTutorial) {
