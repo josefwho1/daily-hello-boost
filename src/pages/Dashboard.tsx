@@ -601,15 +601,30 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Stats Dashboard */}
-        <HomeStatsBar logs={logs} lifetimeHellos={logs.length} />
+        {/* Stats Dashboard - renders instantly from cache, fills in with live data */}
+        <HomeStatsBar logs={logs} lifetimeHellos={progress?.total_hellos ?? logs.length} />
 
         {/* Main Dashboard */}
         <div className="space-y-4">
           
-          {/* Challenge Card */}
+          {/* Challenge Card - show skeleton while challenge data loads */}
           <div id="tutorial-todays-hello-card">
-            {progress?.selected_pack_id === 'daily' ? (
+            {challengeLoading ? (
+              <div className="rounded-xl bg-card border border-border/50 p-4 min-h-[260px] flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <Skeleton className="w-5 h-5 rounded" />
+                  <Skeleton className="h-5 w-32" />
+                </div>
+                <Skeleton className="h-2 w-full rounded-full mb-4" />
+                <Skeleton className="h-5 w-48 mb-2" />
+                <Skeleton className="h-4 w-full mb-1" />
+                <Skeleton className="h-4 w-3/4 mb-4" />
+                <div className="mt-auto flex gap-2">
+                  <Skeleton className="h-10 flex-1 rounded-full" />
+                  <Skeleton className="h-10 w-24 rounded-full" />
+                </div>
+              </div>
+            ) : progress?.selected_pack_id === 'daily' ? (
               <DailySuggestionCard />
             ) : progress?.selected_pack_id === '30-hellos' ? (
               <ThirtyHellosCard
@@ -617,7 +632,6 @@ export default function Dashboard() {
                   .filter(d => d >= 101 && d <= 130)
                   .map(d => d - 100)}
                 onComplete={async (day, challengeName) => {
-                  // Store with offset so it doesn't clash with 7-day challenge
                   setPendingChallengeCompletion({ day: day + 100, name: challengeName });
                   setAutoStartRecording(false);
                   setShowLogDialog(true);
