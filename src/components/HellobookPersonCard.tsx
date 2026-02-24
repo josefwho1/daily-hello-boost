@@ -133,8 +133,8 @@ const HellobookPersonCardComponent = ({
           <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0">
               {/* Top row: Name, interaction count, Location */}
-              <div className="flex items-center gap-2">
-                <h3 className={`font-semibold truncate ${hasName ? 'text-foreground' : 'text-muted-foreground'}`}>
+              <div className="flex items-center gap-2" onClick={(e) => { e.stopPropagation(); onViewClick(primaryLog); }}>
+                <h3 className={`font-semibold truncate cursor-pointer ${hasName ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {primaryLog.name || "Someone 👤"}
                 </h3>
                 
