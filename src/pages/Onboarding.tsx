@@ -655,8 +655,8 @@ export default function Onboarding() {
                 For now, let me show you around.
               </p>
             </div>
-            <Button onClick={() => completeOnboarding(true)} className="w-full" size="lg">
-              Show me around
+            <Button onClick={() => completeOnboarding(true)} className="w-full" size="lg" disabled={isSubmitting}>
+              {isSubmitting ? "Loading..." : "Show me around"}
             </Button>
           </div>
         );
@@ -671,8 +671,8 @@ export default function Onboarding() {
               <p className="text-muted-foreground">Weather, long lines, vibes — anything shared.</p>
               <p className="text-muted-foreground italic text-sm">💡 "What a beautiful day" "Long line, hey?" "Great song"</p>
             </div>
-            <Button onClick={() => completeOnboarding(true)} className="w-full" size="lg">
-              Let's do it
+            <Button onClick={() => completeOnboarding(true)} className="w-full" size="lg" disabled={isSubmitting}>
+              {isSubmitting ? "Loading..." : "Let's do it"}
             </Button>
           </div>
         );
