@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useUserProgressQuery } from "@/hooks/useUserProgressQuery";
@@ -12,7 +12,7 @@ import { LogHelloScreen } from "@/components/LogHelloScreen";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Target, ChevronRight, RotateCcw, Pause, Play, Shuffle, Check } from "lucide-react";
+import { Target, ChevronRight, RotateCcw, Pause, Play, Shuffle, Check, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { ChallengeUndoToast } from "@/components/ChallengeUndoToast";
 import questsIcon from "@/assets/quests-icon.webp";
@@ -35,6 +35,18 @@ const Challenges = () => {
   const [showConfirmSwitch, setShowConfirmSwitch] = useState<string | null>(null); // target pack id
   const [showLogScreen, setShowLogScreen] = useState(false);
   const [pendingChallengeCompletion, setPendingChallengeCompletion] = useState<{ day: number; name: string } | null>(null);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true);
+    const goOnline = () => setIsOffline(false);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
 
   const progress = isAnonymous ? guestProgress : cloudProgress;
   const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
@@ -49,6 +61,10 @@ const Challenges = () => {
 
   // Switch to a pack (with confirmation if another quest is active)
   const handleSelectPack = (packId: string) => {
+    if (isOffline) {
+      toast("You're offline", { description: "Quest changes will be available when you're back online." });
+      return;
+    }
     if (selectedPack === packId) return;
     // If currently on a quest (not daily), confirm switch
     if (selectedPack !== 'daily' && packId !== selectedPack) {
@@ -70,11 +86,19 @@ const Challenges = () => {
   };
 
   const handlePauseToDailyMode = async () => {
+    if (isOffline) {
+      toast("You're offline", { description: "Quest changes will be available when you're back online." });
+      return;
+    }
     await updateProgress({ selected_pack_id: 'daily' });
     toast.success("Quest paused. Enjoy Today's Hello!");
   };
 
   const handleRestart7Day = async () => {
+    if (isOffline) {
+      toast("You're offline", { description: "Quest changes will be available when you're back online." });
+      return;
+    }
     await restartChallenge();
     setShowConfirmRestart7Day(false);
     toast.success("Challenge restarted! Day 1 ready.");
@@ -232,6 +256,14 @@ const Challenges = () => {
           </div>
           <img src={remiQuest} alt="Remi" className="w-16 h-16 object-contain" />
         </div>
+
+        {/* Offline notice */}
+        {isOffline && (
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-muted/60 border border-border/40">
+            <WifiOff className="w-4 h-4 text-destructive flex-shrink-0" />
+            <p className="text-xs text-muted-foreground">You're offline. Quest changes are disabled until you reconnect.</p>
+          </div>
+        )}
 
         {/* Daily Mode Card */}
         <QuestCard
