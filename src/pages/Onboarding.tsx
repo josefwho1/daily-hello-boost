@@ -57,17 +57,55 @@ const RemiImage = memo(({ src, alt, className = "w-48 h-auto max-h-48 mx-auto ob
 ));
 RemiImage.displayName = 'RemiImage';
 
+// Persist onboarding state in sessionStorage to survive remounts caused by
+// auth state changes (e.g. signInAnonymously triggering OnboardingGuard reload)
+const OB_SESSION_KEY = 'onboarding_session_state';
+
+interface OnboardingSessionState {
+  step: OnboardingStep;
+  userName: string;
+  whyHere: string | null;
+  connectionName: string;
+  connectionLocation: string;
+  connectionNotes: string;
+  firstHelloLogged: boolean;
+}
+
+const loadSessionState = (): Partial<OnboardingSessionState> => {
+  try {
+    const raw = sessionStorage.getItem(OB_SESSION_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+const saveSessionState = (state: OnboardingSessionState) => {
+  try {
+    sessionStorage.setItem(OB_SESSION_KEY, JSON.stringify(state));
+  } catch {}
+};
+
+const clearSessionState = () => {
+  try {
+    sessionStorage.removeItem(OB_SESSION_KEY);
+  } catch {}
+};
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [step, setStep] = useState<OnboardingStep>('welcome');
+  // Restore state from sessionStorage on mount to survive remounts
+  const savedState = loadSessionState();
+  
+  const [step, setStepRaw] = useState<OnboardingStep>(savedState.step || 'welcome');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [connectionName, setConnectionName] = useState('');
-  const [connectionLocation, setConnectionLocation] = useState('');
-  const [connectionNotes, setConnectionNotes] = useState('');
-  const [whyHere, setWhyHere] = useState<string | null>(null);
+  const [userName, setUserName] = useState(savedState.userName || '');
+  const [connectionName, setConnectionName] = useState(savedState.connectionName || '');
+  const [connectionLocation, setConnectionLocation] = useState(savedState.connectionLocation || '');
+  const [connectionNotes, setConnectionNotes] = useState(savedState.connectionNotes || '');
+  const [whyHere, setWhyHere] = useState<string | null>(savedState.whyHere ?? null);
 
   const { isLoaded: assetsReady } = useAssetPreloader(ONBOARDING_ASSETS);
 
