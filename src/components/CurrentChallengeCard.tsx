@@ -107,7 +107,7 @@ export const CurrentChallengeCard = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Target className="w-5 h-5 text-primary flex-shrink-0" />
-          <span className="font-bold text-foreground text-lg">7-Day Challenge</span>
+          <span className="font-semibold text-lg" style={{ color: '#ff6f3b' }}>7-Day Challenge</span>
         </div>
         
         {/* Navigation arrows */}
