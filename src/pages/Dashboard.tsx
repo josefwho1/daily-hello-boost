@@ -766,9 +766,7 @@ export default function Dashboard() {
               await updateProgress({ 
                 selected_pack_id: 'daily',
                 daily_mode_active: true,
-                daily_mode_current_streak: 0,
                 daily_mode_start_date: new Date().toISOString(),
-                daily_mode_last_hello_date: null,
               });
             }
           }
