@@ -715,6 +715,9 @@ export default function Dashboard() {
       {/* Milestone Celebrations */}
       <MilestoneCelebrationDialog open={showMilestoneCelebration} onContinue={() => setShowMilestoneCelebration(false)} milestoneValue={milestoneValue} milestoneType={milestoneType} />
 
+      {/* First Hello Celebration */}
+      <FirstHelloCelebrationDialog open={showFirstHelloCelebration} onContinue={() => setShowFirstHelloCelebration(false)} userName={username} />
+
       {/* Daily Mode Streak Celebration */}
       <StreakCelebrationDialog open={showStreakCelebration} onContinue={() => setShowStreakCelebration(false)} streakCount={celebratedStreakValue} />
 
