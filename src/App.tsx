@@ -77,8 +77,20 @@ const AppRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   // If still no user after bootstrap attempt, send them to the auth entry.
-  if (!user) {
+  // But only after bootstrap has actually been attempted to avoid premature redirects.
+  if (!user && bootstrapAttempted && !bootstrapping) {
     return <Navigate to="/auth" replace />;
+  }
+  // Still waiting for auth/bootstrap — show nothing to avoid flash
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   // For anonymous users, check if they have progress (created during onboarding)
