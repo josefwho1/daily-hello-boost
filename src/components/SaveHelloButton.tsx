@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { UserPlus, Mic } from "lucide-react";
 import { toast } from "sonner";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 interface SaveHelloButtonProps {
   onClick: () => void;
@@ -8,6 +9,8 @@ interface SaveHelloButtonProps {
 }
 
 export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProps) => {
+  const isOnline = useOnlineStatus();
+
   return (
     <div className="flex gap-2">
       <Button 
@@ -23,15 +26,15 @@ export const SaveHelloButton = ({ onClick, onDictateClick }: SaveHelloButtonProp
         <Button 
           id="tutorial-dictate-btn"
           onClick={() => {
-            if (!navigator.onLine) {
+            if (!isOnline) {
               toast("You're offline", { description: "Voice dictation requires an internet connection." });
               return;
             }
             onDictateClick();
           }}
           size="sm"
-          className={`h-10 px-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full ${!navigator.onLine ? "opacity-50" : ""}`}
-          title={!navigator.onLine ? "Dictation unavailable offline" : "Quick dictate"}
+          className={`h-10 px-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full ${!isOnline ? "opacity-50" : ""}`}
+          title={!isOnline ? "Dictation unavailable offline" : "Quick dictate"}
         >
           <Mic className="w-4 h-4" />
         </Button>

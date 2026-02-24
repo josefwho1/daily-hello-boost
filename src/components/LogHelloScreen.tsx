@@ -10,6 +10,7 @@ import { MultiEntryReview, ExtractedEntry } from "@/components/MultiEntryReview"
 import { DuplicatePersonDialog } from "@/components/DuplicatePersonDialog";
 import { useDuplicateDetection, PotentialDuplicate } from "@/hooks/useDuplicateDetection";
 import { HelloLog } from "@/hooks/useHelloLogs";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import remiLogging1 from "@/assets/remi-logging-1.webp";
 import remiLogging2 from "@/assets/remi-logging-2.webp";
@@ -99,6 +100,7 @@ export const LogHelloScreen = ({
   
   const { findDuplicate, getDuplicateDescription } = useDuplicateDetection(existingLogs);
   const { requestWakeLock, releaseWakeLock } = useWakeLock();
+  const isOnline = useOnlineStatus();
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -500,9 +502,9 @@ export const LogHelloScreen = ({
                 type="button"
                 variant={isRecording ? "destructive" : "outline"}
                 size="icon"
-                className={`flex-shrink-0 h-10 w-10 ${!isRecording && !navigator.onLine ? "opacity-50" : ""}`}
+                className={`flex-shrink-0 h-10 w-10 ${!isRecording && !isOnline ? "opacity-50" : ""}`}
                 onClick={() => {
-                  if (!isRecording && !navigator.onLine) {
+                  if (!isRecording && !isOnline) {
                     toast("You're offline", { description: "Voice dictation requires an internet connection." });
                     return;
                   }
