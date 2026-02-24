@@ -500,10 +500,14 @@ export const LogHelloScreen = ({
                 type="button"
                 variant={isRecording ? "destructive" : "outline"}
                 size="icon"
-                className="flex-shrink-0 h-10 w-10"
-                onClick={isRecording ? stopRecording : startRecording}
-                disabled={!isRecording && !navigator.onLine}
-                title={!navigator.onLine ? "Dictation unavailable offline" : undefined}
+                className={`flex-shrink-0 h-10 w-10 ${!isRecording && !navigator.onLine ? "opacity-50" : ""}`}
+                onClick={() => {
+                  if (!isRecording && !navigator.onLine) {
+                    toast("You're offline", { description: "Voice dictation requires an internet connection." });
+                    return;
+                  }
+                  isRecording ? stopRecording() : startRecording();
+                }}
               >
                 {isRecording ? (
                   <Square className="w-5 h-5" />
