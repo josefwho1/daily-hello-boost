@@ -313,13 +313,6 @@ export default function Onboarding() {
     }
   }, [ensureUserAndProgress]);
 
-  // Track whether the first hello was already logged in this session
-  const [firstHelloLogged, setFirstHelloLoggedRaw] = useState(savedState.firstHelloLogged || false);
-  const firstHelloLoggedRef = useRef(firstHelloLogged);
-  const setFirstHelloLogged = useCallback((v: boolean) => {
-    firstHelloLoggedRef.current = v;
-    setFirstHelloLoggedRaw(v);
-  }, []);
 
   const completeOnboarding = useCallback(async (showTutorial: boolean) => {
     // Clear persisted onboarding state — we're done
