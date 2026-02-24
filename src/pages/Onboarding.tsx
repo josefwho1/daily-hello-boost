@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAssetPreloader } from "@/hooks/useAssetPreloader";
 import { scheduleBackgroundTask, fireAndForget } from "@/lib/backgroundTask";
+import { setCachedProgress } from "@/lib/offlineCache";
 
 // Remi images
 import remiWaving4 from "@/assets/remi-waving-4.webp";
