@@ -117,7 +117,7 @@ export const useHelloLogs = () => {
         throw error; // Re-throw if no cache
       }
     },
-    // Serve cached data instantly via initialData
+    // Serve cached data instantly, but mark as old so RQ always refetches in background
     initialData: () => {
       const cached = getCachedHellos();
       if (cached.length === 0) return undefined;
@@ -137,7 +137,8 @@ export const useHelloLogs = () => {
         hello_type: e.hello_type,
       })) as HelloLog[];
     },
-    staleTime: 5 * 60 * 1000,
+    initialDataUpdatedAt: 0, // Forces background refetch immediately
+    staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     enabled: !!user,
   });
