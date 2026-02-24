@@ -250,7 +250,9 @@ export const useHelloLogs = () => {
           old.map(l => l.id === localId ? (data as HelloLog) : l)
         );
         
-        await queryClient.invalidateQueries({ queryKey: ['user-progress'] });
+        if (navigator.onLine) {
+          await queryClient.invalidateQueries({ queryKey: ['user-progress'] });
+        }
         return data;
       } else {
         // Offline: add to sync queue
