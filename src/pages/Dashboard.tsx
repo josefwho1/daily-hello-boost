@@ -493,22 +493,61 @@ export default function Dashboard() {
   };
 
   // Helper to handle challenge celebrations — only for 7-day challenge
-  const checkAndShowCelebrations = (previousCount: number, newCount: number) => {
+  // Queues the reveal day; the challenge day celebration is shown first
+  const checkAndShowCelebrations = (previousCount: number, newCount: number, completedDay: number, challengeName: string) => {
     // Only show challenge reveal screens during 7-day challenge
     if (progress?.selected_pack_id === '30-hellos' || progress?.selected_pack_id === 'daily') return;
 
-    // Check for 7-day completion
+    // Queue the reveal day
     if (newCount === 7 && previousCount < 7) {
-      setChallengeRevealDay(7);
-      setTimeout(() => setShowChallengeReveal(true), 500);
+      queuedRevealDayRef.current = 7;
+    } else if (newCount < 7 && newCount > previousCount) {
+      queuedRevealDayRef.current = newCount;
+    }
+
+    // Show challenge day celebration first (this kicks off the queue)
+    setChallengeDayCelebrationInfo({ day: completedDay, name: challengeName });
+    setTimeout(() => setShowChallengeDayCelebration(true), 400);
+  };
+
+  // Advance celebration queue: challenge → streak → reveal
+  const advanceCelebrationQueue = () => {
+    setShowChallengeDayCelebration(false);
+
+    // Next: streak celebration if queued
+    if (queuedStreakRef.current !== null) {
+      const streakVal = queuedStreakRef.current;
+      queuedStreakRef.current = null;
+      setCelebratedStreakValue(streakVal);
+      setTimeout(() => setShowStreakCelebration(true), 300);
       return;
     }
-    
-    // Show next challenge reveal for days 1-6
-    if (newCount < 7 && newCount > previousCount) {
-      setChallengeRevealDay(newCount);
-      setTimeout(() => setShowChallengeReveal(true), 500);
+
+    // Next: challenge reveal if queued
+    if (queuedRevealDayRef.current !== null) {
+      const revealDay = queuedRevealDayRef.current;
+      queuedRevealDayRef.current = null;
+      setChallengeRevealDay(revealDay);
+      setTimeout(() => setShowChallengeReveal(true), 300);
+      return;
     }
+
+    isChallengeCompletionRef.current = false;
+  };
+
+  // When streak celebration closes, advance to reveal if queued
+  const handleStreakCelebrationClose = () => {
+    setShowStreakCelebration(false);
+
+    if (queuedRevealDayRef.current !== null) {
+      const revealDay = queuedRevealDayRef.current;
+      queuedRevealDayRef.current = null;
+      setChallengeRevealDay(revealDay);
+      setTimeout(() => setShowChallengeReveal(true), 300);
+      return;
+    }
+
+    isChallengeCompletionRef.current = false;
   };
 
   // Full-screen 30 Hellos List View
