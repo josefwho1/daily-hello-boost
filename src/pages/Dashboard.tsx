@@ -104,7 +104,7 @@ export default function Dashboard() {
     current_streak: guestProgress.current_streak,
     current_day: guestProgress.current_day,
     last_completed_date: guestProgress.last_completed_date,
-    selected_pack_id: guestProgress.selected_pack_id,
+    selected_pack_id: guestProgress.selected_pack_id || '30-day-hello',
     mode: guestProgress.mode,
     target_hellos_per_week: guestProgress.target_hellos_per_week,
     hellos_this_week: guestProgress.hellos_this_week,
