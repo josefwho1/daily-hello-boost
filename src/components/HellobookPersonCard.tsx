@@ -192,7 +192,8 @@ const HellobookPersonCardComponent = ({
               {allInteractions.map((interaction, index) => (
                 <div 
                   key={interaction.id} 
-                  className="pl-3 border-l-2 border-primary/20"
+                  className="pl-3 border-l-2 border-primary/20 cursor-pointer hover:bg-muted/50 rounded-r-lg py-1.5 pr-2 -mr-2 transition-colors active:scale-[0.98]"
+                  onClick={(e) => { e.stopPropagation(); onViewClick(interaction); }}
                 >
                   <div className="flex items-center gap-2">
                     <p className="text-xs text-muted-foreground font-medium">
