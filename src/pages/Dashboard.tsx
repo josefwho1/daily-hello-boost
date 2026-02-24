@@ -322,12 +322,18 @@ export default function Dashboard() {
       }
     }
   };
-  // Timezone uses browser-detected value instantly, so never block on it
-  const isLoading = isAnonymous ? guestLoading : progressLoading || logsLoading || challengeLoading;
-  if (isLoading) {
+  // Use progressive loading: show layout immediately with cached data,
+  // only show full skeleton if there's zero cached data at all
+  const hasCachedData = !!getCachedProgress<Record<string, unknown>>();
+  const isLoading = isAnonymous ? guestLoading : progressLoading || logsLoading;
+  
+  // Only block with skeleton if we have NO cached data AND are still loading
+  if (isLoading && !hasCachedData && !progress) {
     return <DashboardSkeleton />;
   }
-  if (!progress) return null;
+  
+  // If progress is null and we're not loading, nothing to show
+  if (!isLoading && !progress) return null;
 
   // Helper to show challenge completion toast with Undo and Add Details buttons
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
