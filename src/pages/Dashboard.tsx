@@ -31,6 +31,7 @@ import { HelloLog } from "@/hooks/useHelloLogs";
 import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
+import { FirstHelloCelebrationDialog } from "@/components/FirstHelloCelebrationDialog";
 import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
 import { toast } from "sonner";
 import { ChallengeCompletionToast } from "@/components/ChallengeCompletionToast";
@@ -150,6 +151,9 @@ export default function Dashboard() {
   const [showMilestoneCelebration, setShowMilestoneCelebration] = useState(false);
   const [milestoneValue, setMilestoneValue] = useState(0);
   const [milestoneType, setMilestoneType] = useState<MilestoneType>('hellos');
+
+  // First hello celebration state
+  const [showFirstHelloCelebration, setShowFirstHelloCelebration] = useState(false);
 
   // Streak celebration states
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
@@ -295,8 +299,13 @@ export default function Dashboard() {
         }
       }
 
-      // Check for hello/name milestones
+      // Check for first hello celebration
       const previousTotalHellos = progress?.total_hellos || logs.length;
+      if (previousTotalHellos === 0 && newTotalHellos >= 1) {
+        setTimeout(() => setShowFirstHelloCelebration(true), 600);
+      }
+
+      // Check for hello/name milestones
       const helloMilestone = checkMilestoneReached(previousTotalHellos, newTotalHellos, HELLO_MILESTONES);
       if (helloMilestone) {
         setMilestoneValue(helloMilestone);
@@ -705,6 +714,9 @@ export default function Dashboard() {
 
       {/* Milestone Celebrations */}
       <MilestoneCelebrationDialog open={showMilestoneCelebration} onContinue={() => setShowMilestoneCelebration(false)} milestoneValue={milestoneValue} milestoneType={milestoneType} />
+
+      {/* First Hello Celebration */}
+      <FirstHelloCelebrationDialog open={showFirstHelloCelebration} onContinue={() => setShowFirstHelloCelebration(false)} userName={username} />
 
       {/* Daily Mode Streak Celebration */}
       <StreakCelebrationDialog open={showStreakCelebration} onContinue={() => setShowStreakCelebration(false)} streakCount={celebratedStreakValue} />
