@@ -108,7 +108,11 @@ const HellobookPersonCardComponent = ({
   return (
     <Card 
       className={cardClasses}
-      onClick={() => onViewClick(primaryLog)}
+      onClick={() => {
+        if (!hasMultipleInteractions) {
+          onViewClick(primaryLog);
+        }
+      }}
     >
       {/* Favorite bookmark button */}
       <button
@@ -125,12 +129,12 @@ const HellobookPersonCardComponent = ({
         />
       </button>
       {hasMultipleInteractions ? (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Collapsible open={isOpen} onOpenChange={(open) => { setIsOpen(open); }}>
           <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0">
               {/* Top row: Name, interaction count, Location */}
-              <div className="flex items-center gap-2">
-                <h3 className={`font-semibold truncate ${hasName ? 'text-foreground' : 'text-muted-foreground'}`}>
+              <div className="flex items-center gap-2" onClick={(e) => { e.stopPropagation(); onViewClick(primaryLog); }}>
+                <h3 className={`font-semibold truncate cursor-pointer ${hasName ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {primaryLog.name || "Someone 👤"}
                 </h3>
                 
@@ -163,7 +167,10 @@ const HellobookPersonCardComponent = ({
 
               {/* Expand/Collapse trigger */}
               <CollapsibleTrigger asChild>
-                <button className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 mt-2 transition-colors">
+                <button 
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 mt-2 transition-colors"
+                >
                   {isOpen ? (
                     <>
                       <ChevronUp className="w-3 h-3" />
