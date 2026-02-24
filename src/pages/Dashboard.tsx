@@ -364,7 +364,7 @@ export default function Dashboard() {
   // Fast loading: if we have progress (from cache or query), render immediately.
   // Only show skeleton if we truly have no data at all.
   if (!progress) {
-    const cached = getCachedProgress<Record<string, unknown>>();
+    const cached = getCachedProgress<Record<string, unknown>>(user?.id);
     if (cached) {
       // We have cached data — don't block, the query will hydrate soon
     } else {
