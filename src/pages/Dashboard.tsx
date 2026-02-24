@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { getCachedProgress } from "@/lib/offlineCache";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgressQuery } from "@/hooks/useUserProgressQuery";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
@@ -20,6 +21,7 @@ import { TierUnlockCelebrationDialog } from "@/components/TierUnlockCelebrationD
 import { ChallengeRevealDialog } from "@/components/ChallengeRevealDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 import { DashboardSkeleton } from "@/components/DashboardSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
@@ -160,9 +162,10 @@ export default function Dashboard() {
   const [editingLogIndex, setEditingLogIndex] = useState(0);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  // Derive username from already-loaded progress data — no extra API call
+  // Derive username - prioritize cached progress username for instant display
   const username = useMemo(() => {
-    return (progress as any)?.username || guestProgress?.username || user?.user_metadata?.name || 'Friend';
+    const cached = getCachedProgress<Record<string, unknown>>();
+    return (progress as any)?.username || guestProgress?.username || cached?.username || user?.user_metadata?.name || 'Friend';
   }, [(progress as any)?.username, guestProgress?.username, user?.user_metadata?.name]);
 
   // Show walkthrough tutorial for users coming from onboarding
@@ -320,12 +323,18 @@ export default function Dashboard() {
       }
     }
   };
-  // Timezone uses browser-detected value instantly, so never block on it
-  const isLoading = isAnonymous ? guestLoading : progressLoading || logsLoading || challengeLoading;
-  if (isLoading) {
+  // Use progressive loading: show layout immediately with cached data,
+  // only show full skeleton if there's zero cached data at all
+  const hasCachedData = !!getCachedProgress<Record<string, unknown>>();
+  const isLoading = isAnonymous ? guestLoading : progressLoading || logsLoading;
+  
+  // Only block with skeleton if we have NO cached data AND are still loading
+  if (isLoading && !hasCachedData && !progress) {
     return <DashboardSkeleton />;
   }
-  if (!progress) return null;
+  
+  // If progress is null and we're not loading, nothing to show
+  if (!isLoading && !progress) return null;
 
   // Helper to show challenge completion toast with Undo and Add Details buttons
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
@@ -593,15 +602,30 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Stats Dashboard */}
-        <HomeStatsBar logs={logs} lifetimeHellos={logs.length} />
+        {/* Stats Dashboard - renders instantly from cache, fills in with live data */}
+        <HomeStatsBar logs={logs} lifetimeHellos={progress?.total_hellos ?? logs.length} />
 
         {/* Main Dashboard */}
         <div className="space-y-4">
           
-          {/* Challenge Card */}
+          {/* Challenge Card - show skeleton while challenge data loads */}
           <div id="tutorial-todays-hello-card">
-            {progress?.selected_pack_id === 'daily' ? (
+            {challengeLoading ? (
+              <div className="rounded-xl bg-card border border-border/50 p-4 min-h-[260px] flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <Skeleton className="w-5 h-5 rounded" />
+                  <Skeleton className="h-5 w-32" />
+                </div>
+                <Skeleton className="h-2 w-full rounded-full mb-4" />
+                <Skeleton className="h-5 w-48 mb-2" />
+                <Skeleton className="h-4 w-full mb-1" />
+                <Skeleton className="h-4 w-3/4 mb-4" />
+                <div className="mt-auto flex gap-2">
+                  <Skeleton className="h-10 flex-1 rounded-full" />
+                  <Skeleton className="h-10 w-24 rounded-full" />
+                </div>
+              </div>
+            ) : progress?.selected_pack_id === 'daily' ? (
               <DailySuggestionCard />
             ) : progress?.selected_pack_id === '30-hellos' ? (
               <ThirtyHellosCard
@@ -609,7 +633,6 @@ export default function Dashboard() {
                   .filter(d => d >= 101 && d <= 130)
                   .map(d => d - 100)}
                 onComplete={async (day, challengeName) => {
-                  // Store with offset so it doesn't clash with 7-day challenge
                   setPendingChallengeCompletion({ day: day + 100, name: challengeName });
                   setAutoStartRecording(false);
                   setShowLogDialog(true);
