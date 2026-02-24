@@ -8,6 +8,10 @@ import {
   removeFromPendingSync,
   replaceCachedHelloId,
   clearPendingSync,
+  getPendingDeletions,
+  removeFromPendingDeletions,
+  getPendingProgressUpdates,
+  clearPendingProgressUpdates,
 } from '@/lib/offlineCache';
 
 export type SyncStatus = 'synced' | 'syncing' | 'offline' | 'pending';
@@ -21,7 +25,10 @@ export const useOfflineSync = () => {
 
   // Update pending count
   const refreshPendingCount = useCallback(() => {
-    const count = getPendingSync().length;
+    const syncCount = getPendingSync().length;
+    const deleteCount = getPendingDeletions().length;
+    const progressCount = getPendingProgressUpdates().length;
+    const count = syncCount + deleteCount + progressCount;
     setPendingCount(count);
     if (count === 0 && navigator.onLine) {
       setSyncStatus('synced');
@@ -36,14 +43,17 @@ export const useOfflineSync = () => {
     if (!user || syncingRef.current) return;
     
     const pending = getPendingSync();
-    if (pending.length === 0) return;
+    const pendingDeletions = getPendingDeletions();
+    const pendingProgress = getPendingProgressUpdates();
+    if (pending.length === 0 && pendingDeletions.length === 0 && pendingProgress.length === 0) return;
 
     syncingRef.current = true;
     setSyncStatus('syncing');
 
-    const entries = getCachedHellos();
     let syncedAny = false;
 
+    // Sync pending inserts
+    const entries = getCachedHellos();
     for (const localId of pending) {
       const entry = entries.find(e => e.id === localId || e._localId === localId);
       if (!entry || entry._synced) {
@@ -71,14 +81,53 @@ export const useOfflineSync = () => {
 
         if (error) throw error;
 
-        // Replace local ID with server ID in cache
         replaceCachedHelloId(localId, data.id);
         removeFromPendingSync(localId);
         syncedAny = true;
       } catch (err) {
         console.warn('Sync failed for entry, will retry:', localId, err);
-        // Stop syncing on failure - will retry later
         break;
+      }
+    }
+
+    // Sync pending deletions
+    for (const deletion of pendingDeletions) {
+      try {
+        await supabase
+          .from('hello_logs')
+          .update({ linked_to: null })
+          .eq('linked_to', deletion.id)
+          .eq('user_id', user.id);
+
+        const { error } = await supabase
+          .from('hello_logs')
+          .delete()
+          .eq('id', deletion.id)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+        removeFromPendingDeletions(deletion.id);
+        syncedAny = true;
+      } catch (err) {
+        console.warn('Delete sync failed, will retry:', deletion.id, err);
+        break;
+      }
+    }
+
+    // Sync pending progress updates (merge all into one update)
+    if (pendingProgress.length > 0) {
+      try {
+        const merged = pendingProgress.reduce((acc, update) => ({ ...acc, ...update }), {});
+        const { error } = await supabase
+          .from('user_progress')
+          .update(merged)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+        clearPendingProgressUpdates();
+        syncedAny = true;
+      } catch (err) {
+        console.warn('Progress sync failed, will retry:', err);
       }
     }
 
@@ -99,8 +148,8 @@ export const useOfflineSync = () => {
     };
 
     const handleOffline = () => {
-      const pending = getPendingSync();
-      if (pending.length > 0) {
+      const pending = getPendingSync().length + getPendingDeletions().length + getPendingProgressUpdates().length;
+      if (pending > 0) {
         setSyncStatus('offline');
       }
     };
