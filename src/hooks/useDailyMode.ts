@@ -125,18 +125,16 @@ export const useDailyMode = () => {
     await onDailyModeToggle(true, 0, 0);
   }, [updateProgress, onDailyModeToggle]);
 
-  // Deactivate Daily Mode
+  // Deactivate Daily Mode — streak data is preserved
   const deactivateDailyMode = useCallback(async () => {
     await updateProgress({
       daily_mode_active: false,
-      daily_mode_current_streak: 0,
-      daily_mode_start_date: null,
-      daily_mode_last_hello_date: null,
     });
     
     // Notify notification system
-    await onDailyModeToggle(false, 0, 0);
-  }, [updateProgress, onDailyModeToggle]);
+    const streak = progress?.daily_mode_current_streak || 0;
+    await onDailyModeToggle(false, streak, 0);
+  }, [updateProgress, onDailyModeToggle, progress?.daily_mode_current_streak]);
 
   // Called when user logs a hello - updates streak
   const recordHelloForDailyMode = useCallback(async () => {
