@@ -79,6 +79,13 @@ export default function Onboarding() {
     const { data: sessionData } = await supabase.auth.getSession();
     let user = sessionData?.session?.user || null;
 
+    // If there's already a non-anonymous (real) user session, sign them out first.
+    // Onboarding always creates a NEW guest account — it must never overwrite existing users.
+    if (user && !user.is_anonymous) {
+      await supabase.auth.signOut();
+      user = null;
+    }
+
     if (!user) {
       const { data, error } = await supabase.auth.signInAnonymously();
       if (error) throw error;
@@ -87,14 +94,14 @@ export default function Onboarding() {
     if (!user) throw new Error('No user session');
 
     const userId = user.id;
-    const displayName = userName.trim() || (user.is_anonymous ? 'Guest' : 'Friend');
+    const displayName = userName.trim() || 'Guest';
 
     const profilePromise = supabase
       .from('profiles')
       .upsert({
         id: userId,
         username: displayName,
-        is_anonymous: user.is_anonymous === true,
+        is_anonymous: true,
         hide_from_leaderboard: false,
       }, { onConflict: 'id' });
 

@@ -168,6 +168,32 @@ const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Prevent authenticated non-anonymous users from accessing onboarding
+// (which would overwrite their profile data)
+const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  const { isAnonymous, loading: guestLoading } = useGuestMode();
+  const { progress, loading: progressLoading } = useUserProgress();
+
+  if (loading || guestLoading || progressLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If a fully authenticated user with completed onboarding hits /onboarding, redirect home
+  if (user && !isAnonymous && progress?.has_completed_onboarding) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 // Suspense fallback for lazy-loaded routes
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -192,7 +218,7 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/signin" element={<MagicLinkSignIn />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/onboarding" element={<OnboardingGuard><Onboarding /></OnboardingGuard>} />
             <Route 
               path="/" 
               element={
