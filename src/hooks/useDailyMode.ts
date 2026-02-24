@@ -144,8 +144,18 @@ export const useDailyMode = () => {
     const currentStreakValue = progress.daily_mode_current_streak || 0;
     const bestStreakValue = progress.daily_mode_best_streak || 0;
     
-    // If already logged today, don't increment streak again
-    if (lastHelloDateStr === todayKey) return;
+    // If already logged today, check for corrupted state (streak=0 but date=today)
+    // This can happen when concurrent mutations clobber the streak value
+    if (lastHelloDateStr === todayKey) {
+      if (currentStreakValue === 0) {
+        // Repair: streak should be at least 1 if we logged today
+        await updateProgress({
+          daily_mode_current_streak: 1,
+          daily_mode_best_streak: Math.max(bestStreakValue, 1),
+        });
+      }
+      return;
+    }
     
     let newStreak = currentStreakValue;
     
