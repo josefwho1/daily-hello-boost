@@ -62,7 +62,7 @@ export const useUserProgressQuery = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: progress, isLoading: loading, refetch } = useQuery({
+  const { data: progress, isPending: loading, refetch } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async (): Promise<UserProgress | null> => {
       if (!user) return null;
