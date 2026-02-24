@@ -203,7 +203,7 @@ const Challenges = () => {
           
           {onViewChallenges && (
             <Button variant="outline" size="sm" onClick={onViewChallenges} className="flex-1 rounded-full text-xs h-8">
-              View Challenges
+              View All
               <ChevronRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           )}
