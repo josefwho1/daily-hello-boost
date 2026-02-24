@@ -156,6 +156,15 @@ export default function Dashboard() {
   // First hello celebration state
   const [showFirstHelloCelebration, setShowFirstHelloCelebration] = useState(false);
 
+  // Challenge day celebration queue state
+  const [showChallengeDayCelebration, setShowChallengeDayCelebration] = useState(false);
+  const [challengeDayCelebrationInfo, setChallengeDayCelebrationInfo] = useState<{ day: number; name: string } | null>(null);
+  // Queued celebrations to show after challenge day celebration
+  const queuedStreakRef = useRef<number | null>(null);
+  const queuedRevealDayRef = useRef<number | null>(null);
+  // Flag to suppress streak celebration during challenge completion flow
+  const isChallengeCompletionRef = useRef(false);
+
   // Streak celebration states
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [celebratedStreakValue, setCelebratedStreakValue] = useState(0);
