@@ -611,7 +611,7 @@ export default function Dashboard() {
         )}
 
         {/* Stats Dashboard - renders instantly from cache, fills in with live data */}
-        <HomeStatsBar logs={logs} lifetimeHellos={progress?.total_hellos ?? logs.length} />
+        <HomeStatsBar logs={logs} lifetimeHellos={logs.length} />
 
         {/* Main Dashboard */}
         <div className="space-y-4">
