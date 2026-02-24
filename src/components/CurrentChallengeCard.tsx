@@ -107,7 +107,7 @@ export const CurrentChallengeCard = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Target className="w-5 h-5 text-primary flex-shrink-0" />
-          <span className="font-semibold text-lg" style={{ color: '#ff6f3b' }}>7-Day Challenge</span>
+          <span className="font-semibold text-base" style={{ color: '#ff6f3b' }}>7-Day Challenge</span>
         </div>
         
         {/* Navigation arrows */}
@@ -169,7 +169,7 @@ export const CurrentChallengeCard = ({
           {/* Challenge name - fixed height */}
           <div className="h-6 flex items-center">
             <h3 className={cn(
-              "text-base font-bold line-clamp-1",
+              "text-sm font-medium line-clamp-1",
               isLocked ? "text-muted-foreground/50" :
               isChallengeComplete ? "text-success" : "text-foreground"
             )}>
