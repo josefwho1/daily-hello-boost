@@ -107,16 +107,23 @@ export default function Onboarding() {
   const [connectionNotes, setConnectionNotes] = useState(savedState.connectionNotes || '');
   const [whyHere, setWhyHere] = useState<string | null>(savedState.whyHere ?? null);
 
+  // Track whether the first hello was already logged in this session (declared early for persistence effect)
+  const [firstHelloLogged, setFirstHelloLoggedRaw] = useState(savedState.firstHelloLogged || false);
+  const firstHelloLoggedRef = useRef(firstHelloLogged);
+  const setFirstHelloLogged = useCallback((v: boolean) => {
+    firstHelloLoggedRef.current = v;
+    setFirstHelloLoggedRaw(v);
+  }, []);
+
   // Wrap setStep to persist state to sessionStorage on every step change
   const setStep = useCallback((newStep: OnboardingStep) => {
     setStepRaw(newStep);
-    // We'll persist in an effect below to capture all latest state
   }, []);
 
   // Persist all onboarding state to sessionStorage whenever it changes
   useEffect(() => {
-    saveSessionState({ step, userName, whyHere, connectionName, connectionLocation, connectionNotes, firstHelloLogged: firstHelloLoggedRef.current });
-  }, [step, userName, whyHere, connectionName, connectionLocation, connectionNotes]);
+    saveSessionState({ step, userName, whyHere, connectionName, connectionLocation, connectionNotes, firstHelloLogged });
+  }, [step, userName, whyHere, connectionName, connectionLocation, connectionNotes, firstHelloLogged]);
 
   const { isLoaded: assetsReady } = useAssetPreloader(ONBOARDING_ASSETS);
 
