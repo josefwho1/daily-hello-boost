@@ -685,7 +685,10 @@ export default function Dashboard() {
           
           {/* Challenge Card - DailySuggestionCard is fully local, never blocked */}
           <div id="tutorial-todays-hello-card">
-            {(!progress || progress?.selected_pack_id === 'daily') ? (
+            {(() => {
+              const packId = progress?.selected_pack_id || getCachedProgress<Record<string, unknown>>()?.selected_pack_id as string || 'daily';
+              return packId === 'daily';
+            })() ? (
               <DailySuggestionCard />
             ) : progress?.selected_pack_id === '30-hellos' ? (
               <ThirtyHellosCard
