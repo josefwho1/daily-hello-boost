@@ -41,6 +41,7 @@ import remiSuper2 from "@/assets/remi-super-2.webp";
 import { startOfWeek, isBefore, parseISO } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { normalizeTimezoneOffset, getDayKeyInOffset } from "@/lib/timezone";
+import { vibrateSuccess, vibrateCelebration } from "@/lib/haptics";
 const getWeekStartKeyInOffset = (date: Date, offset: string) => {
   const normalizedOffset = normalizeTimezoneOffset(offset);
   const zonedNow = toZonedTime(date, normalizedOffset);
@@ -282,6 +283,9 @@ export default function Dashboard() {
       };
       await updateProgress(updates);
 
+      // Haptic feedback
+      vibrateSuccess();
+
       // Only show toast if not silent (for multi-entry logging)
       if (!data.silent) {
         if (!navigator.onLine) {
@@ -350,6 +354,7 @@ export default function Dashboard() {
   // Helper to show challenge completion toast with Undo and Add Details buttons
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
     // Track if hello entry has been created for this completion
+    vibrateCelebration();
     let helloEntryCreated = false;
     let createdHelloId: string | null = null;
 
