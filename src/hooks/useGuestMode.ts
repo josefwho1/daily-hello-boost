@@ -159,6 +159,7 @@ export const useGuestMode = (): UseGuestModeReturn => {
         current_day: 1,
         is_onboarding_week: false,
         mode: 'daily',
+        selected_pack_id: '30-day-hello',
         has_completed_onboarding: false,
         orbs: 0,
         has_received_first_orb: false,
