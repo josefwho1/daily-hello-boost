@@ -123,9 +123,9 @@ export default function Onboarding() {
       current_phase: 'active',
       username: displayName,
       has_seen_welcome_messages: false,
-      daily_mode_active: true,
-      daily_mode_current_streak: opts?.loggedFirstHello ? 1 : 0,
-      daily_mode_start_date: new Date().toISOString(),
+      daily_mode_active: false,
+      daily_mode_current_streak: 0,
+      daily_mode_start_date: null,
       challenge_completed_days: opts?.loggedFirstHello ? [1] : [],
       challenge_started_at: new Date().toISOString(),
       selected_pack_id: '30-day-hello',
@@ -279,7 +279,7 @@ export default function Onboarding() {
       username: displayName,
       selected_pack_id: cached?.selected_pack_id || '30-day-hello',
       mode: 'daily',
-      daily_mode_active: true,
+      daily_mode_active: false,
       why_here: whyHere,
     });
     try {
