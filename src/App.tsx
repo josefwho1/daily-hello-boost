@@ -19,7 +19,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const Auth = lazy(() => import("./pages/Auth"));
 const MagicLinkSignIn = lazy(() => import("./pages/MagicLinkSignIn"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
+import Onboarding from "./pages/Onboarding";
 const Landing = lazy(() => import("./pages/Landing"));
 const Community = lazy(() => import("./pages/Community"));
 const Challenges = lazy(() => import("./pages/Challenges"));
