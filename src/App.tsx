@@ -192,7 +192,7 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/signin" element={<MagicLinkSignIn />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/onboarding" element={<OnboardingGuard><Onboarding /></OnboardingGuard>} />
             <Route 
               path="/" 
               element={
