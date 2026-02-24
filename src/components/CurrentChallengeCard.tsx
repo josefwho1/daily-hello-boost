@@ -180,12 +180,12 @@ export const CurrentChallengeCard = ({
           {/* Description area - fixed height for 2 lines */}
           <div className="h-[2.75rem] mt-1">
             {isLocked ? (
-              <p className="text-xs text-muted-foreground/40 line-clamp-2">
+              <p className="text-[11px] text-muted-foreground/40 line-clamp-2">
                 {currentChallenge.description}
               </p>
             ) : (
               <p className={cn(
-                "text-sm text-muted-foreground line-clamp-2",
+                "text-xs text-muted-foreground line-clamp-2",
                 isChallengeComplete && "line-through opacity-70"
               )}>
                 {currentChallenge.description}
