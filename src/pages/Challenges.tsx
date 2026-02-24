@@ -86,11 +86,19 @@ const Challenges = () => {
   };
 
   const handlePauseToDailyMode = async () => {
+    if (isOffline) {
+      toast("You're offline", { description: "Quest changes will be available when you're back online." });
+      return;
+    }
     await updateProgress({ selected_pack_id: 'daily' });
     toast.success("Quest paused. Enjoy Today's Hello!");
   };
 
   const handleRestart7Day = async () => {
+    if (isOffline) {
+      toast("You're offline", { description: "Quest changes will be available when you're back online." });
+      return;
+    }
     await restartChallenge();
     setShowConfirmRestart7Day(false);
     toast.success("Challenge restarted! Day 1 ready.");
@@ -248,6 +256,14 @@ const Challenges = () => {
           </div>
           <img src={remiQuest} alt="Remi" className="w-16 h-16 object-contain" />
         </div>
+
+        {/* Offline notice */}
+        {isOffline && (
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-muted/60 border border-border/40">
+            <WifiOff className="w-4 h-4 text-destructive flex-shrink-0" />
+            <p className="text-xs text-muted-foreground">You're offline. Quest changes are disabled until you reconnect.</p>
+          </div>
+        )}
 
         {/* Daily Mode Card */}
         <QuestCard
