@@ -142,7 +142,7 @@ export const useDailyMode = () => {
 
   // Called when user logs a hello - updates streak
   const recordHelloForDailyMode = useCallback(async () => {
-    if (!progress?.daily_mode_active) return;
+    if (!progress) return;
     
     const lastHelloDateStr = progress.daily_mode_last_hello_date;
     const currentStreakValue = progress.daily_mode_current_streak || 0;
@@ -182,7 +182,7 @@ export const useDailyMode = () => {
 
   // Check and reset streak at midnight (called on component mount/update)
   const checkAndResetStreak = useCallback(async () => {
-    if (!progress?.daily_mode_active) return;
+    if (!progress) return;
     // Don't reset streak while timezone is still loading - could cause false resets
     if (tzLoading) return;
     
