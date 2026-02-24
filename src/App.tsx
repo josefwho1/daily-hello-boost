@@ -195,25 +195,36 @@ const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
 
 // Prevent authenticated non-anonymous users from accessing onboarding
 // (which would overwrite their profile data)
+// CRITICAL: This guard must NEVER show a loading spinner for anonymous/no-user states.
+// Showing a spinner unmounts the Onboarding component, which resets all its state
+// and causes the dreaded "loop back to welcome" bug when signInAnonymously()
+// triggers auth state changes during onboarding.
 const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const { isAnonymous, loading: guestLoading } = useGuestMode();
   const { progress, loading: progressLoading } = useUserProgress();
 
-  if (loading || guestLoading || progressLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+  // Only block rendering (show spinner) for fully authenticated NON-anonymous users.
+  // We need to verify they've completed onboarding before deciding to redirect.
+  // For anonymous users or no-user states, ALWAYS render children immediately
+  // to prevent unmounting the Onboarding component during auth state transitions.
+  if (user && !user.is_anonymous) {
+    const anyLoading = loading || guestLoading || progressLoading;
+    if (anyLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  // If a fully authenticated user with completed onboarding hits /onboarding, redirect home
-  if (user && !isAnonymous && progress?.has_completed_onboarding) {
-    return <Navigate to="/" replace />;
+    // Fully authenticated user with completed onboarding → redirect home
+    if (!isAnonymous && progress?.has_completed_onboarding) {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return <>{children}</>;
