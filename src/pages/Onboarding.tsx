@@ -30,6 +30,10 @@ const ONBOARDING_ASSETS = [
   remiSmiling1, remiLogging4, remiLogging5, remiLogging6, onboardingFirsthello, onboardingWeatherchat
 ];
 
+// Preload the first screen image immediately at module level (no waiting for React)
+const _preloadWelcome = new Image();
+_preloadWelcome.src = remiWaving4;
+
 export type OnboardingStep = 
   | 'welcome'
   | 'greeting'
@@ -48,8 +52,8 @@ export type OnboardingStep =
 
 type ReflectionAnswer = 'this_week' | 'last_week' | 'few_weeks' | 'dont_remember' | null;
 
-const RemiImage = memo(({ src, alt, className = "w-48 h-auto max-h-48 mx-auto object-contain", priority = false }: { src: string; alt: string; className?: string; priority?: boolean }) => (
-  <img src={src} alt={alt} className={className} loading={priority ? "eager" : "lazy"} decoding="async" />
+const RemiImage = memo(({ src, alt, className = "w-48 h-auto max-h-48 mx-auto object-contain" }: { src: string; alt: string; className?: string }) => (
+  <img src={src} alt={alt} className={className} loading="eager" decoding="sync" />
 ));
 RemiImage.displayName = 'RemiImage';
 
