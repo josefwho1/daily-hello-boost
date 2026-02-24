@@ -284,7 +284,11 @@ export default function Dashboard() {
 
       // Only show toast if not silent (for multi-entry logging)
       if (!data.silent) {
-        toast.success("Hello logged!");
+        if (!navigator.onLine) {
+          toast.success("Hello saved! It'll sync when you're back online.", { duration: 3000 });
+        } else {
+          toast.success("Hello logged!");
+        }
       }
 
       // Check for hello/name milestones
