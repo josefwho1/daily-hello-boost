@@ -103,7 +103,10 @@ export const useUserProgressQuery = () => {
       }
     },
     // Serve cached data instantly, but mark it as old so RQ always refetches in background
-    initialData: () => getCachedProgress<UserProgress>() ?? undefined,
+    initialData: () => {
+      const cached = getCachedProgress<UserProgress>(user?.id);
+      return cached ?? undefined;
+    },
     initialDataUpdatedAt: 0, // Forces background refetch immediately
     enabled: !!user,
     staleTime: 2 * 60 * 1000,
