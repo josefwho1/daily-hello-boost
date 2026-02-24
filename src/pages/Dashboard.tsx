@@ -172,8 +172,8 @@ export default function Dashboard() {
   const tutorialShownRef = useRef(false);
   const tutorialTimerRef = useRef<number | null>(null);
   useEffect(() => {
-    const loadingForTutorial = isAnonymous ? guestLoading : progressLoading;
-    if (loadingForTutorial) return;
+    // Wait until we have progress data (from any source)
+    if (!progress) return;
     if (showHomeTutorial) return;
     const hasCompletedOnboarding = Boolean(progress?.has_completed_onboarding);
     const hasSeenWelcome = progress?.has_seen_welcome_messages === true;
@@ -195,7 +195,7 @@ export default function Dashboard() {
         tutorialTimerRef.current = null;
       }
     };
-  }, [isAnonymous, guestLoading, progressLoading, showHomeTutorial, progress?.has_completed_onboarding, progress?.has_seen_welcome_messages]);
+  }, [showHomeTutorial, progress]);
 
   // Mark tutorial as seen as soon as it opens
   const handleTutorialMarkSeen = async () => {
@@ -608,9 +608,9 @@ export default function Dashboard() {
         {/* Main Dashboard */}
         <div className="space-y-4">
           
-          {/* Challenge Card - show skeleton while challenge data loads */}
+          {/* Challenge Card - show skeleton only if no progress data at all */}
           <div id="tutorial-todays-hello-card">
-            {challengeLoading ? (
+            {!progress ? (
               <div className="rounded-xl bg-card border border-border/50 p-4 min-h-[260px] flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <Skeleton className="w-5 h-5 rounded" />
