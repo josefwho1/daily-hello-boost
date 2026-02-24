@@ -118,21 +118,18 @@ interface ChallengeRevealDialogProps {
 }
 
 export const ChallengeRevealDialog = memo(({ open, completedDay, userName, onContinue }: ChallengeRevealDialogProps) => {
-  if (!open) return null;
-
   // Determine which screen to show
   let config: ChallengeRevealConfig;
   
   if (completedDay === 7) {
     config = finalCompletion;
   } else if (completedDay === 8) {
-    // Post-final: normal mode transition
     config = normalModeScreen;
   } else {
     config = challengeReveals[completedDay] || challengeReveals[1];
   }
 
-  // Inject user name into body if available (only replace {name} placeholders, not the word "name")
+  // Inject user name into body if available
   const bodyLines = config.body.map(line => {
     if (userName) {
       return line.replace(/\{name\}/g, userName);
@@ -144,41 +141,43 @@ export const ChallengeRevealDialog = memo(({ open, completedDay, userName, onCon
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[200] bg-background flex items-center justify-center p-6"
+          className="fixed inset-0 z-[200] bg-background overflow-y-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <motion.div
-            className="w-full max-w-md text-center space-y-6"
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-          >
-            <img
-              src={config.image}
-              alt={config.headline}
-              className="w-56 h-auto max-h-56 mx-auto object-contain"
-            />
+          <div className="min-h-full flex items-center justify-center p-6">
+            <motion.div
+              className="w-full max-w-md text-center space-y-6 py-4"
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <img
+                src={config.image}
+                alt={config.headline}
+                className="w-56 h-auto max-h-56 mx-auto object-contain"
+              />
 
-            <h1 className="text-2xl font-bold text-foreground">
-              {config.headline}
-            </h1>
+              <h1 className="text-2xl font-bold text-foreground">
+                {config.headline}
+              </h1>
 
-            <div className="space-y-2">
-              {bodyLines.map((line, i) => (
-                <p key={i} className={i === 0 ? "text-foreground" : "text-muted-foreground"}>
-                  {line}
-                </p>
-              ))}
-            </div>
+              <div className="space-y-2">
+                {bodyLines.map((line, i) => (
+                  <p key={i} className={i === 0 ? "text-foreground" : "text-muted-foreground"}>
+                    {line}
+                  </p>
+                ))}
+              </div>
 
-            <Button onClick={onContinue} className="w-full" size="lg">
-              {config.button}
-            </Button>
-          </motion.div>
+              <Button onClick={onContinue} className="w-full" size="lg">
+                {config.button}
+              </Button>
+            </motion.div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
