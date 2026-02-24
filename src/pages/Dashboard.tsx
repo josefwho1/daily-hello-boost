@@ -32,6 +32,7 @@ import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
 import { FirstHelloCelebrationDialog } from "@/components/FirstHelloCelebrationDialog";
+import { ChallengeDayCelebrationDialog } from "@/components/ChallengeDayCelebrationDialog";
 import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
 import { toast } from "sonner";
 import { ChallengeCompletionToast } from "@/components/ChallengeCompletionToast";
