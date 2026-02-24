@@ -102,10 +102,11 @@ export const useUserProgressQuery = () => {
         throw error;
       }
     },
-    // Serve cached data instantly
+    // Serve cached data instantly, but mark it as old so RQ always refetches in background
     initialData: () => getCachedProgress<UserProgress>() ?? undefined,
+    initialDataUpdatedAt: 0, // Forces background refetch immediately
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
   });
 
   const updateMutation = useMutation({
@@ -124,6 +125,8 @@ export const useUserProgressQuery = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(QUERY_KEY, data);
+      // Write back to offline cache so next load is fresh
+      setCachedProgress(data as any);
     },
   });
 
@@ -147,6 +150,7 @@ export const useUserProgressQuery = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(QUERY_KEY, data);
+      setCachedProgress(data as any);
     },
   });
 
