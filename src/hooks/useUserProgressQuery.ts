@@ -116,16 +116,18 @@ export const useUserProgressQuery = () => {
     mutationFn: async (updates: Partial<UserProgress>) => {
       if (!user) throw new Error('No user');
 
-      // Optimistically update local cache immediately
+      // Optimistically update React Query cache AND localStorage immediately
+      // This ensures concurrent mutations see each other's optimistic state
       const current = queryClient.getQueryData<UserProgress>(QUERY_KEY);
       const optimistic = { ...current, ...updates };
+      queryClient.setQueryData(QUERY_KEY, optimistic);
       setCachedProgress(optimistic as any);
 
       try {
         if (!navigator.onLine) {
           // Queue for later sync
           addPendingProgressUpdate(updates as Record<string, unknown>);
-          return optimistic;
+          return { updates, serverData: null };
         }
 
         const { data, error } = await supabase
@@ -136,19 +138,30 @@ export const useUserProgressQuery = () => {
           .single();
 
         if (error) throw error;
-        return data;
+        return { updates, serverData: data };
       } catch (error) {
         console.warn('Progress update failed, queued for sync:', error);
         addPendingProgressUpdate(updates as Record<string, unknown>);
-        return optimistic;
+        return { updates, serverData: null };
       }
     },
-    onSuccess: (data) => {
-      // Merge with current cache to avoid race conditions between concurrent mutations
-      const current = queryClient.getQueryData<UserProgress>(QUERY_KEY);
-      const merged = { ...current, ...data };
-      queryClient.setQueryData(QUERY_KEY, merged);
-      setCachedProgress(merged as any);
+    onSuccess: ({ updates, serverData }) => {
+      // Only apply the fields THIS mutation updated, using server-confirmed values
+      // This prevents stale server responses from overwriting concurrent mutations' data
+      queryClient.setQueryData(QUERY_KEY, (current: UserProgress | null | undefined) => {
+        if (!current) return serverData || current;
+        if (!serverData) return current; // offline — optimistic already applied
+        
+        const confirmedFields: Record<string, unknown> = {};
+        for (const key of Object.keys(updates)) {
+          if (key in serverData) {
+            confirmedFields[key] = (serverData as any)[key];
+          }
+        }
+        const merged = { ...current, ...confirmedFields };
+        setCachedProgress(merged as any);
+        return merged;
+      });
     },
   });
 
