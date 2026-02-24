@@ -310,9 +310,8 @@ export default function Dashboard() {
         }
       }
 
-      // Check for first hello celebration
-
       // Check for hello/name milestones
+      const previousTotalHellos = progress?.total_hellos || logs.length;
       const helloMilestone = checkMilestoneReached(previousTotalHellos, newTotalHellos, HELLO_MILESTONES);
       if (helloMilestone) {
         setMilestoneValue(helloMilestone);
