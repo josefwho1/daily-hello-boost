@@ -754,6 +754,7 @@ export default function Dashboard() {
         userName={username}
         onContinue={async () => {
           setShowChallengeReveal(false);
+          isChallengeCompletionRef.current = false;
           // If day 7 completed, show normal mode transition
           if (challengeRevealDay === 7) {
             setChallengeRevealDay(8);
@@ -776,8 +777,16 @@ export default function Dashboard() {
       {/* First Hello Celebration */}
       <FirstHelloCelebrationDialog open={showFirstHelloCelebration} onContinue={() => setShowFirstHelloCelebration(false)} userName={username} />
 
+      {/* Challenge Day Celebration */}
+      <ChallengeDayCelebrationDialog 
+        open={showChallengeDayCelebration} 
+        onContinue={advanceCelebrationQueue} 
+        dayNumber={challengeDayCelebrationInfo?.day || 1} 
+        challengeName={challengeDayCelebrationInfo?.name || ''} 
+      />
+
       {/* Daily Mode Streak Celebration */}
-      <StreakCelebrationDialog open={showStreakCelebration} onContinue={() => setShowStreakCelebration(false)} streakCount={celebratedStreakValue} />
+      <StreakCelebrationDialog open={showStreakCelebration} onContinue={handleStreakCelebrationClose} streakCount={celebratedStreakValue} />
 
       {/* Save Progress Dialog for Guests */}
       <SaveProgressDialog open={showSavePrompt} onOpenChange={setShowSavePrompt} onDismiss={dismissSavePrompt} totalHellos={guestState?.total_hellos_logged || 0} />
