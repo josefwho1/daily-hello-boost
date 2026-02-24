@@ -36,6 +36,12 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000,
       // Retry failed queries only once
       retry: 1,
+      // CRITICAL: offlineFirst prevents RQ from pausing/blocking when device goes offline
+      // Queries will use cache and won't hang waiting for network
+      networkMode: 'offlineFirst',
+    },
+    mutations: {
+      networkMode: 'offlineFirst',
     },
   },
 });
