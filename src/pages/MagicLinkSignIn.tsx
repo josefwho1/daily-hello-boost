@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { getAuthCallbackUrl } from '@/lib/publicUrls';
+import { setCachedProgress } from '@/lib/offlineCache';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Mail, ArrowLeft, Check, AlertCircle, Lock, Eye, EyeOff, KeyRound } from 'lucide-react';
@@ -195,7 +196,7 @@ export default function MagicLinkSignIn() {
       // Check/create user progress
       const { data: progressRow, error: progressReadError } = await supabase
         .from('user_progress')
-        .select('id')
+        .select('*')
         .eq('user_id', userId)
         .maybeSingle();
       
@@ -218,6 +219,15 @@ export default function MagicLinkSignIn() {
           mode: 'daily',
         })
         .eq('user_id', userId);
+
+      // Cache progress for instant dashboard load after redirect
+      setCachedProgress({
+        ...progressRow,
+        has_completed_onboarding: true,
+        is_onboarding_week: false,
+        current_phase: 'active',
+        mode: 'daily',
+      });
 
       toast.success('Signed in successfully!');
       window.location.replace('/');
