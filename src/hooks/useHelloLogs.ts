@@ -220,45 +220,49 @@ export const useHelloLogs = () => {
     };
     queryClient.setQueryData(['hello-logs', user.id], (old: HelloLog[] = []) => [helloLog, ...old]);
 
-    // 3. Try to sync to server
+    // 3. Try to sync to server (with fast timeout to avoid hanging offline)
+    if (!navigator.onLine) {
+      addToPendingSync(localId);
+      return helloLog;
+    }
+
     try {
-      if (navigator.onLine) {
-        const { data, error } = await supabase
-          .from('hello_logs')
-          .insert({
-            user_id: user.id,
-            name: localEntry.name,
-            location: localEntry.location,
-            notes: localEntry.notes,
-            rating: localEntry.rating,
-            difficulty_rating: localEntry.difficulty_rating,
-            no_name_flag: localEntry.no_name_flag,
-            timezone_offset: timezoneOffset,
-            linked_to: localEntry.linked_to,
-            hello_type: localEntry.hello_type,
-          })
-          .select()
-          .single();
+      // Race the insert against a 5-second timeout so the UI never hangs
+      const insertPromise = supabase
+        .from('hello_logs')
+        .insert({
+          user_id: user.id,
+          name: localEntry.name,
+          location: localEntry.location,
+          notes: localEntry.notes,
+          rating: localEntry.rating,
+          difficulty_rating: localEntry.difficulty_rating,
+          no_name_flag: localEntry.no_name_flag,
+          timezone_offset: timezoneOffset,
+          linked_to: localEntry.linked_to,
+          hello_type: localEntry.hello_type,
+        })
+        .select()
+        .single();
 
-        if (error) throw error;
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Network timeout')), 5000)
+      );
 
-        // Update cache with server ID
-        updateCachedHello(localId, { id: data.id, _synced: true, _localId: undefined });
+      const { data, error } = await Promise.race([insertPromise, timeoutPromise]);
 
-        // Update React Query cache with server data
-        queryClient.setQueryData(['hello-logs', user.id], (old: HelloLog[] = []) =>
-          old.map(l => l.id === localId ? (data as HelloLog) : l)
-        );
-        
-        if (navigator.onLine) {
-          await queryClient.invalidateQueries({ queryKey: ['user-progress'] });
-        }
-        return data;
-      } else {
-        // Offline: add to sync queue
-        addToPendingSync(localId);
-        return helloLog;
-      }
+      if (error) throw error;
+
+      // Update cache with server ID
+      updateCachedHello(localId, { id: data.id, _synced: true, _localId: undefined });
+
+      // Update React Query cache with server data
+      queryClient.setQueryData(['hello-logs', user.id], (old: HelloLog[] = []) =>
+        old.map(l => l.id === localId ? (data as HelloLog) : l)
+      );
+      
+      await queryClient.invalidateQueries({ queryKey: ['user-progress'] });
+      return data;
     } catch (error) {
       console.warn('Failed to sync hello, queued for later:', error);
       addToPendingSync(localId);

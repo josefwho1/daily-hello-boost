@@ -606,12 +606,10 @@ export default function Dashboard() {
           </h1>
         </div>
 
-        {/* Sync Status */}
-        {syncStatus !== 'synced' && (
-          <div className="flex justify-center mb-2">
-            <SyncStatusBadge status={syncStatus} pendingCount={pendingCount} />
-          </div>
-        )}
+        {/* Sync / Offline Status — always rendered so offline indicator can appear */}
+        <div className="flex justify-center mb-2">
+          <SyncStatusBadge status={syncStatus} pendingCount={pendingCount} showOfflineIndicator />
+        </div>
 
         {/* Stats Dashboard - renders instantly from cache, fills in with live data */}
         <HomeStatsBar logs={logs} lifetimeHellos={logs.length} />
