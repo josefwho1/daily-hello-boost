@@ -12,6 +12,8 @@ import {
   updateCachedHello,
   removeCachedHello,
   addToPendingSync,
+  removeFromPendingSync,
+  addToPendingDeletions,
   generateLocalId,
   setLastFullSync,
   type CachedHelloEntry,
@@ -310,33 +312,44 @@ export const useHelloLogs = () => {
   const deleteLog = async (id: string) => {
     if (!user) return;
 
+    // 1. Update local cache and React Query immediately (optimistic)
+    removeCachedHello(id);
+    // Also remove from pending sync if it was an unsynced local entry
+    removeFromPendingSync(id);
+    queryClient.setQueryData(['hello-logs', user.id], (old: HelloLog[] = []) =>
+      old.filter(log => log.id !== id).map(log => 
+        log.linked_to === id ? { ...log, linked_to: null } : log
+      )
+    );
+
+    // 2. Try to delete on server
     try {
-      await supabase
-        .from('hello_logs')
-        .update({ linked_to: null })
-        .eq('linked_to', id)
-        .eq('user_id', user.id);
+      if (navigator.onLine) {
+        await supabase
+          .from('hello_logs')
+          .update({ linked_to: null })
+          .eq('linked_to', id)
+          .eq('user_id', user.id);
 
-      const { error } = await supabase
-        .from('hello_logs')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+        const { error } = await supabase
+          .from('hello_logs')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', user.id);
 
-      if (error) throw error;
-      
-      // Update both caches
-      removeCachedHello(id);
-      queryClient.setQueryData(['hello-logs', user.id], (old: HelloLog[] = []) =>
-        old.filter(log => log.id !== id).map(log => 
-          log.linked_to === id ? { ...log, linked_to: null } : log
-        )
-      );
-      
-      await queryClient.invalidateQueries({ queryKey: ['hello-logs'] });
+        if (error) throw error;
+        await queryClient.invalidateQueries({ queryKey: ['hello-logs'] });
+      } else {
+        // Queue deletion for sync when back online (only for server-synced entries)
+        if (!id.startsWith('local_')) {
+          addToPendingDeletions(id);
+        }
+      }
     } catch (error) {
-      console.error('Error deleting hello log:', error);
-      throw error;
+      console.warn('Failed to delete on server, queued for later:', error);
+      if (!id.startsWith('local_')) {
+        addToPendingDeletions(id);
+      }
     }
   };
 

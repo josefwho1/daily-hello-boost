@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { getCachedProgress, setCachedProgress } from '@/lib/offlineCache';
+import { getCachedProgress, setCachedProgress, addPendingProgressUpdate } from '@/lib/offlineCache';
 
 export interface UserProgress {
   current_streak: number;
@@ -113,19 +113,35 @@ export const useUserProgressQuery = () => {
     mutationFn: async (updates: Partial<UserProgress>) => {
       if (!user) throw new Error('No user');
 
-      const { data, error } = await supabase
-        .from('user_progress')
-        .update(updates)
-        .eq('user_id', user.id)
-        .select()
-        .single();
+      // Optimistically update local cache immediately
+      const current = queryClient.getQueryData<UserProgress>(QUERY_KEY);
+      const optimistic = { ...current, ...updates };
+      setCachedProgress(optimistic as any);
 
-      if (error) throw error;
-      return data;
+      try {
+        if (!navigator.onLine) {
+          // Queue for later sync
+          addPendingProgressUpdate(updates as Record<string, unknown>);
+          return optimistic;
+        }
+
+        const { data, error } = await supabase
+          .from('user_progress')
+          .update(updates)
+          .eq('user_id', user.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.warn('Progress update failed, queued for sync:', error);
+        addPendingProgressUpdate(updates as Record<string, unknown>);
+        return optimistic;
+      }
     },
     onSuccess: (data) => {
       queryClient.setQueryData(QUERY_KEY, data);
-      // Write back to offline cache so next load is fresh
       setCachedProgress(data as any);
     },
   });
