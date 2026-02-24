@@ -171,6 +171,13 @@ export default function Onboarding() {
       .eq('user_id', userId)
       .maybeSingle();
 
+    // Compute today's date key for streak initialization when first hello is logged
+    let todayKey: string | undefined;
+    if (opts?.loggedFirstHello) {
+      const { detectBrowserTimezoneOffset, getDayKeyInOffset } = await import('@/lib/timezone');
+      todayKey = getDayKeyInOffset(new Date(), detectBrowserTimezoneOffset());
+    }
+
     const progressData: Record<string, unknown> = {
       has_completed_onboarding: true,
       onboarding_completed_at: new Date().toISOString(),
@@ -179,17 +186,20 @@ export default function Onboarding() {
       current_phase: 'active',
       username: displayName,
       has_seen_welcome_messages: false,
-      daily_mode_active: false,
-      daily_mode_current_streak: 0,
-      daily_mode_start_date: null,
+      // When first hello is logged during onboarding, activate daily mode and start streak
+      daily_mode_active: !!opts?.loggedFirstHello,
+      daily_mode_current_streak: opts?.loggedFirstHello ? 1 : 0,
+      daily_mode_best_streak: opts?.loggedFirstHello ? 1 : 0,
+      daily_mode_start_date: opts?.loggedFirstHello ? new Date().toISOString() : null,
+      daily_mode_last_hello_date: opts?.loggedFirstHello ? todayKey : null,
+      last_completed_date: opts?.loggedFirstHello ? todayKey : null,
       challenge_completed_days: opts?.loggedFirstHello ? [1] : [],
       challenge_started_at: new Date().toISOString(),
       selected_pack_id: '30-day-hello',
       current_streak: opts?.loggedFirstHello ? 1 : 0,
       why_here: whyHere,
+      last_hello_at: opts?.loggedFirstHello ? new Date().toISOString() : null,
     };
-
-    // daily_mode_last_hello_date is not set here — daily mode activates after 7-day challenge
 
     const progressPromise = existingProgress
       ? supabase.from('user_progress').update(progressData).eq('user_id', userId)
@@ -291,19 +301,16 @@ export default function Onboarding() {
         hello_type: 'challenge:1',
       });
       
+      // Streak and counters are now initialized in ensureUserAndProgress — no background task needed
       scheduleBackgroundTask(async () => {
-        const today = (await import('@/lib/timezone')).getDayKeyInOffset(new Date(), detectedOffset);
         const { data: currentProgress } = await supabase
           .from('user_progress')
           .select('total_hellos, hellos_this_week')
           .eq('user_id', userId)
           .maybeSingle();
         await supabase.from('user_progress').update({
-          last_completed_date: today,
           total_hellos: (currentProgress?.total_hellos ?? 0) + 1,
           hellos_this_week: (currentProgress?.hellos_this_week ?? 0) + 1,
-          daily_mode_last_hello_date: today,
-          daily_mode_current_streak: 1,
         }).eq('user_id', userId);
       });
     } catch (error) {
