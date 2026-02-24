@@ -21,6 +21,7 @@ import { TierUnlockCelebrationDialog } from "@/components/TierUnlockCelebrationD
 import { ChallengeRevealDialog } from "@/components/ChallengeRevealDialog";
 import { LogHelloScreen } from "@/components/LogHelloScreen";
 import { DashboardSkeleton } from "@/components/DashboardSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { HomeStatsBar } from "@/components/HomeStatsBar";
 import { SaveHelloButton } from "@/components/SaveHelloButton";
