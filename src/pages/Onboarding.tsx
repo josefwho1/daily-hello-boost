@@ -315,6 +315,8 @@ export default function Onboarding() {
   }, []);
 
   const completeOnboarding = useCallback(async (showTutorial: boolean) => {
+    // Clear persisted onboarding state — we're done
+    clearSessionState();
     if (showTutorial) {
       sessionStorage.setItem('pending_home_tutorial', '1');
     }
