@@ -116,6 +116,60 @@ export const clearPendingSync = (): void => {
   localStorage.setItem(KEYS.PENDING_SYNC, JSON.stringify([]));
 };
 
+// --- Pending Deletions Queue ---
+
+const DELETION_KEY = 'offline_pending_deletions';
+
+export interface PendingDeletion {
+  id: string;
+  timestamp: string;
+}
+
+export const getPendingDeletions = (): PendingDeletion[] => {
+  try {
+    const raw = localStorage.getItem(DELETION_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const addToPendingDeletions = (id: string): void => {
+  const pending = getPendingDeletions();
+  if (!pending.some(d => d.id === id)) {
+    pending.push({ id, timestamp: new Date().toISOString() });
+    localStorage.setItem(DELETION_KEY, JSON.stringify(pending));
+  }
+};
+
+export const removeFromPendingDeletions = (id: string): void => {
+  const pending = getPendingDeletions().filter(d => d.id !== id);
+  localStorage.setItem(DELETION_KEY, JSON.stringify(pending));
+};
+
+// --- Pending Progress Updates Queue ---
+
+const PROGRESS_SYNC_KEY = 'offline_pending_progress';
+
+export const getPendingProgressUpdates = (): Record<string, unknown>[] => {
+  try {
+    const raw = localStorage.getItem(PROGRESS_SYNC_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const addPendingProgressUpdate = (updates: Record<string, unknown>): void => {
+  const pending = getPendingProgressUpdates();
+  pending.push(updates);
+  localStorage.setItem(PROGRESS_SYNC_KEY, JSON.stringify(pending));
+};
+
+export const clearPendingProgressUpdates = (): void => {
+  localStorage.setItem(PROGRESS_SYNC_KEY, JSON.stringify([]));
+};
+
 // --- User Progress Cache ---
 
 export const getCachedProgress = <T = Record<string, unknown>>(): T | null => {
