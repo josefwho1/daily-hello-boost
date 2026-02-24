@@ -172,10 +172,16 @@ export const clearPendingProgressUpdates = (): void => {
 
 // --- User Progress Cache ---
 
-export const getCachedProgress = <T = Record<string, unknown>>(): T | null => {
+export const getCachedProgress = <T = Record<string, unknown>>(userId?: string): T | null => {
   try {
     const raw = localStorage.getItem(KEYS.USER_PROGRESS);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // If userId provided, validate cache belongs to this user
+    if (userId && parsed?.user_id && parsed.user_id !== userId) {
+      return null;
+    }
+    return parsed;
   } catch {
     return null;
   }
