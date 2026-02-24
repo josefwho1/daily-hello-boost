@@ -257,6 +257,15 @@ export default function Onboarding() {
     }
     try {
       await ensureUserAndProgress({ loggedFirstHello: firstHelloLogged });
+      // Update offline cache so the stale initialData doesn't redirect back
+      const cached = getCachedProgress<Record<string, unknown>>();
+      setCachedProgress({
+        ...(cached || {}),
+        has_completed_onboarding: true,
+        onboarding_completed_at: new Date().toISOString(),
+        current_phase: 'active',
+        is_onboarding_week: false,
+      });
     } catch (error) {
       console.error('Onboarding completion error:', error);
     }
