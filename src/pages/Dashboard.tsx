@@ -331,18 +331,17 @@ export default function Dashboard() {
       }
     }
   };
-  // Use progressive loading: show layout immediately with cached data,
-  // only show full skeleton if there's zero cached data at all
-  const hasCachedData = !!getCachedProgress<Record<string, unknown>>();
-  const isLoading = isAnonymous ? guestLoading : progressLoading || logsLoading;
-  
-  // Only block with skeleton if we have NO cached data AND are still loading
-  if (isLoading && !hasCachedData && !progress) {
-    return <DashboardSkeleton />;
+  // Fast loading: if we have progress (from cache or query), render immediately.
+  // Only show skeleton if we truly have no data at all.
+  if (!progress) {
+    const cached = getCachedProgress<Record<string, unknown>>();
+    if (cached) {
+      // We have cached data — don't block, the query will hydrate soon
+    } else {
+      // No data at all — show skeleton briefly
+      return <DashboardSkeleton />;
+    }
   }
-  
-  // If progress is null and we're not loading, show skeleton (will resolve shortly or redirect)
-  if (!isLoading && !progress) return <DashboardSkeleton />;
 
   // Helper to show challenge completion toast with Undo and Add Details buttons
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
