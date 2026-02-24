@@ -141,8 +141,11 @@ export const useUserProgressQuery = () => {
       }
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(QUERY_KEY, data);
-      setCachedProgress(data as any);
+      // Merge with current cache to avoid race conditions between concurrent mutations
+      const current = queryClient.getQueryData<UserProgress>(QUERY_KEY);
+      const merged = { ...current, ...data };
+      queryClient.setQueryData(QUERY_KEY, merged);
+      setCachedProgress(merged as any);
     },
   });
 
