@@ -189,7 +189,8 @@ export default function Dashboard() {
   // Derive stable tutorial eligibility values to avoid object-reference churn
   const tutorialEligibleOnboarding = Boolean(progress?.has_completed_onboarding);
   const tutorialSeenWelcome = progress?.has_seen_welcome_messages === true;
-  const tutorialSeenLocal = localStorage.getItem('tutorial_completed') === '1';
+  const tutorialLocalKey = user?.id ? `tutorial_completed_${user.id}` : 'tutorial_completed';
+  const tutorialSeenLocal = localStorage.getItem(tutorialLocalKey) === '1';
   const hasProgress = !!progress;
 
   useEffect(() => {
@@ -220,7 +221,7 @@ export default function Dashboard() {
   // Mark tutorial as seen as soon as it opens
   const handleTutorialMarkSeen = async () => {
     // Set localStorage immediately — this is the bulletproof guard
-    localStorage.setItem('tutorial_completed', '1');
+    localStorage.setItem(tutorialLocalKey, '1');
     sessionStorage.removeItem('pending_home_tutorial');
     if (user?.id) {
       supabase.from('user_progress').update({
@@ -234,7 +235,7 @@ export default function Dashboard() {
     }
   };
   const handleTutorialComplete = () => {
-    localStorage.setItem('tutorial_completed', '1');
+    localStorage.setItem(tutorialLocalKey, '1');
     setShowHomeTutorial(false);
     toast.success("🎉 You're all set!");
   };
