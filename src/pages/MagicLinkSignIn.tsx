@@ -618,9 +618,10 @@ export default function MagicLinkSignIn() {
             <CardContent>
               <form onSubmit={handlePasswordSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="signup-email">Email</Label>
                   <Input
-                    id="email"
+                    id="signup-email"
+                    name="email"
                     type="email"
                     placeholder="you@example.com"
                     value={email}
@@ -628,15 +629,17 @@ export default function MagicLinkSignIn() {
                       setEmail(e.target.value);
                       setError(null);
                     }}
+                    autoComplete="email"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="signup-password">Password</Label>
                   <div className="relative">
                     <Input
-                      id="password"
+                      id="signup-password"
+                      name="password"
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Create a password"
                       value={password}
@@ -644,6 +647,7 @@ export default function MagicLinkSignIn() {
                         setPassword(e.target.value);
                         setError(null);
                       }}
+                      autoComplete="new-password"
                       required
                     />
                     <Button
@@ -664,9 +668,10 @@ export default function MagicLinkSignIn() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Label htmlFor="signup-confirm-password">Confirm Password</Label>
                   <Input
-                    id="confirm-password"
+                    id="signup-confirm-password"
+                    name="confirm-password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Confirm your password"
                     value={confirmPassword}
@@ -674,6 +679,7 @@ export default function MagicLinkSignIn() {
                       setConfirmPassword(e.target.value);
                       setError(null);
                     }}
+                    autoComplete="new-password"
                     required
                   />
                 </div>
@@ -752,9 +758,10 @@ export default function MagicLinkSignIn() {
             <CardContent>
               <form onSubmit={handlePasswordSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="signin-email">Email</Label>
                   <Input
-                    id="email"
+                    id="signin-email"
+                    name="email"
                     type="email"
                     placeholder="you@example.com"
                     value={email}
@@ -762,16 +769,18 @@ export default function MagicLinkSignIn() {
                       setEmail(e.target.value);
                       setError(null);
                     }}
+                    autoComplete="email"
                     autoFocus
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="signin-password">Password</Label>
                   <div className="relative">
                     <Input
-                      id="password"
+                      id="signin-password"
+                      name="password"
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
                       value={password}
@@ -779,6 +788,7 @@ export default function MagicLinkSignIn() {
                         setPassword(e.target.value);
                         setError(null);
                       }}
+                      autoComplete="current-password"
                       required
                     />
                     <Button
@@ -893,9 +903,10 @@ export default function MagicLinkSignIn() {
           <CardContent className="space-y-4">
             <form onSubmit={(e) => { e.preventDefault(); setAuthMode('password'); }} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="choose-email">Email</Label>
                 <Input
-                  id="email"
+                  id="choose-email"
+                  name="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
@@ -903,6 +914,7 @@ export default function MagicLinkSignIn() {
                     setEmail(e.target.value);
                     setError(null);
                   }}
+                  autoComplete="email"
                   autoFocus
                   required
                 />
