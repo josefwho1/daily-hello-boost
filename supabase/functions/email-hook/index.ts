@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
     // The token is the 6-digit OTP code
     const otpCode = email_data.token;
     // The confirmation_url is the magic link
-    const magicLink = email_data.confirmation_url || email_data.redirect_to || 'https://app.onehello.co';
+    const magicLink = email_data.confirmation_url || email_data.redirect_to || 'https://app.onehello.io';
 
     let subject: string;
     let bodyContent: string;
