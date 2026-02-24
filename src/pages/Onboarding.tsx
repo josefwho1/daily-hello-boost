@@ -133,9 +133,7 @@ export default function Onboarding() {
       why_here: whyHere,
     };
 
-    if (opts?.loggedFirstHello) {
-      progressData.daily_mode_last_hello_date = new Date().toISOString().split('T')[0];
-    }
+    // daily_mode_last_hello_date is not set here — daily mode activates after 7-day challenge
 
     const progressPromise = existingProgress
       ? supabase.from('user_progress').update(progressData).eq('user_id', userId)
