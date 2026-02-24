@@ -608,9 +608,9 @@ export default function Dashboard() {
         {/* Main Dashboard */}
         <div className="space-y-4">
           
-          {/* Challenge Card - show skeleton while challenge data loads */}
+          {/* Challenge Card - show skeleton only if no progress data at all */}
           <div id="tutorial-todays-hello-card">
-            {challengeLoading ? (
+            {!progress ? (
               <div className="rounded-xl bg-card border border-border/50 p-4 min-h-[260px] flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <Skeleton className="w-5 h-5 rounded" />
