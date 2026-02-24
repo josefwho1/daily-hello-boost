@@ -32,6 +32,7 @@ import { SaveProgressDialog } from "@/components/SaveProgressDialog";
 import { HomeScreenTutorial } from "@/components/HomeScreenTutorial";
 import { MilestoneCelebrationDialog, HELLO_MILESTONES, NAME_MILESTONES, checkMilestoneReached, MilestoneType } from "@/components/MilestoneCelebrationDialog";
 import { FirstHelloCelebrationDialog } from "@/components/FirstHelloCelebrationDialog";
+import { ChallengeDayCelebrationDialog } from "@/components/ChallengeDayCelebrationDialog";
 import { StreakCelebrationDialog } from "@/components/StreakCelebrationDialog";
 import { toast } from "sonner";
 import { ChallengeCompletionToast } from "@/components/ChallengeCompletionToast";
@@ -154,6 +155,15 @@ export default function Dashboard() {
 
   // First hello celebration state
   const [showFirstHelloCelebration, setShowFirstHelloCelebration] = useState(false);
+
+  // Challenge day celebration queue state
+  const [showChallengeDayCelebration, setShowChallengeDayCelebration] = useState(false);
+  const [challengeDayCelebrationInfo, setChallengeDayCelebrationInfo] = useState<{ day: number; name: string } | null>(null);
+  // Queued celebrations to show after challenge day celebration
+  const queuedStreakRef = useRef<number | null>(null);
+  const queuedRevealDayRef = useRef<number | null>(null);
+  // Flag to suppress streak celebration during challenge completion flow
+  const isChallengeCompletionRef = useRef(false);
 
   // Streak celebration states
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
@@ -342,8 +352,13 @@ export default function Dashboard() {
         const isStreakHidden = localStorage.getItem('hideStreak') === 'true';
         if (!hasAlreadyRecordedForDailyModeToday && !isStreakHidden) {
           const newStreakValue = streakBeforeLog === 0 ? 1 : streakBeforeLog + 1;
-          setCelebratedStreakValue(newStreakValue);
-          setTimeout(() => setShowStreakCelebration(true), 500);
+          if (isChallengeCompletionRef.current) {
+            // Queue streak for after challenge celebration
+            queuedStreakRef.current = newStreakValue;
+          } else {
+            setCelebratedStreakValue(newStreakValue);
+            setTimeout(() => setShowStreakCelebration(true), 500);
+          }
         }
       }
     }
@@ -478,22 +493,61 @@ export default function Dashboard() {
   };
 
   // Helper to handle challenge celebrations — only for 7-day challenge
-  const checkAndShowCelebrations = (previousCount: number, newCount: number) => {
+  // Queues the reveal day; the challenge day celebration is shown first
+  const checkAndShowCelebrations = (previousCount: number, newCount: number, completedDay: number, challengeName: string) => {
     // Only show challenge reveal screens during 7-day challenge
     if (progress?.selected_pack_id === '30-hellos' || progress?.selected_pack_id === 'daily') return;
 
-    // Check for 7-day completion
+    // Queue the reveal day
     if (newCount === 7 && previousCount < 7) {
-      setChallengeRevealDay(7);
-      setTimeout(() => setShowChallengeReveal(true), 500);
+      queuedRevealDayRef.current = 7;
+    } else if (newCount < 7 && newCount > previousCount) {
+      queuedRevealDayRef.current = newCount;
+    }
+
+    // Show challenge day celebration first (this kicks off the queue)
+    setChallengeDayCelebrationInfo({ day: completedDay, name: challengeName });
+    setTimeout(() => setShowChallengeDayCelebration(true), 400);
+  };
+
+  // Advance celebration queue: challenge → streak → reveal
+  const advanceCelebrationQueue = () => {
+    setShowChallengeDayCelebration(false);
+
+    // Next: streak celebration if queued
+    if (queuedStreakRef.current !== null) {
+      const streakVal = queuedStreakRef.current;
+      queuedStreakRef.current = null;
+      setCelebratedStreakValue(streakVal);
+      setTimeout(() => setShowStreakCelebration(true), 300);
       return;
     }
-    
-    // Show next challenge reveal for days 1-6
-    if (newCount < 7 && newCount > previousCount) {
-      setChallengeRevealDay(newCount);
-      setTimeout(() => setShowChallengeReveal(true), 500);
+
+    // Next: challenge reveal if queued
+    if (queuedRevealDayRef.current !== null) {
+      const revealDay = queuedRevealDayRef.current;
+      queuedRevealDayRef.current = null;
+      setChallengeRevealDay(revealDay);
+      setTimeout(() => setShowChallengeReveal(true), 300);
+      return;
     }
+
+    isChallengeCompletionRef.current = false;
+  };
+
+  // When streak celebration closes, advance to reveal if queued
+  const handleStreakCelebrationClose = () => {
+    setShowStreakCelebration(false);
+
+    if (queuedRevealDayRef.current !== null) {
+      const revealDay = queuedRevealDayRef.current;
+      queuedRevealDayRef.current = null;
+      setChallengeRevealDay(revealDay);
+      setTimeout(() => setShowChallengeReveal(true), 300);
+      return;
+    }
+
+    isChallengeCompletionRef.current = false;
   };
 
   // Full-screen 30 Hellos List View
@@ -571,6 +625,8 @@ export default function Dashboard() {
           const isThirtyHellos = pendingChallengeCompletion.day >= 101;
           const helloTypePrefix = isThirtyHellos ? 'thirty' : 'challenge';
           const tagDay = isThirtyHellos ? pendingChallengeCompletion.day - 100 : pendingChallengeCompletion.day;
+          // Set flag so handleLogHello queues streak instead of showing it
+          isChallengeCompletionRef.current = true;
           await handleLogHello({
             ...data,
             hello_type: `${helloTypePrefix}:${tagDay}`,
@@ -579,7 +635,9 @@ export default function Dashboard() {
           if (!challengeState.completedDays.includes(pendingChallengeCompletion.day)) {
             const previousCount = challengeState.completedDays.length;
             await markDayComplete(pendingChallengeCompletion.day);
-            checkAndShowCelebrations(previousCount, previousCount + 1);
+            checkAndShowCelebrations(previousCount, previousCount + 1, tagDay, pendingChallengeCompletion.name);
+          } else {
+            isChallengeCompletionRef.current = false;
           }
           setShowLogDialog(false);
           setAutoStartRecording(false);
@@ -696,6 +754,7 @@ export default function Dashboard() {
         userName={username}
         onContinue={async () => {
           setShowChallengeReveal(false);
+          isChallengeCompletionRef.current = false;
           // If day 7 completed, show normal mode transition
           if (challengeRevealDay === 7) {
             setChallengeRevealDay(8);
@@ -718,8 +777,16 @@ export default function Dashboard() {
       {/* First Hello Celebration */}
       <FirstHelloCelebrationDialog open={showFirstHelloCelebration} onContinue={() => setShowFirstHelloCelebration(false)} userName={username} />
 
+      {/* Challenge Day Celebration */}
+      <ChallengeDayCelebrationDialog 
+        open={showChallengeDayCelebration} 
+        onContinue={advanceCelebrationQueue} 
+        dayNumber={challengeDayCelebrationInfo?.day || 1} 
+        challengeName={challengeDayCelebrationInfo?.name || ''} 
+      />
+
       {/* Daily Mode Streak Celebration */}
-      <StreakCelebrationDialog open={showStreakCelebration} onContinue={() => setShowStreakCelebration(false)} streakCount={celebratedStreakValue} />
+      <StreakCelebrationDialog open={showStreakCelebration} onContinue={handleStreakCelebrationClose} streakCount={celebratedStreakValue} />
 
       {/* Save Progress Dialog for Guests */}
       <SaveProgressDialog open={showSavePrompt} onOpenChange={setShowSavePrompt} onDismiss={dismissSavePrompt} totalHellos={guestState?.total_hellos_logged || 0} />
