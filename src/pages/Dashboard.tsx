@@ -333,8 +333,8 @@ export default function Dashboard() {
     return <DashboardSkeleton />;
   }
   
-  // If progress is null and we're not loading, nothing to show
-  if (!isLoading && !progress) return null;
+  // If progress is null and we're not loading, show skeleton (will resolve shortly or redirect)
+  if (!isLoading && !progress) return <DashboardSkeleton />;
 
   // Helper to show challenge completion toast with Undo and Add Details buttons
   const showChallengeCompletedToast = (day: number, challengeName: string) => {
