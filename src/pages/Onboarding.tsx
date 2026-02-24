@@ -266,29 +266,29 @@ export default function Onboarding() {
     if (showTutorial) {
       sessionStorage.setItem('pending_home_tutorial', '1');
     }
+    // ALWAYS set the cache before navigating, even if DB write fails.
+    // This prevents a redirect loop where / sends the user back to /onboarding.
+    const cached = getCachedProgress<Record<string, unknown>>();
+    const displayName = userName.trim() || 'Friend';
+    setCachedProgress({
+      ...(cached || {}),
+      has_completed_onboarding: true,
+      onboarding_completed_at: new Date().toISOString(),
+      current_phase: 'active',
+      is_onboarding_week: false,
+      username: displayName,
+      selected_pack_id: cached?.selected_pack_id || '30-day-hello',
+      mode: 'daily',
+      daily_mode_active: true,
+      why_here: whyHere,
+    });
     try {
       await ensureUserAndProgress({ loggedFirstHello: firstHelloLogged });
-      // Update offline cache so the stale initialData doesn't redirect back
-      // Also cache the username for instant display on dashboard
-      const cached = getCachedProgress<Record<string, unknown>>();
-      const displayName = userName.trim() || 'Friend';
-      setCachedProgress({
-        ...(cached || {}),
-        has_completed_onboarding: true,
-        onboarding_completed_at: new Date().toISOString(),
-        current_phase: 'active',
-        is_onboarding_week: false,
-        username: displayName,
-        selected_pack_id: cached?.selected_pack_id || '30-day-hello',
-        mode: 'daily',
-        daily_mode_active: true,
-        why_here: whyHere,
-      });
     } catch (error) {
       console.error('Onboarding completion error:', error);
     }
     window.location.replace('/');
-  }, [ensureUserAndProgress, firstHelloLogged]);
+  }, [ensureUserAndProgress, firstHelloLogged, userName, whyHere]);
 
   const progress = useMemo(() => {
     const steps: OnboardingStep[] = [

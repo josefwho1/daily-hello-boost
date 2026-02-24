@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import logo from '@/assets/one-hello-logo-tagline.svg';
-import remiMascot from '@/assets/remi-waving.webp';
+import logo from '@/assets/one-hello-logo.svg';
+import remiHoldingOrb from '@/assets/remi-holding-orb.webp';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -12,15 +12,15 @@ const Auth = () => {
         {/* Logo */}
         <img 
           src={logo}
-          alt="One Hello - Reconnecting the world, One Hello at a time" 
-          className="w-full max-w-2xl mx-auto"
+          alt="One Hello" 
+          className="h-24 sm:h-32 mx-auto"
         />
 
-        {/* Mascot */}
+        {/* Remi mascot */}
         <img 
-          src={remiMascot} 
-          alt="Remi" 
-          className="w-64 max-w-full h-auto mx-auto object-contain"
+          src={remiHoldingOrb} 
+          alt="Remi holding orb" 
+          className="w-48 h-auto mx-auto"
         />
 
         {/* Buttons */}
@@ -39,7 +39,7 @@ const Auth = () => {
             className="w-full" 
             size="lg"
           >
-            Sign In
+            I already have an account
           </Button>
         </div>
 
