@@ -939,13 +939,13 @@ const Profile = () => {
 
           <div className="border-t border-border pt-4 space-y-3">
             <a 
-              href="https://onehello.io" 
+              href="https://onehello.co" 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <Globe className="w-4 h-4" />
-              <span>onehello.io</span>
+              <span>onehello.co</span>
             </a>
             <a 
               href="mailto:remi@onehello.io"
