@@ -308,7 +308,7 @@ export default function Onboarding() {
       case 'welcome':
         return (
           <div className={`${baseClasses} ${animClasses}`}>
-            <RemiImage src={remiWaving4} alt="Remi waving" className="w-56 h-56 mx-auto object-contain" priority />
+            <RemiImage src={remiWaving4} alt="Remi waving" className="w-56 h-56 mx-auto object-contain" />
             <div className="space-y-3">
               <h1 className="text-2xl font-bold text-foreground">Welcome to One Hello!</h1>
               <p className="text-lg text-muted-foreground">I'm Remi.</p>
