@@ -12,6 +12,8 @@ import {
   updateCachedHello,
   removeCachedHello,
   addToPendingSync,
+  removeFromPendingSync,
+  addToPendingDeletions,
   generateLocalId,
   setLastFullSync,
   type CachedHelloEntry,
