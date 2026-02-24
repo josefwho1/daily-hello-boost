@@ -182,7 +182,7 @@ export default function Dashboard() {
 
   // Derive username - prioritize cached progress username for instant display
   const username = useMemo(() => {
-    const cached = getCachedProgress<Record<string, unknown>>();
+    const cached = getCachedProgress<Record<string, unknown>>(user?.id);
     return (progress as any)?.username || guestProgress?.username || cached?.username || user?.user_metadata?.name || 'Friend';
   }, [(progress as any)?.username, guestProgress?.username, user?.user_metadata?.name]);
 
