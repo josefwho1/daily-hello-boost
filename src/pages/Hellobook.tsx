@@ -224,6 +224,8 @@ const Hellobook = () => {
       return nameMatch || notesMatch || locationMatch || dateMatch || linkedMatch;
     });
 
+  // Show loading state when logs haven't loaded yet
+  // isPending covers both "no data yet" and "query disabled" states
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
