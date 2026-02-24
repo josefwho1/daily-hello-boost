@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { getCachedProgress } from "@/lib/offlineCache";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgressQuery } from "@/hooks/useUserProgressQuery";
 import { useHelloLogs } from "@/hooks/useHelloLogs";
@@ -160,9 +161,10 @@ export default function Dashboard() {
   const [editingLogIndex, setEditingLogIndex] = useState(0);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  // Derive username from already-loaded progress data — no extra API call
+  // Derive username - prioritize cached progress username for instant display
   const username = useMemo(() => {
-    return (progress as any)?.username || guestProgress?.username || user?.user_metadata?.name || 'Friend';
+    const cached = getCachedProgress<Record<string, unknown>>();
+    return (progress as any)?.username || guestProgress?.username || cached?.username || user?.user_metadata?.name || 'Friend';
   }, [(progress as any)?.username, guestProgress?.username, user?.user_metadata?.name]);
 
   // Show walkthrough tutorial for users coming from onboarding
