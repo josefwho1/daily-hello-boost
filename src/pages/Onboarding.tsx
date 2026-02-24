@@ -321,16 +321,30 @@ export default function Onboarding() {
   }, [ensureUserAndProgress]);
 
 
+  // Guard to prevent double-clicks from triggering concurrent completions
+  const completingRef = useRef(false);
+
   const completeOnboarding = useCallback(async (showTutorial: boolean) => {
+    // Prevent double-click / concurrent calls
+    if (completingRef.current) return;
+    completingRef.current = true;
+    setIsSubmitting(true);
+
     if (showTutorial) {
       sessionStorage.setItem('pending_home_tutorial', '1');
     }
+
+    // Get user ID for cache association
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userId = sessionData?.session?.user?.id;
+
     // ALWAYS set the cache before navigating, even if DB write fails.
-    // This prevents a redirect loop where / sends the user back to /onboarding.
+    // Include user_id so cache validation works on reload.
     const cached = getCachedProgress<Record<string, unknown>>();
     const displayName = userName.trim() || 'Friend';
     setCachedProgress({
       ...(cached || {}),
+      user_id: userId,
       has_completed_onboarding: true,
       onboarding_completed_at: new Date().toISOString(),
       current_phase: 'active',
@@ -338,18 +352,34 @@ export default function Onboarding() {
       username: displayName,
       selected_pack_id: cached?.selected_pack_id || '30-day-hello',
       mode: 'daily',
-      daily_mode_active: false,
+      daily_mode_active: firstHelloLogged,
       why_here: whyHere,
     });
-    try {
-      await ensureUserAndProgress({ loggedFirstHello: firstHelloLogged });
-    } catch (error) {
-      console.error('Onboarding completion error:', error);
+
+    // Attempt DB write with retry
+    let dbWriteSucceeded = false;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        await ensureUserAndProgress({ loggedFirstHello: firstHelloLogged });
+        dbWriteSucceeded = true;
+        break;
+      } catch (error) {
+        console.error(`Onboarding completion attempt ${attempt + 1} failed:`, error);
+        if (attempt === 0) {
+          // Wait briefly before retry
+          await new Promise(r => setTimeout(r, 500));
+        }
+      }
     }
-    // Clear persisted onboarding session state ONLY right before navigating away.
-    // Clearing earlier would cause a reset to 'welcome' if the component remounts
-    // due to auth state changes triggered by ensureUserAndProgress.
-    clearSessionState();
+
+    if (dbWriteSucceeded) {
+      // DB confirmed — safe to clear recovery state
+      clearSessionState();
+    }
+    // If DB write failed, keep session state so user can recover on next visit.
+    // The cache still has has_completed_onboarding: true, so they'll see home briefly.
+    // If server data overwrites it, session state will let them resume where they left off.
+
     window.location.replace('/');
   }, [ensureUserAndProgress, firstHelloLogged, userName, whyHere]);
 
