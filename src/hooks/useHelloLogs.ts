@@ -170,15 +170,17 @@ export const useHelloLogs = () => {
 
     // Get timezone (use cached or browser fallback)
     let timezoneOffset = normalizeTimezoneOffset(null);
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('timezone_preference')
-        .eq('id', user.id)
-        .maybeSingle();
-      timezoneOffset = normalizeTimezoneOffset(profile?.timezone_preference);
-    } catch {
-      // Use browser-detected timezone if offline
+    if (navigator.onLine) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('timezone_preference')
+          .eq('id', user.id)
+          .maybeSingle();
+        timezoneOffset = normalizeTimezoneOffset(profile?.timezone_preference);
+      } catch {
+        // Use browser-detected timezone if offline
+      }
     }
 
     const localEntry: CachedHelloEntry = {
