@@ -702,8 +702,12 @@ export default function Dashboard() {
             setTimeout(() => setShowChallengeReveal(true), 300);
           }
           // If showing post-completion screen (day 8), switch to daily mode
+          // Guard: only switch if all 7 days are actually complete
           if (challengeRevealDay === 8) {
-            await updateProgress({ selected_pack_id: 'daily' });
+            const sevenDayComplete = challengeState.completedDays.filter(d => d >= 1 && d <= 7).length >= 7;
+            if (sevenDayComplete) {
+              await updateProgress({ selected_pack_id: 'daily' });
+            }
           }
         }}
       />
