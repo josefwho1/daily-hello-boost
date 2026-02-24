@@ -625,6 +625,8 @@ export default function Dashboard() {
           const isThirtyHellos = pendingChallengeCompletion.day >= 101;
           const helloTypePrefix = isThirtyHellos ? 'thirty' : 'challenge';
           const tagDay = isThirtyHellos ? pendingChallengeCompletion.day - 100 : pendingChallengeCompletion.day;
+          // Set flag so handleLogHello queues streak instead of showing it
+          isChallengeCompletionRef.current = true;
           await handleLogHello({
             ...data,
             hello_type: `${helloTypePrefix}:${tagDay}`,
@@ -633,7 +635,9 @@ export default function Dashboard() {
           if (!challengeState.completedDays.includes(pendingChallengeCompletion.day)) {
             const previousCount = challengeState.completedDays.length;
             await markDayComplete(pendingChallengeCompletion.day);
-            checkAndShowCelebrations(previousCount, previousCount + 1);
+            checkAndShowCelebrations(previousCount, previousCount + 1, tagDay, pendingChallengeCompletion.name);
+          } else {
+            isChallengeCompletionRef.current = false;
           }
           setShowLogDialog(false);
           setAutoStartRecording(false);
