@@ -129,8 +129,9 @@ export default function Dashboard() {
   // Always use the cloud addLog since anonymous users have real Supabase sessions
   const addLog = addCloudLog;
   const tzOffset = normalizeTimezoneOffset(timezoneOffset);
-  // Effective pack ID: use progress, fall back to cache, default to challenge (not daily)
-  const effectivePackId = progress?.selected_pack_id || (getCachedProgress<Record<string, unknown>>()?.selected_pack_id as string) || '30-day-hello';
+  // Effective pack ID: use progress when available, default to challenge (never 'daily')
+  // Don't use getCachedProgress as fallback — cache is not scoped per user and can leak stale state
+  const effectivePackId = progress?.selected_pack_id || '30-day-hello';
   const [showLogDialog, setShowLogDialog] = useState(false);
   
 
@@ -181,7 +182,7 @@ export default function Dashboard() {
 
   // Derive username - prioritize cached progress username for instant display
   const username = useMemo(() => {
-    const cached = getCachedProgress<Record<string, unknown>>();
+    const cached = getCachedProgress<Record<string, unknown>>(user?.id);
     return (progress as any)?.username || guestProgress?.username || cached?.username || user?.user_metadata?.name || 'Friend';
   }, [(progress as any)?.username, guestProgress?.username, user?.user_metadata?.name]);
 
@@ -363,7 +364,7 @@ export default function Dashboard() {
   // Fast loading: if we have progress (from cache or query), render immediately.
   // Only show skeleton if we truly have no data at all.
   if (!progress) {
-    const cached = getCachedProgress<Record<string, unknown>>();
+    const cached = getCachedProgress<Record<string, unknown>>(user?.id);
     if (cached) {
       // We have cached data — don't block, the query will hydrate soon
     } else {
