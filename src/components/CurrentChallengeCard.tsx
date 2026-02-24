@@ -102,7 +102,7 @@ export const CurrentChallengeCard = ({
   };
 
   return <>
-    <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden flex flex-col min-h-[260px]">
+    <Card className="p-4 rounded-xl bg-card border-border/50 relative overflow-hidden flex flex-col min-h-[232px]">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ export const CurrentChallengeCard = ({
           </div>
           
           {/* Description area - fixed height for 2 lines */}
-          <div className="h-[2.75rem] mt-1">
+          <div className="h-8 mt-1">
             {isLocked ? (
               <p className="text-[11px] text-muted-foreground/40 line-clamp-2">
                 {currentChallenge.description}
@@ -194,7 +194,7 @@ export const CurrentChallengeCard = ({
           </div>
 
           {/* Suggestion area - fixed height for 2 lines */}
-          <div className="h-[2.25rem] mt-1">
+          <div className="h-8 mt-1">
             {challengeUnlocked && !isChallengeComplete && currentChallenge.suggestion && (
               <p className="text-xs text-muted-foreground/70 italic line-clamp-2">
                 💡 {currentChallenge.suggestion}
