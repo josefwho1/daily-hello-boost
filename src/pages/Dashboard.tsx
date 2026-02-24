@@ -267,10 +267,10 @@ export default function Dashboard() {
 
   // Daily Mode streak reset check on mount
   useEffect(() => {
-    if (!dailyModeLoading && dailyModeState.isActive) {
+    if (!dailyModeLoading) {
       checkAndResetStreak();
     }
-  }, [dailyModeLoading, dailyModeState.isActive, checkAndResetStreak]);
+  }, [dailyModeLoading, checkAndResetStreak]);
   const handleLogHello = async (data: {
     name?: string;
     location?: string;
@@ -341,19 +341,18 @@ export default function Dashboard() {
       }
 
       // Record for Daily Mode if active and trigger streak celebration
-      if (dailyModeState.isActive) {
+      // Always record streak regardless of mode
+      {
         const todayKey = getDayKeyInOffset(new Date(), tzOffset);
         const hasAlreadyRecordedForDailyModeToday = dailyModeState.lastHelloDate === todayKey;
         const streakBeforeLog = dailyModeState.currentStreak;
         await recordHelloForDailyMode();
 
-        // Trigger celebration only if this is the first daily mode hello of the day
-        // AND streak is not hidden by the user
+        // Show celebration only if streak is visible
         const isStreakHidden = localStorage.getItem('hideStreak') === 'true';
         if (!hasAlreadyRecordedForDailyModeToday && !isStreakHidden) {
           const newStreakValue = streakBeforeLog === 0 ? 1 : streakBeforeLog + 1;
           if (isChallengeCompletionRef.current) {
-            // Queue streak for after challenge celebration
             queuedStreakRef.current = newStreakValue;
           } else {
             setCelebratedStreakValue(newStreakValue);
@@ -408,14 +407,13 @@ export default function Dashboard() {
           total_hellos: newTotalHellos,
         });
 
-        // Record for Daily Mode if active
-        if (dailyModeState.isActive) {
+        // Always record streak regardless of mode
+        {
           const todayKey = getDayKeyInOffset(new Date(), tzOffset);
           const hasAlreadyRecordedForDailyModeToday = dailyModeState.lastHelloDate === todayKey;
           const streakBeforeLog = dailyModeState.currentStreak;
           await recordHelloForDailyMode();
 
-          // Trigger celebration only if streak is visible
           const isStreakHidden = localStorage.getItem('hideStreak') === 'true';
           if (!hasAlreadyRecordedForDailyModeToday && !isStreakHidden) {
             const newStreakValue = streakBeforeLog === 0 ? 1 : streakBeforeLog + 1;
