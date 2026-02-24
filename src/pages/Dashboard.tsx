@@ -129,6 +129,8 @@ export default function Dashboard() {
   // Always use the cloud addLog since anonymous users have real Supabase sessions
   const addLog = addCloudLog;
   const tzOffset = normalizeTimezoneOffset(timezoneOffset);
+  // Effective pack ID: use progress, fall back to cache, default to challenge (not daily)
+  const effectivePackId = progress?.selected_pack_id || (getCachedProgress<Record<string, unknown>>()?.selected_pack_id as string) || '30-day-hello';
   const [showLogDialog, setShowLogDialog] = useState(false);
   
 
@@ -490,7 +492,7 @@ export default function Dashboard() {
   // Queues the reveal day; the challenge day celebration is shown first
   const checkAndShowCelebrations = (previousCount: number, newCount: number, completedDay: number, challengeName: string) => {
     // Only show challenge reveal screens during 7-day challenge
-    if (progress?.selected_pack_id === '30-hellos' || progress?.selected_pack_id === 'daily') return;
+    if (effectivePackId === '30-hellos' || effectivePackId === 'daily') return;
 
     // Queue the reveal day
     if (newCount === 7 && previousCount < 7) {
@@ -685,9 +687,9 @@ export default function Dashboard() {
           
           {/* Challenge Card - DailySuggestionCard is fully local, never blocked */}
           <div id="tutorial-todays-hello-card">
-            {(!progress || progress?.selected_pack_id === 'daily') ? (
+            {effectivePackId === 'daily' ? (
               <DailySuggestionCard />
-            ) : progress?.selected_pack_id === '30-hellos' ? (
+            ) : effectivePackId === '30-hellos' ? (
               <ThirtyHellosCard
                 completedDays={challengeState.completedDays
                   .filter(d => d >= 101 && d <= 130)
