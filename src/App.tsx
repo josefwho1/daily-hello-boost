@@ -62,8 +62,10 @@ const AppRoute = ({ children }: { children: React.ReactNode }) => {
   }, [authLoading, user, bootstrapAttempted, initializeAnonymous]);
 
   const loading = authLoading || bootstrapping || guestLoading || progressLoading;
+  const cached = getCachedProgress<Record<string, unknown>>();
 
-  if (loading) {
+  // Only show full-screen spinner if we have zero cached data AND are still loading
+  if (loading && !cached && !progress && !guestProgress) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -105,8 +107,10 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
   const { guestProgress, loading: guestLoading, isAnonymous } = useGuestMode();
 
   const loading = progressLoading || guestLoading;
+  const cached = getCachedProgress<Record<string, unknown>>();
 
-  if (loading) {
+  // Only block with spinner if we have zero cached/live progress data
+  if (loading && !cached && !progress && !guestProgress) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
