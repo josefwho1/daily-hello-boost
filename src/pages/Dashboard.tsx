@@ -152,6 +152,9 @@ export default function Dashboard() {
   const [milestoneValue, setMilestoneValue] = useState(0);
   const [milestoneType, setMilestoneType] = useState<MilestoneType>('hellos');
 
+  // First hello celebration state
+  const [showFirstHelloCelebration, setShowFirstHelloCelebration] = useState(false);
+
   // Streak celebration states
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [celebratedStreakValue, setCelebratedStreakValue] = useState(0);
@@ -296,8 +299,13 @@ export default function Dashboard() {
         }
       }
 
-      // Check for hello/name milestones
+      // Check for first hello celebration
       const previousTotalHellos = progress?.total_hellos || logs.length;
+      if (previousTotalHellos === 0 && newTotalHellos >= 1) {
+        setTimeout(() => setShowFirstHelloCelebration(true), 600);
+      }
+
+      // Check for hello/name milestones
       const helloMilestone = checkMilestoneReached(previousTotalHellos, newTotalHellos, HELLO_MILESTONES);
       if (helloMilestone) {
         setMilestoneValue(helloMilestone);
