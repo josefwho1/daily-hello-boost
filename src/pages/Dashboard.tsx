@@ -608,7 +608,7 @@ export default function Dashboard() {
 
         {/* Sync / Offline Status — always rendered so offline indicator can appear */}
         <div className="flex justify-center mb-2">
-          <SyncStatusBadge status={syncStatus} pendingCount={pendingCount} showOfflineIndicator />
+          <SyncStatusBadge status={syncStatus} pendingCount={pendingCount} />
         </div>
 
         {/* Stats Dashboard - renders instantly from cache, fills in with live data */}
