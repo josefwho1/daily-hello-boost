@@ -174,12 +174,14 @@ export default function Dashboard() {
   // Derive stable tutorial eligibility values to avoid object-reference churn
   const tutorialEligibleOnboarding = Boolean(progress?.has_completed_onboarding);
   const tutorialSeenWelcome = progress?.has_seen_welcome_messages === true;
+  const tutorialSeenLocal = localStorage.getItem('tutorial_completed') === '1';
   const hasProgress = !!progress;
 
   useEffect(() => {
-    // Wait until we have progress data (from any source)
     if (!hasProgress) return;
     if (showHomeTutorial) return;
+    // Never show again if localStorage flag is set (bulletproof guard)
+    if (tutorialSeenLocal) return;
     const eligible = tutorialEligibleOnboarding && !tutorialSeenWelcome;
     const pending = sessionStorage.getItem('pending_home_tutorial') === '1';
     if (!eligible) {
@@ -198,12 +200,15 @@ export default function Dashboard() {
         tutorialTimerRef.current = null;
       }
     };
-  }, [showHomeTutorial, hasProgress, tutorialEligibleOnboarding, tutorialSeenWelcome]);
+  }, [showHomeTutorial, hasProgress, tutorialEligibleOnboarding, tutorialSeenWelcome, tutorialSeenLocal]);
 
   // Mark tutorial as seen as soon as it opens
   const handleTutorialMarkSeen = async () => {
+    // Set localStorage immediately — this is the bulletproof guard
+    localStorage.setItem('tutorial_completed', '1');
+    sessionStorage.removeItem('pending_home_tutorial');
     if (user?.id) {
-      await supabase.from('user_progress').update({
+      supabase.from('user_progress').update({
         has_seen_welcome_messages: true
       }).eq('user_id', user.id);
       if (isAnonymous) {
@@ -212,9 +217,9 @@ export default function Dashboard() {
         } as any);
       }
     }
-    sessionStorage.removeItem('pending_home_tutorial');
   };
   const handleTutorialComplete = () => {
+    localStorage.setItem('tutorial_completed', '1');
     setShowHomeTutorial(false);
     toast.success("🎉 You're all set!");
   };
