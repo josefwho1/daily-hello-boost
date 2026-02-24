@@ -315,8 +315,6 @@ export default function Onboarding() {
 
 
   const completeOnboarding = useCallback(async (showTutorial: boolean) => {
-    // Clear persisted onboarding state — we're done
-    clearSessionState();
     if (showTutorial) {
       sessionStorage.setItem('pending_home_tutorial', '1');
     }
@@ -341,6 +339,10 @@ export default function Onboarding() {
     } catch (error) {
       console.error('Onboarding completion error:', error);
     }
+    // Clear persisted onboarding session state ONLY right before navigating away.
+    // Clearing earlier would cause a reset to 'welcome' if the component remounts
+    // due to auth state changes triggered by ensureUserAndProgress.
+    clearSessionState();
     window.location.replace('/');
   }, [ensureUserAndProgress, firstHelloLogged, userName, whyHere]);
 
