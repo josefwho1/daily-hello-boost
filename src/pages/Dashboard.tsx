@@ -171,13 +171,16 @@ export default function Dashboard() {
   // Show walkthrough tutorial for users coming from onboarding
   const tutorialShownRef = useRef(false);
   const tutorialTimerRef = useRef<number | null>(null);
+  // Derive stable tutorial eligibility values to avoid object-reference churn
+  const tutorialEligibleOnboarding = Boolean(progress?.has_completed_onboarding);
+  const tutorialSeenWelcome = progress?.has_seen_welcome_messages === true;
+  const hasProgress = !!progress;
+
   useEffect(() => {
     // Wait until we have progress data (from any source)
-    if (!progress) return;
+    if (!hasProgress) return;
     if (showHomeTutorial) return;
-    const hasCompletedOnboarding = Boolean(progress?.has_completed_onboarding);
-    const hasSeenWelcome = progress?.has_seen_welcome_messages === true;
-    const eligible = hasCompletedOnboarding && !hasSeenWelcome;
+    const eligible = tutorialEligibleOnboarding && !tutorialSeenWelcome;
     const pending = sessionStorage.getItem('pending_home_tutorial') === '1';
     if (!eligible) {
       if (pending) sessionStorage.removeItem('pending_home_tutorial');
@@ -195,7 +198,7 @@ export default function Dashboard() {
         tutorialTimerRef.current = null;
       }
     };
-  }, [showHomeTutorial, progress]);
+  }, [showHomeTutorial, hasProgress, tutorialEligibleOnboarding, tutorialSeenWelcome]);
 
   // Mark tutorial as seen as soon as it opens
   const handleTutorialMarkSeen = async () => {
