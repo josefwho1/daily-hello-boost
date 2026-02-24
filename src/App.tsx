@@ -61,7 +61,9 @@ const AppRoute = ({ children }: { children: React.ReactNode }) => {
     initializeAnonymous().finally(() => setBootstrapping(false));
   }, [authLoading, user, bootstrapAttempted, initializeAnonymous]);
 
-  const loading = authLoading || bootstrapping || guestLoading || progressLoading;
+  // For anonymous users, guestLoading already includes progress loading via React Query.
+  // Don't also wait on the separate useState-based progressLoading to avoid duplicate fetches.
+  const loading = authLoading || bootstrapping || guestLoading || (!isAnonymous && progressLoading);
   const cached = getCachedProgress<Record<string, unknown>>();
 
   // Only show full-screen spinner if we have zero cached data AND are still loading
@@ -118,7 +120,8 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
   const { progress, loading: progressLoading } = useUserProgress();
   const { guestProgress, loading: guestLoading, isAnonymous } = useGuestMode();
 
-  const loading = progressLoading || guestLoading;
+  // For anonymous users, guestLoading already covers progress loading
+  const loading = guestLoading || (!isAnonymous && progressLoading);
   const cached = getCachedProgress<Record<string, unknown>>();
 
   // Only block with spinner if we have zero cached/live progress data
