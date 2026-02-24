@@ -301,19 +301,16 @@ export default function Onboarding() {
         hello_type: 'challenge:1',
       });
       
+      // Streak and counters are now initialized in ensureUserAndProgress — no background task needed
       scheduleBackgroundTask(async () => {
-        const today = (await import('@/lib/timezone')).getDayKeyInOffset(new Date(), detectedOffset);
         const { data: currentProgress } = await supabase
           .from('user_progress')
           .select('total_hellos, hellos_this_week')
           .eq('user_id', userId)
           .maybeSingle();
         await supabase.from('user_progress').update({
-          last_completed_date: today,
           total_hellos: (currentProgress?.total_hellos ?? 0) + 1,
           hellos_this_week: (currentProgress?.hellos_this_week ?? 0) + 1,
-          daily_mode_last_hello_date: today,
-          daily_mode_current_streak: 1,
         }).eq('user_id', userId);
       });
     } catch (error) {
