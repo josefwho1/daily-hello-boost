@@ -311,10 +311,6 @@ export default function Dashboard() {
       }
 
       // Check for first hello celebration
-      const previousTotalHellos = progress?.total_hellos || logs.length;
-      if (previousTotalHellos === 0 && newTotalHellos >= 1) {
-        setTimeout(() => setShowFirstHelloCelebration(true), 600);
-      }
 
       // Check for hello/name milestones
       const helloMilestone = checkMilestoneReached(previousTotalHellos, newTotalHellos, HELLO_MILESTONES);
@@ -777,8 +773,6 @@ export default function Dashboard() {
       {/* Milestone Celebrations */}
       <MilestoneCelebrationDialog open={showMilestoneCelebration} onContinue={() => setShowMilestoneCelebration(false)} milestoneValue={milestoneValue} milestoneType={milestoneType} />
 
-      {/* First Hello Celebration */}
-      <FirstHelloCelebrationDialog open={showFirstHelloCelebration} onContinue={() => setShowFirstHelloCelebration(false)} userName={username} />
 
       {/* Challenge Day Celebration */}
       <ChallengeDayCelebrationDialog 
