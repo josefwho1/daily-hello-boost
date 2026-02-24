@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { getCachedProgress, setCachedProgress, addPendingProgressUpdate } from '@/lib/offlineCache';
+import { useRef } from 'react';
 
 export interface UserProgress {
   current_streak: number;
@@ -56,14 +57,20 @@ export interface UserProgress {
   challenge_times_completed?: number;
 }
 
-const QUERY_KEY = ['user-progress'];
+const getQueryKey = (userId?: string) => ['user-progress', userId ?? 'none'];
 
 export const useUserProgressQuery = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const queryKey = getQueryKey(user?.id);
+  
+  // Track whether we've received fresh server data at least once this session.
+  // Until hydrated, mutations should NOT write back to localStorage to avoid
+  // persisting stale initialData.
+  const hydratedRef = useRef(false);
 
   const { data: progress, isPending: loading, refetch } = useQuery({
-    queryKey: QUERY_KEY,
+    queryKey,
     queryFn: async (): Promise<UserProgress | null> => {
       if (!user) return null;
 
@@ -89,12 +96,13 @@ export const useUserProgressQuery = () => {
           current_phase: legacyCompleted ? 'active' : data.current_phase,
         };
 
-        // Cache for offline/instant load
+        // Cache for offline/instant load — this is the ONLY place we persist to localStorage
         setCachedProgress(normalized);
+        hydratedRef.current = true;
         return normalized;
       } catch (error) {
         // Offline fallback
-        const cached = getCachedProgress<UserProgress>();
+        const cached = getCachedProgress<UserProgress>(user?.id);
         if (cached) {
           console.warn('Using cached progress (offline)');
           return cached;
@@ -116,17 +124,24 @@ export const useUserProgressQuery = () => {
     mutationFn: async (updates: Partial<UserProgress>) => {
       if (!user) throw new Error('No user');
 
-      // Optimistically update React Query cache AND localStorage immediately
+      // Optimistically update React Query cache immediately
       // This ensures concurrent mutations see each other's optimistic state
-      const current = queryClient.getQueryData<UserProgress>(QUERY_KEY);
+      const current = queryClient.getQueryData<UserProgress>(queryKey);
       const optimistic = { ...current, ...updates };
-      queryClient.setQueryData(QUERY_KEY, optimistic);
-      setCachedProgress(optimistic as any);
+      queryClient.setQueryData(queryKey, optimistic);
+      // NOTE: Do NOT write optimistic state to localStorage here.
+      // Only queryFn (fresh server data) writes to localStorage.
+      // This prevents stale initialData from being persisted during the
+      // window before the background refetch completes.
 
       try {
         if (!navigator.onLine) {
           // Queue for later sync
           addPendingProgressUpdate(updates as Record<string, unknown>);
+          // When offline, persist the optimistic state since we won't get server data
+          if (hydratedRef.current) {
+            setCachedProgress(optimistic as any);
+          }
           return { updates, serverData: null };
         }
 
@@ -148,7 +163,7 @@ export const useUserProgressQuery = () => {
     onSuccess: ({ updates, serverData }) => {
       // Only apply the fields THIS mutation updated, using server-confirmed values
       // This prevents stale server responses from overwriting concurrent mutations' data
-      queryClient.setQueryData(QUERY_KEY, (current: UserProgress | null | undefined) => {
+      queryClient.setQueryData(queryKey, (current: UserProgress | null | undefined) => {
         if (!current) return serverData || current;
         if (!serverData) return current; // offline — optimistic already applied
         
@@ -159,7 +174,10 @@ export const useUserProgressQuery = () => {
           }
         }
         const merged = { ...current, ...confirmedFields };
-        setCachedProgress(merged as any);
+        // Only persist to localStorage if we've been hydrated with fresh server data
+        if (hydratedRef.current) {
+          setCachedProgress(merged as any);
+        }
         return merged;
       });
     },
@@ -184,7 +202,7 @@ export const useUserProgressQuery = () => {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(QUERY_KEY, data);
+      queryClient.setQueryData(queryKey, data);
       setCachedProgress(data as any);
     },
   });
