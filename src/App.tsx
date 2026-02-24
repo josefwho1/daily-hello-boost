@@ -9,6 +9,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useGuestMode } from "@/hooks/useGuestMode";
+import { getCachedProgress } from "@/lib/offlineCache";
 
 // Lazy load pages for code splitting
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -79,14 +80,21 @@ const AppRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   // For anonymous users, check if they have progress (created during onboarding)
+  // Use cached progress as fallback to prevent false redirects on slow networks
   if (isAnonymous && !guestProgress) {
-    return <Navigate to="/onboarding" replace />;
+    const cached = getCachedProgress<Record<string, unknown>>();
+    if (!cached?.has_completed_onboarding) {
+      return <Navigate to="/onboarding" replace />;
+    }
   }
 
   // For authenticated (non-anonymous) users, check if they have progress
   // If no progress, they need to complete onboarding
   if (!isAnonymous && !progress) {
-    return <Navigate to="/onboarding" replace />;
+    const cached = getCachedProgress<Record<string, unknown>>();
+    if (!cached?.has_completed_onboarding) {
+      return <Navigate to="/onboarding" replace />;
+    }
   }
 
   return <>{children}</>;
@@ -113,9 +121,14 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
   // For anonymous users, use guestProgress; for regular auth users, use progress
   const currentProgress = isAnonymous ? guestProgress : progress;
 
-  // If no progress exists at all, redirect to onboarding
+  // If no progress exists at all, check cache before redirecting
   if (!currentProgress) {
-    return <Navigate to="/onboarding" replace />;
+    const cached = getCachedProgress<Record<string, unknown>>();
+    if (!cached?.has_completed_onboarding) {
+      return <Navigate to="/onboarding" replace />;
+    }
+    // Cache says onboarding is done - let through, data will load shortly
+    return <>{children}</>;
   }
 
   // Treat legacy users as "completed" if they have onboarding_completed_at set.

@@ -37,7 +37,7 @@ export const useHelloLogs = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: logs = [], isLoading: loading, refetch } = useQuery({
+  const { data: logs = [], isPending: loading, refetch } = useQuery({
     queryKey: ['hello-logs', user?.id],
     queryFn: async () => {
       if (!user) return [];
