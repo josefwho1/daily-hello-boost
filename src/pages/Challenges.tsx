@@ -40,7 +40,9 @@ const Challenges = () => {
   const updateProgress = isAnonymous ? updateGuestProgress : updateCloudProgress;
   const isLoading = (isAnonymous ? guestLoading : cloudLoading) || challengeLoading || dailyModeLoading;
 
-  const selectedPack = progress?.selected_pack_id || 'daily';
+  // Never default to 'daily' — preserve the user's actual pack selection
+  // Using '30-day-hello' as fallback prevents falsely showing Today's Hello as active during loading
+  const selectedPack = progress?.selected_pack_id || '30-day-hello';
 
   const thirtyHellosCompletedCount = logs.filter(l => l.hello_type?.startsWith('thirty:')).length;
 
