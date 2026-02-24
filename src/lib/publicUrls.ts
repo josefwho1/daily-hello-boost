@@ -1,4 +1,4 @@
-const PRODUCTION_ORIGIN = "https://app.onehello.co";
+const PRODUCTION_ORIGIN = "https://app.onehello.io";
 
 /**
  * Returns the canonical public origin for auth redirects.
