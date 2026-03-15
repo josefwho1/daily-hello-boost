@@ -223,6 +223,7 @@ Deno.serve(async (req) => {
           hellosThisMonth: hellosThisMonth || 0,
           hellosThisWeek: hellosThisWeek || 0,
           hellosToday: hellosToday || 0,
+          hellosSinceMarch: hellosSinceMarch || 0,
         },
         leaderboards: {
           hellos: {
