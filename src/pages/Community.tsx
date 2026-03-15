@@ -18,6 +18,7 @@ interface CommunityStats {
     hellosThisMonth: number;
     hellosThisWeek: number;
     hellosToday: number;
+    hellosSinceMarch: number;
   };
   leaderboards: {
     hellos: {
