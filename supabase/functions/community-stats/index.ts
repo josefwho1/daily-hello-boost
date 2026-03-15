@@ -33,6 +33,27 @@ Deno.serve(async (req) => {
       .from('hello_logs')
       .select('*', { count: 'exact', head: true });
 
+    // Hellos since March 1 2026 excluding "josef"
+    // First get user IDs to exclude
+    const { data: josefProfiles } = await supabase
+      .from('profiles')
+      .select('id')
+      .or('username.ilike.%josef%,email.ilike.%josef%');
+    
+    const excludeIds = (josefProfiles || []).map(p => p.id);
+    
+    let hellosSinceMarQuery = supabase
+      .from('hello_logs')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', '2026-03-01T00:00:00.000Z');
+    
+    if (excludeIds.length > 0) {
+      // Exclude each user individually using .not().in()
+      hellosSinceMarQuery = hellosSinceMarQuery.not('user_id', 'in', `(${excludeIds.join(',')})`);
+    }
+    
+    const { count: hellosSinceMarch } = await hellosSinceMarQuery;
+
     // Total names remembered (non-null names)
     const { count: totalNames } = await supabase
       .from('hello_logs')
