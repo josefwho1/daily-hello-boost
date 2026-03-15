@@ -204,8 +204,15 @@ const Community = ({ embedded = false }: CommunityProps) => {
                 <p className="text-sm text-muted-foreground">names remembered</p>
               </CardContent>
             </Card>
-            
           </div>
+
+          {/* Hellos since March 2026 */}
+          <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/20">
+            <CardContent className="pt-4 pb-4 text-center">
+              <p className="text-3xl font-bold text-green-600 dark:text-green-400">{formatNumber(stats.collectiveImpact.hellosSinceMarch)}</p>
+              <p className="text-sm text-muted-foreground">hellos since March 1st</p>
+            </CardContent>
+          </Card>
 
           <div className="grid grid-cols-3 gap-2">
             <Card className="bg-gradient-to-br from-accent/30 to-accent/10 border-accent/20">
